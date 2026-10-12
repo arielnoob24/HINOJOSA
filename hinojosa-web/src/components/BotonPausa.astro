@@ -1,0 +1,62 @@
+---
+// "Pausar animaciones" (WCAG 2.2.2). Boton conmutador: nombre fijo +
+// aria-pressed. Pone data-movimiento="pausado" en <html>, lo guarda en
+// localStorage (con try/catch) y pausa los videos decorativos.
+// La fase de animacion debe escuchar el evento "hinojosa:movimiento"
+// (detail.pausado) para detener Three.js, GSAP o Lenis.
+import Icono from './Icono.astro';
+
+interface Props {
+  class?: string;
+}
+const { class: clase = '' } = Astro.props;
+---
+<button
+  type="button"
+  class:list={[
+    'inline-flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-crema/70 text-crema hover:bg-bosque-noche',
+    clase,
+  ]}
+  aria-pressed="false"
+  data-boton-pausa
+  hidden
+>
+  <span class="sr-only">Pausar animaciones</span>
+  <span data-icono-pausa><Icono nombre="pausa" class="size-5" /></span>
+  <span data-icono-play hidden><Icono nombre="play" class="size-5" /></span>
+</button>
+
+<script>
+  const CLAVE = 'hinojosa-movimiento';
+  const html = document.documentElement;
+
+  const leer = () => html.getAttribute('data-movimiento') === 'pausado';
+
+  const pintar = (pausado: boolean) => {
+    document.querySelectorAll<HTMLButtonElement>('[data-boton-pausa]').forEach((b) => {
+      b.setAttribute('aria-pressed', String(pausado));
+      b.title = pausado ? 'Reanudar animaciones' : 'Pausar animaciones';
+      b.querySelector<HTMLElement>('[data-icono-pausa]')!.hidden = pausado;
+      b.querySelector<HTMLElement>('[data-icono-play]')!.hidden = !pausado;
+    });
+  };
+
+  const aplicar = (pausado: boolean) => {
+    if (pausado) html.setAttribute('data-movimiento', 'pausado');
+    else html.removeAttribute('data-movimiento');
+    try {
+      if (pausado) localStorage.setItem(CLAVE, 'pausado');
+      else localStorage.removeItem(CLAVE);
+    } catch {
+      /* almacenamiento no disponible: el estado vale solo para esta visita */
+    }
+    pintar(pausado);
+    window.dispatchEvent(new CustomEvent('hinojosa:movimiento', { detail: { pausado } }));
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('[data-boton-pausa]').forEach((b) => {
+    b.hidden = false; // sin JS no tendria efecto, por eso empieza oculto
+    b.addEventListener('click', () => aplicar(!leer()));
+  });
+  pintar(leer());
+</script>

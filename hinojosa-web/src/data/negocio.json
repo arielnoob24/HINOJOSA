@@ -1,0 +1,100 @@
+{
+  "nombre": "Comercial Hinojosa",
+  "eslogan": "Nutrición que da vida",
+  "esloganesSecundarios": [
+    "Calidad que alimenta, amor que se siente",
+    "Comercial Hinojosa siempre a tu lado",
+    "Tu mejor aliado para tus animales",
+    "Somos parte de tu familia",
+    "Calidad, Confianza, Compromiso"
+  ],
+  "subtitulo": "Venta de balanceados · Alimentos y productos para animales",
+  "mascota": {
+    "nombre": "Canela",
+    "descripcion": "Perrita alegre y cariñosa con gorra verde y pañuelo con la \"H\".",
+    "frase": "Soy alegre, cariñosa y siempre estoy lista para jugar"
+  },
+  "mision": "Brindar alimentos y productos de calidad para animales, ofreciendo una atención amable, responsable y cercana que satisfaga las necesidades de nuestros clientes.",
+  "vision": "Ser una empresa líder y reconocida en la comercialización de alimentos y productos para animales, destacándonos por nuestra calidad, buen servicio y compromiso con nuestros clientes.",
+  "valores": [
+    "Buen trato",
+    "Calidez",
+    "Amabilidad",
+    "Responsabilidad",
+    "Honestidad",
+    "Compromiso con el cliente"
+  ],
+  "pilares": [
+    "Naturales",
+    "Confiables",
+    "De calidad",
+    "Sostenibles"
+  ],
+  "diferenciales": [
+    "Ubicación estratégica",
+    "Productos para aves, cerdos, mascotas y tilapias",
+    "Atención cercana y personalizada",
+    "Calidad que se siente"
+  ],
+  "animalesAtendidos": [
+    "Aves",
+    "Cerdos",
+    "Conejos",
+    "Cuyes",
+    "Vacas",
+    "Perros",
+    "Gatos",
+    "Tilapias"
+  ],
+  "moneda": {
+    "codigo": "USD",
+    "simbolo": "$"
+  },
+  "marcadorPendiente": "Por confirmar",
+  "contacto": {
+    "direccion": {
+      "valor": "Av. del Chofer y Rubén Lerson",
+      "confirmado": false,
+      "nota": "Tomada de los afiches; la ortografía varía entre afiches. Confirmar con la dueña."
+    },
+    "ciudad": {
+      "valor": null,
+      "confirmado": false
+    },
+    "pais": {
+      "valor": null,
+      "confirmado": false
+    },
+    "telefono": {
+      "valor": null,
+      "confirmado": false
+    },
+    "whatsapp": {
+      "valor": null,
+      "confirmado": false,
+      "nota": "Número en formato internacional sin '+' ni espacios, para armar el enlace https://wa.me/<numero>."
+    },
+    "horario": {
+      "valor": null,
+      "confirmado": false
+    },
+    "facebook": {
+      "valor": null,
+      "confirmado": false
+    },
+    "googleMaps": {
+      "valor": null,
+      "confirmado": false
+    }
+  },
+  "pendientes": [
+    "Dirección exacta y su ortografía (en los afiches: \"Av. del Chofer y Rubén Lerson\")",
+    "Ciudad",
+    "País",
+    "Teléfono",
+    "WhatsApp",
+    "Horario de atención",
+    "Enlace de Facebook",
+    "Enlace de Google Maps (y coordenadas para el mapa)"
+  ]
+}
