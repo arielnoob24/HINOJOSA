@@ -141,11 +141,18 @@ Esta es la decisión estructural del proyecto y condiciona todo lo demás.
 - **Fondo:** degradado verde de marca con granos de maíz en paralaje muy sutil al mover el mouse. El paralaje también se desactiva con `prefers-reduced-motion`.
 - **Sin** botón flotante de WhatsApp. El contacto vive en la vista "Visítanos".
 
-**Cómo se produce el perrito (de más simple a más costoso):**
-1. **Lottie** (vector, bucle de carrera lateral) — recomendado: pesa poco, escala sin perder nitidez y se pausa y reinicia por código.
-2. **Sprite sheet** PNG/WebP con `steps()` en CSS — la opción más ligera y la más fácil de hacer accesible.
-3. **Video WebM con canal alfa** — más realista, más peso, y en iOS el alfa es problemático.
-4. **Modelo 3D** `.glb` recorriendo la franja — la más pesada; solo si ya existe el modelo de Canela rigged y sobra presupuesto de rendimiento.
+**El cliente entrega los archivos del perrito.** No se produce desde cero: el trabajo es adaptarlos, optimizarlos e integrarlos. Según lo que llegue:
+
+| Lo que entregue el cliente | Qué se hace |
+|---|---|
+| **Lottie** (`.json` / `.lottie`) | Lo ideal. Se integra directo; se pausa y reinicia por código |
+| **Sprite sheet** o secuencia de PNG | Se arma la animación con `steps()` en CSS y se convierte a WebP |
+| **GIF** | Se convierte a sprite sheet o a WebM con alfa: un GIF en bucle no se puede pausar bien ni pesa poco |
+| **Video con canal alfa** | Se reencoda a WebM VP9 con alfa, más un fallback, porque el alfa en iOS es problemático |
+| **Video sin alfa** | Hay que recortar el fondo, o replantear el perrito sobre una franja de color sólido |
+| **Modelo 3D rigged** con ciclo de caminata | Se evalúa el peso: si no cabe en el presupuesto, se renderiza a sprite sheet y se usa en 2D |
+
+En todos los casos hacen falta dos cosas: que el **bucle calce** (el último cuadro debe enlazar con el primero sin salto) y un **cuadro de reposo** para `prefers-reduced-motion`. Si el perrito camina de izquierda a derecha, se espeja; no es un problema.
 
 ---
 
@@ -373,12 +380,15 @@ hinojosa-web/
 
 ## 7. Plan de activos 3D, animación y video
 
+> **Dos activos los entrega el cliente** (pendientes de recibir): la animación del perrito caminando en horizontal y los modelos 3D de los productos. Para esos dos, el trabajo es **adaptar, optimizar e integrar**, no producir. No se modela ni se anima nada que el cliente ya tenga.
+
 | Activo | Cómo se obtiene | Uso |
 |---|---|---|
-| **Perrito corriendo (bucle lateral)** | Lottie vectorial o sprite sheet de 8–12 cuadros | Franja inferior de la vista Inicio |
-| Perrito en reposo (1 imagen) | Export de un cuadro del bucle | Fallback de `prefers-reduced-motion` |
-| **10 costales de categoría** | Modelo simple de costal en Blender + 10 texturas con el logo y el nombre de la categoría | Ruleta 3D de Productos |
-| Imágenes de categoría (10) | Render de cada costal a PNG | Fallback sin WebGL |
+| **Perrito caminando (bucle lateral)** | **Lo entrega el cliente.** Se adapta según el formato (ver vista 1) | Franja inferior de la vista Inicio |
+| Perrito en reposo (1 imagen) | Se extrae un cuadro del material entregado | Fallback de `prefers-reduced-motion` |
+| **Productos en 3D** | **Los entrega el cliente.** Se convierten a `.glb`, se comprimen y se verifica que la escena quepa en el presupuesto | Ruleta 3D de Productos |
+| Imágenes de categoría o producto | Render de cada modelo entregado | Fallback sin WebGL |
+| Costales genéricos de categoría | Solo si falta un modelo para alguna de las 10 categorías | Rellenar huecos de la ruleta |
 | Granos de maíz en paralaje | Sprites o partículas instanciadas | Fondo de la vista Inicio |
 | Pin del mapa animado | Lottie o CSS | Vista Visítanos |
 | Lotties de pilares y animales | LottieFiles | Vista Por qué elegirnos |
@@ -497,10 +507,11 @@ Pendientes de evaluar:
 2. **Navegación sin scroll:** es un patrón poco común y hay que vigilarlo en móvil — si una vista no cabe en una pantalla pequeña, se permite scroll interno en esa vista antes que recortar contenido esencial. Probar con pantallas de 360×640.
 3. **Descubribilidad del contenido:** sin scroll, lo que no está en la barra superior no existe para el usuario. Las 5 etiquetas tienen que ser claras a la primera.
 4. **SEO con una sola pantalla visible:** el HTML debe contener las 5 vistas completas en el marcado (solo ocultas con CSS), nunca generadas por JS, para que Google las indexe.
-5. **Peso de la ruleta 3D:** el riesgo técnico principal. Límite duro de 10 objetos y textura compartida; si no baja de 3 MB, se pasa a la rejilla de imágenes y se conserva la lista.
-6. **Precios cambiantes:** se mantienen en JSON y rotulados como referenciales.
-7. **Derechos de imágenes y marcas:** definir con el dueño qué material usar y pedir fotos propias de productos.
-8. **Mantenimiento:** definir quién actualizará precios y catálogo (editar el JSON o añadir un CMS ligero como Decap CMS).
+5. **Peso de la ruleta 3D:** el riesgo técnico principal. Límite duro de 10 objetos en escena; si no baja de 3 MB, se pasa a la rejilla de imágenes y se conserva la lista.
+6. **Formato de los activos del cliente:** el perrito y los modelos 3D de producto los entrega el cliente y todavía no se han visto. Un modelo pensado para render (cientos de miles de polígonos, texturas de 4K, materiales de Blender) no sirve tal cual en la web y hay que redecimarlo y rehornear texturas. Hasta revisar los archivos no se puede confirmar el presupuesto de la ruleta, así que la rejilla de imágenes se mantiene como plan B desde el primer día.
+7. **Precios cambiantes:** se mantienen en JSON y rotulados como referenciales.
+8. **Derechos de imágenes y marcas:** definir con el dueño qué material usar y pedir fotos propias de productos.
+9. **Mantenimiento:** definir quién actualizará precios y catálogo (editar el JSON o añadir un CMS ligero como Decap CMS).
 
 ---
 
@@ -510,7 +521,8 @@ Pendientes de evaluar:
 - [ ] Obtener logo en vectorial (SVG/AI/PDF)
 - [ ] Reunir fotos reales del local, la fachada y los productos
 - [ ] Verificar los contrastes de la paleta y corregir los pares que no pasen 4.5:1
-- [ ] Decidir la técnica del perrito (Lottie vs. sprite sheet)
+- [ ] **Recibir del cliente los archivos del perrito caminando** y revisar formato, bucle y sentido de la marcha
+- [ ] **Recibir del cliente los modelos 3D de los productos** y revisar formato, cantidad, polígonos y texturas
 - [ ] Instalar Blender, FFmpeg y gltf-transform CLI
 - [ ] Construir el router de vistas y probarlo con teclado antes de añadir cualquier animación
-- [ ] Modelar el costal base y texturizar las 10 categorías
+- [ ] Decidir si la ruleta muestra los productos entregados o las 10 categorías (depende de cuántos modelos lleguen)
