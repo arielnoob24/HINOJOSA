@@ -1,6 +1,6 @@
 # Storyboard: hero y animaciones por sección
 
-> Fase 1 (diseño). Basado en `Pre/PLAN.md`, secciones 3 y 6. Tokens en `src/styles/global.css`.
+> Fase 1 (diseño). Basado en `PLAN.md`, secciones 3 y 6. Tokens en `src/styles/global.css`.
 > **Versión 1 sin 3D:** no hay modelo `.glb` de Canela. Como permite la sección 6 del plan, el hero se hace con **imágenes en capas con paralaje + SVG animados con CSS**. El 3D (Three.js / model-viewer) entra en la fase 4 y reemplaza capas concretas sin rediseñar.
 
 ## 0. Decisiones previas

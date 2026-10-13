@@ -1,6 +1,6 @@
 # Comercial Hinojosa: sitio web
 
-Sitio de una sola página en Astro + Tailwind CSS v4. El plan que rige es `../Pre/PLAN.md`.
+Sitio de una sola página en Astro + Tailwind CSS v4. El plan que rige es `../PLAN.md`.
 
 ```sh
 npm install

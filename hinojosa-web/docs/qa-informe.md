@@ -1,6 +1,6 @@
 # Informe de QA y rendimiento: Comercial Hinojosa
 
-Fase 5 de `Pre/PLAN.md` (sección 5, "Calidad" y "Reglas de rendimiento"; sección 9: Lighthouse > 90 y pruebas multidispositivo).
+Fase 5 de `PLAN.md` (sección 5, "Calidad" y "Reglas de rendimiento"; sección 9: Lighthouse > 90 y pruebas multidispositivo).
 Fecha: 2026-10-11. Build auditado: `dist/` actual (generado después del último cambio en `src/` y `public/`), servido en local con gzip (HTML 123 KB → 17 KB transferidos) y soporte de Range para video.
 
 Herramientas: Lighthouse 12.8.2 (CLI, con el Chromium 151 de Playwright vía `CHROME_PATH`), axe-core 4.14.0 inyectado con Playwright 1.62 (Python 3.13) y CDP de Chromium para el throttling (4G: 150 ms RTT, 1,6 Mbps de bajada y 750 kbps de subida; CPU x4). Los scripts y las capturas están fuera del proyecto, en el scratchpad de la sesión (`.../scratchpad/qa/`).

@@ -1,4 +1,4 @@
-// SEO local (Pre/PLAN.md, seccion 5): datos estructurados y URLs absolutas.
+// SEO local (PLAN.md, seccion 5): datos estructurados y URLs absolutas.
 // Regla: solo se publica lo confirmado en negocio.json (datoConfirmado).
 // Sin dominio (Astro.site sin definir) no hay URL absoluta posible, asi que
 // se omiten url, image y logo del JSON-LD (y canonical/og:url/og:image en el

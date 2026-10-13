@@ -17,7 +17,7 @@ Los dos últimos agentes (frontend y animación) se cortaron por el límite de s
 
 ## Contexto
 
-- **Plan que rige:** `Pre/PLAN.md` (Astro + Tailwind, 3D y animación). El `PLAN.md` de la raíz (web estática) y `sitio-web/` se eliminaron por no encajar con Astro; se recuperan con `git checkout -- PLAN.md sitio-web` si hicieran falta.
+- **Plan que rige:** `PLAN.md` en la raíz (Astro + Tailwind, 3D y animación), movido desde `Pre/` junto con `LEEME.md`. El resto de `Pre/` (imágenes, posters, videos, el zip de recursos y `tools/`) se eliminó; los derivados que usa el sitio están en `hinojosa-web/public/` y los originales se recuperan del historial de git (`git checkout <commit> -- Pre`).
 - **Proyecto:** `hinojosa-web/` (Astro 7.3.8, Tailwind v4, `three@0.186.1`, `gsap@3.15.0`, `lenis@1.3.26`).
 - **Agentes:** `.claude/agents/` (contenido-estrategia, direccion-arte, activos-3d-video, frontend, animacion-interaccion, seo-negocio-local, qa-rendimiento, despliegue).
 - **Skills instaladas:** `.claude/skills/` (frontend-design, webapp-testing, tailwind-design-system, wcag-accessibility, performance-and-web-vitals, motion-and-storytelling).
@@ -88,5 +88,5 @@ El agente solo alcanzó a confirmar que **las fuentes ya se sirven desde el prop
 - **Hosting (al final, por decisión del usuario):** `.github/workflows/deploy-pages.yml` sigue subiendo `sitio-web/`, que ya no existe. Hay que añadir `npm ci && npm run build` en `hinojosa-web/` y subir `hinojosa-web/dist`. Al tener dominio: descomentar `site` en `astro.config.mjs`, `npx astro add sitemap` y la línea `Sitemap:` de `robots.txt` (ver `docs/seo.md`). No hacer push a `main` sin confirmación.
 - **Datos de la dueña:** dirección exacta y ortografía, ciudad, país, teléfono/WhatsApp, horario, Facebook, Google Maps con coordenadas, precios vigentes, presentaciones, historia del negocio y permisos de uso del arte de Canela, de los afiches y de las marcas de terceros.
 - **Activos que faltan:** logo vectorial y versión blanca, modelos `.glb` (Canela y costales), archivos Lottie y fotos reales. Leaflet espera coordenadas.
-- **Limpieza opcional:** `.github/agents/*.agent.md` (agentes de Copilot del plan anterior) y la copia duplicada `Pre/hinojosa-assets/PLAN.md`.
+- **Limpieza opcional:** `.github/agents/*.agent.md` (agentes de Copilot del plan anterior).
 - **Videos:** `catalogo` pesa 2,28 MB (cerca del límite de 2,5 MB). No hay AVIF porque el Pillow instalado no lo soporta.

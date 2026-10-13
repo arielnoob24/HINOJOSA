@@ -1,6 +1,6 @@
 # Guía de estilo: Comercial Hinojosa
 
-> Fase 1 (diseño). Fuente: `Pre/PLAN.md`, secciones 2 y 3. Tokens en `src/styles/global.css`.
+> Fase 1 (diseño). Fuente: `PLAN.md`, secciones 2 y 3. Tokens en `src/styles/global.css`.
 > Estado: **propuesta pendiente de aprobación de la dueña**. Los colores se afinaron a ojo sobre el logo en PNG; hay que confirmarlos con el logo vectorial cuando llegue.
 
 ## 1. Idea visual

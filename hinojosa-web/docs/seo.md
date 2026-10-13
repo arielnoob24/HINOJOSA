@@ -1,6 +1,6 @@
 # SEO local: Comercial Hinojosa
 
-Fase 5 de `Pre/PLAN.md` (sección 5, fila "SEO local"). Regla de siempre: solo se publica lo que está confirmado en `src/data/negocio.json` (`confirmado: true` y valor no nulo). No se inventan dirección, teléfono, horario, coordenadas, reseñas ni dominio. Ningún cambio de esta lista garantiza una posición en Google: ayuda a que Google entienda el negocio y lo muestre bien.
+Fase 5 de `PLAN.md` (sección 5, fila "SEO local"). Regla de siempre: solo se publica lo que está confirmado en `src/data/negocio.json` (`confirmado: true` y valor no nulo). No se inventan dirección, teléfono, horario, coordenadas, reseñas ni dominio. Ningún cambio de esta lista garantiza una posición en Google: ayuda a que Google entienda el negocio y lo muestre bien.
 
 ## Dónde está cada cosa
 
