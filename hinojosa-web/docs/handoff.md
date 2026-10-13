@@ -1,92 +1,61 @@
 # Handoff: sitio web de Comercial Hinojosa
 
-Fecha: 2026-10-12. Rama: `HinoV2` (sin commits nuevos; todo el trabajo está en el árbol de trabajo).
+Fecha: 2026-10-13. Rama de trabajo: `HinoV2`, fusionada en `main`.
 
-> **Actualización 2026-10-12 (tarde):** las correcciones de QA están completas y revalidadas. Ver la sección "Revalidación tras las correcciones" en `docs/qa-informe.md`.
->
-> - **Lighthouse:** Accessibility 100 en móvil y escritorio. Performance de 88-91 en móvil y de 97-100 en escritorio.
-> - **INP del filtro:** 124 ms en escritorio y 56 ms en móvil.
-> - **Fallo nuevo corregido:** contenido invisible al final de la página en móvil (`ResizeObserver` en `scroll.ts`).
-> - **Cambios hechos en la revalidación:** CSS incrustado (`astro.config.mjs`) y `scroll-margin-top` en los controles enfocables (`global.css`).
-> - **Único pendiente de QA:** el LCP en móvil con el perfil "4G lenta" de Lighthouse, que sigue en 3,2-3,6 s.
-> - **Siguiente:** hosting (al final, por decisión del usuario) y datos de la dueña.
->
-> Las tablas de abajo describen el estado previo a esta actualización.
+## Estado en una línea
 
-Los dos últimos agentes (frontend y animación) se cortaron por el límite de sesión de la API mientras corregían los hallazgos de QA. El estado de las correcciones de frontend **no está verificado**: hay que revisarlo antes de seguir (ver "Siguiente paso").
+El sitio por vistas está **terminado y verificado**; no se puede publicar hasta tener los datos de contacto confirmados y decidir el dominio (ver "Bloqueantes").
 
 ## Contexto
 
-- **Plan que rige:** `PLAN.md` en la raíz (Astro + Tailwind, 3D y animación), movido desde `Pre/` junto con `LEEME.md`. El resto de `Pre/` (imágenes, posters, videos, el zip de recursos y `tools/`) se eliminó; los derivados que usa el sitio están en `hinojosa-web/public/` y los originales se recuperan del historial de git (`git checkout <commit> -- Pre`).
-- **Proyecto:** `hinojosa-web/` (Astro 7.3.8, Tailwind v4, `three@0.186.1`, `gsap@3.15.0`, `lenis@1.3.26`).
-- **Agentes:** `.claude/agents/` (contenido-estrategia, direccion-arte, activos-3d-video, frontend, animacion-interaccion, seo-negocio-local, qa-rendimiento, despliegue).
-- **Skills instaladas:** `.claude/skills/` (frontend-design, webapp-testing, tailwind-design-system, wcag-accessibility, performance-and-web-vitals, motion-and-storytelling).
-- **Orden pedido:** frontend, animación, SEO, QA. Hosting al final.
-- **Regla del proyecto:** no inventar datos de contacto, precios ni enlaces. Mientras un dato no esté confirmado en `src/data/negocio.json`, se muestra "Por confirmar" y no se genera enlace.
+- **Plan que rige:** `PLAN.md` en la raíz. La **sección 0** (activos recibidos el 2026-10-12) manda sobre el resto: 4 categorías, carrusel CSS 3D de imágenes (sin Three.js) y Canela en PNG + video.
+- **Proyecto:** `hinojosa-web/` (Astro 7.3.8, Tailwind 4, GSAP 3.15 cargado en diferido, Leaflet 1.9.4 solo con coordenadas).
+- **Originales del cliente:** `Nuevos Req/` en la raíz, **fuera de git** (`.gitignore`, unos 200 MB). Se regeneran los derivados con `scripts-activos/nuevos_req.py` (requiere `ffmpeg` en el PATH; se instaló con `scoop install ffmpeg`).
+- **Agentes:** `.claude/agents/`. **Skills del proyecto:** `marca-hinojosa` (paleta y contrastes) y `vistas-hinojosa` (contrato del router; incluye la excepción de flechas `[data-captura-flechas]`).
+- **Regla del proyecto:** no inventar datos de contacto, precios ni enlaces. Lo no confirmado en `src/data/negocio.json` (`confirmado: false`) se muestra como pendiente y no genera enlace ni JSON-LD.
 
-## Fases terminadas
+## Qué hay
 
-| Fase | Agente | Resultado | Documentación |
-|---|---|---|---|
-| 1. Contenido | contenido-estrategia | `src/data/negocio.json`, `productos.json` (10 categorías, 48 productos, 15 con precio) y `textos.json`. Validados como JSON. | Pendientes de la dueña en `negocio.json` (`pendientes`) |
-| 1. Diseño | direccion-arte | Tokens `@theme` en `src/styles/global.css`, contrastes WCAG calculados | `docs/guia-estilo.md`, `docs/storyboard-hero.md` |
-| 3. Activos | activos-3d-video | Logo e isotipo transparentes, favicons, insignia de Canela con máscara geométrica (corregida y revisada), afiches y productos en WebP (900 y 480 px), 5 videos regenerados sin bordes grises | `docs/activos.md`, scripts en `scripts-activos/` |
-| 2. Frontend | frontend | Layout, 11 secciones y componentes auxiliares, catálogo con filtros accesibles, menú móvil, botón de pausa | `README.md` |
-| 4. Animación | animacion-interaccion | Hero con Three.js (granos instanciados, diferido, con fallback), GSAP + ScrollTrigger, Lenis en escritorio, tilt propio, contadores, Canela interactiva (`<button>` con globo `aria-live`) | código en `src/lib/animacion/` |
-| 5. SEO | seo-negocio-local | Metadatos, Open Graph, Twitter, JSON-LD `PetStore` sin datos inventados, `robots.txt`, `public/og-imagen.jpg` | `docs/seo.md` |
-| 5. QA | qa-rendimiento | Auditoría completa | `docs/qa-informe.md` |
-
-## Resultado de QA (antes de las correcciones)
-
-- Lighthouse móvil: Performance 77-78, Accessibility 93, Best Practices 100, SEO 100, LCP 4,1-4,3 s.
-- Lighthouse escritorio: Performance 88-97, Accessibility 93, LCP 1,0-1,1 s.
-- Peso inicial: 754 KiB móvil y 846 KiB escritorio (presupuesto: 2 MB).
-- Pasan: teclado, movimiento reducido, pausa, enlaces, contenido, precios, metadatos y ausencia de scroll horizontal.
-- Objetivos del plan que fallan: Performance > 90 y LCP < 2,5 s en móvil; Accessibility.
-
-## Correcciones de QA
-
-### Animación: terminadas y verificadas por el agente
-
-| Hallazgo | Corrección | Medición |
+| Área | Dónde | Notas |
 |---|---|---|
-| A2 (escritorio): INP del filtro | `refrescarDiferido()` en `src/lib/animacion/scroll.ts`: `ScrollTrigger.refresh()` fuera del fotograma, con debounce de 150 ms y `requestIdleCallback` | Mediana 352 a 188 ms (1280 px) y 208 a 120 ms (375 px) |
-| M1: el giro de categorías no corría en producción | `global.css` con propiedades `animation-*` sueltas; el respaldo GSAP comprueba el estilo calculado | El `transform` cambia con el scroll en `dist/` |
-| B1: warning de Three.js | `side: dobleCara ? DoubleSide : FrontSide` en `hero-3d.ts` | Sin warnings a 1280 px |
+| 5 vistas sin scroll + router | `src/pages/index.astro`, `src/components/vistas/`, `src/lib/router.ts` | `inert`, foco al título, hash por vista, ←/→ fuera de campos y del carrusel |
+| Datos | `src/data/productos.json` (4 categorías, 37 productos, 16 con precio), `negocio.json`, `textos.json` | `conFondo: true` en 3 productos que se muestran en placa |
+| Carrusel 3D | `src/lib/animacion/carrusel.ts`, `carrusel-carga.ts`, `src/lib/catalogo.ts` | Estado único en `catalogo.ts`; evento `hinojosa:producto` |
+| Animación | `src/lib/animacion/` (vistas, paralaje, entradas, movimiento) | Pausa global `hinojosa:movimiento`; reduced motion = `animation: none` |
+| Estilos | `src/styles/tokens.css`, `global.css` | Fuente script recortada en `src/assets/fonts/caveat-brush-acento.woff2` (regenerar si cambian las frases manuscritas; comando comentado en `global.css`) |
+| Activos web | `public/img/productos/<cat>/<slug>{,-400}.{webp,avif}`, `-thumb{,-80}.webp`; `public/img/canela/`; `public/video/canela-jugando*` | Convención de slugs en la sección 0 del PLAN |
+| SEO | `src/lib/seo.ts`, `<head>` de `Layout.astro`, `src/pages/[mapa].xml.ts` | Canonical, og:image y sitemap solo aparecen cuando hay `site` |
+| Documentación | `docs/guia-estilo.md`, `storyboard-hero.md`, `storyboard-carrusel.md`, `activos.md`, `seo.md`, `qa-informe.md` | |
 
-Nota: un build intermedio falló de forma transitoria porque ambos agentes editaban a la vez; el agente reporta que el último build (22:17) estaba limpio.
+## Calidad (detalle en `docs/qa-informe.md`)
 
-### Frontend: interrumpido, estado sin verificar
+- `npm run build` y `npx astro check`: 0 errores, 0 avisos.
+- Router: 41/41 comprobaciones en 1440×900, 1366×650, 360×640 y 390×844.
+- axe-core 4.14: 0 violaciones en las 5 vistas, a 1440 y 360 px.
+- Lighthouse móvil: Inicio 99, `#productos` 93–97; escritorio 100. Inicio descarga 142 kB (límite 1,5 MB).
+- **Cuidado al refactorizar:** la tarjeta provisional del carrusel en `#productos` (M5) debe quedarse invisible bajo el anillo hasta la primera interacción o 1,5 s; si se oculta antes, Lighthouse móvil baja a 86.
 
-El agente solo alcanzó a confirmar que **las fuentes ya se sirven desde el propio dominio, sin referencias a Google**, y estaba midiendo Lighthouse móvil sin `preload` de fuentes. Del resto no hay confirmación:
+## Bloqueantes para publicar
 
-| Hallazgo | Qué hay que hacer | Archivo | Estado |
-|---|---|---|---|
-| A1a | Fuentes autoalojadas | `Layout.astro`, `global.css`, `package.json` | Hecho según el agente; falta verificar |
-| A1b | `fetchpriority="high"` en la insignia de Canela (elemento LCP) | `Hero.astro:~107` | Desconocido |
-| A1c | Que las imágenes lazy de Categorías no compitan en la carga inicial móvil | `Categorias.astro` | Desconocido |
-| A2 (móvil) | `content-visibility: auto` y `contain-intrinsic-size` en `[data-grupo]` | catálogo / `global.css` | Desconocido |
-| M2 | `dl` mal anidado (axe `definition-list`, `dlitem`) | `Ubicacion.astro:28-42` | Desconocido |
-| M3 | Nombre accesible del enlace del logo distinto del texto visible | `Header.astro:9-23` | Desconocido |
-| M4 | Texto de "Nuestra esencia" desbordado a 320-375 px | `Valores.astro:39-46` | Desconocido |
-| B2 | "Saltar al contenido" sin padding al enfocar | `Layout.astro:~93` | Desconocido |
-| B3 | Botón flotante de WhatsApp tapa contenido a 375 px | `WhatsappFlotante.astro:28` | Desconocido |
-| B4 | No descargar el video de Canela en móvil ni con ahorro de datos | `Canela.astro:56-70` | Desconocido |
-| B5 | `sizes` de las imágenes de Categorías en densidad 2 | `Categorias.astro` | Desconocido |
-| B6 | `target-size` contextual con el header fijo | — | Bajo, opcional |
+1. **Datos de la dueña:** dirección exacta y ortografía, ciudad, país, referencias para llegar, teléfono/WhatsApp, horario con zona horaria, Facebook, enlace de Maps y coordenadas. Se cargan en `negocio.json` con `confirmado: true` y aparecen solos en Visítanos, en el mapa y en el JSON-LD.
+2. **Dominio y despliegue:** `.github/workflows/deploy-pages.yml` sigue subiendo `sitio-web/`, **que ya no existe**, así que el deploy desde `main` falla y GitHub Pages conserva la versión vieja. Hay que:
+   - añadir `actions/setup-node` + `npm ci && npm run build` en `hinojosa-web/` y subir `hinojosa-web/dist`;
+   - definir `site` en `astro.config.mjs` (y `base: '/HINOJOSA'` + rutas con `BASE_URL` si se publica en `arielnoob24.github.io/HINOJOSA/`; se recomienda dominio propio, ver `docs/seo.md`);
+   - descomentar la línea `Sitemap:` de `public/robots.txt`.
+   Le corresponde al agente `despliegue`.
 
-## Siguiente paso
+## Pendiente (no bloquea)
 
-1. Comprobar el estado: `npm run build` en `hinojosa-web/`, revisar `git status` y el diff de los archivos de la tabla anterior, y buscar `fontsource`/`@font-face`, `fetchpriority`, `content-visibility`.
-2. Terminar las correcciones de frontend que falten (tabla anterior).
-3. Volver a ejecutar QA: Lighthouse móvil (3 corridas), axe a 375 y 1280 px y capturas a 320 px. Los scripts del QA están en el scratchpad de la sesión (`.../scratchpad/qa/`), que es temporal y puede no existir en otra sesión; en ese caso el agente `qa-rendimiento` puede regenerarlos.
-4. Actualizar `docs/qa-informe.md` con los resultados nuevos.
-5. Hacer commit en `HinoV2` cuando el usuario lo pida.
+- **Confirmar con la dueña:** 21 precios sin dato, precios asignados a variantes de Pro-Can, si melaza y sal son marca propia, derechos de uso de los renders (parecen generados con IA y llevan marcas de terceros), Canela sin pañuelo en el render.
+- **Activos:** PNG del bebedero con alfa real (el actual trae un damero pintado); si se quiere a Canela caminando, hace falta una animación de caminata (el video actual juega en el sitio); foto o video de la fachada; fotos reales de producto; logo vectorial.
+- **Pruebas manuales:** lector de pantalla real (NVDA/VoiceOver), Safari iOS y Firefox.
+- **Medición:** repetir las métricas de 4G lenta + CPU ×4 con el equipo en reposo (la última corrida salió afectada por carga del equipo).
 
-## Pendiente del proyecto (fuera de QA)
+## Cómo arrancar
 
-- **Hosting (al final, por decisión del usuario):** `.github/workflows/deploy-pages.yml` sigue subiendo `sitio-web/`, que ya no existe. Hay que añadir `npm ci && npm run build` en `hinojosa-web/` y subir `hinojosa-web/dist`. Al tener dominio: descomentar `site` en `astro.config.mjs`, `npx astro add sitemap` y la línea `Sitemap:` de `robots.txt` (ver `docs/seo.md`). No hacer push a `main` sin confirmación.
-- **Datos de la dueña:** dirección exacta y ortografía, ciudad, país, teléfono/WhatsApp, horario, Facebook, Google Maps con coordenadas, precios vigentes, presentaciones, historia del negocio y permisos de uso del arte de Canela, de los afiches y de las marcas de terceros.
-- **Activos que faltan:** logo vectorial y versión blanca, modelos `.glb` (Canela y costales), archivos Lottie y fotos reales. Leaflet espera coordenadas.
-- **Limpieza opcional:** `.github/agents/*.agent.md` (agentes de Copilot del plan anterior).
-- **Videos:** `catalogo` pesa 2,28 MB (cerca del límite de 2,5 MB). No hay AVIF porque el Pillow instalado no lo soporta.
+```
+cd hinojosa-web
+npm install
+npm run dev        # http://localhost:4321
+npm run build && npx astro check
+```
