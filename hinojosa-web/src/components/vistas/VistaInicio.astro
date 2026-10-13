@@ -1,0 +1,251 @@
+---
+// Vista 1 - Inicio (guia-estilo 7.1, storyboard-hero 2): logo en insignia
+// (es el h1), lema manuscrito, subtitulo y un solo CTA. Abajo, la franja de
+// Canela como SEGUNDA FILA del grid: nunca tapa texto ni boton.
+//
+// Ganchos para animacion-interaccion:
+//   [data-escena="inicio"]                  raiz de la escena
+//   [data-capa="granos"][data-profundidad]  granos decorativos (paralaje <= 8 px)
+//   [data-perrito-pista]  .franja-canela    pista (overflow hidden)
+//   [data-perrito]        .canela-cruce     envoltorio que cruza (aria-hidden)
+//   .canela-sombra / img.canela-salto       sombra y salto
+//   [data-perrito-reposo]                   <picture>: el render es el cuadro de reposo
+//   [data-boton-pausa]                      WCAG 2.2.2 (evento hinojosa:movimiento)
+//
+// El bucle es solo CSS (keyframes de tokens.css) y SOLO se aplica con JS,
+// sin reduced motion y sin pausa. En cualquier otro caso: animation none y
+// Canela sentada a la derecha (no congelada ni fuera de pantalla).
+import Vista from '../Vista.astro';
+import BotonPausa from '../BotonPausa.astro';
+import { textos, altDe } from '../../lib/negocio';
+
+const t = textos.inicio;
+const lema = textos.inicio.titulo; // "Nutricion que da vida"
+const granos = [
+  { x: 9, y: 16, s: 18, g: 30 },
+  { x: 86, y: 12, s: 14, g: -25 },
+  { x: 90, y: 56, s: 20, g: 40 },
+  { x: 6, y: 62, s: 12, g: -35 },
+  { x: 24, y: 6, s: 12, g: 20, ancho: true },
+  { x: 74, y: 78, s: 14, g: 15, ancho: true },
+];
+---
+<Vista id="inicio" nombre={textos.navegacion[0].texto} class="vista-inicio tema-oscuro" cuerpo="inicio-cuerpo">
+  <div class="inicio-escena" data-escena="inicio">
+    <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true" data-capa="granos" data-profundidad="0.3">
+      {granos.map((g) => (
+        <svg
+          class:list={['absolute opacity-80', g.ancho && 'hidden md:block']}
+          style={`left:${g.x}%;top:${g.y}%;width:${g.s}px;rotate:${g.g}deg`}
+          viewBox="0 0 20 26"
+        >
+          <ellipse cx="10" cy="13" rx="8.5" ry="11.5" fill="#f2b823" />
+          <ellipse cx="7" cy="9" rx="3" ry="5" fill="#fff" opacity=".35" />
+          <path d="M4 20c3 4 9 4 12 0" fill="none" stroke="#c98a3a" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      ))}
+    </div>
+
+    <div class="inicio-centro">
+      <h1 id="titulo-inicio" tabindex="-1" data-titulo-vista class="inicio-insignia">
+        <img
+          src="/img/marca/logo.webp"
+          srcset="/img/marca/logo-480.webp 480w, /img/marca/logo.webp 929w"
+          sizes="(min-width: 48rem) 400px, 60vw"
+          width="929"
+          height="489"
+          alt={altDe('/img/marca/logo.webp')}
+          loading="eager"
+          fetchpriority="high"
+          class="inicio-logo"
+          data-logo-inicio
+        />
+      </h1>
+      <p class="inicio-lema">{lema}</p>
+      <p class="inicio-subtitulo">{t.subtitulo}</p>
+      <a href={t.ctaDestino} class="boton boton-oro inicio-cta" data-cta-inicio>{t.cta}</a>
+    </div>
+  </div>
+
+  <div class="franja-canela" data-franja-perrito data-perrito-pista>
+    <div class="canela-cruce" aria-hidden="true" data-perrito>
+      <span class="canela-sombra"></span>
+      <picture data-perrito-reposo>
+        <source type="image/avif" srcset="/img/canela/canela-franja.avif 1x, /img/canela/canela-franja@2x.avif 2x" />
+        <img
+          src="/img/canela/canela-franja.webp"
+          srcset="/img/canela/canela-franja.webp 1x, /img/canela/canela-franja@2x.webp 2x"
+          width="153"
+          height="200"
+          alt=""
+          decoding="async"
+          class="canela-salto"
+        />
+      </picture>
+    </div>
+  </div>
+  <BotonPausa slot="fuera" tema="claro" class="inicio-pausa" />
+</Vista>
+
+<style>
+  :global(.vista-inicio) {
+    background: radial-gradient(ellipse 70% 65% at 50% 40%, var(--color-bosque) 0%, var(--color-bosque-noche) 100%);
+  }
+  :global(.inicio-cuerpo) {
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) var(--franja-canela);
+  }
+  .inicio-escena {
+    position: relative;
+    display: flex;
+    min-height: 0;
+    align-items: center;
+    justify-content: center;
+  }
+  .inicio-centro {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 44rem;
+    padding: var(--spacing-bloque) 1rem;
+    text-align: center;
+  }
+  /* Insignia: interior blanco, aro maiz 4 px, aro exterior bosque 8 px */
+  .inicio-insignia {
+    display: grid;
+    place-items: center;
+    width: min(80vw, 26dvh * 1.6, 30rem);
+    aspect-ratio: 1.6;
+    border-radius: 50%;
+    background: var(--color-blanco);
+    box-shadow:
+      0 0 0 4px var(--color-maiz),
+      0 0 0 12px var(--color-bosque),
+      var(--shadow-elevada);
+  }
+  .inicio-logo {
+    width: 74%;
+    height: auto;
+  }
+  .inicio-lema {
+    margin-top: clamp(1rem, 3dvh, 1.5rem);
+    font-family: var(--font-script);
+    font-size: var(--text-acento);
+    line-height: var(--text-acento--line-height);
+    color: var(--color-maiz);
+  }
+  .inicio-subtitulo {
+    margin-top: 0.5rem;
+    max-width: 28ch;
+    font-size: var(--text-lead);
+    line-height: var(--text-lead--line-height);
+    color: var(--color-crema);
+  }
+  .inicio-cta {
+    margin-top: clamp(1rem, 3.5dvh, 2rem);
+    min-width: min(100%, 14rem);
+    font-weight: 800;
+  }
+  @media (max-width: 47.999rem) {
+    .inicio-cta {
+      width: 100%;
+    }
+  }
+  @media (min-width: 48rem) {
+    .inicio-insignia {
+      width: min(30rem, 34dvh * 1.6);
+    }
+  }
+
+  /* ---------- Franja de Canela ---------- */
+  .franja-canela {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, transparent 0%, var(--color-velo-franja) 100%);
+    border-top: 1px solid var(--color-horizonte);
+  }
+  /* Reposo (sin JS, reduced motion, pausa): sentada a la derecha,
+     a la izquierda del boton de pausa */
+  .canela-cruce {
+    position: absolute;
+    bottom: 10px;
+    right: calc(var(--spacing-vista) + var(--spacing-objetivo) + 1rem);
+    z-index: var(--z-canela);
+    width: calc(var(--canela-alto) * var(--canela-proporcion));
+    height: var(--canela-alto);
+  }
+  .canela-salto {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: 50% 100%;
+    transform-origin: 50% 100%;
+  }
+  .canela-sombra {
+    position: absolute;
+    left: 15%;
+    bottom: -5px;
+    width: 70%;
+    height: 10px;
+    border-radius: 50%;
+    background: rgb(0 0 0);
+    opacity: 0.32;
+    filter: blur(4px);
+  }
+
+  /* Boton de pausa: abajo a la derecha, por encima de Canela */
+  :global(.inicio-pausa) {
+    position: absolute;
+    right: var(--spacing-vista);
+    bottom: calc(var(--franja-canela) / 2 - var(--spacing-objetivo) / 2);
+    z-index: var(--z-control);
+    border-color: var(--color-bosque) !important;
+    background: var(--color-crema) !important;
+    color: var(--color-bosque) !important;
+  }
+  :global(html[data-router] .inicio-pausa) {
+    /* la vista reserva abajo la barra movil: el cuerpo termina antes */
+    bottom: calc(var(--franja-canela) / 2 - var(--spacing-objetivo) / 2);
+  }
+  @media (max-width: 47.999rem) {
+    :global(html[data-router] .inicio-pausa) {
+      bottom: calc(var(--spacing-barra-movil) + env(safe-area-inset-bottom, 0px) + var(--franja-canela) / 2 - var(--spacing-objetivo) / 2);
+    }
+  }
+
+  /* Bucle: solo con JS, sin reduced motion y sin pausa */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js:not([data-movimiento='pausado'])) .canela-cruce {
+      left: 0;
+      right: auto;
+      animation: var(--animate-canela-cruce);
+    }
+    :global(html.js:not([data-movimiento='pausado'])) .canela-salto {
+      animation: var(--animate-canela-salto);
+    }
+    :global(html.js:not([data-movimiento='pausado'])) .canela-sombra {
+      animation: var(--animate-canela-sombra);
+    }
+  }
+  /* Reduced motion: no hay nada que pausar; Canela mas a la derecha */
+  @media (prefers-reduced-motion: reduce) {
+    .canela-cruce {
+      right: var(--spacing-vista);
+      animation: none !important;
+    }
+    .canela-salto,
+    .canela-sombra {
+      animation: none !important;
+    }
+    :global(.inicio-pausa) {
+      display: none !important;
+    }
+  }
+</style>
+
+<script>
+  import '../../lib/animacion/paralaje';
+</script>

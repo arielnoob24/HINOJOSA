@@ -13,6 +13,74 @@ La insignia de Canela usa una máscara geométrica (elipse del aro + placa con e
 
 Requisitos: Python 3.13, Pillow 11, numpy, `imageio_ffmpeg` (trae ffmpeg 7.1). No hay modelo 3D de Canela: no se incluye ningún `.glb`.
 
+## Activos del cliente (`Nuevos Req/`, recibidos el 2026-10-12)
+
+Originales intactos en `Nuevos Req/` (no se modifican ni se publican tal cual). Se regeneran con:
+
+```bash
+python hinojosa-web/scripts-activos/nuevos_req.py            # imágenes + video
+python hinojosa-web/scripts-activos/nuevos_req.py imagenes   # solo productos y Canela
+python hinojosa-web/scripts-activos/nuevos_req.py video      # solo el video
+```
+
+Requisitos: Python 3.13 + Pillow + numpy; Node con `sharp` (en `node_modules`) para WebP/AVIF, vía `scripts-activos/nuevos_req_codificar.mjs`; FFmpeg 8.1 (`scoop install ffmpeg`).
+
+### Productos: `/img/productos/<cat>/<slug>.webp` · `.avif` · `<slug>-thumb.webp`
+
+`cat`: `granja` · `mascotas` · `comederos` · `granos`. `slug`: nombre del archivo en minúsculas, sin tildes, espacios → guiones (`balaceado` → `balanceado`). Margen transparente recortado antes de escalar. Principal: 800 px de alto, con alfa (WebP q80 / AVIF q55). Miniatura: 160 px de alto, solo WebP.
+
+| Carpeta | Imágenes | WebP 800 | AVIF 800 | Miniaturas | Total |
+|---|---|---|---|---|---|
+| `granja` | 9 | 656 KB | 377 KB | 69 KB | 1103 KB |
+| `mascotas` | 12 | 780 KB | 440 KB | 86 KB | 1306 KB |
+| `comederos` | 5 | 247 KB | 146 KB | 34 KB | 426 KB |
+| `granos` | 7 | 710 KB | 393 KB | 61 KB | 1164 KB |
+| **Total** | **33** | **2393 KB** | **1356 KB** | **250 KB** | **≈ 3.9 MB** (en disco; cada visitante baja solo un formato y solo lo visible) |
+
+Variante **`<slug>-400.webp` · `-400.avif`** (400 px de alto, mismo recorte y alfa; para el `srcset` del carrusel en móvil, cuya tarjeta mide ~116 px de ancho):
+
+| Carpeta | WebP 400 | AVIF 400 | Total |
+|---|---|---|---|
+| `granja` | 241 KB | 140 KB | 381 KB |
+| `mascotas` | 298 KB | 172 KB | 470 KB |
+| `comederos` | 102 KB | 66 KB | 168 KB |
+| `granos` | 245 KB | 141 KB | 386 KB |
+| **Total (33 + 33)** | **886 KB** | **519 KB** | **≈ 1.4 MB** |
+
+Cada WebP 400 pesa ≤ 49 KB (media ≈ 27 KB), frente a ≈ 72 KB de media en 800 px.
+
+Miniatura **`<slug>-thumb-80.webp`** (80 px de alto, solo WebP; lista del catálogo, hueco de 40 px; QA M6): granja 25.7 KB · mascotas 31.3 KB · comederos 14.1 KB · granos 21.7 KB · **total 92.8 KB** para las 33 (frente a 250 KB de las `-thumb` de 160 px). Máximo 4.2 KB por archivo.
+
+Por archivo: WebP 800 de 30 a 124 KB (media ≈ 72 KB), AVIF ≈ 40 % menos, miniaturas de 4 a 12 KB.
+
+Fondos de origen:
+- `granja/melaza`: venía con fondo gris de estudio. **Recortado** (modelo de fondo cuadrático + relleno desde los bordes); la sombra de contacto se conserva como sombra negra semitransparente.
+- `granja/sal-en-grano` (foto con fondo texturizado), `granos/diferentes-tipos-de-semillas` (los bordes blancos de los sobres se confunden con el fondo) y `comederos/bebedero` (trae un **damero "transparente" pintado** dentro de la imagen y el producto es blanco): **se publican con su fondo**, rectangulares. El bebedero se ve mal sobre cualquier fondo: hay que pedir al cliente un PNG con transparencia real.
+
+### Canela (`Mascota/Canela.png`, recortada con alfa)
+
+| Ruta pública | Dimensiones | Peso WebP / AVIF | Uso |
+|---|---|---|---|
+| `/img/canela/canela.webp` · `.avif` | 460×600 | 38.2 / 24.0 KB | Perrito de Inicio en grande; fallback de `prefers-reduced-motion` |
+| `/img/canela/canela-franja.webp` · `.avif` | 153×200 | 9.6 / 6.0 KB | Franja inferior de Inicio (1x) |
+| `/img/canela/canela-franja@2x.webp` · `.avif` | 307×400 | 21.6 / 14.1 KB | Franja inferior de Inicio (2x) |
+
+`alt` sugerido: "Canela, la perrita mascota de Comercial Hinojosa, con gorra verde y su placa de trébol".
+
+### Video `Mascota/Canela Jugando.mp4`
+
+Original: 1920×1080, 24 fps, 7,96 s (191 cuadros), H.264 + audio AAC, 3,3 MB. **Sin canal alfa**, pero el fondo es blanco/gris liso con sombra suave y la cámara casi fija: **se recorta limpio** cuadro a cuadro. Canela **juega en el sitio** (sentada, saluda con la pata, salta, da una vuelta y vuelve a sentarse); **no camina en horizontal**. El bucle casi calza (empieza y termina sentada en la misma pose), pero el salto último→primer cuadro es el doble del movimiento medio entre cuadros (boca cerrada → abierta y un leve cambio de encuadre): se nota un pequeño salto. En los cuadros del salto la gorra queda cortada por el borde superior del original.
+
+| Ruta pública | Dimensiones | Peso | Notas |
+|---|---|---|---|
+| `/video/canela-jugando.webm` | 1280×720 | ≈ 608 KB | VP9, sin audio, con fondo |
+| `/video/canela-jugando.mp4` | 1280×720 | ≈ 634 KB | H.264 High, `+faststart`, sin audio |
+| `/video/canela-jugando-poster.webp` | 1280×720 | 22.3 KB | Primer cuadro |
+| `/video/canela-jugando-alfa.webm` | 688×480 | ≈ 1151 KB | **VP9 con alfa** (`yuva420p`), recortado al área común de todos los cuadros; sombra semitransparente |
+| `/video/canela-jugando-alfa-poster.webp` | 688×480 | ≈ 26 KB | Primer cuadro recortado con alfa; fallback de Safari/iOS y de `prefers-reduced-motion` |
+
+Safari (macOS/iOS) **no reproduce el alfa de VP9**: muestra fondo negro o no reproduce. Detectarlo y usar `canela-jugando-alfa-poster.webp` (o `canela-franja.webp`) en su lugar. Un HEVC con alfa (`.mov`) solo se puede codificar en macOS (VideoToolbox).
+
 ## Marca y favicons
 
 | Ruta pública | Dimensiones | Peso | Sección | `alt` sugerido |
@@ -22,6 +90,7 @@ Requisitos: Python 3.13, Pillow 11, numpy, `imageio_ffmpeg` (trae ffmpeg 7.1). N
 | `/img/marca/logo.png` | 929×489 | 213 KB | Respaldo PNG transparente (Open Graph, correo) | Logo de Comercial Hinojosa |
 | `/img/marca/isotipo.webp` | 263×257 | 11.2 KB | Header compacto, separadores, footer | Isotipo de Comercial Hinojosa: letra H sobre hojas verdes |
 | `/img/marca/isotipo.png` | 263×257 | 62.7 KB | Respaldo PNG transparente | Isotipo de Comercial Hinojosa |
+| `/img/marca/isotipo-96.webp` | 98×96, transparente | 5.2 KB | Barra de navegación (se pinta a 36–40 px; cubre 2x). Generado por `nuevos_req.py` desde `isotipo.png` (QA M7) | Isotipo de Comercial Hinojosa: letra H sobre hojas verdes |
 | `/favicon.svg` | 64×64 (PNG incrustado) | 6.1 KB | `<link rel="icon" type="image/svg+xml">` | (decorativo) |
 | `/favicon.ico` | 16, 32 y 48 px | 8.5 KB | Favicon clásico | (decorativo) |
 | `/favicon.png` | 32×32 | 2.6 KB | `<link rel="icon" type="image/png" sizes="32x32">` | (decorativo) |
@@ -110,6 +179,9 @@ Las imágenes del catálogo y los demás videos deben cargarse con `loading="laz
 - **Modelo 3D de Canela y costales (`.glb`)**: no existen. Se usa video en bucle o imagen con parallax. Cuando exista el modelo, comprimirlo con gltf-transform (Draco/Meshopt + KTX2) y verificar que pese menos de 3 MB.
 - **Logo vectorial (SVG)**: no existe. El logo y el isotipo transparentes salen de un recorte rasterizado (~930 px) y se ven suaves en pantallas grandes. Tampoco hay versión blanca para fondos oscuros: conviene pedírsela a la dueña.
 - **Canela con el pulgar arriba**: no se puede aislar sin restos porque la tapan otros animales y el fondo del campo. Se entrega recortada en círculo con aro dorado y fondo crema. Necesita un arte limpio o fondo transparente de origen.
-- **AVIF**: el Pillow instalado no soporta AVIF. Solo hay WebP (soporte universal en navegadores actuales).
+- **AVIF**: el Pillow instalado no soporta AVIF; los activos de `Nuevos Req/` se codifican con `sharp` y sí tienen AVIF. Los afiches antiguos siguen solo en WebP.
+- **Perrito caminando en horizontal**: sigue sin llegar. `Canela Jugando.mp4` juega en el sitio; sirve para la franja como Canela quieta que juega (versión con alfa), no para cruzarla caminando.
+- **Activos antiguos**: los afiches de `/img/productos/*.webp` (+ `-480`), y los videos `hero`, `canela`, `catalogo`, `nosotros`, `mascotas` siguen en `public/` porque `src/` los referencia (directamente o vía `src/lib/imagenes.ts`, que añade `-480`). Borrarlos cuando `src/` pase a las rutas nuevas. `/img/canela/conoce-a-canela*` ya no tiene referencias en `src/` (la sección se quitó), pero no lo reemplazan estos activos: se deja hasta confirmar.
+- **Lottie**: ni `lottie-web` ni `@lottiefiles/dotlottie-web` están instaladas.
 - **Derechos**: el arte de Canela y varios afiches parecen generados con IA. Hay que confirmar con la dueña los derechos de uso antes de publicar. También hay marcas de terceros en los afiches de productos y los precios impresos pueden estar desactualizados.
 - **Videos**: mantienen el mismo contenido y orden de afiches que los originales. Solo cambian el fondo (crema `#F6F1E4` o verde `#1B4D2B` en lugar del margen desenfocado gris), la resolución y el empalme del bucle. En `hero` y `canela` la insignia de Canela aparece recortada sobre verde de marca, y en `canela` el "pulgar arriba" es la versión circular nueva.

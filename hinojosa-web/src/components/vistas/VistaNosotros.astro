@@ -1,0 +1,294 @@
+---
+// Vista 2 - Quienes somos (guia-estilo 7.2): mosaico, todo visible, sin
+// clics. Tarjeta grande con el video de Canela jugando (arriba) y la frase
+// en una banda bosque OPACA (abajo, nunca sobre el video); Mision (blanca)
+// y Vision (bosque) a la derecha; 6 valores de una palabra.
+//
+// Video: muted loop playsinline, preload="none", poster. Solo se reproduce
+// con la vista activa, sin reduced motion y sin la pausa del usuario
+// (src/lib/video-vista.ts). Boton de pausa visible (WCAG 2.2.2).
+// Ganchos: [data-mosaico], [data-tarjeta-familia], video[data-video-vista],
+//          [data-tilt] (hover leve opcional), [data-icono-animado].
+import Vista from '../Vista.astro';
+import BotonPausa from '../BotonPausa.astro';
+import Icono from '../Icono.astro';
+import { negocio, textos } from '../../lib/negocio';
+
+const t = textos.nosotros;
+const p = negocio.pantalla;
+const iconosValores = ['manos', 'corazon', 'sonrisa', 'escudo', 'verificado', 'estrella'];
+// "familia" en Caveat oro: acento de la vista (5.44 sobre bosque)
+const [antes, despues] = t.frase.includes('familia') ? t.frase.split('familia') : [t.frase, null];
+// Poster diferido (QA M4): data-poster -> poster al entrar en la vista
+// (video-vista.ts). Sin JS se pinta como fondo del contenedor.
+const poster = '/video/canela-jugando-poster.webp';
+---
+<Vista id="nosotros" nombre={textos.navegacion[1].texto} cuerpo="nosotros-cuerpo">
+  <div class="nos-marco">
+    <h2 id="titulo-nosotros" tabindex="-1" data-titulo-vista class="text-h2">{t.titulo}</h2>
+
+    <div class="nos-mosaico" data-mosaico>
+      <article class="nos-familia" data-tarjeta-familia aria-labelledby="frase-familia">
+        <div class="nos-video" style={`--poster-video: url(${poster})`}>
+          <video
+            muted
+            loop
+            playsinline
+            preload="none"
+            data-poster={poster}
+            width="1280"
+            height="720"
+            aria-hidden="true"
+            tabindex="-1"
+            disablepictureinpicture
+            data-video-vista="nosotros"
+          >
+            <source src="/video/canela-jugando.webm" type="video/webm" />
+            <source src="/video/canela-jugando.mp4" type="video/mp4" />
+          </video>
+          <BotonPausa tema="claro" class="nos-pausa" />
+        </div>
+        <p id="frase-familia" class="nos-frase">
+          {despues !== null ? (
+            <>{antes}<span class="font-script text-maiz">familia</span>{despues}</>
+          ) : (
+            t.frase
+          )}
+        </p>
+      </article>
+
+      <article class="nos-tarjeta nos-mision" data-tilt aria-labelledby="eyebrow-mision">
+        <h3 id="eyebrow-mision" class="nos-eyebrow text-canela-oscuro">{t.tituloMision}</h3>
+        <p class="nos-texto text-tinta">{p.mision}</p>
+      </article>
+
+      <article class="nos-tarjeta nos-vision" data-tilt aria-labelledby="eyebrow-vision">
+        <h3 id="eyebrow-vision" class="nos-eyebrow text-maiz">{t.tituloVision}</h3>
+        <p class="nos-texto text-blanco">{p.vision}</p>
+      </article>
+
+      <section class="nos-valores" aria-labelledby="titulo-valores">
+        <h3 id="titulo-valores" class="sr-only">{t.tituloValores}</h3>
+        <ul class="nos-lista-valores">
+          {p.valores.map((v, i) => (
+            <li class="nos-valor" data-tilt>
+              <span class="nos-valor-icono" aria-hidden="true" data-icono-animado={`valor-${i}`}>
+                <Icono nombre={iconosValores[i] ?? 'estrella'} class="size-6" />
+              </span>
+              <span class="nos-valor-palabra">{v}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  </div>
+</Vista>
+
+<style>
+  .nos-marco {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--spacing-mosaico);
+    width: 100%;
+    max-width: var(--container-contenido);
+    margin-inline: auto;
+    padding: var(--spacing-vista) 1rem;
+  }
+  .nos-mosaico {
+    display: grid;
+    gap: var(--spacing-mosaico);
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .nos-familia {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: var(--radius-tarjeta-grande);
+    background: var(--color-bosque);
+    box-shadow: var(--shadow-tarjeta);
+  }
+  .nos-video {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 8rem;
+    aspect-ratio: 16 / 7;
+    background: var(--color-crema-oscuro);
+  }
+  /* Sin JS nadie asigna el poster al video: se ve como fondo (cover, igual
+     que el video). Con JS esta regla no aplica y no se descarga. */
+  :global(html:not(.js)) .nos-video {
+    background: var(--color-crema-oscuro) var(--poster-video) center / cover no-repeat;
+  }
+  .nos-video video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  :global(.nos-pausa) {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    z-index: var(--z-control);
+    border-color: var(--color-bosque) !important;
+    background: var(--color-crema) !important;
+    color: var(--color-bosque) !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.nos-pausa) {
+      display: none !important;
+    }
+  }
+  .nos-frase {
+    --color-foco: var(--color-foco-oscuro);
+    padding: 0.875rem 1.25rem 1rem;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.5rem, min(3.6vw, 5.2dvh), 3.625rem);
+    line-height: 1.05;
+    color: var(--color-blanco);
+    text-wrap: balance;
+  }
+  .nos-frase :global(.font-script) {
+    font-weight: 400;
+  }
+  .nos-tarjeta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.375rem;
+    border-radius: var(--radius-tarjeta);
+    padding: clamp(1rem, 2.4vw, 1.75rem);
+    box-shadow: var(--shadow-tarjeta);
+  }
+  .nos-mision {
+    border: 1px solid var(--color-crema-oscuro);
+    background: var(--color-blanco);
+  }
+  .nos-vision {
+    --color-foco: var(--color-foco-oscuro);
+    background: var(--color-bosque);
+  }
+  .nos-eyebrow {
+    font-family: var(--font-sans);
+    font-size: var(--text-etiqueta);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .nos-vision .nos-eyebrow {
+    color: var(--color-maiz);
+  }
+  .nos-mision .nos-eyebrow {
+    color: var(--color-canela-oscuro);
+  }
+  .nos-texto {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: var(--text-h3--line-height);
+    font-weight: 800;
+    text-wrap: pretty;
+  }
+  .nos-lista-valores {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.625rem;
+  }
+  .nos-valor {
+    display: flex;
+    min-height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-crema-oscuro);
+    border-radius: var(--radius-chip);
+    background: var(--color-blanco);
+    padding: 0.375rem 0.75rem;
+    text-align: center;
+  }
+  .nos-valor-icono {
+    display: none;
+  }
+  .nos-valor-palabra {
+    font-weight: 800;
+    font-size: 0.875rem;
+    line-height: 1.15;
+    color: var(--color-bosque);
+  }
+
+  @media (min-width: 48rem) {
+    .nos-mosaico {
+      flex: 1 1 auto;
+      min-height: 0;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto;
+    }
+    .nos-marco {
+      padding-inline: var(--spacing-vista);
+    }
+    .nos-familia {
+      grid-column: 1 / span 7;
+      grid-row: 1 / span 2;
+    }
+    .nos-video {
+      aspect-ratio: auto;
+    }
+    .nos-mision {
+      grid-column: 8 / span 5;
+      grid-row: 1;
+    }
+    .nos-vision {
+      grid-column: 8 / span 5;
+      grid-row: 2;
+    }
+    .nos-valores {
+      grid-column: 1 / -1;
+      grid-row: 3;
+    }
+    .nos-lista-valores {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: var(--spacing-mosaico);
+    }
+    .nos-valor {
+      flex-direction: column;
+      gap: 0.625rem;
+      min-height: 0;
+      border-radius: var(--radius-tarjeta);
+      padding: clamp(0.75rem, 2dvh, 1.25rem) 0.5rem;
+      box-shadow: var(--shadow-suave);
+    }
+    .nos-valor-icono {
+      display: inline-flex;
+      width: clamp(2.5rem, 6dvh, 3.5rem);
+      height: clamp(2.5rem, 6dvh, 3.5rem);
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--color-hoja-claro);
+      color: var(--color-bosque);
+      box-shadow: 0 0 0 2px var(--color-maiz);
+    }
+    .nos-valor-palabra {
+      font-size: clamp(0.9375rem, 1.4vw, 1.25rem);
+    }
+  }
+
+  /* Hover leve, solo raton y con movimiento permitido. Nunca revela nada. */
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    [data-tilt] {
+      transition: transform var(--duracion-hover) var(--ease-vista), box-shadow var(--duracion-hover) ease;
+    }
+    [data-tilt]:hover {
+      transform: translateY(-4px) rotate(-1deg);
+      box-shadow: var(--shadow-elevada);
+    }
+    :global(html[data-movimiento='pausado']) [data-tilt]:hover {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  import '../../lib/video-vista';
+</script>

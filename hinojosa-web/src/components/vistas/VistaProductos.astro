@@ -1,0 +1,998 @@
+---
+// Vista 3 - Productos (guia-estilo 7.3, storyboard-carrusel): pantalla
+// partida. Izquierda: 4 pestanas (botones con aria-pressed), escenario del
+// carrusel con flechas y rejilla de respaldo, rotulo y aria-live.
+// Derecha: buscador con etiqueta visible + lista completa agrupada (scroll
+// interno declarado) + notas fijas de precios y marcas.
+// Logica en src/lib/catalogo.ts (puntos de enganche documentados alli).
+//
+// Ganchos de marcado:
+//   [data-carrusel] (data-captura-flechas, data-categoria-activa, data-modo)
+//   [data-carrusel-escena]            hueco del anillo CSS 3D
+//   ul[data-rejilla-categoria=<cat>]  rejilla de respaldo (definitiva sin 3D)
+//   [data-rejilla-producto=<id>]      celda; aria-current="true" = al frente
+//   [data-carrusel-anterior|siguiente] flechas <button>
+//   [data-carrusel-rotulo] [data-rotulo-nombre|categoria|posicion|precio]
+//   [data-carrusel-anuncio]           region aria-live (visualmente oculta)
+//   [data-lista-catalogo] #lista-<cat> [data-producto-fila=<id>]
+//   script#datos-catalogo             JSON con categorias y productos
+import Vista from '../Vista.astro';
+import Icono from '../Icono.astro';
+import { catalogo, textos, formatoPrecio, miniaturaDe, avifDe } from '../../lib/negocio';
+import { altProducto } from '../../lib/seo';
+import { srcsetProducto, medidasImagen, miniaturaLista, SIZES_ANILLO, SIZES_REJILLA } from '../../lib/srcset-producto';
+
+const t = textos.productos;
+// Textos que aun no estan en textos.json (MIGRAR a textos.productos)
+const local = {
+  etiquetaCarrusel: 'Productos de la categoría',
+  posicion: '{i} de {n}',
+  posicionLarga: 'Producto {i} de {n}',
+  borrar: 'Borrar búsqueda',
+  pruebaOtra: 'Prueba con otra palabra.',
+  sinJsVer: 'Ver la lista',
+};
+
+type Producto = (typeof catalogo.productos)[number];
+const conFondo = (p: Producto) => 'conFondo' in p && Boolean((p as { conFondo?: boolean }).conFondo);
+
+const grupos = catalogo.categorias
+  .slice()
+  .sort((a, b) => a.orden - b.orden)
+  .map((c) => ({ ...c, productos: catalogo.productos.filter((p) => p.categoria === c.id) }));
+const primera = grupos[0]?.id;
+// Producto al frente al abrir la vista: el primero con imagen de la primera
+// categoria (igual que catalogo.ts y el preload de Layout.astro)
+const frente = grupos[0]?.productos.find((p) => p.imagen);
+// Variante de 400 px de alto (la que elige el anillo en movil y a 1x); el
+// preload de Layout.astro pide exactamente esta AVIF.
+const frenteAvif = frente?.imagen ? frente.imagen.replace(/\.webp$/, '-400.avif') : '';
+const tabla = catalogo.tablaProteinaTilapia;
+
+const normalizar = (s: string) =>
+  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+const datos = {
+  categorias: grupos.map(({ id, nombre, nombreCorto }) => ({ id, nombre, nombreCorto })),
+  productos: catalogo.productos.map((p) => ({
+    id: p.id,
+    categoria: p.categoria,
+    nombre: p.nombre,
+    marca: p.marca,
+    presentacion: p.presentacion,
+    precioTexto: formatoPrecio(p.precio, p.precioDesde),
+    imagen: p.imagen,
+    avif: avifDe(p.imagen),
+    miniatura: miniaturaDe(p.imagen),
+    srcset: srcsetProducto(p.imagen),
+    conFondo: conFondo(p),
+  })),
+  sizesAnillo: SIZES_ANILLO,
+  textos: {
+    etiquetaCarrusel: local.etiquetaCarrusel,
+    posicion: local.posicion,
+    posicionLarga: local.posicionLarga,
+    sinResultados: t.sinResultados,
+    conteo: t.conteo,
+  },
+};
+const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
+---
+<Vista id="productos" nombre={textos.navegacion[2].texto} cuerpo="productos-cuerpo">
+  <div class="prod-marco">
+    <!-- ================= Izquierda: carrusel ================= -->
+    <div class="prod-izq">
+      <h2 id="titulo-productos" tabindex="-1" data-titulo-vista class="text-h2">{t.titulo}</h2>
+
+      <div class="prod-pestanas" role="group" aria-label={t.etiquetaPestanas} data-solo-js>
+        {grupos.map((g) => (
+          <button
+            type="button"
+            class="prod-pestana"
+            aria-pressed={g.id === primera ? 'true' : 'false'}
+            aria-controls="carrusel-productos"
+            data-categoria-boton={g.id}
+          >
+            {g.nombreCorto} <span class="prod-cuenta">({g.productos.length})</span>
+          </button>
+        ))}
+      </div>
+
+      <div
+        id="carrusel-productos"
+        class="prod-escenario"
+        data-carrusel
+        data-captura-flechas
+        data-categoria-activa={primera}
+        data-modo="rejilla"
+        role="region"
+        aria-roledescription="carrusel"
+        aria-label={`${local.etiquetaCarrusel}: ${grupos[0]?.nombre ?? ''}`}
+        data-solo-js
+      >
+        <button type="button" class="prod-flecha prod-flecha-izq" aria-label={t.anterior} data-carrusel-anterior>
+          <Icono nombre="flecha_izquierda" class="size-6" />
+        </button>
+
+        <div class="prod-escena" data-carrusel-escena>
+          {frente && (
+            /* Tarjeta al frente ya en el HTML (QA M5): ocupa el sitio exacto
+               del producto al frente del anillo mientras llega carrusel.ts,
+               asi la imagen LCP de #productos no depende del JS diferido.
+               Solo se ve con html[data-carrusel-pendiente]. El <img> no lleva
+               src en el HTML (en Inicio no debe bajarse): el script inline de
+               al lado se lo pone en el acto si se entra directo por
+               #productos, y carrusel-carga.ts al entrar desde otra vista.
+               (Un fondo CSS o un <img loading="lazy"> no le valian a Chrome
+               como LCP a tiempo.) Decorativa: el nombre esta en el rotulo y
+               en la lista. */
+            <div class="prod-frente" aria-hidden="true" data-frente-provisional>
+              <span class:list={['prod-frente-tarjeta', conFondo(frente) && 'prod-frente-placa']}>
+                <img data-src={frenteAvif} alt="" width="600" height="800" fetchpriority="high" />
+              </span>
+            </div>
+          )}
+          {frente && (
+            <script is:inline>
+              (function () {
+                var h = document.documentElement;
+                if (h.getAttribute('data-vista-inicial') !== 'productos' || !h.hasAttribute('data-carrusel-pendiente')) return;
+                var i = document.querySelector('[data-frente-provisional] img');
+                if (i && !i.src) i.src = i.getAttribute('data-src');
+              })();
+            </script>
+          )}
+          {grupos.map((g) => (
+            <ul class="prod-rejilla" data-rejilla-categoria={g.id} hidden={g.id !== primera}>
+              {g.productos.filter((p) => p.imagen).slice(0, 12).map((p) => (
+                <li>
+                  <button
+                    type="button"
+                    class:list={['prod-celda', conFondo(p) && 'prod-celda-placa']}
+                    data-rejilla-producto={p.id}
+                  >
+                    <picture>
+                      <source type="image/avif" srcset={srcsetProducto(p.imagen)?.avif ?? avifDe(p.imagen)!} sizes={SIZES_REJILLA} />
+                      <img
+                        src={p.imagen!}
+                        srcset={srcsetProducto(p.imagen)?.webp}
+                        sizes={SIZES_REJILLA}
+                        alt={altProducto(p)}
+                        loading="lazy"
+                        decoding="async"
+                        width="600"
+                        height="800"
+                      />
+                    </picture>
+                    <span class="sr-only" aria-hidden="true">{p.nombre}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ))}
+        </div>
+
+        <button type="button" class="prod-flecha prod-flecha-der" aria-label={t.siguiente} data-carrusel-siguiente>
+          <Icono nombre="flecha_derecha" class="size-6" />
+        </button>
+      </div>
+
+      <div class="prod-rotulo" data-carrusel-rotulo data-solo-js>
+        <p class="prod-rotulo-nombre" data-rotulo-nombre></p>
+        <p class="prod-rotulo-meta">
+          <span data-rotulo-categoria></span>
+          <span aria-hidden="true">·</span>
+          <span data-rotulo-posicion></span>
+          <span class="prod-chip cifra" data-rotulo-precio></span>
+        </p>
+      </div>
+      <p class="sr-only" aria-live="polite" aria-atomic="true" data-carrusel-anuncio></p>
+
+      <!-- Sin JS: 4 tarjetas de categoria que llevan a su grupo de la lista -->
+      <ul class="prod-sinjs" data-sin-js>
+        {grupos.map((g) => {
+          const rep = g.productos.find((p) => p.imagen);
+          return (
+            <li>
+              <a href={`#lista-${g.id}`} class="prod-sinjs-tarjeta">
+                {rep && <img src={miniaturaDe(rep.imagen)!} alt="" loading="lazy" width={medidasImagen(miniaturaDe(rep.imagen)).w} height={medidasImagen(miniaturaDe(rep.imagen)).h} />}
+                <span class="font-extrabold">{g.nombre}</span>
+                <span class="text-chico">{g.productos.length} productos</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+
+    <!-- ================= Derecha: lista ================= -->
+    <div class="prod-der">
+      <div class="prod-buscador" data-solo-js>
+        <label for="buscar-producto" class="prod-etiqueta">{t.etiquetaBuscador}</label>
+        <div class="prod-campo">
+          <Icono nombre="buscar" class="prod-lupa size-5" />
+          <input
+            id="buscar-producto"
+            type="search"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder={t.placeholderBuscador}
+            aria-describedby="resultado-busqueda"
+            data-buscador
+          />
+          <button type="button" class="prod-borrar" aria-label={local.borrar} data-borrar-busqueda hidden>
+            <Icono nombre="cerrar" class="size-5" />
+          </button>
+        </div>
+        <p id="resultado-busqueda" class="sr-only" aria-live="polite" data-resultado-busqueda></p>
+      </div>
+
+      <div id="catalogo-lista" class="prod-lista" data-lista-catalogo data-teclas-propias="pagina">
+        {grupos.map((g) => (
+          <section id={`lista-${g.id}`} class="prod-grupo" aria-labelledby={`grupo-${g.id}`} data-grupo={g.id}>
+            <h3 id={`grupo-${g.id}`} class="prod-grupo-titulo">
+              {g.nombre} <span aria-hidden="true">·</span><span class="sr-only">,</span> {g.productos.length} productos
+            </h3>
+            <ul>
+              {g.productos.map((p) => {
+                const mini = miniaturaLista(miniaturaDe(p.imagen));
+                const detalle = [p.marca, p.presentacion].filter(Boolean).join(' · ');
+                return (
+                  <li
+                    data-producto-fila={p.id}
+                    data-busqueda={normalizar([p.nombre, p.marca, p.presentacion, g.nombre].filter(Boolean).join(' '))}
+                  >
+                    <button type="button" class="prod-fila" data-seleccionar-producto={p.id}>
+                      <span class:list={['prod-mini', p.imagen && conFondo(p) && 'prod-mini-placa']} aria-hidden="true">
+                        {mini ? (
+                          <img src={mini.src} srcset={mini.srcset} alt="" loading="lazy" decoding="async" width={mini.w} height={mini.h} />
+                        ) : (
+                          <Icono nombre="costal" class="size-5 text-tinta-suave" />
+                        )}
+                      </span>
+                      <span class="prod-fila-texto">
+                        <span class="prod-fila-nombre">{p.nombre}</span>
+                        {detalle && <span class="prod-fila-detalle">{detalle}</span>}
+                      </span>
+                      <span class="prod-fila-precio cifra">{formatoPrecio(p.precio, p.precioDesde)}</span>
+                    </button>
+                    {p.id === tabla.producto && (
+                      <table class="prod-tabla">
+                        <caption>{t.tablaTilapia.titulo}</caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">{t.tablaTilapia.columnaEtapa}</th>
+                            <th scope="col">{t.tablaTilapia.columnaProteina}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tabla.etapas.map((e) => (
+                            <tr>
+                              <th scope="row">{e.etapa}</th>
+                              <td class="cifra">{e.proteina}{tabla.unidad}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))}
+        <div class="prod-vacio" data-sin-resultados hidden>
+          <p>No encontramos «<span data-termino-buscado></span>». {local.pruebaOtra}</p>
+          <button type="button" class="boton prod-boton-secundario" data-borrar-busqueda>{local.borrar}</button>
+        </div>
+      </div>
+
+      <div class="prod-notas">
+        <p>{t.avisoPrecios}</p>
+        <p>{t.avisoMarcas}</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="datos-catalogo" set:html={datosJson} />
+</Vista>
+
+<style>
+  .prod-marco {
+    display: grid;
+    gap: var(--spacing-mosaico);
+    width: 100%;
+    max-width: var(--container-contenido);
+    margin-inline: auto;
+    padding: var(--spacing-vista) 1rem;
+  }
+  .prod-izq {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* ---------- Pestanas ----------
+     Rejilla 2x2 cuando la columna es estrecha y fila de 4 cuando cabe
+     (consulta de contenedor sobre .prod-izq). Antes era una fila con scroll
+     horizontal propio y "Granos" quedaba fuera de pantalla en movil (QA M1). */
+  .prod-izq {
+    container-type: inline-size;
+  }
+  .prod-pestanas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  @container (min-width: 34rem) {
+    .prod-pestanas {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  .prod-pestana {
+    min-width: 0;
+    min-height: var(--spacing-objetivo);
+    border: 1.5px solid var(--color-borde-campo);
+    border-radius: var(--radius-chip);
+    background: var(--color-blanco);
+    padding: 0.375rem 0.5rem;
+    font-size: var(--text-etiqueta);
+    font-weight: 400;
+    color: var(--color-tinta);
+    white-space: nowrap;
+  }
+  .prod-pestana:hover {
+    background: var(--color-hoja-claro);
+  }
+  .prod-pestana[aria-pressed='true'] {
+    border-color: var(--color-bosque);
+    background: var(--color-bosque);
+    color: var(--color-blanco);
+    font-weight: 800;
+  }
+
+  /* ---------- Escenario ---------- */
+  .prod-escenario {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 14rem;
+    border-radius: var(--radius-panel);
+    background: radial-gradient(ellipse 60% 70% at 50% 45%, var(--color-foco-estudio), transparent 75%);
+  }
+  .prod-escena {
+    min-width: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+    padding: 4px;
+  }
+  /* Con el carrusel 3D montado, la rejilla de respaldo se retira */
+  .prod-escenario[data-modo='3d'] .prod-rejilla {
+    display: none !important;
+  }
+  /* Mientras llega el carrusel (navegador con 3D): ni se pinta ni se
+     descarga la rejilla (sus imagenes son lazy). Ver Layout.astro y
+     carrusel-carga.ts (QA M5). */
+  :global(html[data-carrusel-pendiente]) .prod-rejilla {
+    display: none !important;
+  }
+  /* Tarjeta provisional: misma caja y misma linea de suelo que el producto
+     al frente del anillo (.anillo / .anillo-item, mas abajo), para que el
+     relevo no salte. Montado el anillo, queda DEBAJO de su frente (el
+     anillo va despues en el DOM y forma su propio contexto de apilamiento),
+     identica y por tanto invisible, hasta la primera interaccion o 1,5 s
+     (carrusel-carga.ts). Si se ocultaba al montar, Chrome descartaba su
+     candidato LCP antes de anunciarlo y el LCP pasaba al anillo (QA M5). */
+  .prod-frente {
+    display: none;
+    position: absolute;
+    inset: 0;
+    --anillo-base: max(0.75rem, calc(46% - var(--carrusel-ancho) * 0.667));
+    pointer-events: none;
+  }
+  :global(html[data-carrusel-pendiente]) .prod-frente {
+    display: block;
+  }
+  .prod-frente-tarjeta {
+    position: absolute;
+    left: 50%;
+    bottom: var(--anillo-base);
+    display: block;
+    width: var(--carrusel-ancho);
+    aspect-ratio: 3 / 4;
+    margin-left: calc(var(--carrusel-ancho) / -2);
+    border-radius: var(--radius-tarjeta);
+  }
+  .prod-frente-tarjeta img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: 50% 100%;
+  }
+  .prod-frente-tarjeta img:not([src]) {
+    visibility: hidden;
+  }
+  .prod-frente-placa {
+    overflow: hidden;
+    border: 1px solid var(--color-crema-oscuro);
+    background: var(--color-blanco);
+    box-shadow: var(--shadow-tarjeta);
+  }
+  .prod-frente-placa img {
+    object-fit: cover;
+    object-position: center;
+  }
+  .prod-rejilla {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(3.75rem, 1fr));
+    gap: 0.5rem;
+  }
+  .prod-rejilla[hidden] {
+    display: none;
+  }
+  .prod-celda {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    border: 2px solid transparent;
+    border-radius: var(--radius-tarjeta);
+    background: var(--color-blanco);
+    padding: 0.25rem;
+    transition: transform var(--duracion-hover) var(--ease-vista), border-color var(--duracion-hover) ease;
+  }
+  .prod-celda img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: 50% 100%;
+  }
+  .prod-celda-placa {
+    overflow: hidden;
+    border-color: var(--color-crema-oscuro);
+    padding: 0;
+    box-shadow: var(--shadow-tarjeta);
+  }
+  .prod-celda-placa img {
+    object-fit: cover;
+    object-position: center;
+  }
+  .prod-celda:hover {
+    border-color: var(--color-borde);
+  }
+  /* Al frente: borde bosque 3 px + marca de esquina (no solo color) */
+  .prod-celda[aria-current='true'] {
+    border: 3px solid var(--color-bosque);
+    box-shadow: var(--shadow-elevada);
+  }
+  .prod-celda[aria-current='true']::after {
+    content: '';
+    position: absolute;
+    top: 0.375rem;
+    right: 0.375rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--color-maiz);
+    box-shadow: 0 0 0 2px var(--color-bosque);
+  }
+  .prod-flecha {
+    z-index: var(--z-control);
+    display: inline-flex;
+    width: var(--spacing-objetivo);
+    height: var(--spacing-objetivo);
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--color-bosque);
+    border-radius: 50%;
+    background: var(--color-blanco);
+    color: var(--color-bosque);
+    transition: background-color var(--duracion-hover) ease, color var(--duracion-hover) ease, transform var(--duracion-presion) ease-out;
+  }
+  .prod-flecha:hover {
+    background: var(--color-bosque);
+    color: var(--color-blanco);
+  }
+  .prod-flecha:active {
+    transform: scale(0.94);
+  }
+
+  /* ---------- Rotulo ---------- */
+  .prod-rotulo {
+    text-align: center;
+  }
+  .prod-rotulo-nombre {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: var(--text-producto);
+    line-height: var(--text-producto--line-height);
+    color: var(--color-tinta);
+    text-wrap: balance;
+    min-height: 1.1em;
+  }
+  .prod-rotulo-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem 0.5rem;
+    margin-top: 0.25rem;
+    color: var(--color-tinta-suave);
+  }
+  .prod-chip {
+    border-radius: var(--radius-chip);
+    background: var(--color-maiz);
+    padding: 0.125rem 0.625rem;
+    font-weight: 800;
+    color: var(--color-tinta);
+  }
+  .prod-chip:empty {
+    display: none;
+  }
+
+  /* ---------- Sin JS ---------- */
+  .prod-sinjs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.625rem;
+  }
+  :global(html.js) .prod-sinjs {
+    display: none;
+  }
+  .prod-sinjs-tarjeta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    border: 1px solid var(--color-crema-oscuro);
+    border-radius: var(--radius-tarjeta);
+    background: var(--color-blanco);
+    padding: 0.75rem;
+    text-align: center;
+    color: var(--color-bosque);
+  }
+  .prod-sinjs-tarjeta img {
+    height: 5rem;
+    width: auto;
+  }
+
+  /* ---------- Panel derecho ---------- */
+  .prod-der {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    border-radius: var(--radius-panel);
+    background: var(--color-superficie);
+    box-shadow: var(--shadow-tarjeta);
+  }
+  .prod-buscador {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    background: var(--color-superficie);
+    padding: 1rem 1rem 0.75rem;
+    border-bottom: 1px solid var(--color-crema-oscuro);
+  }
+  .prod-etiqueta {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: var(--text-etiqueta);
+    font-weight: 800;
+    color: var(--color-bosque);
+  }
+  .prod-campo {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .prod-campo :global(.prod-lupa) {
+    position: absolute;
+    left: 0.875rem;
+    color: var(--color-tinta-suave);
+    pointer-events: none;
+  }
+  .prod-campo input {
+    width: 100%;
+    min-height: 3rem;
+    border: 1.5px solid var(--color-borde-campo);
+    border-radius: var(--radius-campo);
+    background: var(--color-blanco);
+    padding: 0.5rem 3rem 0.5rem 2.75rem;
+    font-size: max(16px, var(--text-cuerpo)); /* evita el zoom de iOS */
+    color: var(--color-tinta);
+  }
+  .prod-campo input::placeholder {
+    color: var(--color-tinta-suave);
+  }
+  .prod-campo input::-webkit-search-cancel-button {
+    display: none;
+  }
+  .prod-campo input:focus-visible {
+    outline-offset: 1px;
+  }
+  .prod-borrar {
+    position: absolute;
+    right: 0.125rem;
+    display: inline-flex;
+    width: var(--spacing-objetivo);
+    height: var(--spacing-objetivo);
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--color-tinta);
+  }
+  .prod-borrar[hidden] {
+    display: none;
+  }
+  .prod-lista {
+    flex: 1 1 auto;
+    padding: 0 0.5rem 0.5rem;
+  }
+  .prod-grupo-titulo {
+    position: sticky;
+    top: var(--alto-buscador, 0);
+    z-index: 1;
+    background: var(--color-superficie);
+    padding: 0.875rem 0.5rem 0.5rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-etiqueta);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-tinta-suave);
+    text-decoration: underline;
+    text-decoration-color: var(--color-hoja);
+    text-decoration-thickness: 3px;
+    text-underline-offset: 6px;
+  }
+  .prod-grupo[hidden],
+  [data-producto-fila][hidden] {
+    display: none;
+  }
+  .prod-fila {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 3.5rem;
+    border-left: 4px solid transparent;
+    border-radius: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    text-align: left;
+  }
+  .prod-fila:hover {
+    background: var(--color-crema);
+  }
+  /* Fila activa: fondo hoja-claro + barra bosque 4 px + nombre 800 */
+  .prod-fila[aria-current='true'] {
+    border-left-color: var(--color-bosque);
+    background: var(--color-fila-activa);
+  }
+  .prod-fila[aria-current='true'] .prod-fila-nombre {
+    font-weight: 800;
+  }
+  .prod-mini {
+    display: inline-flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: var(--radius-miniatura);
+    background: var(--color-crema);
+  }
+  .prod-mini img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .prod-mini-placa img {
+    object-fit: cover;
+  }
+  .prod-fila-texto {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+  .prod-fila-nombre {
+    color: var(--color-tinta);
+    line-height: 1.25;
+  }
+  .prod-fila-detalle {
+    font-size: var(--text-chico);
+    line-height: var(--text-chico--line-height);
+    color: var(--color-tinta-suave);
+  }
+  .prod-fila-precio {
+    font-weight: 800;
+    color: var(--color-bosque);
+    white-space: nowrap;
+    text-align: right;
+  }
+  .prod-tabla {
+    margin: 0.25rem 0 0.75rem 3.75rem;
+    font-size: var(--text-chico);
+    color: var(--color-tinta);
+    border-collapse: collapse;
+  }
+  .prod-tabla caption {
+    text-align: left;
+    font-weight: 800;
+    color: var(--color-tinta-suave);
+    padding-bottom: 0.25rem;
+  }
+  .prod-tabla th,
+  .prod-tabla td {
+    padding: 0.125rem 0.75rem 0.125rem 0;
+    text-align: left;
+    font-weight: 400;
+  }
+  .prod-tabla thead th {
+    font-weight: 800;
+  }
+  .prod-vacio {
+    padding: 1.5rem 0.5rem;
+    color: var(--color-tinta);
+  }
+  .prod-vacio[hidden] {
+    display: none;
+  }
+  .prod-boton-secundario {
+    margin-top: 0.75rem;
+    border: 2px solid var(--color-bosque);
+    color: var(--color-bosque);
+    font-weight: 800;
+  }
+  .prod-boton-secundario:hover {
+    background: var(--color-bosque);
+    color: var(--color-blanco);
+  }
+  .prod-notas {
+    border-top: 1px solid var(--color-crema-oscuro);
+    padding: 0.625rem 1rem 0.875rem;
+    font-size: var(--text-chico);
+    line-height: var(--text-chico--line-height);
+    color: var(--color-tinta-suave);
+  }
+
+  /* ---------- Movil: la vista entera hace scroll interno ---------- */
+  @media (max-width: 47.999rem) {
+    .prod-escenario {
+      height: 15rem;
+    }
+    .prod-grupo-titulo {
+      position: static;
+    }
+    /* El buscador queda pegado arriba al desplazar la vista: el foco que
+       llega con Tab no puede quedar debajo (WCAG 2.4.11) */
+    :global(html[data-router] .productos-cuerpo) {
+      scroll-padding-top: 8.5rem;
+    }
+  }
+
+  /* ---------- Escritorio: 55 / 45, solo la lista se desplaza ---------- */
+  @media (min-width: 48rem) {
+    :global(html[data-router] .productos-cuerpo) {
+      overflow: hidden;
+    }
+    .prod-marco {
+      flex: 1 1 auto;
+      min-height: 0;
+      grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
+      padding-inline: var(--spacing-vista);
+    }
+    :global(html[data-router]) .prod-marco {
+      height: 100%;
+    }
+    .prod-izq,
+    .prod-der {
+      min-height: 0;
+    }
+    .prod-escenario {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .prod-rejilla {
+      grid-template-columns: repeat(auto-fill, minmax(clamp(5rem, 8vw, 7.5rem), 1fr));
+      gap: 0.75rem;
+    }
+    .prod-flecha {
+      width: 3.25rem;
+      height: 3.25rem;
+    }
+    :global(html[data-router]) .prod-lista {
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scroll-padding-top: 3.25rem; /* cabecera de grupo pegajosa */
+    }
+    .prod-buscador {
+      position: static;
+    }
+  }
+</style>
+
+<!-- Carrusel CSS 3D (src/lib/animacion/carrusel.ts). El JS crea el anillo,
+     asi que estas reglas son globales (sin el atributo de ambito de Astro). -->
+<style is:global>
+  /* El escenario es la referencia del anillo (que pasa por debajo de las
+     flechas); el hueco central deja de recortar. */
+  .prod-escenario[data-modo='3d'] .prod-escena {
+    position: static;
+    overflow: visible;
+    padding: 0;
+  }
+  .anillo {
+    /* Linea de suelo: el producto al frente queda algo por debajo del
+       centro del escenario, sea cual sea su alto (2/3 = mitad de la tarjeta 3:4) */
+    --anillo-base: max(0.75rem, calc(46% - var(--carrusel-ancho) * 0.667));
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    cursor: grab;
+    touch-action: pan-y; /* el gesto vertical sigue desplazando la vista en movil */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .anillo.arrastrando {
+    cursor: grabbing;
+  }
+  .anillo-escena {
+    position: absolute;
+    inset: 0;
+    perspective: var(--carrusel-perspectiva);
+    perspective-origin: 50% var(--carrusel-origen-y);
+    transform-origin: 50% 70%;
+  }
+  .anillo-tarima {
+    position: absolute;
+    left: 50%;
+    bottom: var(--anillo-base);
+    border: 1.5px solid var(--color-tarima-filete);
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--color-crema-oscuro), transparent);
+    pointer-events: none;
+  }
+  .anillo-item {
+    position: absolute;
+    left: 50%;
+    bottom: var(--anillo-base);
+    width: var(--carrusel-ancho);
+    aspect-ratio: 3 / 4;
+    margin-left: calc(var(--carrusel-ancho) / -2);
+    will-change: transform, opacity;
+  }
+  .anillo-item:not([data-frente]) {
+    cursor: pointer;
+  }
+  .anillo.arrastrando .anillo-item {
+    cursor: grabbing;
+  }
+  .anillo-tarjeta {
+    position: absolute;
+    inset: 0;
+    display: block;
+    border-radius: var(--radius-tarjeta);
+  }
+  /* Silueta 3:4 mientras llega la imagen, sin shimmer */
+  .anillo-tarjeta.cargando {
+    background: var(--color-silueta-carga);
+  }
+  .anillo-tarjeta picture,
+  .anillo-tarjeta img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .anillo-tarjeta img {
+    object-fit: contain;
+    object-position: 50% 100%;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+  /* Modo placa: imagenes con fondo, como foto de producto */
+  .anillo-placa {
+    overflow: hidden;
+    border: 1px solid var(--color-crema-oscuro);
+    background: var(--color-blanco);
+    box-shadow: var(--shadow-tarjeta);
+  }
+  .anillo-placa img {
+    object-fit: cover;
+    object-position: center;
+  }
+  /* Oscurecido por capa (no por filter): silueta del recorte con mask */
+  .anillo-oscuro {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--color-tinta);
+    opacity: 0;
+    pointer-events: none;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: 50% 100%;
+    mask-position: 50% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+  .anillo-tarjeta:not(.anillo-placa):not(.listo) .anillo-oscuro {
+    visibility: hidden;
+  }
+  .anillo-sombra {
+    position: absolute;
+    left: 15%;
+    bottom: -6px;
+    width: 70%;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-tinta);
+    filter: blur(6px);
+  }
+  .anillo-tarjeta.sin-imagen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-crema-oscuro);
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 800;
+    font-size: var(--text-chico);
+    color: var(--color-bosque);
+  }
+  .anillo-error {
+    position: relative;
+    z-index: var(--z-control);
+    max-width: 22rem;
+    margin-inline: auto;
+    border-radius: var(--radius-tarjeta);
+    background: var(--color-blanco);
+    padding: 1rem;
+    text-align: center;
+    color: var(--color-tinta);
+    box-shadow: var(--shadow-tarjeta);
+  }
+  .anillo-error[hidden] {
+    display: none;
+  }
+  .anillo-reintentar {
+    min-height: var(--spacing-objetivo);
+    margin-top: 0.75rem;
+    border: 2px solid var(--color-bosque);
+    border-radius: var(--radius-boton);
+    padding: 0.375rem 1.25rem;
+    font-weight: 800;
+    color: var(--color-bosque);
+  }
+  .anillo-reintentar:hover {
+    background: var(--color-bosque);
+    color: var(--color-blanco);
+  }
+  /* El rotulo cambia al 50 % del giro con un fundido de 120 ms */
+  .rotulo-fundido {
+    animation: rotulo-fundido 120ms ease-out;
+  }
+  @keyframes rotulo-fundido {
+    from {
+      opacity: 0.15;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  import '../../lib/catalogo';
+  import '../../lib/animacion/carrusel-carga';
+</script>

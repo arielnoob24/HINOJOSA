@@ -8,7 +8,11 @@ export default defineConfig({
   // Dominio publico (fase de despliegue). Mientras este comentado, el <head>
   // omite canonical, og:url y og:image, y el JSON-LD omite url, image y logo,
   // porque todos exigen URL absoluta. Al descomentarlo con el dominio real
-  // (con https:// y sin ruta) aparecen solos. Ver docs/seo.md.
+  // (con https:// y sin ruta) aparecen solos, y el build genera
+  // dist/sitemap.xml (src/pages/[mapa].xml.ts). Ver docs/seo.md.
+  // Sin dominio propio, GitHub Pages del repo arielnoob24/HINOJOSA seria
+  // https://arielnoob24.github.io/HINOJOSA/ : eso exige ademas
+  // base: '/HINOJOSA' y rutas de imagenes con BASE_URL (decision de despliegue).
   // site: 'https://DOMINIO-POR-CONFIRMAR',
   build: {
     // CSS incrustado en el HTML (~11 kB gzip): evita el viaje de red del
@@ -18,10 +22,9 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     build: {
-      // El chunk de Three.js (hero-3d, ~550 kB sin comprimir, ~136 kB gzip)
-      // se descarga en diferido y solo en escritorio con WebGL; no forma
-      // parte de la carga inicial. Ver src/lib/animacion/arranque.ts.
-      chunkSizeWarningLimit: 600,
+      // Ya no hay Three.js. Los chunks diferidos mas grandes son Leaflet
+      // (~150 kB, al entrar en Visitanos) y carrusel + GSAP core (al entrar
+      // en Productos). El limite por defecto (500 kB) basta.
     },
   },
 });

@@ -49,6 +49,25 @@ Calculados con la fórmula de luminancia relativa de WCAG. Umbrales: **4.5:1** t
 | `#F2B823` | `#1B4D2B` | **5.44** | Oro como texto o detalle **solo** sobre verde oscuro |
 | `#14301D` | `#C98A3A` | **4.88** | Texto sobre fondo canela |
 
+Colores derivados (definidos en `hinojosa-web/src/styles/tokens.css`, calculados con la misma fórmula; 2026-10-12):
+
+| Frente | Fondo | Ratio | Uso |
+|---|---|---|---|
+| `#FFFFFF` | `#10301B` bosque-noche | **14.38** | Fondo de Inicio, línea de pie |
+| `#F6F1E4` | `#10301B` | **12.76** | Texto crema en el pie |
+| `#14301D` | `#EAF4DC` hoja-claro | **12.57** | Fila activa de la lista |
+| `#14301D` | `#EDE4CC` crema-oscuro | **11.27** | Pastilla "Cerrado" |
+| `#1B4D2B` | `#EAF4DC` | **8.63** | Pastilla "Abierto ahora" |
+| `#F2B823` | `#10301B` | **7.98** | Lema manuscrito en Inicio |
+| `#3D5A45` tinta-suave | `#FFFFFF` / `#F6F1E4` | **7.64 / 6.78** | Texto secundario, borde de campos |
+| `#3D5A45` | `#EAF4DC` / `#EDE4CC` | **6.73 / 6.03** | Texto secundario sobre superficies tintadas |
+| `#14301D` | `#D99E0F` maiz-oscuro | **6.02** | Hover del CTA oro |
+| `#8A5A1F` canela-oscuro | `#FFFFFF` / `#F6F1E4` | **5.88 / 5.22** | Texto canela legible |
+| `#267A2C` marca-fuerte | `#FFFFFF` / `#F6F1E4` | **5.38 / 4.77** | Enlaces de texto (no botones) |
+| `#C98A3A` (pelaje de Canela) | `#1B4D2B` | 3.35 | Solo decorativo: Canela sobre el fondo de Inicio |
+| `#EAF4DC` | `#F6F1E4` | 1.01 | **No** sirve como única señal de estado activo |
+| `#F2B823` (CTA) | `#F6F1E4` | 1.60 | Sobre claro, el CTA oro lleva borde `#1B4D2B` 2 px (8.69) |
+
 ### Combinaciones PROHIBIDAS
 
 | Frente | Fondo | Ratio | Por qué |
@@ -82,6 +101,7 @@ Calculados con la fórmula de luminancia relativa de WCAG. Umbrales: **4.5:1** t
 - Ya están instaladas como paquetes `@fontsource` en `hinojosa-web/`: úsalas desde ahí, no desde un `<link>` a Google Fonts.
 - `font-display: swap` siempre.
 - Techo: **3 familias y 4 pesos** en total, por presupuesto de rendimiento.
+- **Selección vigente (2026-10-12, dirección de arte):** para que los cuatro roles quepan en 3 familias se retira Baloo 2 y Nunito ExtraBold hace de título. Pesos: **Nunito 400 y 800**, **Cormorant Garamond 700**, **Caveat Brush 400**. Detalle en `hinojosa-web/docs/guia-estilo.md` §4.
 
 ---
 

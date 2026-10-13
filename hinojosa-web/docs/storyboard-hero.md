@@ -1,136 +1,169 @@
-# Storyboard: hero y animaciones por sección
+# Storyboard: Canela en Inicio y transición entre vistas
 
-> Fase 1 (diseño). Basado en `PLAN.md`, secciones 3 y 6. Tokens en `src/styles/global.css`.
-> **Versión 1 sin 3D:** no hay modelo `.glb` de Canela. Como permite la sección 6 del plan, el hero se hace con **imágenes en capas con paralaje + SVG animados con CSS**. El 3D (Three.js / model-viewer) entra en la fase 4 y reemplaza capas concretas sin rediseñar.
+> Fase 1 (diseño), reescrito el 2026-10-12. Sustituye al storyboard anterior (hero 3D con Canela grande en insignia, granos con paralaje de scroll, entradas escalonadas por sección), que **ya no existe**: el sitio es ahora de 5 vistas sin scroll (`PLAN.md`, sección 3) y el único personaje animado es Canela cruzando la franja inferior de Inicio (sección 0 y vista 1).
+> Tokens: `src/styles/tokens.css` (`--canela-*`, `--duracion-vista`, `--ease-*`, `animate-canela-*`, `animate-vista-*`). Guía: `docs/guia-estilo.md`.
+> Criterio de movimiento: skill `motion-and-storytelling` (sutileza, ease-out para entrar, solo `transform`/`opacity`, un movimiento por región).
 
-## 0. Decisiones previas
+---
 
-1. **El video `01-hero-marca-16x9` no se usa como fondo.** Es el logo sobre blanco con un marco gris alrededor; a pantalla completa se ve como una diapositiva. Además repite el logo que ya está en el hero. Queda descartado para el hero.
-2. Los videos 9:16 (`02-conoce-a-canela`, `03-catalogo`, `05-mascotas`) son el afiche cuadrado sobre una versión desenfocada de sí mismo. Si se usan, va en un contenedor cuadrado con `object-fit: cover` y una escala de unos 1.1 para cortar el borde desenfocado. Llevan texto incrustado que duplica el de la página: son opcionales y siempre llevan `poster`.
-3. El **logo es la imagen LCP** del hero: se muestra desde el primer fotograma, **sin fundido de opacidad** (animar la opacidad del elemento LCP empeora el LCP).
-4. Accesibilidad de movimiento: los bucles infinitos duran más de 5 s, así que el hero lleva un botón **"Pausar animaciones"** (WCAG 2.2.2) que pone `data-movimiento="pausado"` en `<html>` y lo guarda en `localStorage`.
+## 0. Activo y requisitos previos
 
-## 1. Hero: composición
+**Activo:** `Nuevos Req/Mascota/Canela.png` — render estilo 3D, 2752×1536, Canela **sentada y de frente**, gorra verde y collar con dije de trébol "H". La figura ocupa solo el centro del lienzo (aprox. x 860–1930, y 85–1480 px del original): proporción del recorte **ancho/alto ≈ 0,76** (`--canela-proporcion`).
 
-```
-ESCRITORIO (>= 1024 px), alto: min(100svh, 860px)
-+--------------------------------------------------------------------+
-| [header: logo 160px]   Nosotros  Canela  Productos  Ubicación  [WA]|
-|                                                                    |
-|   .  (grano)                                 o  (grano)  ~ (hoja)  |
-|  +------------------------+          .-""""""""-.                  |
-|  |  LOGO COMPLETO (h1)    |        /  aro bosque  \    o           |
-|  |  max 460px, fondo blanco|      |  aro maiz       |               |
-|  +------------------------+       |   CANELA        |   ~          |
-|  Alimentos, balanceados y         |  (canela-recorte)|              |
-|  productos para tus animales      \                 /              |
-|  (lead, Nunito 600, tinta-suave)   '-.__________.-'               |
-|  "Calidad que alimenta,          [placa bosque: VENTA DE          |
-|   amor que se siente" (script)     BALANCEADOS en crema]           |
-|  [ Escríbenos por WhatsApp ] [ Ver productos ]     o   .           |
-|~~~~~~~~~~~~~~~~~~~~ onda bosque ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|
-|  Ubicación estratégica | Aves, cerdos, mascotas y tilapias | ...   |
-|  (franja bosque, 4 diferenciales con iconos maiz)    [|| pausar]   |
-+--------------------------------------------------------------------+
-```
+**Antes de animar, el agente de activos debe:**
+1. **Verificar el canal alfa.** El PLAN lo da por recortado, pero en la vista previa se ve un **fondo de estudio gris con degradado y sombra de suelo**. Comprobar con `sharp(...).metadata()` (`hasAlpha`) y el alfa de un píxel de esquina. Si no hay alfa real, hay que recortarla (manual o con eliminación de fondo y repaso del pelo) antes de usarla: un rectángulo gris saltando sobre el verde de Inicio no es aceptable.
+2. **Recortar al contenido** (`trim`) para que el lienzo no tenga 2/3 de aire: el tamaño en pantalla se calcula por el alto de la figura.
+3. **Quitar la sombra de suelo horneada** si la trae: la sombra la dibuja el CSS (sección 2.4) para que se encoja durante el salto.
+4. Exportar `public/img/canela/canela.webp` (+ `.avif`) a **160 y 320 px de alto** (1x/2x del tamaño máximo de 120 px), objetivo < 30 kB. `loading="eager"`, `fetchpriority="low"`, `decoding="async"`: el LCP es el logo, no Canela.
 
-- Rejilla de 12 columnas: texto en las columnas 1–6 y la insignia de Canela en las 7–12.
-- Fondo: degradado vertical de `blanco` (arriba, donde está el logo) a `crema` (abajo), y un halo radial `hoja-claro` detrás de Canela (60 % de opacidad).
-- Franja inferior: onda SVG `bosque` con los 4 diferenciales del afiche en `crema`, iconos en `maiz`. Aporta el 30 % verde del hero.
-- Semántica: `<h1>` envuelve la imagen del logo (`alt="Comercial Hinojosa: Nutrición que da vida"`) para no repetir el lema como texto. El lead es un `<p>`.
-- CTA: principal "Escríbenos por WhatsApp" (`marca-fuerte` + blanco) y secundario "Ver productos" (`maiz` + `tinta`, ancla a `#productos`).
+**Plan B mientras no haya recorte limpio:** Canela dentro de un **medallón** (círculo con interior `crema`, aro `maiz` 3 px y aro `bosque` 6 px, recorte del busto con `object-fit: cover`), que salta exactamente con el mismo storyboard. Es la insignia de la marca, así que no desentona.
 
-### Capas (de atrás hacia delante) y paralaje
+**Sobre el video `Canela Jugando.mp4`:** si al revisarlo trae alfa o un fondo liso recortable, puede sustituir al salto (WebM VP9 con alfa + fallback). Este storyboard es el **bucle por defecto** que manda la sección 0 y no depende del video.
 
-| Capa | Contenido | Formato | Paralaje con el ratón (máx.) | Paralaje con el scroll |
+---
+
+## 1. La idea en una frase
+
+Canela cruza la franja inferior de Inicio **de derecha a izquierda a saltitos cortos**, como un cachorro que va contento hacia algún sitio; sale por la izquierda, desaparece un rato y vuelve a entrar por la derecha. Es un adorno de fondo: se nota sin llamar la atención y **nunca compite con el botón "Ver productos"** (staging: ella vive en su franja, el contenido en la suya).
+
+Como el render es frontal y sentado, el desplazamiento se lee como "saltitos de conejo" de lado. La dirección la marca una **inclinación de 3° hacia la izquierda** en el aire (principio de arcos y anticipación), no un cambio de pose.
+
+---
+
+## 2. Especificación del bucle
+
+### 2.1 Escala y posición
+
+| Medida | 1440×900 | 768×1024 | 360×640 | Token |
 |---|---|---|---|---|
-| 0 | Degradado + halo `hoja-claro` | CSS | 0 | 0 |
-| 1 | 3 hojas grandes desenfocadas (`hoja`, 30 % de opacidad) en las esquinas | SVG inline | 4 px | 0.1 |
-| 2 | Insignia de Canela: aros `bosque`/`maiz` + `canela-recorte.png` dentro de un óvalo con `overflow:hidden` | CSS + AVIF/WebP | 8 px | 0.15 |
-| 3 | 7–9 granos de maíz (elipses `maiz` con brillo `canela`) y 2 pellets (`canela-oscuro`) | SVG inline, cada uno de 12–28 px | 12 px (el más cercano) | 0.3 |
-| 4 | 2 hojas pequeñas nítidas (`marca`/`hoja`) | SVG inline | 12 px | 0.35 |
-| 5 | Texto, logo y CTA | HTML | 0 (el texto nunca se mueve) | 0 |
+| Alto de Canela | **112 px** (13 % de la vista útil de 836) | 120 px (tope) | **70 px** (13 % de 524) | `--canela-alto` |
+| Ancho (×0,76) | 85 px | 91 px | 53 px | `--canela-proporcion` |
+| Altura del salto (×0,16) | 18 px | 19 px | 11 px | `--canela-altura-salto` |
+| Franja reservada | 140 px (16,7 %) | 149 px | 91 px (17 %) | `--franja-canela` |
 
-- Paralaje con el ratón: solo con `(hover: hover) and (pointer: fine)`. Se lee `pointermove` en el hero, se normaliza de -1 a 1 y se aplica con `requestAnimationFrame` y suavizado (lerp 0.08), moviendo solo `transform`. Tope global `--paralaje-max: 12px`.
-- Paralaje con el scroll: solo mientras el hero está visible (`IntersectionObserver`), con `translate3d` y sin tocar el layout.
-- Peso total de la decoración: menos de 15 kB (SVG inline). La única imagen pesada es Canela (menos de 120 kB en AVIF, con `fetchpriority="low"`; el logo lleva `fetchpriority="high"`).
+- La franja es la **segunda fila del grid de Inicio** (`grid-template-rows: 1fr var(--franja-canela)`), no una capa absoluta encima del contenido. Por construcción Canela no puede tapar texto ni botón.
+- Línea de suelo: 10 px por encima del borde inferior de la vista. Canela apoya las patas ahí (`transform-origin: 50% 100%`).
+- `overflow: hidden` en la franja (no en la vista, para no recortar el anillo de foco del botón de pausa).
 
-## 2. Hero: línea de tiempo de entrada
+### 2.2 Ritmo
 
-Total: **1.6 s**. La página se puede usar desde el instante 0 (los CTA se ven desde los 450 ms y aceptan clics desde el primer pintado).
+| Parámetro | Valor | Motivo |
+|---|---|---|
+| Un saltito completo | **520 ms** (`--canela-salto`) | Dentro de los 400–600 ms del PLAN; a 520 ms se lee "alegre" sin parecer nervioso |
+| Ciclo completo escritorio | **11,5 s** = cruce 8,3 s (72 %) + pausa fuera 3,2 s (28 %) | ~184 px/s → unos 16 saltitos de ~95 px (0,85 × alto) por cruce |
+| Ciclo tableta (< 1024 px) | 9 s = 6,5 s + 2,5 s | ~150 px/s |
+| Ciclo móvil (< 768 px) | **6,5 s** = 4,7 s + 1,8 s | ~88 px/s → ~9 saltitos de ~46 px; en pantalla chica un cruce largo cansa |
+| Velocidad horizontal | **constante** durante el cruce | Es desplazamiento, no un elemento de UI que llega: el "ease" vive en cada salto. Acelerar y frenar el cruce haría que pareciera arrastrada |
+| Primera entrada | **1,2 s** después de mostrarse Inicio (`--canela-retraso`) | Primero se lee logo, lema y botón (scene setting); luego entra el adorno |
+| Pausa fuera de pantalla | 28 % del ciclo | Deja respirar la vista; el ojo vuelve al contenido |
 
-| Tiempo | Elemento | Animación | Duración / curva |
-|---|---|---|---|
-| 0 ms | Fondo, onda, franja de diferenciales, **logo** | Ya pintados, estáticos | – |
-| 150 ms | Insignia de Canela | `entrar-insignia`: sube 24 px y pasa de escala 0.9 a 1, **sin opacidad** (fase 4: la insignia resultó ser el elemento LCP; el fundido lo retrasaba de 1.9 s a 3.9 s) | 700 ms, `ease-rebote` |
-| 300 ms | Lead | `entrar` (sube 20 px, opacidad) | 600 ms, `ease-suave` |
-| 400 ms | Frase script "Calidad que alimenta, amor que se siente" | `entrar` + subrayado `hoja` que se dibuja de izquierda a derecha | 600 ms + 400 ms |
-| 450 / 530 ms | CTA WhatsApp / CTA Ver productos | `entrar` con 80 ms de desfase | 600 ms, `ease-suave` |
-| 600–1300 ms | Granos | Caen 40–80 px desde arriba con rotación aleatoria de ±40° y se asientan; desfase de 70 ms entre granos | 700 ms, `ease-suave` |
-| 800 ms | Hojas pequeñas | Aparecen y giran 15° | 600 ms |
-| 1 600 ms en adelante | **Bucles ambientales** | Ver abajo | – |
+El número de saltos no tiene que ser entero por cruce: el salto es un bucle independiente y los bordes del cruce están fuera de pantalla, así que no se ve ningún corte.
 
-Bucles ambientales (pausables):
-- Granos: `animate-flotar` (7 s, ±8 px y ±6°), cada uno con `animation-delay` negativo distinto (-0.5 s a -6 s) para que no vayan sincronizados.
-- Canela: `animate-balanceo` (4.5 s, ±1.5° y escala de 1.015, "respira"). El punto de giro (`transform-origin`) va en la base de la placa.
-- Hojas grandes: deriva lenta de ±10 px en 12 s.
-- Interacción con Canela (opcional en la v1): al pasar el cursor o enfocar la insignia, gira 4° y aparece un bocadillo `font-script` con "¡Hola! Soy Canela" durante 2 s. Al hacer clic, salta 8 px con `ease-rebote`. Es decoración: no se necesita para usar la página.
-
-Botón de pausa: esquina inferior derecha de la franja verde, de 44 × 44 px, icono de pausa/play en `crema`, con `aria-pressed` y la etiqueta "Pausar animaciones" / "Reanudar animaciones".
-
-## 3. Hero en móvil (< 768 px)
+### 2.3 Anatomía de un saltito (520 ms)
 
 ```
-+---------------------------+
-| [logo 120px]     [menú]   |
-|                           |
-|   LOGO COMPLETO (h1)      |
-|   ancho: min(80vw, 300px) |
-|   Lead (2 líneas)         |
-|   [Escríbenos por WA]     |  <- CTA a ancho completo, 52 px de alto
-|   [Ver productos]         |
-|      .-""""""-.           |
-|     | CANELA   |  o  .    |  <- insignia de 240 px de ancho, 4 granos
-|      '-.____.-'           |
-|~~~~~~ onda bosque ~~~~~~~~|
-|  diferenciales en 2x2     |
-+---------------------------+
+ tiempo:   0%        12%            50%             88%      100% = 0%
+           ▁▁        ▏▏             ╱╲              ▏▏       ▁▁
+          (aplasta) (estira, despega) (ápice, -3°)  (estira, cae) (aplasta)
+ escala:  1.06×0.92  0.96×1.05      1×1             0.97×1.04  1.06×0.92
+ subida:  0          -3 %·alto      -16 %·alto      -3 %·alto  0
+ giro:    0°         -1°            -3°             -1°        0°
+ curva:   ├ease-subir┤├─ease-subir──┤├──ease-caer───┤├ease-out┤
 ```
 
-- Orden: logo → lead → CTA → Canela. **Los dos CTA deben verse sin hacer scroll** en un teléfono de 360 × 640.
-- La frase script se oculta en menos de 400 px (está repetida en el footer).
-- Sin paralaje de ratón ni de scroll. Solo la entrada (más corta: 1.0 s en total) y `animate-flotar` en 4 granos.
-- No se carga video ni 3D en móvil en la v1.
-- Alto del hero: `auto` (no se fuerza a 100svh para no esconder los CTA detrás de la barra del navegador).
+- **Squash & stretch leve**: máximo ±8 %, conservando aproximadamente el volumen (cuando ensancha, baja). Más se vería de goma.
+- **Anticipación** en el aplastamiento de contacto; **arco** en la subida desacelerada y la caída acelerada (gravedad).
+- El primer y el último cuadro son idénticos: **el bucle calza sin salto**.
+- Implementado en `@keyframes canela-salto` (`tokens.css`). Se aplica a la imagen (`.canela-salto`), dentro del envoltorio que cruza.
 
-## 4. Hero estático (`prefers-reduced-motion: reduce` o animaciones pausadas)
+### 2.4 Sombra en el suelo
 
-- Todo aparece en su **posición final** desde el primer pintado: logo, lead, frase, CTA, insignia y granos ya asentados.
-- Sin paralaje (no se registran los listeners de `pointermove` ni de scroll), sin bucles y sin el salto de Canela. El bocadillo "¡Hola! Soy Canela" puede mostrarse estático, sin transición.
-- Los videos no hacen autoplay: se muestra solo el `poster`, y quien quiera puede reproducirlo con controles.
-- En JS se comprueba `matchMedia('(prefers-reduced-motion: reduce)')` **antes** de inicializar GSAP o Lenis. Si es `reduce`, no se cargan esas librerías.
-- El CSS global ya fuerza duraciones de 0.01 ms, así que una animación olvidada no se llega a ver.
+- Elipse `div` hermana de la imagen, dentro del envoltorio que cruza: viaja en horizontal con Canela **pero no sube**.
+- Tamaño: 70 % del ancho de Canela × 10 px; color `rgb(0 0 0 / 1)` con la opacidad de la animación, `filter: blur(4px)` estático (no animado).
+- `@keyframes canela-sombra`, mismo período de 520 ms: en contacto escala 1 y opacidad 0,32; en el ápice escala 0,68 × 0,8 y opacidad 0,16. Así el salto se "ve" despegar del suelo.
 
-## 5. Animaciones por sección (versión 1 sin 3D)
+### 2.5 Estructura y capas
 
-Reglas comunes: entrada al 25 % de visibilidad (`IntersectionObserver`, una sola vez), `animate-entrar` con desfase de 80–120 ms entre hermanos, solo `transform` y `opacity`, y nada de animación hasta que la sección es visible.
+```
+.franja-canela (fila 2 del grid, overflow hidden, position relative)
+├─ .canela-cruce   ← animate-canela-cruce   (envoltorio del tamaño de Canela, left:0, bottom:10px)
+│  ├─ .canela-sombra ← animate-canela-sombra
+│  └─ img.canela-salto ← animate-canela-salto (aria-hidden, alt="")
+└─ button.pausa   (44×44, abajo a la derecha, z-control)
+```
 
-| # | Sección | Plan (3D) | Versión 1 (sin 3D) | Duración / detalle | Reduced motion / móvil |
-|---|---|---|---|---|---|
-| 1 | Hero | Canela 3D + costales y granos + paralaje | Capas: insignia de Canela + granos y hojas en SVG + paralaje (arriba) | Entrada de 1.6 s y bucles pausables | Estático / sin paralaje |
-| 2 | Quiénes somos | Tarjetas con tilt 3D; hojas cayendo | Historia + 2 tarjetas (Misión, Visión) con tilt (vanilla-tilt, máx. 6°, brillo 0.1) y 3 hojas `animate-caer-hoja` en el fondo, a 40 % de opacidad | Tarjetas con `entrar` y 120 ms de desfase; hojas de 14 s con desfases de 0 / -5 / -9 s | Sin tilt ni hojas / sin tilt en táctil |
-| 3 | Conoce a Canela | Canela 3D rotable: guiña, cola, saluda | Insignia grande + 3 rasgos ("alegre", "le encantan los animales", "acompaña a Hinojosa") en tarjetas con icono en círculo. Al pulsar Canela: salto con `ease-rebote` y bocadillo que va rotando las 3 frases. Video `02-conoce-a-canela` opcional en un recuadro cuadrado | Entrada de la insignia con `entrar-insignia`; salto de 500 ms | Sin salto; frases visibles en lista |
-| 4 | Qué vendemos | Carrusel 3D de costales que rotan con el scroll | Fila con `scroll-snap` de 10 tarjetas de categoría (icono o foto + nombre). En escritorio, cada tarjeta gira con `rotateY` de -12° a 12° según su posición (`animation-timeline: view()` como mejora progresiva) | Gira mientras se hace scroll; sin JS si se usa la línea de tiempo de scroll | Rejilla estática 2×N |
-| 5 | Catálogo | Tarjetas con giro 3D (`model-viewer`) | Tarjetas `blanco` con cinta `bosque` y nombre en `font-serif`; hover: sube 4 px y pasa a `shadow-elevada` (200 ms). Precio en un chip `maiz`. `model-viewer` llega cuando existan los `.glb` de costales | Entrada en lotes de 4, con 80 ms de desfase | Sin elevación; foco visible |
-| 6 | Valores y esencia | Lotties que aparecen con el scroll | Sección `.tema-oscuro` (fondo `bosque`). 6 valores + 4 pilares con icono SVG cuyo trazo se dibuja (`stroke-dashoffset`, 600 ms) dentro de una insignia con aro `maiz`. Lottie más adelante | Desfase de 80 ms | Iconos completos |
-| 7 | Por qué elegirnos | Contadores y barras animadas | 4 tarjetas (Calidad, Nutrición balanceada, Atención cercana, Ubicación). **Contadores solo con cifras confirmadas por la dueña** (años, clientes, marcas). Sin datos reales no se inventan: se dejan las tarjetas con icono | Contador de 1.2 s con `ease-suave` si hay datos | Número final directo |
-| 8 | Ubicación | Pin 3D animado en el mapa | Mapa Leaflet cargado de forma diferida. Pin SVG con forma de insignia (aro `maiz`, isotipo H) que cae 24 px con `ease-rebote` y deja una sombra elíptica | 700 ms, una vez | Pin fijo |
-| 9 | Contacto / redes | Botón flotante de WhatsApp con pulso | Botón flotante `marca-fuerte` de 56 px abajo a la derecha. `animate-pulso` (3 pulsos y se detiene, menos de 5 s) a los 4 s de cargar; se repite 1 vez si el usuario llega a Contacto | 1.6 s × 3 | Sin pulso |
-| 10 | Footer | Hojas con paralaje | Fondo `bosque-noche`, logo pendiente de la versión blanca (mientras tanto, isotipo sobre una placa `blanco` redonda), lema "Comercial Hinojosa siempre a tu lado" en `font-script` `maiz`. 2 hojas SVG con paralaje de scroll de 0.2 | Ligado al scroll | Estático |
+`@keyframes canela-cruce`: 0 % en `translateX(100vw)` (fuera por la derecha), 72 % en `translateX(-100%)` (fuera por la izquierda), 100 % igual (espera). Solo `transform`; nada de `left`.
 
-## 6. Ruta hacia el 3D (fase 4)
+### 2.6 Pausa (WCAG 2.2.2) y reposo
 
-- Capa 2 (insignia de Canela) → `<canvas>` Three.js con `canela.glb`, en el mismo hueco y con el mismo marco; la imagen actual queda como `poster`/fallback.
-- Capa 3 (granos SVG) → partículas instanciadas en Three.js solo en escritorio con WebGL; en móvil siguen los SVG.
-- Sección 4 → costales `.glb` en `model-viewer` cuando pesen menos de 3 MB.
-- Para cualquier paso al 3D, antes hace falta: Canela con transparencia real o modelo, y la aprobación de la dueña sobre el uso de la ilustración.
+- **Botón de pausa** visible en la esquina inferior derecha de la franja: 44×44, círculo `crema` opaco, borde 2 px `bosque`, icono `bosque`; `aria-pressed`, nombre "Pausar animación" / "Reanudar animación". Canela pasa **por detrás** (z-control > z-canela).
+- Al pausar, Canela **no se congela a media zancada ni queda invisible fuera de pantalla**: pasa al **cuadro de reposo** (abajo). Al reanudar, el ciclo reinicia desde la entrada por la derecha.
+- La preferencia se guarda (`localStorage`) y se refleja en `html[data-movimiento="pausado"]`, el mismo gancho que ya usa `global.css`.
+
+**Cuadro de reposo** (pausa y `prefers-reduced-motion: reduce`):
+- Canela sentada, escala 1, giro 0, apoyada en el suelo con su sombra en estado de contacto (0,32).
+- Posición: a la derecha de la franja, **a la izquierda del botón de pausa** — `right: calc(var(--spacing-vista) + 44px + 16px)`. Con reduced motion el botón de pausa se oculta (no hay nada que pausar) y Canela queda a `right: var(--spacing-vista)`.
+- Es literalmente el render original: no hay que extraer ningún cuadro.
+- Con reduced motion no se aplica ninguna de las tres animaciones (no basta con acortar duraciones: el `global.css` actual las reduce a 0,01 ms con 1 iteración, lo que dejaría a Canela en el 100 % del cruce, **fuera de pantalla**). La regla es explícita: `animation: none` en `.canela-cruce`, `.canela-salto` y `.canela-sombra`, más la posición de reposo.
+
+### 2.7 Ciclo de vida
+
+| Situación | Comportamiento |
+|---|---|
+| Carga directa en `#inicio` | Retraso de 1,2 s y empieza a cruzar |
+| Se sale de Inicio | La vista pasa a `display: none`: las animaciones CSS se detienen solas (sin coste) |
+| Se vuelve a Inicio | Se reinician desde el principio: entra por la derecha tras el retraso. No se "retoma" a media pantalla |
+| Pestaña en segundo plano | El navegador ya pausa las animaciones; no hace falta JS |
+| Táctil / gama baja | Mismo bucle (es CSS barato: 3 transforms y 1 opacidad). Si el perfil de rendimiento lo pide, el ciclo móvil puede alargar la pausa |
+
+**Implementación recomendada: solo CSS** (los keyframes ya están en `tokens.css`). No hace falta GSAP en Inicio, lo que ayuda al presupuesto de < 1,5 MB de la vista.
+
+---
+
+## 3. Transición entre vistas
+
+### 3.1 Decisión: **desplazamiento horizontal corto**, una sola metáfora para todo el sitio
+
+Las 5 vistas están en fila en la barra (izquierda → derecha) y `←`/`→` las recorren: el movimiento horizontal **confirma ese modelo espacial** (ir "a la derecha" de la barra = la vista nueva llega desde la derecha). Un fundido puro no transmite orden; un deslizamiento de pantalla completa obligaría a mostrar dos vistas a la vez (choca con `display: none` + `inert`) y es demasiado recorrido para usuarios sensibles al movimiento.
+
+| Parámetro | Valor |
+|---|---|
+| Qué se anima | **Solo la vista entrante.** La saliente pasa a `display: none` + `inert` al instante (un movimiento por región) |
+| Recorrido | 48 px (`--desplazamiento-vista`), no la pantalla entera |
+| Opacidad | 0 → 1 a la vez que el recorrido (acompaña al desplazamiento; no es un segundo efecto) |
+| Duración | **400 ms** (`--duracion-vista`, dentro de 350–450) |
+| Curva | `ease-vista` = `cubic-bezier(0.22, 1, 0.36, 1)` (ease-out) |
+| Dirección | Índice mayor (p. ej. Inicio → Productos): entra **desde la derecha** (`animate-vista-adelante`). Índice menor: **desde la izquierda** (`animate-vista-atras`). Botón "atrás" del navegador: según el índice resultante |
+| Indicador de la barra | La pastilla `bosque` se desliza al nuevo ítem en 300 ms con la misma curva, empezando a la vez |
+| Foco | Se mueve al `<h2>` de la vista nueva **al iniciar** la transición (no al terminar), para que el lector de pantalla anuncie ya |
+| Carga directa por hash | Sin transición: la vista aparece en su sitio |
+| Clics rápidos seguidos | La animación en curso se cancela y la nueva parte desde su estado inicial; nunca se encolan |
+| `prefers-reduced-motion` | **Corte seco**: cambio instantáneo, indicador incluido |
+
+Prohibido mezclar: ninguna vista entra con escala, desde abajo ni con fundido distinto. Dentro de una vista, nada más se anima mientras dura la entrada (el Lottie de los pilares empieza al terminar, a los 400 ms; Canela tiene su retraso de 1,2 s).
+
+### 3.2 Línea de tiempo de un cambio Inicio → Productos
+
+| t | Qué pasa |
+|---|---|
+| 0 ms | Clic en "Productos". Inicio → `display:none` + `inert`. Productos visible con `animate-vista-adelante`. Foco al `<h2>`. La pastilla de la barra empieza a deslizarse. Se pide la carga diferida del carrusel si no estaba |
+| 300 ms | La pastilla llega a "Productos" |
+| 400 ms | Productos en su sitio. El carrusel queda en reposo (no hace entrada propia) |
+
+---
+
+## 4. Otros movimientos de Inicio
+
+- **Granos de maíz** (6 como máximo, SVG inline `maiz`/`canela`, 12–24 px): paralaje con el ratón de **8 px máximo** (`--paralaje-max`), solo con `(hover: hover) and (pointer: fine)`, suavizado lerp 0,08 en `requestAnimationFrame`. Sin bucles propios: en reposo están quietos. Desactivado con reduced motion y con la pausa.
+- **Logo:** estático desde el primer cuadro (es el LCP; animar su opacidad empeora el LCP, como se midió en la fase 4 anterior).
+- **Botón "Ver productos":** `:active` → `scale(0.96)` en 90 ms. Sin pulsos ni brillos en bucle.
+- No hay secuencia de entrada: lema, subtítulo y botón están desde el primer pintado.
+
+## 5. Checklist (motion-and-storytelling)
+
+- [x] Solo `transform` y `opacity` (la sombra usa `filter` estático, no animado).
+- [x] Ease-out al entrar (vista), arcos con gravedad en el salto, velocidad constante solo en el desplazamiento de Canela.
+- [x] Duraciones: vista 400 ms, salto 520 ms, indicador 300 ms.
+- [x] Un movimiento por región: la franja de Canela está separada del contenido; nada compite con la entrada de vista.
+- [x] Bucle > 5 s con pausa visible; reduced motion con cuadro de reposo **dentro** de la pantalla.
+- [x] Bucle que calza (primer cuadro = último).

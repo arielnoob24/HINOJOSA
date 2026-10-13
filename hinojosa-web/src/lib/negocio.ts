@@ -11,14 +11,55 @@ type ClaveContacto = keyof typeof negocio.contacto;
 
 export const PENDIENTE = negocio.marcadorPendiente;
 
-/** Devuelve el valor solo si esta confirmado; si no, null. */
+/** Devuelve el valor (texto) solo si esta confirmado; si no, null. */
 export function datoConfirmado(clave: ClaveContacto): string | null {
-  const d = negocio.contacto[clave] as { valor: string | null; confirmado: boolean };
-  return d.confirmado && d.valor ? d.valor : null;
+  const d = negocio.contacto[clave] as { valor?: unknown; confirmado: boolean };
+  return d.confirmado && typeof d.valor === 'string' && d.valor.trim() ? d.valor : null;
+}
+
+/** Referencias para llegar (lista de frases), solo si estan confirmadas. */
+export function referenciasConfirmadas(): string[] | null {
+  const d = negocio.contacto.referenciasLlegar as { valor: unknown; confirmado: boolean };
+  if (!d.confirmado || !d.valor) return null;
+  const lista = Array.isArray(d.valor) ? d.valor : [d.valor];
+  const limpias = lista.filter((x): x is string => typeof x === 'string' && x.trim() !== '');
+  return limpias.length ? limpias : null;
+}
+
+export interface TramoHorario {
+  /** 1 = lunes ... 7 = domingo */
+  dias: number[];
+  abre: string;
+  cierra: string;
+}
+
+/**
+ * Horario confirmado: tramos (para calcular "Abierto ahora / Cerrado"),
+ * texto para personas y zona horaria. Null si falta cualquiera de las
+ * partes imprescindibles para no mostrar un estado falso.
+ */
+export function horarioConfirmado(): { tramos: TramoHorario[]; texto: string | null; zona: string | null } | null {
+  const h = negocio.contacto.horario as { valor: unknown; confirmado: boolean; texto?: unknown };
+  if (!h.confirmado || !Array.isArray(h.valor) || h.valor.length === 0) return null;
+  const tramos = (h.valor as TramoHorario[]).filter(
+    (t) => Array.isArray(t?.dias) && /^\d{2}:\d{2}$/.test(t?.abre) && /^\d{2}:\d{2}$/.test(t?.cierra),
+  );
+  if (!tramos.length) return null;
+  return {
+    tramos,
+    texto: typeof h.texto === 'string' && h.texto.trim() ? h.texto : null,
+    zona: datoConfirmado('zonaHoraria'),
+  };
+}
+
+/** Coordenadas del pin del mapa, solo si estan confirmadas. */
+export function coordenadasConfirmadas(): { lat: number; lng: number } | null {
+  const c = negocio.contacto.coordenadas as { lat: number | null; lng: number | null; confirmado: boolean };
+  return c.confirmado && typeof c.lat === 'number' && typeof c.lng === 'number' ? { lat: c.lat, lng: c.lng } : null;
 }
 
 /** Enlace wa.me con mensaje, o null si el WhatsApp no esta confirmado. */
-export function enlaceWhatsapp(mensaje: string = textos.comunes.mensajeWhatsappGeneral): string | null {
+export function enlaceWhatsapp(mensaje: string = textos.visitanos.mensajeWhatsapp): string | null {
   const numero = datoConfirmado('whatsapp');
   if (!numero) return null;
   const limpio = numero.replace(/\D/g, '');
@@ -32,24 +73,26 @@ export function enlaceTelefono(): string | null {
 
 /** Precio en USD con dos decimales, como en los afiches ("$28.00"). */
 export function formatoPrecio(precio: number | null, desde: boolean): string {
-  if (precio === null) return textos.catalogo.sinPrecio;
+  if (precio === null) return textos.productos.sinPrecio;
   const valor = `${negocio.moneda.simbolo}${precio.toFixed(2)}`;
-  return desde ? `${textos.catalogo.prefijoDesde} ${valor}` : valor;
+  return desde ? `${textos.productos.prefijoDesde} ${valor}` : valor;
+}
+
+/** Miniatura de 160 px de alto derivada de la imagen del carrusel. */
+export function miniaturaDe(imagen: string | null): string | null {
+  return imagen ? imagen.replace(/\.webp$/, '-thumb.webp') : null;
+}
+
+/** Variante AVIF de una imagen del carrusel (misma ruta, otra extension). */
+export function avifDe(imagen: string | null): string | null {
+  return imagen ? imagen.replace(/\.webp$/, '.avif') : null;
 }
 
 export function altDe(ruta: string): string {
   return (alts as Record<string, string>)[ruta] ?? '';
 }
 
-/** Contadores de "Por que elegirnos", calculados desde los datos. */
-export function contadores() {
-  const valores: Record<string, number> = {
-    'negocio.json > animalesAtendidos (longitud)': negocio.animalesAtendidos.length,
-    'productos.json > categorias (longitud)': catalogo.categorias.length,
-    'productos.json > productos (longitud)': catalogo.productos.length,
-    'productos.json > tablaProteinaTilapia.etapas (longitud)': catalogo.tablaProteinaTilapia.etapas.length,
-  };
-  return textos['por-que-elegirnos'].contadores
-    .filter((c) => c.fuente in valores)
-    .map((c) => ({ valor: valores[c.fuente], sufijo: c.sufijo, etiqueta: c.etiqueta }));
+/** Sustituye {clave} en una plantilla de textos.json. */
+export function plantilla(texto: string, valores: Record<string, string | number>): string {
+  return texto.replace(/\{(\w+)\}/g, (_, k: string) => String(valores[k] ?? `{${k}}`));
 }

@@ -1,47 +1,85 @@
 ---
-// Fuentes autoalojadas (@fontsource, version exacta en package.json): solo el
-// subconjunto latin y los pesos que se usan, con font-display: swap. Sin
-// peticiones a Google (la hoja de Google Fonts bloqueaba el render).
+// Fuentes autoalojadas (@fontsource): 3 familias y 4 pesos (presupuesto de
+// src/styles/tokens.css). Baloo 2 se retiro: Nunito 800 hace de titulo.
+// Caveat Brush NO viene de @fontsource: es un subconjunto propio de ~9 kB
+// (src/assets/fonts/caveat-brush-acento.woff2, @font-face en global.css).
 import '@fontsource/nunito/latin-400.css';
-import '@fontsource/nunito/latin-600.css';
-import '@fontsource/nunito/latin-700.css';
-import '@fontsource/baloo-2/latin-700.css';
-import '@fontsource/baloo-2/latin-800.css';
+import '@fontsource/nunito/latin-800.css';
 import '@fontsource/cormorant-garamond/latin-700.css';
-import '@fontsource/caveat-brush/latin-400.css';
 import '../styles/global.css';
-import { negocio } from '../lib/negocio';
-import { IMAGEN_SOCIAL, urlAbsoluta, localeOg, datosEstructurados, jsonLd } from '../lib/seo';
+import { negocio, catalogo } from '../lib/negocio';
+import { IMAGEN_SOCIAL, TITULO, DESCRIPCION, urlAbsoluta, urlCanonica, localeOg, datosEstructurados, jsonLd } from '../lib/seo';
 
 interface Props {
   title?: string;
   description?: string;
 }
 
-const animales = negocio.animalesAtendidos.map((a) => a.toLowerCase());
-const listaAnimales = `${animales.slice(0, -1).join(', ')} y ${animales.at(-1)}`;
-
-const {
-  title = `${negocio.nombre} | Balanceados y alimentos para animales`,
-  description = `${negocio.nombre}: venta de balanceados, alimentos y productos para ${listaAnimales}. ${negocio.eslogan}.`,
-} = Astro.props;
+// Titulo y descripcion del negocio completo (src/lib/seo.ts). El router
+// cambia document.title por vista en el cliente; el HTML servido lleva este.
+const { title = TITULO, description = DESCRIPCION } = Astro.props;
 
 // Sin `site` en astro.config.mjs (aun no hay dominio) estas URLs son null y
 // se omiten canonical, og:url y og:image: Open Graph exige URL absoluta.
-const canonical = urlAbsoluta(Astro.url.pathname, Astro.site);
+// Canonical unica: la portada (los hashes de vista no son paginas).
+const canonical = urlCanonica(Astro.site);
 const imagenSocial = urlAbsoluta(IMAGEN_SOCIAL.ruta, Astro.site);
-const esquema = jsonLd(datosEstructurados(Astro.site, description));
+const sitemap = Astro.site ? urlAbsoluta('/sitemap.xml', Astro.site) : null;
+const esquema = jsonLd(datosEstructurados(Astro.site));
+
+// QA M5: al entrar directo por #productos, la imagen LCP es el producto al
+// frente. VistaProductos.astro la pinta ya en el HTML como fondo CSS de una
+// tarjeta provisional (variante -400.avif) hasta que llega carrusel.ts. El
+// script inline de abajo la precarga SOLO si la vista inicial es productos
+// (en Inicio no se baja). Es la misma URL que elige el anillo en movil.
+const primeraCategoria = catalogo.categorias.slice().sort((a, b) => a.orden - b.orden)[0]?.id;
+const productoFrente = catalogo.productos.find((p) => p.categoria === primeraCategoria && p.imagen);
+const precargaProductos = productoFrente?.imagen ? productoFrente.imagen.replace(/\.webp$/, '-400.avif') : null;
+const arranque = `(function () {
+  var html = document.documentElement;
+  html.classList.add('js');
+  try {
+    if (localStorage.getItem('hinojosa-movimiento') === 'pausado') {
+      html.setAttribute('data-movimiento', 'pausado');
+    }
+  } catch (e) {}
+  var vistas = ['inicio', 'nosotros', 'productos', 'por-que', 'visitanos'];
+  var h = location.hash.slice(1);
+  var inicial = vistas.indexOf(h) > -1 ? h : 'inicio';
+  html.setAttribute('data-router', 'arrancando');
+  html.setAttribute('data-vista-inicial', inicial);
+  // Con CSS 3D, la rejilla de respaldo no se pinta mientras llega el
+  // carrusel: sus ~17 imagenes competian por la red con carrusel.js y
+  // retrasaban el LCP de #productos (QA M5). carrusel-carga.ts quita la
+  // marca si la carga falla o tarda (la rejilla vuelve a ser el respaldo).
+  try {
+    if (CSS.supports('perspective', '1px') && CSS.supports('transform-style', 'preserve-3d')) {
+      html.setAttribute('data-carrusel-pendiente', '');
+    }
+  } catch (e) {}
+  var pre = ${JSON.stringify(precargaProductos).replace(/</g, '\\u003c')};
+  if (inicial === 'productos' && pre) {
+    var l = document.createElement('link');
+    l.rel = 'preload';
+    l.as = 'image';
+    l.type = 'image/avif';
+    l.href = pre;
+    l.setAttribute('fetchpriority', 'high');
+    document.head.appendChild(l);
+  }
+})();`;
 ---
 <!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="theme-color" content="#1b4d2b" />
     <meta name="generator" content={Astro.generator} />
     {canonical && <link rel="canonical" href={canonical} />}
+    {sitemap && <link rel="sitemap" type="application/xml" href={sitemap} />}
 
     <!-- Open Graph / redes sociales -->
     <meta property="og:type" content="website" />
@@ -76,34 +114,30 @@ const esquema = jsonLd(datosEstructurados(Astro.site, description));
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-    <!-- Estado inicial: JS disponible y preferencia de "Pausar animaciones"
-         (se aplica antes del primer pintado para no ver movimiento) -->
-    <script is:inline>
-      (function () {
-        var html = document.documentElement;
-        html.classList.add('js');
-        try {
-          if (localStorage.getItem('hinojosa-movimiento') === 'pausado') {
-            html.setAttribute('data-movimiento', 'pausado');
-          }
-        } catch (e) {}
-      })();
-    </script>
+    <!-- Estado inicial, antes del primer pintado:
+         - .js y la preferencia "Pausar animacion" guardada;
+         - data-router + data-vista-inicial: solo la vista del hash se pinta
+           mientras carga router.ts (sin esto se veria un instante la pagina
+           apilada). Sin JS no se pone nada y las 5 vistas quedan apiladas.
+         - si se entra por #productos: preload de la imagen del producto al
+           frente (QA M5). -->
+    <script is:inline set:html={arranque} />
   </head>
-  <body class="min-h-dvh">
+  <body>
     <a
       href="#contenido"
-      class="sr-only z-50 rounded-boton bg-bosque font-bold text-blanco shadow-elevada focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:px-5 focus:py-3"
+      class="saltar-contenido sr-only rounded-boton bg-bosque font-extrabold text-blanco shadow-elevada focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:px-5 focus:py-3"
+      data-saltar-contenido
     >
       Saltar al contenido
     </a>
     <slot />
 
-    <!-- Fase 4: arranque de animaciones. Pesa ~2 kB; GSAP, Lenis y Three.js
-         se descargan despues, en idle, solo si el dispositivo y el usuario
-         lo permiten (src/lib/animacion/arranque.ts). -->
+    <!-- Router de vistas (src/lib/router.ts). Las animaciones de la fase 4
+         se enganchan a sus eventos; ver la cabecera de router.ts. -->
     <script>
-      import '../lib/animacion/arranque';
+      import '../lib/router';
+      import '../lib/indicador-scroll';
     </script>
   </body>
 </html>

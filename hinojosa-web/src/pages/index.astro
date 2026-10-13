@@ -1,32 +1,23 @@
 ---
-// Pagina unica: orden de secciones de PLAN.md, seccion 3.
+// Pagina unica con 5 vistas a pantalla completa (PLAN.md, secciones 3 y 4;
+// contrato en la skill vistas-hinojosa). Las 5 vistas van SIEMPRE en el
+// HTML servido (SEO); src/lib/router.ts muestra una y oculta las demas
+// con hidden + inert. Sin JS se ven apiladas.
 import Layout from '../layouts/Layout.astro';
-import Header from '../components/Header.astro';
-import Hero from '../components/Hero.astro';
-import QuienesSomos from '../components/QuienesSomos.astro';
-import Canela from '../components/Canela.astro';
-import Categorias from '../components/Categorias.astro';
-import Catalogo from '../components/Catalogo.astro';
-import Valores from '../components/Valores.astro';
-import PorQueElegirnos from '../components/PorQueElegirnos.astro';
-import Ubicacion from '../components/Ubicacion.astro';
-import Contacto from '../components/Contacto.astro';
-import Footer from '../components/Footer.astro';
-import WhatsappFlotante from '../components/WhatsappFlotante.astro';
+import Barra from '../components/Barra.astro';
+import VistaInicio from '../components/vistas/VistaInicio.astro';
+import VistaNosotros from '../components/vistas/VistaNosotros.astro';
+import VistaProductos from '../components/vistas/VistaProductos.astro';
+import VistaPorQue from '../components/vistas/VistaPorQue.astro';
+import VistaVisitanos from '../components/vistas/VistaVisitanos.astro';
 ---
 <Layout>
-  <Header />
-  <main id="contenido" tabindex="-1" class="outline-none">
-    <Hero />
-    <QuienesSomos />
-    <Canela />
-    <Categorias />
-    <Catalogo />
-    <Valores />
-    <PorQueElegirnos />
-    <Ubicacion />
-    <Contacto />
+  <Barra />
+  <main id="contenido" tabindex="-1">
+    <VistaInicio />
+    <VistaNosotros />
+    <VistaProductos />
+    <VistaPorQue />
+    <VistaVisitanos />
   </main>
-  <Footer />
-  <WhatsappFlotante />
 </Layout>

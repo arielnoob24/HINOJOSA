@@ -29,7 +29,7 @@ Esto no es un detalle de estilo: cambia cómo se construye, cómo se anima, cóm
 4. **Un hash por vista.** El router escucha `hashchange`, así funciona el botón "atrás" del navegador y se puede compartir un enlace directo a una vista.
 5. **Al cambiar de vista, el foco va al título de la vista nueva** (`tabindex="-1"` en el `<h1>`/`<h2>`), para que el lector de pantalla anuncie dónde está. La animación de transición no puede retrasar esto: la accesibilidad va primero y el movimiento acompaña.
 6. La barra marca la vista activa con `aria-current="page"` **y** con una señal visual que no sea solo color — subrayado o pastilla de fondo (WCAG 1.4.1).
-7. `←` / `→` y `AvPág` / `RePág` cambian de vista, **pero solo cuando el foco no está dentro de un campo de texto.** Si te olvidas de esto, las flechas dejan de mover el cursor en el buscador del catálogo y lo rompes.
+7. `←` / `→` y `AvPág` / `RePág` cambian de vista, **pero solo cuando el foco no está dentro de un campo de texto.** Si te olvidas de esto, las flechas dejan de mover el cursor en el buscador del catálogo y lo rompes. **Segunda excepción:** con el foco dentro del carrusel de Productos (contenedor con `data-captura-flechas`), `←`/`→` giran el carrusel y no cambian de vista. El router ignora el evento si `e.target.closest('input, textarea, select, [contenteditable], [data-captura-flechas]')`.
 8. **Sin JavaScript, las 5 vistas quedan visibles una debajo de otra.** Degradación honesta, nunca una pantalla en blanco. Esto implica que el `overflow: hidden` y el `display: none` los aplica el router al arrancar, no el CSS base.
 
 ---
@@ -115,13 +115,13 @@ Sin scroll **no hay `IntersectionObserver` ni ScrollTrigger**. El evento de camb
 
 | Recurso | Se carga al entrar en |
 |---|---|
-| Ruleta 3D (Three.js + 10 `.glb`) | `#productos` |
+| Carrusel CSS 3D (`src/lib/animacion/carrusel.ts` + GSAP core, import dinámico desde `carrusel-carga.ts`) e imágenes de la categoría activa | `#productos` |
 | Mapa (Leaflet) | `#visitanos` |
-| Lottie de pilares y animales | `#por-que` |
+| Entrada única de iconos de pilares y animales (CSS sobre los SVG; sin Lottie) | `#por-que` |
 | Video de la fachada | `#visitanos` |
 
 - Solo la vista **Inicio** se descarga completa de entrada. Presupuesto: **menos de 1,5 MB**.
-- Three.js **pausa su bucle de render** al salir de `#productos` y lo reanuda al volver. Hay que comprobarlo, no suponerlo.
+- No hay Three.js. El carrusel no tiene bucle de render: GSAP solo anima mientras gira y su ticker se duerme solo; al salir de `#productos` se terminan los tweens en curso. Comprobado con un contador de `requestAnimationFrame` (0 por segundo fuera de Productos).
 - Un recurso ya cargado no se vuelve a cargar al volver a entrar en su vista.
 
 ---

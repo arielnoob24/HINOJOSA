@@ -1,30 +1,67 @@
 ---
-// "Pausar animaciones" (WCAG 2.2.2). Boton conmutador: nombre fijo +
+// "Pausar animacion" (WCAG 2.2.2). Boton conmutador: nombre fijo +
 // aria-pressed. Pone data-movimiento="pausado" en <html>, lo guarda en
-// localStorage (con try/catch) y pausa los videos decorativos.
-// La fase de animacion debe escuchar el evento "hinojosa:movimiento"
-// (detail.pausado) para detener Three.js, GSAP o Lenis.
+// localStorage (con try/catch) y emite el evento "hinojosa:movimiento"
+// (detail.pausado) en window. El bucle del perrito, el paralaje y
+// cualquier video decorativo DEBEN escucharlo y detenerse de verdad.
+// Sin JS no tendria efecto, por eso empieza oculto.
 import Icono from './Icono.astro';
+import { textos } from '../lib/negocio';
 
 interface Props {
   class?: string;
+  tema?: 'claro' | 'oscuro';
 }
-const { class: clase = '' } = Astro.props;
+const { class: clase = '', tema = 'oscuro' } = Astro.props;
+const t = textos.inicio;
 ---
 <button
   type="button"
-  class:list={[
-    'inline-flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-crema/70 text-crema hover:bg-bosque-noche',
-    clase,
-  ]}
+  class:list={['boton-pausa', `boton-pausa-${tema}`, clase]}
   aria-pressed="false"
+  title={t.pausarAnimacion}
   data-boton-pausa
+  data-texto-pausar={t.pausarAnimacion}
+  data-texto-reanudar={t.reanudarAnimacion}
   hidden
 >
-  <span class="sr-only">Pausar animaciones</span>
+  <span class="sr-only">{t.pausarAnimacion}</span>
   <span data-icono-pausa><Icono nombre="pausa" class="size-5" /></span>
   <span data-icono-play hidden><Icono nombre="play" class="size-5" /></span>
 </button>
+
+<style>
+  .boton-pausa {
+    display: inline-flex;
+    width: var(--spacing-objetivo, 2.75rem);
+    height: var(--spacing-objetivo, 2.75rem);
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 2px solid currentColor;
+    transition: background-color var(--duracion-hover, 200ms) ease;
+  }
+  .boton-pausa[hidden] {
+    display: none;
+  }
+  /* Sobre bosque: crema (8.69) y foco oro (5.44) */
+  .boton-pausa-oscuro {
+    --color-foco: var(--color-foco-oscuro);
+    color: var(--color-crema);
+    background: var(--color-pausa-oscuro);
+  }
+  .boton-pausa-oscuro:hover {
+    background: var(--color-bosque-noche);
+  }
+  .boton-pausa-claro {
+    color: var(--color-bosque);
+    background: var(--color-blanco);
+  }
+  .boton-pausa-claro:hover {
+    background: var(--color-hoja-claro);
+  }
+</style>
 
 <script>
   const CLAVE = 'hinojosa-movimiento';
@@ -35,7 +72,7 @@ const { class: clase = '' } = Astro.props;
   const pintar = (pausado: boolean) => {
     document.querySelectorAll<HTMLButtonElement>('[data-boton-pausa]').forEach((b) => {
       b.setAttribute('aria-pressed', String(pausado));
-      b.title = pausado ? 'Reanudar animaciones' : 'Pausar animaciones';
+      b.title = (pausado ? b.dataset.textoReanudar : b.dataset.textoPausar) ?? '';
       b.querySelector<HTMLElement>('[data-icono-pausa]')!.hidden = pausado;
       b.querySelector<HTMLElement>('[data-icono-play]')!.hidden = !pausado;
     });
@@ -55,7 +92,7 @@ const { class: clase = '' } = Astro.props;
   };
 
   document.querySelectorAll<HTMLButtonElement>('[data-boton-pausa]').forEach((b) => {
-    b.hidden = false; // sin JS no tendria efecto, por eso empieza oculto
+    b.hidden = false;
     b.addEventListener('click', () => aplicar(!leer()));
   });
   pintar(leer());

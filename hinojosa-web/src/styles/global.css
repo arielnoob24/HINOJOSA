@@ -1,140 +1,33 @@
 @import "tailwindcss";
+@import "./tokens.css";
 
 /* =====================================================================
-   Comercial Hinojosa - tokens de marca (fase 1, direccion de arte)
-   Guia completa: docs/guia-estilo.md  |  Hero: docs/storyboard-hero.md
-
-   Valores afinados a ojo sobre logo-completo-recorte.png y los afiches.
-   Confirmar con el logo vectorial cuando la duena lo entregue.
-
-   FUENTES: autoalojadas con @fontsource (subconjunto latin, font-display:
-   swap), importadas en src/layouts/Layout.astro. Ya no se usa Google Fonts.
-
-   Pesos en uso:
-   - Baloo 2 700/800 ............ titulos de marca (font-display)
-   - Cormorant Garamond 700 ..... nombres de producto (font-serif); 600 e
-     italica no se usaban y se retiraron
-   - Caveat Brush 400 ........... acento manuscrito (font-script)
-   - Nunito 400/600/700 ......... cuerpo, botones, formularios (font-sans)
+   Comercial Hinojosa - estilos globales (sitio por vistas)
+   TOKENS: src/styles/tokens.css (colores, fuentes, escala, radios,
+   sombras, curvas, duraciones). No definir colores ni fuentes aqui.
+   Guia: docs/guia-estilo.md · Contrato del router: skill vistas-hinojosa
+   Movimiento: docs/storyboard-hero.md y docs/storyboard-carrusel.md
    ===================================================================== */
 
-@theme static {
-  /* ---------- Colores de marca ---------- */
-  --color-bosque: #1b4d2b;        /* verde profundo: fondos oscuros, titulos */
-  --color-bosque-noche: #10301b;  /* footer, degradados profundos */
-  --color-marca: #2e8b2e;         /* verde del logo: iconos, ilustracion, texto >= 24px */
-  --color-marca-fuerte: #267a2c;  /* botones con texto blanco, enlaces sobre crema/blanco */
-  --color-hoja: #7bbf3a;          /* acentos, hojas, detalles (no texto sobre claro) */
-  --color-hoja-claro: #eaf4dc;    /* superficies tintadas en verde */
-  --color-maiz: #f2b823;          /* oro: CTA secundario, chips, detalles. Texto encima: tinta o bosque */
-  --color-maiz-oscuro: #d99e0f;   /* hover del boton oro */
-  --color-crema: #f6f1e4;         /* fondo claro principal */
-  --color-crema-oscuro: #ede4cc;  /* tarjetas alternas, bordes suaves */
-  --color-canela: #c98a3a;        /* Canela, calidez, granos (decorativo) */
-  --color-canela-oscuro: #8a5a1f; /* texto canela legible sobre claro */
-  --color-tinta: #14301d;         /* texto principal */
-  --color-tinta-suave: #3d5a45;   /* texto secundario */
-  --color-blanco: #ffffff;
-
-  /* Anillo de foco por defecto (sobre fondos claros). En secciones
-     oscuras se cambia con .tema-oscuro (ver abajo). */
-  --color-foco: #1b4d2b;
-
-  /* ---------- Familias ---------- */
-  --font-display: "Baloo 2", "Nunito", ui-rounded, system-ui, sans-serif;
-  --font-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
-  --font-script: "Caveat Brush", "Segoe Print", cursive;
-  --font-sans: "Nunito", ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-
-  /* ---------- Escala tipografica fluida (360px -> 1440px) ---------- */
-  --text-cuerpo: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-  --text-cuerpo--line-height: 1.6;
-  --text-chico: clamp(0.875rem, 0.85rem + 0.1vw, 0.9375rem);
-  --text-chico--line-height: 1.5;
-  --text-lead: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
-  --text-lead--line-height: 1.5;
-  --text-h3: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
-  --text-h3--line-height: 1.25;
-  --text-h2: clamp(1.75rem, 1.35rem + 2vw, 2.75rem);
-  --text-h2--line-height: 1.1;
-  --text-h1: clamp(2.25rem, 1.6rem + 3.2vw, 4rem);
-  --text-h1--line-height: 1.05;
-  --text-display: clamp(2.75rem, 1.8rem + 4.75vw, 5.5rem);
-  --text-display--line-height: 1;
-  --text-producto: clamp(1.375rem, 1.2rem + 0.9vw, 1.875rem);
-  --text-producto--line-height: 1.15;
-  --text-acento: clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem);
-  --text-acento--line-height: 1.1;
-
-  /* ---------- Radios ---------- */
-  --radius-boton: 999px;
-  --radius-chip: 999px;
-  --radius-tarjeta: 1.25rem;
-  --radius-panel: 2rem;
-  --radius-insignia: 50%;
-
-  /* ---------- Sombras (tintadas en verde, nunca negro puro) ---------- */
-  --shadow-suave: 0 1px 2px rgb(20 48 29 / 0.06), 0 4px 12px rgb(20 48 29 / 0.06);
-  --shadow-tarjeta: 0 2px 4px rgb(20 48 29 / 0.06), 0 12px 28px -8px rgb(20 48 29 / 0.18);
-  --shadow-elevada: 0 4px 8px rgb(20 48 29 / 0.08), 0 24px 48px -12px rgb(20 48 29 / 0.28);
-  --shadow-boton-oro: 0 6px 18px -6px rgb(217 158 15 / 0.65);
-
-  /* ---------- Espaciado de seccion (genera py-seccion, gap-bloque...) ---------- */
-  --spacing-seccion: clamp(4rem, 2.5rem + 6vw, 8rem);
-  --spacing-bloque: clamp(2rem, 1.5rem + 2vw, 3.5rem);
-  --spacing-gutter: clamp(1.25rem, 0.75rem + 2.5vw, 3rem);
-
-  --container-contenido: 72rem;  /* max-w-contenido */
-  --container-texto: 40rem;      /* max-w-texto (~65 caracteres) */
-
-  /* ---------- Movimiento ---------- */
-  --ease-suave: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-rebote: cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  --animate-entrar: entrar 600ms var(--ease-suave) both;
-  --animate-entrar-insignia: entrar-insignia 700ms var(--ease-rebote) both;
-  --animate-flotar: flotar 7s ease-in-out infinite;
-  --animate-balanceo: balanceo 4.5s ease-in-out infinite;
-  --animate-caer-hoja: caer-hoja 14s linear infinite;
-  --animate-pulso: pulso 1.6s var(--ease-suave) 3;
-
-  @keyframes entrar {
-    from { opacity: 0; transform: translateY(1.25rem); }
-    to { opacity: 1; transform: none; }
-  }
-  /* Sin opacidad: la insignia de Canela es el elemento LCP medido (mayor
-     que el logo). Un fundido desde opacity 0 retrasaba el LCP de 1.9 s a
-     3.9 s en 4G lento con CPU x4 (fase 4). Solo transform. */
-  @keyframes entrar-insignia {
-    from { transform: translateY(1.5rem) scale(0.9); }
-    to { transform: none; }
-  }
-  @keyframes flotar {
-    0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
-    50% { transform: translate3d(0, -0.5rem, 0) rotate(6deg); }
-  }
-  @keyframes balanceo {
-    0%, 100% { transform: rotate(-1.5deg) scale(1); }
-    50% { transform: rotate(1.5deg) scale(1.015); }
-  }
-  @keyframes caer-hoja {
-    0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
-    10% { opacity: 0.8; }
-    90% { opacity: 0.8; }
-    100% { transform: translate3d(3rem, 110vh, 0) rotate(240deg); opacity: 0; }
-  }
-  @keyframes pulso {
-    0% { box-shadow: 0 0 0 0 rgb(46 139 46 / 0.55); }
-    100% { box-shadow: 0 0 0 1.25rem rgb(46 139 46 / 0); }
-  }
-}
-
-/* Duraciones de referencia para JS (GSAP, scroll) */
-:root {
-  --duracion-rapida: 180ms;
-  --duracion-base: 300ms;
-  --duracion-entrada: 600ms;
-  --paralaje-max: 12px;
+/* Caveat Brush: subconjunto de glifos (QA M3). El paquete completo de
+   @fontsource pesaba 66 kB para 2-3 frases y retrasaba el primer pintado.
+   Contiene solo los caracteres de las frases con --font-script (lema de
+   Inicio, frase de Por que, "familia" de Quienes somos), en mayusculas y
+   minusculas, mas espacio y puntuacion basica; 9 kB.
+   SI CAMBIA ALGUNA DE ESAS FRASES en textos.json y trae letras nuevas, hay
+   que regenerarlo (si no, esas letras salen en la fuente de respaldo):
+     pip install fonttools brotli
+     pyftsubset node_modules/@fontsource/caveat-brush/files/caveat-brush-latin-400-normal.woff2 \
+       --text-file=<caracteres.txt> --flavor=woff2 --layout-features=kern \
+       --no-hinting --desubroutinize \
+       --output-file=src/assets/fonts/caveat-brush-acento.woff2
+   (Sin "liga"/"calt": arrastran glifos alternativos y triplican el peso.) */
+@font-face {
+  font-family: "Caveat Brush";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/caveat-brush-acento.woff2") format("woff2");
 }
 
 @layer base {
@@ -171,9 +64,9 @@
     color: var(--color-tinta);
   }
 
-  /* Secciones de fondo verde: texto claro y foco en oro */
+  /* Superficies verdes: texto claro y foco en oro */
   .tema-oscuro {
-    --color-foco: #f2b823;
+    --color-foco: var(--color-foco-oscuro);
     background-color: var(--color-bosque);
     color: var(--color-crema);
   }
@@ -192,416 +85,234 @@
     outline: none;
   }
 
-  /* Anclas: no esconder el titulo bajo el header fijo */
-  :target {
-    scroll-margin-top: 5.5rem;
-  }
-}
-
-/* Scroll suave solo si el usuario acepta movimiento */
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
-}
-
-/* Movimiento reducido: sin animaciones ni transiciones */
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    animation-delay: 0ms !important;
-    transition-duration: 0.01ms !important;
-    transition-delay: 0ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* Boton "Pausar animaciones" del hero (WCAG 2.2.2): pone
-   data-movimiento="pausado" en <html> y congela los bucles decorativos */
-html[data-movimiento="pausado"] *,
-html[data-movimiento="pausado"] *::before,
-html[data-movimiento="pausado"] *::after {
-  animation-play-state: paused !important;
-}
-
-/* =====================================================================
-   Fase 2 (frontend base, sin 3D): componentes y efectos solo con CSS.
-   Los ganchos para la fase de animacion son atributos data-*:
-   data-escena, data-capa, data-profundidad, data-tilt, data-contador...
-   ===================================================================== */
-
-@layer base {
-  /* Anclas de seccion: compensar el header fijo (ver tambien :target).
-     Tambien los controles enfocables: al llegar con Tab o desplazarse hasta
-     ellos no deben quedar bajo el header (WCAG 2.4.11 y 2.5.8; QA, B6). */
-  main [id],
-  footer[id],
-  main :is(a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])) {
-    scroll-margin-top: 5.5rem;
-  }
-
-  /* Cifras de precio y contadores alineadas */
+  /* Cifras de precio alineadas */
   .cifra {
     font-variant-numeric: tabular-nums;
   }
 }
 
-@layer components {
-  .contenedor {
-    @apply mx-auto w-full max-w-contenido px-4 sm:px-6 lg:px-8;
+/* Sin JS las vistas van apiladas y la pagina si se desplaza: los enlaces
+   internos (#lista-granja...) se mueven con suavidad si se acepta. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-router]) {
+    scroll-behavior: smooth;
   }
+}
 
-  /* Botones: alto minimo 48 px, texto Nunito 700 */
+/* ---------------------------------------------------------------------
+   Sin movimiento: prefers-reduced-motion O la pausa del usuario
+   (BotonPausa: html[data-movimiento="pausado"], WCAG 2.2.2).
+   `animation: none` y no "duracion 0,01 ms": asi cada elemento queda en su
+   estado de reposo natural y no en el ultimo fotograma de una animacion
+   (que dejaba a Canela fuera de pantalla). Las transiciones de hover se
+   acortan a 0 pero siguen llegando a su estado final.
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+html[data-movimiento="pausado"] *,
+html[data-movimiento="pausado"] *::before,
+html[data-movimiento="pausado"] *::after {
+  animation: none !important;
+}
+
+@layer components {
+  /* Botones: alto minimo 48 px, Nunito 800 (los pesos cargados son 400/800) */
   .boton {
-    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-boton px-6 py-2.5 text-center font-sans font-bold leading-tight;
-    transition: background-color var(--duracion-rapida) ease, color var(--duracion-rapida) ease,
-      transform var(--duracion-rapida) var(--ease-suave);
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-boton px-6 py-2.5 text-center font-sans font-extrabold leading-tight;
+    transition:
+      background-color var(--duracion-hover) ease,
+      color var(--duracion-hover) ease,
+      transform var(--duracion-presion) ease-out;
   }
-  .boton-principal {
-    @apply bg-marca-fuerte text-blanco hover:bg-bosque;
+  .boton:active {
+    transform: scale(0.96);
   }
+  /* CTA oro: tinta encima 7.93. Maximo uno por vista */
   .boton-oro {
     @apply bg-maiz text-tinta shadow-boton-oro hover:bg-maiz-oscuro;
-  }
-  .boton-terciario {
-    @apply border-2 border-bosque text-bosque hover:bg-bosque hover:text-blanco;
-  }
-  /* Dato no confirmado: no es un control, solo un aviso con forma de boton */
-  .boton-pendiente {
-    @apply cursor-default border-2 border-dashed border-tinta-suave/60 bg-transparent text-tinta-suave;
-  }
-  .tema-oscuro .boton-pendiente {
-    @apply border-crema/60 text-crema;
   }
 
   /* Marcador "Por confirmar" */
   .pendiente {
-    @apply inline-flex items-center gap-1.5 rounded-chip border border-dashed border-canela-oscuro px-2.5 py-0.5 text-chico font-bold text-canela-oscuro;
-  }
-
-  .tarjeta {
-    @apply rounded-tarjeta border border-crema-oscuro bg-blanco shadow-tarjeta;
+    @apply inline-flex items-center gap-1.5 rounded-chip border border-dashed border-canela-oscuro px-2.5 py-0.5 text-chico font-extrabold text-canela-oscuro;
   }
 }
 
-/* ---------- Menu movil (solo con JS; sin JS la lista se ve siempre) ---------- */
-/* Sin JS el header no es fijo en movil: la lista de enlaces ocupa varias filas */
-[data-header] {
+/* =====================================================================
+   ESTRUCTURA DE VISTAS (contrato vistas-hinojosa)
+   Sin JS (no hay data-router): todo en flujo normal, vistas apiladas,
+   barra arriba y sin overflow:hidden. Degradacion honesta.
+   ===================================================================== */
+
+.saltar-contenido {
+  z-index: 60;
+}
+
+.vista {
   position: relative;
-}
-.js [data-header] {
-  position: sticky;
-}
-.js .menu-lista.abierta {
+  display: flex;
   flex-direction: column;
 }
-.boton-menu {
-  display: none;
-}
-.js .boton-menu {
-  display: inline-flex;
-}
-.js .menu-lista:not(.abierta) {
-  display: none;
-}
-@media (min-width: 64rem) {
-  .js .boton-menu {
-    display: none;
-  }
-  [data-header] {
-    position: sticky;
-  }
-  .js .menu-lista:not(.abierta),
-  .menu-lista {
-    display: flex;
-    flex-direction: row;
-  }
+.vista-cuerpo {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
 }
 
-/* ---------- Animaciones de esta fase ---------- */
-@keyframes caer-grano {
+html[data-router],
+html[data-router] body {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* La capa de vistas ocupa la ventana; cada vista se superpone */
+html[data-router] main {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+html[data-router] .vista {
+  position: absolute;
+  inset: 0;
+  height: 100dvh;
+  padding-top: var(--spacing-barra);
+}
+html[data-router] .vista[data-saliendo] {
+  pointer-events: none;
+}
+/* Scroll interno de la vista: en escritorio no deberia hacer falta; en
+   movil, si no cabe, se desplaza la vista y nunca la pagina. */
+html[data-router] .vista-cuerpo {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Mientras router.ts no ha corrido: solo la vista del hash */
+html[data-vista-inicial="inicio"] .vista:not(#inicio),
+html[data-vista-inicial="nosotros"] .vista:not(#nosotros),
+html[data-vista-inicial="productos"] .vista:not(#productos),
+html[data-vista-inicial="por-que"] .vista:not(#por-que),
+html[data-vista-inicial="visitanos"] .vista:not(#visitanos) {
+  display: none;
+}
+
+/* Titulo de vista: recibe el foco por programa (tabindex=-1). Subrayado
+   discreto en lugar del anillo. */
+[data-titulo-vista]:focus {
+  outline: none;
+}
+[data-titulo-vista]:focus-visible {
+  outline: none;
+  text-decoration: underline;
+  text-decoration-color: var(--color-hoja);
+  text-decoration-thickness: 0.12em;
+  text-underline-offset: 0.18em;
+}
+
+/* Barra inferior en movil: la vista reserva su alto */
+@media (max-width: 47.999rem) {
+  html[data-router] .vista {
+    padding-bottom: calc(var(--spacing-barra-movil) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Senal de "hay mas abajo" (QA M8, src/lib/indicador-scroll.ts): sombra
+     inferior sobre el borde de la barra cuando el cuerpo de la vista tiene
+     contenido bajo el pliegue; se desvanece al llegar al final. Decorativa
+     (span aria-hidden de Vista.astro, sin texto) y no bloquea toques.
+     Tinta translucida: funciona sobre crema, blanco o verde. */
+  html[data-router] .vista-sombra {
+    display: block;
+    position: absolute;
+    right: 0;
+    bottom: calc(var(--spacing-barra-movil) + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    z-index: var(--z-control);
+    height: 2.75rem;
+    background: linear-gradient(to top, rgb(20 48 29 / 0.3), rgb(20 48 29 / 0.1) 45%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duracion-hover) ease;
+  }
+  html[data-router] .vista[data-mas-abajo] > .vista-sombra {
+    opacity: 1;
+  }
+}
+.vista-sombra {
+  display: none;
+}
+
+/* Elementos que solo tienen sentido con JS (buscador, pestanas, flechas) */
+html:not(.js) [data-solo-js] {
+  display: none !important;
+}
+
+/* =====================================================================
+   MOVIMIENTO (fase 4, JS en src/lib/animacion/)
+   ===================================================================== */
+
+/* Transicion entre vistas (vistas.ts): solo la ENTRANTE, 48 px + fundido,
+   400 ms ease-vista. El router no la pide con reduced motion ni pausa. */
+html[data-router] .vista[data-entrando="adelante"] {
+  animation: var(--animate-vista-adelante);
+}
+html[data-router] .vista[data-entrando="atras"] {
+  animation: var(--animate-vista-atras);
+}
+
+/* Entrada unica de iconos (entradas.ts): el circulo aparece con escala
+   leve y el trazo se dibuja. Una vez; luego se retira la clase. */
+.icono-entra {
+  animation: icono-aparece 500ms var(--ease-vista) var(--retraso, 0ms) both;
+}
+.icono-entra :is(path, circle, ellipse, rect) {
+  stroke-dasharray: 1;
+  animation: trazo-dibuja 700ms var(--ease-vista) calc(var(--retraso, 0ms) + 120ms) both;
+}
+@keyframes icono-aparece {
   from {
     opacity: 0;
-    transform: translate3d(0, calc(var(--caida, 60px) * -1), 0) rotate(var(--giro, 30deg));
+    transform: scale(0.72);
   }
   to {
     opacity: 1;
     transform: none;
   }
 }
-@keyframes deriva {
-  from { transform: translate3d(-10px, 0, 0) rotate(-3deg); }
-  to { transform: translate3d(10px, 6px, 0) rotate(3deg); }
-}
-@keyframes girar-costal {
-  from { transform: perspective(900px) rotateY(-14deg) translateY(1.5rem); }
-  to { transform: none; }
-}
-
-/* Entrada orquestada del hero (storyboard: 1.6 s en total).
-   El logo NO lleva entrada: es la imagen LCP. */
-.entrada {
-  animation: var(--animate-entrar);
-  animation-delay: var(--retraso, 0ms);
-}
-.entrada-insignia {
-  animation: var(--animate-entrar-insignia);
-  animation-delay: var(--retraso, 150ms);
-}
-.grano-caida {
-  animation: caer-grano 700ms var(--ease-suave) both;
-  animation-delay: var(--retraso, 600ms);
-}
-.grano-flota {
-  animation: var(--animate-flotar);
-  animation-delay: var(--desfase, -1s);
-}
-.deriva {
-  animation: deriva 12s ease-in-out infinite alternate;
-  animation-delay: var(--desfase, 0s);
-}
-.balanceo {
-  transform-origin: 50% 92%;
-  animation: var(--animate-balanceo);
-  animation-delay: 1.6s;
-}
-.hoja-cae {
-  animation: var(--animate-caer-hoja);
-  animation-delay: var(--desfase, 0s);
-}
-/* Subrayado que se dibuja de izquierda a derecha, linea por linea */
-.subrayado {
-  background-image: linear-gradient(var(--color-hoja), var(--color-hoja));
-  background-repeat: no-repeat;
-  background-position: left 100%;
-  background-size: 100% 0.12em;
-  padding-bottom: 0.08em;
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-  animation: subrayar 400ms var(--ease-suave) both;
-  animation-delay: 1000ms;
-}
-@keyframes subrayar {
-  from { background-size: 0% 0.12em; }
-  to { background-size: 100% 0.12em; }
-}
-.pulso {
-  animation: var(--animate-pulso);
-  animation-delay: 4s;
-}
-
-/* Movil: entrada mas corta (1.0 s) */
-@media (max-width: 47.999rem) {
-  .entrada,
-  .entrada-insignia,
-  .grano-caida {
-    animation-delay: calc(var(--retraso, 0ms) * 0.6);
+@keyframes trazo-dibuja {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
   }
 }
 
-/* Con las animaciones pausadas, las entradas se muestran en su estado final
-   (si solo se pausaran quedarian congeladas en opacidad 0). */
-html[data-movimiento="pausado"] :is(.entrada, .entrada-insignia, .grano-caida, .tarjeta-categoria, .subrayado) {
-  animation: none !important;
+/* Pin del mapa (entradas.ts): cae y asienta con ease-rebote, una vez */
+[data-mapa][data-pin-entra] :is(.vis-pin, .mapa-pin svg):not([data-animado]) {
+  transform-origin: 50% 100%;
+  animation: pin-cae 650ms var(--ease-rebote) var(--retraso-pin, 0ms) both;
 }
-
-/* Tilt sencillo y elevacion: solo con raton y si se acepta movimiento */
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  [data-tilt] {
-    transition: transform var(--duracion-base) var(--ease-suave), box-shadow var(--duracion-base) ease;
-  }
-  [data-tilt]:hover {
-    transform: perspective(900px) rotateX(3deg) rotateY(-4deg) translateY(-4px);
-    box-shadow: var(--shadow-elevada);
-  }
-  .tarjeta-producto {
-    transition: transform 200ms var(--ease-suave), box-shadow 200ms ease;
-  }
-  .tarjeta-producto:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-elevada);
-  }
-}
-
-/* Categorias: giro tipo costal ligado al scroll (mejora progresiva) */
-@supports (animation-timeline: view()) {
-  @media (min-width: 64rem) and (prefers-reduced-motion: no-preference) {
-    /* Solo propiedades sueltas: con el shorthand `animation`, el minificador
-       metia view() dentro de el (invalido) y el navegador descartaba la regla. */
-    .tarjeta-categoria {
-      animation-name: girar-costal;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 35%;
-    }
-  }
-}
-
-/* =====================================================================
-   Fase 4 (animacion e interaccion). JS en src/lib/animacion/.
-   Clases que pone el JS en <html>, solo cuando la libreria ya cargo:
-   - .gsap-listo  GSAP + ScrollTrigger activos (apariciones, contadores)
-   - .lenis       scroll suave activo (lo pone Lenis)
-   - .tilt-js     tilt 3D con el puntero en [data-tilt]
-   - .hero-3d     escena Three.js del hero pintada (se ocultan los granos CSS)
-   Sin JS, con reduced motion o con las animaciones pausadas no aparece
-   ninguna y todo se ve en su estado final.
-   ===================================================================== */
-
-/* ---------- Lenis ---------- */
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-html.lenis {
-  scroll-behavior: auto !important; /* el suavizado lo hace Lenis */
-}
-.lenis.lenis-stopped {
-  overflow: clip;
-}
-.lenis.lenis-smooth iframe {
-  pointer-events: none;
-}
-
-/* Destino de un ancla sin foco propio (seccion): recibe el foco por JS
-   para que el teclado siga desde ahi, sin dibujar un marco enorme. */
-.foco-ancla:focus {
-  outline: none;
-}
-
-/* ---------- Hero 3D (Three.js) ---------- */
-/* El canvas desborda el hueco de Canela (150 % x 135 %) para que los
-   granos rodeen la insignia; la seccion recorta con overflow:hidden. */
-.hero-3d-lienzo {
-  position: absolute;
-  left: -15%;
-  top: -20%;
-  width: 150%;
-  height: 135%;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 900ms var(--ease-suave);
-}
-.hero-3d-lienzo.visible {
-  opacity: 1;
-}
-html.hero-3d [data-escena="hero"] [data-capa="granos"] {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 600ms ease, visibility 0s linear 600ms;
-}
-
-/* ---------- Canela interactiva (boton + globo con aria-live) ---------- */
-.canela-boton {
-  position: relative;
-  display: block;
-  width: 100%;
-  cursor: pointer;
-  border-radius: 45%;
-  -webkit-tap-highlight-color: transparent;
-}
-.canela-pista {
-  transition: opacity var(--duracion-base) ease;
-}
-.canela-boton[data-saludando] .canela-pista {
-  opacity: 0;
-}
-@keyframes saludar {
-  0% { transform: none; }
-  25% { transform: translateY(-10px) rotate(-5deg); }
-  50% { transform: translateY(0) rotate(4deg); }
-  75% { transform: translateY(-3px) rotate(-2deg); }
-  100% { transform: none; }
-}
-.canela-saluda {
-  animation: saludar 650ms var(--ease-rebote);
-}
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .canela-boton {
-    transition: transform 250ms var(--ease-suave);
-  }
-  .canela-boton:hover {
-    transform: rotate(-4deg);
-  }
-  html[data-movimiento="pausado"] .canela-boton:hover {
-    transform: none;
-  }
-}
-.globo-canela {
-  position: absolute;
-  z-index: 2;
-  top: -6%;
-  left: -8%;
-  width: max-content;
-  max-width: min(15rem, 78vw);
-  pointer-events: none;
-  opacity: 0;
-  scale: 0.85;
-  transform-origin: 80% 100%;
-  transition: opacity 200ms ease, scale 300ms var(--ease-rebote);
-}
-.globo-canela.visible {
-  opacity: 1;
-  scale: 1;
-}
-/* La capa de la insignia tiene transform (contexto de apilamiento propio):
-   mientras habla, se sube por encima de las hojas y granos decorativos. */
-[data-capa="insignia"]:has(.globo-canela.visible) {
-  z-index: 3;
-}
-.globo-canela::after {
-  content: "";
-  position: absolute;
-  right: 22%;
-  bottom: -9px;
-  width: 18px;
-  height: 18px;
-  rotate: 45deg;
-  background: var(--color-blanco);
-  border-right: 2px solid var(--color-maiz);
-  border-bottom: 2px solid var(--color-maiz);
-}
-.globo-canela:not(.visible)::after {
-  display: none;
-}
-
-/* ---------- Tilt 3D con el puntero (puntero.ts) ---------- */
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .tilt-js [data-tilt] {
-    position: relative;
-    transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
-    transition: transform 450ms var(--ease-suave), box-shadow var(--duracion-base) ease;
-  }
-  .tilt-js [data-tilt]:hover {
-    transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(-4px);
-    box-shadow: var(--shadow-elevada);
-  }
-  .tilt-js [data-tilt].tilt-activo {
-    transition: transform 120ms ease-out, box-shadow var(--duracion-base) ease;
-  }
-  /* Brillo oro muy suave que sigue al puntero (maximo 0.14) */
-  .tilt-js [data-tilt]::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background: radial-gradient(circle at var(--brillo-x, 50%) var(--brillo-y, 0%), rgb(242 184 35 / 0.14), transparent 60%);
+@keyframes pin-cae {
+  from {
     opacity: 0;
-    transition: opacity var(--duracion-base) ease;
+    transform: translate3d(0, -1.5rem, 0) scale(0.9, 1.08);
   }
-  .tilt-js [data-tilt].tilt-activo::after {
+  60% {
     opacity: 1;
   }
-  html.tilt-js[data-movimiento="pausado"] [data-tilt],
-  html.tilt-js[data-movimiento="pausado"] [data-tilt]:hover {
+  to {
+    opacity: 1;
     transform: none;
   }
 }

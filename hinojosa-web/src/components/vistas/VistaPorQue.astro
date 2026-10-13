@@ -1,0 +1,243 @@
+---
+// Vista 4 - Por que elegirnos (guia-estilo 7.4): tres bandas.
+//   1. 4 pilares de esencia (tarjetas blancas; icono -> Lottie en fase 4)
+//   2. 4 diferenciales en banda bosque (.tema-oscuro)
+//   3. Animales que atendemos: icono + palabra siempre visible
+// Sin contadores ni cifras inventadas.
+// Ganchos: [data-icono-animado="pilar-N"] (Lottie que se anima una vez al
+// entrar: escuchar alEntrarEnVista('por-que')), [data-banda].
+import Vista from '../Vista.astro';
+import Icono from '../Icono.astro';
+import { negocio, textos } from '../../lib/negocio';
+
+const t = textos.porQue;
+const iconosPilares = ['hoja', 'escudo', 'medalla', 'brote'];
+const iconosDiferenciales = ['pin', 'costal', 'conversacion', 'verificado'];
+const iconoAnimal: Record<string, string> = {
+  Aves: 'ave',
+  Cerdos: 'cerdo',
+  Conejos: 'conejo',
+  Cuyes: 'cuy',
+  Vacas: 'vaca',
+  Perros: 'perro',
+  Gatos: 'gato',
+  Tilapias: 'pez',
+};
+---
+<Vista id="por-que" nombre={textos.navegacion[3].texto} cuerpo="porque-cuerpo">
+  <div class="pq-marco">
+    <div class="pq-cabecera">
+      <h2 id="titulo-por-que" tabindex="-1" data-titulo-vista class="text-h2">{t.titulo}</h2>
+      <p class="pq-frase">{t.frase}</p>
+    </div>
+
+    <section aria-labelledby="pq-pilares" data-banda="pilares">
+      <h3 id="pq-pilares" class="sr-only">{t.tituloPilares}</h3>
+      <ul class="pq-pilares">
+        {t.pilares.map((p, i) => (
+          <li class="pq-pilar">
+            <span class="pq-pilar-icono" aria-hidden="true" data-icono-animado={`pilar-${i}`}>
+              <Icono nombre={iconosPilares[i] ?? 'hoja'} class="size-full" />
+            </span>
+            <span class="pq-pilar-titulo">{p.titulo}</span>
+            <span class="pq-pilar-texto">{p.texto}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="pq-banda tema-oscuro" aria-labelledby="pq-diferenciales" data-banda="diferenciales">
+      <h3 id="pq-diferenciales" class="sr-only">{t.tituloDiferenciales}</h3>
+      <ul class="pq-diferenciales">
+        {t.diferenciales.map((d, i) => (
+          <li class="pq-diferencial">
+            <Icono nombre={iconosDiferenciales[i] ?? 'estrella'} class="pq-dif-icono size-7 shrink-0 text-maiz" />
+            <span>{d}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section aria-labelledby="pq-animales" data-banda="animales">
+      <h3 id="pq-animales" class="pq-eyebrow">{t.tituloAnimales}</h3>
+      <ul class="pq-animales">
+        {negocio.animalesAtendidos.map((a) => (
+          <li class="pq-animal">
+            <span class="pq-animal-icono" aria-hidden="true" data-icono-animado={`animal-${iconoAnimal[a] ?? a}`}>
+              <Icono nombre={iconoAnimal[a] ?? 'hoja'} class="size-full" />
+            </span>
+            <span class="pq-animal-nombre">{a}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</Vista>
+
+<style>
+  .pq-marco {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(0.75rem, 2.6dvh, 1.75rem);
+    width: 100%;
+    max-width: var(--container-contenido);
+    margin-inline: auto;
+    padding: var(--spacing-vista) 1rem;
+  }
+  .pq-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 1.25rem;
+  }
+  .pq-frase {
+    display: none; /* adorno: en movil no cabe sin empujar contenido */
+    font-family: var(--font-script);
+    font-size: var(--text-acento);
+    line-height: var(--text-acento--line-height);
+    color: var(--color-bosque);
+  }
+  .pq-pilares {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-mosaico);
+  }
+  .pq-pilar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--color-crema-oscuro);
+    border-radius: var(--radius-tarjeta);
+    background: var(--color-blanco);
+    padding: 0.5rem 0.625rem;
+    box-shadow: var(--shadow-tarjeta);
+  }
+  .pq-pilar-icono {
+    display: inline-flex;
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    background: var(--color-hoja-claro);
+    color: var(--color-bosque);
+  }
+  .pq-pilar-titulo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1rem, var(--text-h3), 1.625rem);
+    line-height: var(--text-h3--line-height);
+    color: var(--color-bosque);
+  }
+  .pq-pilar-texto {
+    display: none;
+    color: var(--color-tinta-suave);
+  }
+  .pq-banda {
+    border-radius: var(--radius-tarjeta);
+    padding: 0.75rem 1rem;
+  }
+  .pq-diferenciales {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 1rem;
+  }
+  .pq-diferencial {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 0.875rem;
+    line-height: 1.3;
+    color: var(--color-blanco);
+  }
+  .pq-eyebrow {
+    margin-bottom: 0.5rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-etiqueta);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-tinta-suave);
+  }
+  .pq-animales {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem 0.5rem;
+  }
+  .pq-animal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    text-align: center;
+  }
+  .pq-animal-icono {
+    display: inline-flex;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0.375rem;
+    border-radius: 50%;
+    background: var(--color-hoja-claro);
+    color: var(--color-bosque);
+  }
+  .pq-animal-nombre {
+    font-size: var(--text-etiqueta);
+    color: var(--color-tinta);
+  }
+
+  @media (min-width: 48rem) {
+    .pq-marco {
+      padding-inline: var(--spacing-vista);
+    }
+    .pq-pilares {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .pq-frase {
+      display: block;
+    }
+    .pq-pilar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: clamp(1rem, 2.6dvh, 1.75rem) 1.25rem;
+      text-align: left;
+    }
+    .pq-pilar-icono {
+      width: clamp(3rem, 7dvh, 4rem);
+      height: clamp(3rem, 7dvh, 4rem);
+      padding: 0.75rem;
+    }
+    .pq-pilar-texto {
+      display: block;
+    }
+    .pq-banda {
+      padding: clamp(1rem, 2.6dvh, 1.75rem) 1.5rem;
+    }
+    .pq-diferenciales {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .pq-diferencial {
+      font-size: var(--text-cuerpo);
+    }
+    .pq-diferencial + .pq-diferencial {
+      border-left: 1px solid var(--color-horizonte-fuerte);
+      padding-left: 1rem;
+    }
+    .pq-animales {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+    .pq-animal-icono {
+      width: clamp(2.75rem, 6.5dvh, 3.5rem);
+      height: clamp(2.75rem, 6.5dvh, 3.5rem);
+      padding: 0.625rem;
+    }
+  }
+</style>
+
+<script>
+  // Entradas unicas de iconos (Nosotros, Por que) y del pin (Visitanos)
+  import '../../lib/animacion/entradas';
+</script>

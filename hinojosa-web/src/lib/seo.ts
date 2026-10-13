@@ -1,9 +1,24 @@
-// SEO local (PLAN.md, seccion 5): datos estructurados y URLs absolutas.
-// Regla: solo se publica lo confirmado en negocio.json (datoConfirmado).
-// Sin dominio (Astro.site sin definir) no hay URL absoluta posible, asi que
-// se omiten url, image y logo del JSON-LD (y canonical/og:url/og:image en el
-// <head>). Al definir `site` en astro.config.mjs aparecen solos.
-import { negocio, datoConfirmado } from './negocio';
+// SEO local (PLAN.md, secciones 6 y 12 riesgo 4): metadatos, URL canonica
+// unica y datos estructurados (JSON-LD). Documentado en docs/seo.md.
+//
+// Reglas:
+//   - Una sola URL canonica: la portada. Los hashes (#productos...) son
+//     vistas de la misma pagina, no paginas: nunca llevan canonical propio
+//     ni entran en el sitemap.
+//   - Solo se publica lo confirmado en negocio.json (datoConfirmado y
+//     companeros). Direccion, telefono, horario, geo, mapa y redes aparecen
+//     SOLOS en el JSON-LD el dia que se marquen confirmado:true.
+//   - Sin dominio (Astro.site sin definir) no hay URL absoluta posible: se
+//     omiten canonical, og:url, og:image y en el JSON-LD url, @id, image,
+//     logo y las imagenes de producto. Al definir `site` aparecen solos.
+import {
+  negocio,
+  catalogo,
+  datoConfirmado,
+  horarioConfirmado,
+  coordenadasConfirmadas,
+  formatoPrecio,
+} from './negocio';
 
 export const IMAGEN_SOCIAL = {
   ruta: '/og-imagen.jpg',
@@ -14,9 +29,29 @@ export const IMAGEN_SOCIAL = {
 
 const LOGO = '/img/marca/logo.png';
 
-/** URL absoluta a partir de `site`, o null si todavia no hay dominio. */
+const animales = negocio.animalesAtendidos.map((a) => a.toLowerCase());
+const listaAnimales = `${animales.slice(0, -1).join(', ')} y ${animales.at(-1)}`;
+
+/** <title> del negocio completo (no de la vista Inicio). El router usa la
+ *  parte antes de " | " para titular las demas vistas. */
+export const TITULO = `${negocio.nombre} | Balanceados y alimentos para animales`;
+
+/** Meta description (140-160 caracteres; revisar si cambia la lista de animales). */
+export const DESCRIPCION = `${negocio.nombre}: venta de balanceados, alimentos y productos para ${listaAnimales}. ${negocio.eslogan}.`;
+
+/**
+ * URL absoluta dentro del sitio, respetando `base` (por si se publica en
+ * una subruta, p. ej. GitHub Pages de proyecto). Null si no hay `site`.
+ */
 export function urlAbsoluta(ruta: string, site: URL | undefined): string | null {
-  return site ? new URL(ruta, site).href : null;
+  if (!site) return null;
+  const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+  return new URL(base + ruta.replace(/^\//, ''), site).href;
+}
+
+/** Canonical: siempre la portada, sea cual sea el hash o la ruta. */
+export function urlCanonica(site: URL | undefined): string | null {
+  return urlAbsoluta('/', site);
 }
 
 /** "es_EC" solo si el pais confirmado es Ecuador; si no, "es". */
@@ -25,65 +60,143 @@ export function localeOg(): string {
   return pais && /^ecuador$/i.test(pais.trim()) ? 'es_EC' : 'es';
 }
 
-// openingHours de schema.org: "Mo-Fr 08:00-18:00", "Sa 08:00-13:00"...
-// El horario de negocio.json es texto para personas; solo se publica en el
-// JSON-LD si ya viene en ese formato (separar tramos con ";" o ",").
-const TRAMO_HORARIO = /^(Mo|Tu|We|Th|Fr|Sa|Su)([-,](Mo|Tu|We|Th|Fr|Sa|Su))* \d{2}:\d{2}-\d{2}:\d{2}$/;
-
-function horarioSchema(): string[] | null {
-  const horario = datoConfirmado('horario');
-  if (!horario) return null;
-  const tramos = horario.split(/\s*[;,]\s*(?=(?:Mo|Tu|We|Th|Fr|Sa|Su))/).map((s) => s.trim());
-  return tramos.every((s) => TRAMO_HORARIO.test(s)) ? tramos : null;
+/** Texto alternativo de una imagen de producto: nombre + marca (si no esta ya en el nombre). */
+export function altProducto(p: { nombre: string; marca: string | null }): string {
+  const marca = p.marca?.trim();
+  return marca && !p.nombre.toLowerCase().includes(marca.toLowerCase()) ? `${p.nombre}, de ${marca}` : p.nombre;
 }
 
-/** Coordenadas sacadas del enlace confirmado de Google Maps (".../@lat,lng,..."). */
-function coordenadas(): { latitude: number; longitude: number } | null {
-  const mapa = datoConfirmado('googleMaps');
-  const m = mapa?.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/);
-  return m ? { latitude: Number(m[1]), longitude: Number(m[2]) } : null;
+// ---------------------------------------------------------------------------
+// Piezas del JSON-LD que dependen de datos confirmados
+// ---------------------------------------------------------------------------
+
+const DIAS_SCHEMA = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+/** openingHoursSpecification desde los tramos confirmados (1 = lunes ... 7 = domingo). */
+function horarioSchema(): Record<string, unknown>[] | null {
+  const h = horarioConfirmado();
+  if (!h) return null;
+  const tramos = h.tramos
+    .map((t) => ({
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: t.dias.filter((d) => d >= 1 && d <= 7).map((d) => `https://schema.org/${DIAS_SCHEMA[d - 1]}`),
+      opens: t.abre,
+      closes: t.cierra,
+    }))
+    .filter((t) => t.dayOfWeek.length > 0);
+  return tramos.length ? tramos : null;
 }
 
-/** Objeto JSON-LD del negocio (PetStore). */
-export function datosEstructurados(site: URL | undefined, descripcion: string): Record<string, unknown> {
-  const direccion = datoConfirmado('direccion');
+/** addressCountry: codigo ISO si el pais confirmado es conocido; si no, el texto tal cual. */
+function codigoPais(pais: string): string {
+  return /^ecuador$/i.test(pais.trim()) ? 'EC' : pais;
+}
+
+function direccionSchema(): Record<string, unknown> | null {
+  const calle = datoConfirmado('direccion');
+  if (!calle) return null;
   const ciudad = datoConfirmado('ciudad');
   const pais = datoConfirmado('pais');
+  return {
+    '@type': 'PostalAddress',
+    streetAddress: calle,
+    ...(ciudad ? { addressLocality: ciudad } : {}),
+    ...(pais ? { addressCountry: codigoPais(pais) } : {}),
+  };
+}
+
+/**
+ * Catalogo: un OfferCatalog por cada una de las 4 categorias, con sus
+ * productos. Precio solo si existe en productos.json, siempre rotulado como
+ * referencial; "desde" se publica como precio minimo. Sin disponibilidad,
+ * sin valoraciones: no estan confirmadas.
+ */
+function catalogoSchema(site: URL | undefined): Record<string, unknown> {
+  const categorias = catalogo.categorias.slice().sort((a, b) => a.orden - b.orden);
+  const moneda = negocio.moneda.codigo;
+  return {
+    '@type': 'OfferCatalog',
+    name: `Catálogo de ${negocio.nombre}`,
+    description: catalogo.avisoPrecios,
+    itemListElement: categorias.map((c) => ({
+      '@type': 'OfferCatalog',
+      name: c.nombre,
+      itemListElement: catalogo.productos
+        .filter((p) => p.categoria === c.id)
+        .map((p) => {
+          const imagen = p.imagen ? urlAbsoluta(p.imagen, site) : null;
+          const producto = {
+            '@type': 'Product',
+            name: p.nombre,
+            category: c.nombre,
+            ...(p.marca ? { brand: { '@type': 'Brand', name: p.marca } } : {}),
+            ...(p.presentacion ? { description: p.presentacion } : {}),
+            ...(imagen ? { image: imagen } : {}),
+          };
+          const precio =
+            typeof p.precio === 'number'
+              ? {
+                  description: `${formatoPrecio(p.precio, p.precioDesde)}. ${catalogo.avisoPrecios}`,
+                  priceSpecification: {
+                    '@type': 'PriceSpecification',
+                    priceCurrency: moneda,
+                    ...(p.precioDesde ? { minPrice: p.precio } : { price: p.precio }),
+                  },
+                }
+              : {};
+          return { '@type': 'Offer', itemOffered: producto, ...precio };
+        }),
+    })),
+  };
+}
+
+/** Objeto JSON-LD (@graph): el negocio (PetStore) y, con dominio, el WebSite. */
+export function datosEstructurados(site: URL | undefined): Record<string, unknown> {
   const telefono = datoConfirmado('telefono');
   const facebook = datoConfirmado('facebook');
   const mapa = datoConfirmado('googleMaps');
+  const direccion = direccionSchema();
   const horario = horarioSchema();
-  const geo = coordenadas();
+  const geo = coordenadasConfirmadas();
 
-  const url = urlAbsoluta('/', site);
+  const url = urlCanonica(site);
   const imagen = urlAbsoluta(IMAGEN_SOCIAL.ruta, site);
   const logo = urlAbsoluta(LOGO, site);
 
-  return {
-    '@context': 'https://schema.org',
+  const tienda = {
     '@type': 'PetStore',
+    ...(url ? { '@id': `${url}#negocio`, url } : {}),
     name: negocio.nombre,
     slogan: negocio.eslogan,
-    description: descripcion,
+    // Textos oficiales completos (no las versiones recortadas de pantalla)
+    description: `${negocio.mision} ${negocio.vision}`,
+    disambiguatingDescription: `Venta de balanceados, alimentos y productos para ${listaAnimales}.`,
     currenciesAccepted: negocio.moneda.codigo,
-    ...(url ? { url, '@id': `${url}#negocio` } : {}),
     ...(imagen ? { image: imagen } : {}),
     ...(logo ? { logo } : {}),
-    ...(direccion
-      ? {
-          address: {
-            '@type': 'PostalAddress',
-            streetAddress: direccion,
-            ...(ciudad ? { addressLocality: ciudad } : {}),
-            ...(pais ? { addressCountry: pais } : {}),
-          },
-        }
-      : {}),
-    ...(geo ? { geo: { '@type': 'GeoCoordinates', ...geo } } : {}),
+    ...(direccion ? { address: direccion } : {}),
+    ...(geo ? { geo: { '@type': 'GeoCoordinates', latitude: geo.lat, longitude: geo.lng } } : {}),
     ...(mapa ? { hasMap: mapa } : {}),
     ...(telefono ? { telephone: telefono } : {}),
-    ...(horario ? { openingHours: horario.length === 1 ? horario[0] : horario } : {}),
+    ...(horario ? { openingHoursSpecification: horario } : {}),
     ...(facebook ? { sameAs: [facebook] } : {}),
+    hasOfferCatalog: catalogoSchema(site),
+  };
+
+  const sitio = url
+    ? {
+        '@type': 'WebSite',
+        '@id': `${url}#sitio`,
+        url,
+        name: negocio.nombre,
+        inLanguage: 'es',
+        publisher: { '@id': `${url}#negocio` },
+      }
+    : null;
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': sitio ? [tienda, sitio] : [tienda],
   };
 }
 

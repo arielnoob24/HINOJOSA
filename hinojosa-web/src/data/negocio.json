@@ -12,8 +12,9 @@
   "mascota": {
     "nombre": "Canela",
     "descripcion": "Perrita alegre y cariñosa con gorra verde y pañuelo con la \"H\".",
-    "frase": "Soy alegre, cariñosa y siempre estoy lista para jugar"
+    "uso": "Solo marca (logo, insignia y perrito decorativo de Inicio). No es una sección del sitio."
   },
+
   "mision": "Brindar alimentos y productos de calidad para animales, ofreciendo una atención amable, responsable y cercana que satisfaga las necesidades de nuestros clientes.",
   "vision": "Ser una empresa líder y reconocida en la comercialización de alimentos y productos para animales, destacándonos por nuestra calidad, buen servicio y compromiso con nuestros clientes.",
   "valores": [
@@ -24,6 +25,21 @@
     "Honestidad",
     "Compromiso con el cliente"
   ],
+  "notaTextosOficiales": "mision, vision y valores son los textos oficiales completos: se usan tal cual en metadatos y JSON-LD. En pantalla van las versiones de 'pantalla'.",
+
+  "pantalla": {
+    "mision": "Alimentos y productos de calidad para tus animales, con una atención amable y cercana.",
+    "vision": "Ser el referente en alimentos para animales por calidad, servicio y compromiso.",
+    "valores": [
+      "Buen trato",
+      "Calidez",
+      "Amabilidad",
+      "Responsabilidad",
+      "Honestidad",
+      "Compromiso"
+    ]
+  },
+
   "pilares": [
     "Naturales",
     "Confiables",
@@ -50,7 +66,8 @@
     "codigo": "USD",
     "simbolo": "$"
   },
-  "marcadorPendiente": "Por confirmar",
+
+  "marcadorPendiente": "PENDIENTE_CONFIRMAR",
   "contacto": {
     "direccion": {
       "valor": "Av. del Chofer y Rubén Lerson",
@@ -65,6 +82,11 @@
       "valor": null,
       "confirmado": false
     },
+    "referenciasLlegar": {
+      "valor": null,
+      "confirmado": false,
+      "nota": "Lista de frases cortas en lenguaje natural, p. ej. [\"Frente a …\", \"A dos cuadras de …\"]. Solo con datos de la dueña."
+    },
     "telefono": {
       "valor": null,
       "confirmado": false
@@ -76,7 +98,14 @@
     },
     "horario": {
       "valor": null,
-      "confirmado": false
+      "confirmado": false,
+      "formato": "Arreglo de tramos para calcular 'Abierto ahora / Cerrado': [{ \"dias\": [1,2,3,4,5,6], \"abre\": \"08:00\", \"cierra\": \"19:00\" }] (1 = lunes … 7 = domingo). Los valores del ejemplo NO son el horario real.",
+      "texto": null
+    },
+    "zonaHoraria": {
+      "valor": null,
+      "confirmado": false,
+      "nota": "Necesaria para el estado abierto/cerrado. Depende de confirmar país y ciudad."
     },
     "facebook": {
       "valor": null,
@@ -85,16 +114,22 @@
     "googleMaps": {
       "valor": null,
       "confirmado": false
+    },
+    "coordenadas": {
+      "lat": null,
+      "lng": null,
+      "confirmado": false
     }
   },
   "pendientes": [
     "Dirección exacta y su ortografía (en los afiches: \"Av. del Chofer y Rubén Lerson\")",
     "Ciudad",
     "País",
+    "Referencias para llegar (\"frente a…\", \"a dos cuadras de…\")",
     "Teléfono",
     "WhatsApp",
-    "Horario de atención",
+    "Horario de atención (días y horas)",
     "Enlace de Facebook",
-    "Enlace de Google Maps (y coordenadas para el mapa)"
+    "Enlace de Google Maps y coordenadas para el mapa"
   ]
 }

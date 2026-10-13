@@ -1,0 +1,361 @@
+---
+// Vista 5 - Visitanos (guia-estilo 7.5): mapa a sangre + tarjeta OPACA con
+// direccion, estado y horario, referencias, contacto; pie de una linea.
+// Solo se publica lo confirmado en negocio.json; lo demas lleva el marcador
+// PENDIENTE_CONFIRMAR, nunca un dato inventado.
+//
+// Ganchos: [data-mapa] (src/lib/mapa.ts, carga diferida al entrar),
+//          [data-estado-horario] (src/lib/horario.ts),
+//          [data-fachada] (hueco para la foto/video de la fachada: aun no hay
+//          activo, por eso no se pinta).
+import Vista from '../Vista.astro';
+import BotonContacto from '../BotonContacto.astro';
+import Icono from '../Icono.astro';
+import {
+  negocio,
+  textos,
+  PENDIENTE,
+  datoConfirmado,
+  referenciasConfirmadas,
+  horarioConfirmado,
+  coordenadasConfirmadas,
+  enlaceWhatsapp,
+  enlaceTelefono,
+} from '../../lib/negocio';
+
+const t = textos.visitanos;
+const direccion = datoConfirmado('direccion');
+const ciudad = datoConfirmado('ciudad');
+const referencias = referenciasConfirmadas();
+const horario = horarioConfirmado();
+const coords = coordenadasConfirmadas();
+const maps = datoConfirmado('googleMaps');
+const whatsapp = enlaceWhatsapp();
+const telefono = enlaceTelefono();
+const facebook = datoConfirmado('facebook');
+const hayPendientes = !maps || !whatsapp || !telefono || !facebook;
+const anio = new Date().getFullYear();
+// Texto local (MIGRAR a textos.visitanos)
+const mapaPendiente = 'El mapa aparecerá cuando confirmemos la ubicación exacta. La dirección está en la tarjeta.';
+---
+<Vista id="visitanos" nombre={textos.navegacion[4].texto} cuerpo="visitanos-cuerpo">
+  <div class="vis-escena">
+    <div
+      class="vis-mapa"
+      data-mapa
+      data-captura-flechas
+      data-lat={coords ? String(coords.lat) : ''}
+      data-lng={coords ? String(coords.lng) : ''}
+      data-nombre={negocio.nombre}
+    >
+      <div class="vis-mapa-vacio" data-mapa-vacio aria-hidden={coords ? 'true' : undefined}>
+        <svg class="vis-pin" viewBox="0 0 64 84" aria-hidden="true">
+          <ellipse cx="32" cy="80" rx="14" ry="3.5" fill="#14301d" opacity=".18" />
+          <path d="M32 76S6 50 6 30a26 26 0 0 1 52 0c0 20-26 46-26 46z" fill="#1b4d2b" />
+          <circle cx="32" cy="30" r="17" fill="#fff" stroke="#f2b823" stroke-width="4" />
+          <path d="M26 21v18M38 21v18M26 30h12" stroke="#1b4d2b" stroke-width="5" stroke-linecap="round" />
+        </svg>
+        {!coords && <p class="vis-mapa-texto">{mapaPendiente}</p>}
+      </div>
+      <p class="vis-mapa-texto vis-mapa-error" role="status" data-mapa-estado hidden>{t.mapaNoDisponible}</p>
+    </div>
+
+    <article class="vis-tarjeta" aria-labelledby="titulo-visitanos">
+      <p class="vis-eyebrow">{t.titulo}</p>
+      <h2 id="titulo-visitanos" tabindex="-1" data-titulo-vista class="vis-nombre">{negocio.nombre}</h2>
+
+      {horario && horario.zona && (
+        <p
+          class="vis-estado"
+          data-estado-horario
+          data-tramos={JSON.stringify(horario.tramos)}
+          data-zona={horario.zona}
+          data-texto-abierto={t.abierto}
+          data-texto-cerrado={t.cerrado}
+          hidden
+        >
+          <span data-icono-abierto><Icono nombre="verificado" class="size-4" /></span>
+          <span data-icono-cerrado hidden><Icono nombre="reloj" class="size-4" /></span>
+          <span data-estado-texto></span>
+        </p>
+      )}
+
+      <dl class="vis-datos">
+        <div>
+          <dt>{t.etiquetaDireccion}</dt>
+          <dd>
+            {direccion ? (
+              <>{direccion}{ciudad && <>, {ciudad}</>}</>
+            ) : (
+              <span class="pendiente">{PENDIENTE}</span>
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt>{t.etiquetaHorario}</dt>
+          <dd>{horario?.texto ?? <span class="pendiente">{PENDIENTE}</span>}</dd>
+        </div>
+        <div>
+          <dt>{t.etiquetaComoLlegar}</dt>
+          <dd>
+            {referencias ? (
+              <ul class="vis-referencias">{referencias.map((r) => <li>{r}</li>)}</ul>
+            ) : (
+              <span class="pendiente">{PENDIENTE}</span>
+            )}
+          </dd>
+        </div>
+      </dl>
+
+      <div class="vis-acciones">
+        <BotonContacto href={maps} texto={t.ctaMaps} nombreAccesible={t.nombreAccesibleMaps} icono="mapa" variante="cta" class="vis-accion-ancha" />
+        <BotonContacto href={whatsapp} texto={t.ctaWhatsapp} nombreAccesible={t.nombreAccesibleWhatsapp} icono="whatsapp" />
+        <BotonContacto href={telefono} texto={t.ctaLlamar} nombreAccesible={t.nombreAccesibleLlamar} icono="telefono" pestanaNueva={false} />
+        <BotonContacto href={facebook} texto={t.ctaFacebook} nombreAccesible={t.nombreAccesibleFacebook} icono="facebook" variante="enlace" class="vis-accion-ancha" />
+      </div>
+      {hayPendientes && <p class="vis-nota">{t.contactoPendiente}</p>}
+    </article>
+  </div>
+
+  <footer class="vis-pie">
+    <p>
+      <span>{t.pie.lema}</span>
+      <span aria-hidden="true"> · </span>
+      <span>{t.pie.copyright.replace('{anio}', String(anio))}</span>
+      <span aria-hidden="true"> · </span>
+      <span>{t.pie.avisoMarcas}</span>
+    </p>
+  </footer>
+</Vista>
+
+<style>
+  .vis-escena {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .vis-mapa {
+    position: relative;
+    height: 12.5rem;
+    flex: 0 0 auto;
+    overflow: hidden;
+    background-color: var(--color-crema);
+    background-image:
+      linear-gradient(var(--color-crema-oscuro) 2px, transparent 2px),
+      linear-gradient(90deg, var(--color-crema-oscuro) 2px, transparent 2px);
+    background-size: 48px 48px;
+    background-position: center;
+  }
+  .vis-mapa :global(.mapa-lienzo) {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .vis-mapa-vacio {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+  }
+  .vis-mapa-vacio[hidden] {
+    display: none;
+  }
+  .vis-pin {
+    width: 3rem;
+  }
+  .vis-mapa-texto {
+    max-width: 30ch;
+    border-radius: var(--radius-tarjeta);
+    background: var(--color-blanco);
+    padding: 0.5rem 0.875rem;
+    font-size: var(--text-chico);
+    color: var(--color-tinta);
+    box-shadow: var(--shadow-suave);
+  }
+  .vis-mapa-error {
+    position: absolute;
+    left: 50%;
+    top: 1rem;
+    translate: -50% 0;
+  }
+  .vis-mapa-error[hidden] {
+    display: none;
+  }
+
+  /* Tarjeta: blanca 100 % opaca (nunca cristal sobre el mapa) */
+  .vis-tarjeta {
+    position: relative;
+    z-index: var(--z-flotante);
+    margin: -1.5rem 0 0;
+    border: 1px solid var(--color-crema-oscuro);
+    border-radius: var(--radius-tarjeta-grande) var(--radius-tarjeta-grande) 0 0;
+    background: var(--color-superficie);
+    padding: 1.25rem 1rem 1.5rem;
+    box-shadow: var(--shadow-flotante);
+  }
+  .vis-eyebrow {
+    font-size: var(--text-etiqueta);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-canela-oscuro);
+  }
+  .vis-nombre {
+    font-size: min(var(--text-h2), 1.75rem);
+    line-height: 1.1;
+  }
+  .vis-estado {
+    display: inline-flex;
+    min-height: 2rem;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+    border-radius: var(--radius-chip);
+    padding: 0.25rem 0.75rem;
+    font-weight: 800;
+  }
+  .vis-estado[hidden] {
+    display: none;
+  }
+  .vis-estado[data-abierto='true'] {
+    background: var(--color-estado-abierto-fondo);
+    color: var(--color-bosque);
+  }
+  .vis-estado[data-abierto='false'] {
+    background: var(--color-estado-cerrado-fondo);
+    color: var(--color-tinta);
+  }
+  .vis-datos {
+    display: grid;
+    gap: 0.625rem;
+    margin-top: 0.875rem;
+  }
+  .vis-datos dt {
+    font-size: var(--text-chico);
+    font-weight: 800;
+    color: var(--color-tinta-suave);
+  }
+  .vis-datos dd {
+    color: var(--color-tinta);
+  }
+  .vis-referencias {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
+  .vis-acciones {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: 1.125rem;
+  }
+  .vis-acciones :global(.vis-accion-ancha),
+  .vis-acciones :global([data-pendiente]) {
+    grid-column: 1 / -1;
+  }
+  .vis-nota {
+    margin-top: 0.75rem;
+    font-size: var(--text-chico);
+    color: var(--color-tinta-suave);
+  }
+  .vis-pie {
+    --color-foco: var(--color-foco-oscuro);
+    flex: 0 0 auto;
+    background: var(--color-bosque-noche);
+    padding: 0.5rem 1rem;
+    font-size: var(--text-chico);
+    line-height: var(--text-chico--line-height);
+    color: var(--color-crema);
+    text-align: center;
+  }
+
+  /* Movil: la escena no se encoge. Con flex-shrink 1 + min-height 0 se
+     quedaba mas baja que la tarjeta, y la tarjeta (z-index flotante) tapaba
+     el pie, que no se llegaba a ver ni desplazando (QA fase 5, 360x640). */
+  @media (max-width: 47.999rem) {
+    .vis-escena {
+      flex-shrink: 0;
+    }
+  }
+
+  @media (min-width: 48rem) {
+    :global(html[data-router] .visitanos-cuerpo) {
+      overflow: hidden;
+    }
+    .vis-mapa {
+      position: absolute;
+      inset: 0;
+      height: auto;
+    }
+    .vis-mapa-vacio {
+      /* el marcador se centra en la mitad derecha, libre de la tarjeta */
+      left: calc(var(--container-tarjeta-mapa) + var(--spacing-vista));
+    }
+    .vis-escena {
+      justify-content: center;
+      padding: var(--spacing-vista);
+      padding-bottom: 3rem; /* la atribucion del mapa queda libre */
+    }
+    .vis-tarjeta {
+      width: 100%;
+      max-width: var(--container-tarjeta-mapa);
+      max-height: 100%;
+      overflow-y: auto;
+      margin: 0;
+      border-radius: var(--radius-tarjeta-grande);
+      padding: 1.75rem;
+    }
+  }
+
+  /* Pantallas bajas de escritorio (1366x650, 1440x700...): la tarjeta
+     tenia scroll propio de ~100 px (QA M2). Se compacta: tarjeta algo mas
+     ancha, datos y acciones en dos columnas, menos aire. La atribucion de
+     Leaflet va abajo a la DERECHA, libre de la tarjeta (que esta a la
+     izquierda), asi que el margen inferior puede bajar. */
+  @media (min-width: 48rem) and (max-height: 43.75rem) {
+    .vis-escena {
+      padding-block: 1rem;
+    }
+    .vis-tarjeta {
+      max-width: min(32rem, 46vw);
+      padding: 1.125rem 1.25rem 1.25rem;
+    }
+    .vis-mapa-vacio {
+      left: calc(min(32rem, 46vw) + var(--spacing-vista));
+    }
+    .vis-datos {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem 1rem;
+      margin-top: 0.625rem;
+    }
+    .vis-datos > div:last-child {
+      grid-column: 1 / -1;
+    }
+    .vis-acciones {
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .vis-acciones :global(.vis-accion-ancha),
+    .vis-acciones :global([data-pendiente]) {
+      grid-column: auto;
+    }
+    .vis-acciones :global(.contacto) {
+      min-height: 2.75rem;
+      padding-inline: 0.625rem;
+    }
+    .vis-nota {
+      margin-top: 0.5rem;
+    }
+  }
+</style>
+
+<script>
+  import '../../lib/mapa';
+  import '../../lib/horario';
+</script>

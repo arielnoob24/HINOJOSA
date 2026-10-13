@@ -5,6 +5,24 @@
 
 ---
 
+## 0. Activos recibidos del cliente (2026-10-12) — manda sobre el resto del plan
+
+Carpeta `Nuevos Req/` (originales, **no se modifican ni se suben tal cual**; la versión web se genera en `hinojosa-web/public/`):
+
+| Archivo | Qué es | Uso decidido |
+|---|---|---|
+| `Mascota/Canela.png` | Render estilo 3D de Canela sentada, 2752×1536, **PNG recortado con alfa** | Perrito de la vista Inicio (ver vista 1) y fallback de `prefers-reduced-motion` |
+| `Mascota/Canela Jugando.mp4` | Video de Canela jugando (3,3 MB). Falta confirmar si trae fondo | Si el fondo se puede quitar → bucle del perrito. Si no → recuadro de video en la tarjeta grande de "Quiénes somos" (pausable, silenciado, con `poster`) |
+| `CatalogoF/<categoría>/*.png` | 33 imágenes de producto estilo render 3D, casi todas **recortadas con alfa** (excepto `bebedero.png`, `melaza.jpg`, `sal en grano.jpg`, `diferentes tipos de semillas.jpg`, que traen fondo) | Carrusel nuevo de Productos + miniaturas de la lista |
+
+**Consecuencias sobre el plan:**
+1. **Categorías: pasan de 10 a 4**, tal como las clasificó el cliente: **Alimento Animales de Granja** (9) · **Alimento Mascotas** (12) · **Comederos y Bebederos** (5) · **Granos y Semillas** (7). Esto sustituye la lista de 10 de la vista 3 y de la sección 5.
+2. **La ruleta deja de ser de costales `.glb` y pasa a ser un carrusel 3D de imágenes.** No llegaron modelos 3D sino renders en PNG, así que el carrusel se hace con **CSS 3D (`perspective` + `rotateY`/`translateZ`) animado con GSAP**, sin Three.js. Pesa mucho menos y funciona igual en gama media. Three.js queda fuera del bundle salvo que llegue un `.glb` más adelante.
+3. **No se modelan ni se producen costales genéricos**: cada categoría ya tiene imágenes.
+4. Convención de rutas web: `public/img/productos/<cat>/<slug>.webp` (+ `.avif`) con `cat` ∈ `granja · mascotas · comederos · granos`, y `slug` = nombre de archivo en minúsculas, sin tildes, espacios → guiones (se corrige la errata `balaceado` → `balanceado`). Canela: `public/img/canela/canela.webp`. Tamaños: 800 px de alto para el carrusel y 160 px para miniaturas de la lista.
+
+---
+
 ## 1. Resumen del negocio (extraído del material recibido)
 
 | Dato | Valor |
@@ -141,6 +159,8 @@ Esta es la decisión estructural del proyecto y condiciona todo lo demás.
 - **Fondo:** degradado verde de marca con granos de maíz en paralaje muy sutil al mover el mouse. El paralaje también se desactiva con `prefers-reduced-motion`.
 - **Sin** botón flotante de WhatsApp. El contacto vive en la vista "Visítanos".
 
+**Ya entregado (sección 0):** `Canela.png` recortada y `Canela Jugando.mp4`. Decisión por defecto: si el video trae fondo que no se puede quitar limpio, el bucle se hace con **`Canela.png` cruzando a saltitos** (CSS: `translateX` + rebote vertical y leve squash, pasos de 400–600 ms), con el mismo control de pausa. Si el video tiene alfa o fondo liso recortable, se reencoda a WebM VP9 con alfa + fallback y se usa ese.
+
 **El cliente entrega los archivos del perrito.** No se produce desde cero: el trabajo es adaptarlos, optimizarlos e integrarlos. Según lo que llegue:
 
 | Lo que entregue el cliente | Qué se hace |
@@ -189,6 +209,8 @@ En todos los casos hacen falta dos cosas: que el **bucle calce** (el último cua
 ---
 
 ### Vista 3 — Productos (fusión de "Qué vendemos" + "Catálogo")
+
+> **Actualizado por la sección 0:** 4 categorías en lugar de 10, y carrusel 3D de imágenes de producto (CSS 3D + GSAP) en lugar de costales Three.js. Arriba del carrusel van **4 pestañas de categoría**; el anillo muestra los productos de la categoría activa (máx. 12 en escena), las flechas ◀ ▶ giran de producto en producto y bajo el anillo se rotula el **nombre del producto al frente** y su categoría. La sincronización con la lista se mantiene: elegir producto en la lista gira el anillo hasta él; girar el anillo resalta el producto en la lista. Todo lo demás de esta vista (accesibilidad, sin autorrotación, `aria-live`, fallback a rejilla) sigue igual. Donde abajo dice "costal" o "10 categorías", leer "imagen de producto" y "4 categorías".
 
 **Decisión: pantalla partida permanente — ruleta 3D a la izquierda, catálogo completo a la derecha.** Nada queda oculto: la ruleta aporta el atractivo visual y la lista garantiza que se pueda ver y buscar todo el catálogo.
 
@@ -272,7 +294,9 @@ En todos los casos hacen falta dos cosas: que el **bucle calce** (el último cua
 
 > Los precios vienen de los afiches. **Pueden estar desactualizados**: se guardan en un solo archivo editable (`src/data/productos.json`) y la web muestra "precios referenciales, consulta disponibilidad".
 
-Cada producto del JSON lleva: `categoria` (una de las 10 de la ruleta), `nombre`, `marca`, `presentacion`, `precio`, `imagen` y `destacado`. La ruleta lee las categorías; la lista lee los productos.
+> **Actualizado por la sección 0:** el catálogo en pantalla se organiza en las 4 categorías del cliente y cada producto con imagen entregada enlaza a ella. Los productos de esta sección que no tienen imagen se mantienen en la lista (sin miniatura o con icono de categoría) y se asignan a la categoría más cercana; Tilapia va en "Alimento Animales de Granja" (llegó `balaceado tilapiero.png` ahí). Gatos y accesorios de mascota van en "Alimento Mascotas" / "Comederos y Bebederos".
+
+Cada producto del JSON lleva: `categoria` (una de las 4 del carrusel), `nombre`, `marca`, `presentacion`, `precio`, `imagen` y `destacado`. La ruleta lee las categorías; la lista lee los productos.
 
 ### Aves de corral
 - Balanceados **Camperito** (pollos) crecimiento — $28.00
@@ -521,8 +545,8 @@ Pendientes de evaluar:
 - [ ] Obtener logo en vectorial (SVG/AI/PDF)
 - [ ] Reunir fotos reales del local, la fachada y los productos
 - [ ] Verificar los contrastes de la paleta y corregir los pares que no pasen 4.5:1
-- [ ] **Recibir del cliente los archivos del perrito caminando** y revisar formato, bucle y sentido de la marcha
-- [ ] **Recibir del cliente los modelos 3D de los productos** y revisar formato, cantidad, polígonos y texturas
+- [x] **Recibir del cliente los archivos del perrito** → `Canela.png` + `Canela Jugando.mp4` (2026-10-12)
+- [x] **Recibir del cliente las imágenes de producto** → 33 renders PNG en 4 categorías (2026-10-12); no son modelos 3D, el carrusel se hace con CSS 3D
 - [ ] Instalar Blender, FFmpeg y gltf-transform CLI
 - [ ] Construir el router de vistas y probarlo con teclado antes de añadir cualquier animación
-- [ ] Decidir si la ruleta muestra los productos entregados o las 10 categorías (depende de cuántos modelos lleguen)
+- [x] Decidir qué muestra el carrusel → productos de la categoría activa, 4 categorías (sección 0)

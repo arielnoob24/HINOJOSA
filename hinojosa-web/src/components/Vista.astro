@@ -1,0 +1,35 @@
+---
+// Contenedor comun de las 5 vistas. Siempre en el HTML servido (SEO);
+// router.ts las oculta con hidden + inert. El titulo de cada vista debe
+// llevar id="titulo-<id>", tabindex="-1" y data-titulo-vista.
+//
+// Ganchos:
+//   section#<id>.vista[data-vista=<id>][data-nombre-vista]
+//     [data-activa]    vista visible (lo pone el router)
+//     [data-saliendo]  vista que sale durante una transicion (inert)
+//   [data-vista-cuerpo] zona con scroll interno de respaldo (movil)
+interface Props {
+  id: string;
+  nombre: string;
+  class?: string;
+  cuerpo?: string;
+}
+const { id, nombre, class: clase = '', cuerpo = '' } = Astro.props;
+---
+<section
+  id={id}
+  class:list={['vista', clase]}
+  data-vista={id}
+  data-nombre-vista={nombre}
+  aria-labelledby={`titulo-${id}`}
+>
+  <div class:list={['vista-cuerpo', cuerpo]} data-vista-cuerpo>
+    <slot />
+  </div>
+  <slot name="fuera" />
+  <!-- Senal de "hay mas abajo" en movil (QA M8, indicador-scroll.ts).
+       Elemento real y no ::after: axe da por "no determinable" el contraste
+       de todo texto bajo un pseudo-elemento del ancestro; un elemento con
+       pointer-events: none queda fuera de la prueba de impacto. -->
+  <span class="vista-sombra" aria-hidden="true"></span>
+</section>

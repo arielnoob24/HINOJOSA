@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
 
-# Descomentar cuando haya dominio y @astrojs/sitemap (ver docs/seo.md):
-# Sitemap: https://DOMINIO-POR-CONFIRMAR/sitemap-index.xml
+# Cuando se defina `site` en astro.config.mjs, el build genera /sitemap.xml
+# (una sola URL: la portada). Descomentar con la URL publica real, igual que
+# la que salga en <loc> de dist/sitemap.xml (ver docs/seo.md):
+# Sitemap: https://DOMINIO-POR-CONFIRMAR/sitemap.xml

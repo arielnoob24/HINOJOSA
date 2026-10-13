@@ -1,0 +1,97 @@
+---
+// Boton de contacto que respeta la regla de datos sin confirmar:
+// - con enlace: <a> con nombre accesible explicito (y aviso de pestana
+//   nueva si corresponde);
+// - sin enlace: aviso NO interactivo "<canal>: PENDIENTE_CONFIRMAR" (sin
+//   href ni foco), para no publicar un enlace roto ni un dato inventado.
+// Sustituye a BotonWhatsapp.astro (se generalizo a Maps/WhatsApp/Llamar/Facebook).
+import Icono from './Icono.astro';
+import { PENDIENTE, textos } from '../lib/negocio';
+
+interface Props {
+  href: string | null;
+  texto: string;
+  nombreAccesible: string;
+  icono: string;
+  variante?: 'cta' | 'primario' | 'enlace';
+  pestanaNueva?: boolean;
+  class?: string;
+}
+const { href, texto, nombreAccesible, icono, variante = 'primario', pestanaNueva = true, class: clase = '' } = Astro.props;
+const aviso = textos.comunes.abreEnPestanaNueva;
+---
+{href ? (
+  <a
+    href={href}
+    class:list={['contacto', `contacto-${variante}`, clase]}
+    aria-label={pestanaNueva ? `${nombreAccesible} ${aviso}` : nombreAccesible}
+    target={pestanaNueva ? '_blank' : undefined}
+    rel={pestanaNueva ? 'noopener' : undefined}
+    data-contacto={icono}
+  >
+    <Icono nombre={icono} class="size-5 shrink-0" />
+    <span>{texto}</span>
+    {pestanaNueva && <span aria-hidden="true">↗</span>}
+  </a>
+) : (
+  <span class:list={['contacto', 'contacto-pendiente', clase]} data-contacto={icono} data-pendiente>
+    <Icono nombre={icono} class="size-5 shrink-0" />
+    <span>{texto}: <span class="contacto-marcador">{PENDIENTE}</span></span>
+  </span>
+)}
+
+<style>
+  .contacto {
+    display: inline-flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: var(--radius-boton);
+    padding: 0.5rem 1.25rem;
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: center;
+    transition: background-color var(--duracion-hover) ease, transform var(--duracion-presion) ease-out;
+  }
+  a.contacto:active {
+    transform: scale(0.96);
+  }
+  .contacto-cta {
+    border: 2px solid var(--color-cta-borde);
+    background: var(--color-cta-fondo);
+    color: var(--color-cta-texto);
+  }
+  .contacto-cta:hover {
+    background: var(--color-cta-hover);
+  }
+  .contacto-primario {
+    background: var(--color-boton-fondo);
+    color: var(--color-boton-texto);
+  }
+  .contacto-primario:hover {
+    background: var(--color-boton-hover);
+  }
+  .contacto-enlace {
+    min-height: 2.75rem;
+    padding-inline: 0.25rem;
+    color: var(--color-marca-fuerte);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  /* Aviso de dato pendiente: no es un control (borde discontinuo) */
+  .contacto-pendiente {
+    cursor: default;
+    border: 2px dashed var(--color-borde-pendiente);
+    background: transparent;
+    padding-inline: 0.875rem;
+    font-weight: 400;
+    font-size: var(--text-chico);
+    color: var(--color-tinta-suave);
+  }
+  .contacto-marcador {
+    font-weight: 800;
+    color: var(--color-canela-oscuro);
+    word-break: break-word;
+  }
+</style>
