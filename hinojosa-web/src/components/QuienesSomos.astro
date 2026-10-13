@@ -1,0 +1,46 @@
+---
+// Quienes somos: intro + Mision y Vision en tarjetas con tilt (data-tilt) y
+// 3 hojas que caen en el fondo (pausables; sin movimiento con reduced motion).
+import Icono from './Icono.astro';
+import { textos } from '../lib/negocio';
+
+const t = textos['quienes-somos'];
+const tarjetas = [
+  { ...t.tarjetaMision, icono: 'costal' },
+  { ...t.tarjetaVision, icono: 'estrella' },
+];
+const hojas = [
+  { x: '8%', d: '0s', w: 'w-6' },
+  { x: '52%', d: '-5s', w: 'w-8' },
+  { x: '88%', d: '-9s', w: 'w-5' },
+];
+---
+<section id={t.id} class="relative overflow-hidden bg-crema py-seccion" aria-labelledby="titulo-quienes" data-escena="quienes-somos">
+  <div class="pointer-events-none absolute inset-0" aria-hidden="true" data-capa="hojas-cayendo">
+    {hojas.map((h) => (
+      <svg class:list={['hoja-cae absolute top-0 text-hoja opacity-40', h.w]} style={`left:${h.x};--desfase:${h.d}`} viewBox="0 0 40 40">
+        <path fill="currentColor" d="M4 36C4 18 16 5 37 3c-1 20-13 32-33 33z" />
+      </svg>
+    ))}
+  </div>
+
+  <div class="contenedor relative grid gap-bloque lg:grid-cols-12 lg:items-center">
+    <div class="lg:col-span-5" data-revelar-hijos>
+      <h2 id="titulo-quienes" class="text-h2">{t.titulo}</h2>
+      <p class="mt-5 max-w-texto text-lead text-tinta">{t.intro}</p>
+      <a href={t.ctaAncla} class="boton boton-terciario mt-7">{t.cta}</a>
+    </div>
+
+    <ul class="grid gap-5 sm:grid-cols-2 lg:col-span-7">
+      {tarjetas.map((c, i) => (
+        <li class:list={['tarjeta p-6 sm:p-7', i === 1 && 'sm:translate-y-8']} data-tilt data-revelar>
+          <span class="inline-flex size-12 items-center justify-center rounded-full bg-hoja-claro text-marca-fuerte ring-2 ring-maiz ring-offset-2 ring-offset-blanco">
+            <Icono nombre={c.icono} class="size-6" />
+          </span>
+          <h3 class="mt-4 text-h3">{c.titulo}</h3>
+          <p class="mt-3 text-tinta">{c.texto}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

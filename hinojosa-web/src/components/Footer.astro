@@ -1,0 +1,58 @@
+---
+// Footer: fondo bosque-noche, isotipo sobre placa blanca (no hay version
+// blanca del logo), lema en script oro, avisos y copyright con el ano actual.
+// Gancho fase 4: data-capa="hojas-footer" (paralaje de scroll).
+// El isotipo es decorativo (alt=""): el nombre del negocio va justo al lado.
+import Icono from './Icono.astro';
+import Onda from './Onda.astro';
+import { negocio, textos } from '../lib/negocio';
+
+const t = textos.footer;
+const copyright = t.copyright.replace('{anio}', String(new Date().getFullYear()));
+---
+<footer class="relative overflow-hidden bg-crema" data-escena="footer">
+  <Onda color="text-bosque-noche" class="-mb-px" />
+  <div class="bg-bosque-noche pb-28 text-crema sm:pb-24" style="--color-foco:#f2b823">
+    <div class="pointer-events-none absolute inset-0" aria-hidden="true" data-capa="hojas-footer" data-profundidad="0.2">
+      <svg class="absolute top-16 -left-8 w-40 text-marca opacity-20" viewBox="0 0 100 100">
+        <path fill="currentColor" d="M10 90C10 45 40 12 92 8c-3 50-34 80-82 82z" />
+      </svg>
+      <svg class="absolute -right-6 bottom-6 w-32 rotate-180 text-hoja opacity-15" viewBox="0 0 100 100">
+        <path fill="currentColor" d="M10 90C10 45 40 12 92 8c-3 50-34 80-82 82z" />
+      </svg>
+    </div>
+
+    <div class="contenedor relative grid gap-8 pt-10 md:grid-cols-2 md:items-center">
+      <div class="flex items-center gap-4">
+        <span class="inline-flex size-20 shrink-0 items-center justify-center rounded-full bg-blanco p-2.5 ring-4 ring-maiz">
+          <img
+            src="/img/marca/isotipo.webp"
+            width="263"
+            height="257"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            class="h-auto w-full"
+          />
+        </span>
+        <div>
+          <p class="font-display text-h3 font-extrabold text-blanco">{negocio.nombre}</p>
+          <p class="text-chico text-crema">{t.descripcion}</p>
+        </div>
+      </div>
+      <p class="font-script text-acento text-maiz md:text-right">{t.lema}</p>
+    </div>
+
+    <div class="contenedor relative mt-10 flex flex-col gap-6 border-t border-crema/20 pt-6 md:flex-row md:items-end md:justify-between">
+      <div class="space-y-1 text-chico text-crema">
+        <p>{t.avisoPrecios}</p>
+        <p>{t.avisoMarcas}</p>
+        <p class="pt-2 text-blanco">{copyright}</p>
+      </div>
+      <a href="#inicio" class="inline-flex min-h-11 items-center gap-2 self-start font-bold text-hoja underline underline-offset-4 hover:text-maiz md:self-auto">
+        <Icono nombre="flecha_arriba" class="size-5" />
+        {t.volverArriba}
+      </a>
+    </div>
+  </div>
+</footer>

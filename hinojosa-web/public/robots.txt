@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Descomentar cuando haya dominio y @astrojs/sitemap (ver docs/seo.md):
+# Sitemap: https://DOMINIO-POR-CONFIRMAR/sitemap-index.xml

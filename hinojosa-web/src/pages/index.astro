@@ -1,0 +1,32 @@
+---
+// Pagina unica: orden de secciones de Pre/PLAN.md, seccion 3.
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import QuienesSomos from '../components/QuienesSomos.astro';
+import Canela from '../components/Canela.astro';
+import Categorias from '../components/Categorias.astro';
+import Catalogo from '../components/Catalogo.astro';
+import Valores from '../components/Valores.astro';
+import PorQueElegirnos from '../components/PorQueElegirnos.astro';
+import Ubicacion from '../components/Ubicacion.astro';
+import Contacto from '../components/Contacto.astro';
+import Footer from '../components/Footer.astro';
+import WhatsappFlotante from '../components/WhatsappFlotante.astro';
+---
+<Layout>
+  <Header />
+  <main id="contenido" tabindex="-1" class="outline-none">
+    <Hero />
+    <QuienesSomos />
+    <Canela />
+    <Categorias />
+    <Catalogo />
+    <Valores />
+    <PorQueElegirnos />
+    <Ubicacion />
+    <Contacto />
+  </main>
+  <Footer />
+  <WhatsappFlotante />
+</Layout>

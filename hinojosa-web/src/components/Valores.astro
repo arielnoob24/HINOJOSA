@@ -1,0 +1,73 @@
+---
+// Valores y esencia: seccion oscura (bosque). Iconos dentro de insignias con
+// aro oro. Gancho fase 4: data-escena="valores" y data-icono-animado
+// (para sustituir por Lottie).
+import Icono from './Icono.astro';
+import { negocio, textos } from '../lib/negocio';
+
+const t = textos.valores;
+const iconosValores = ['manos', 'corazon', 'sonrisa', 'escudo', 'verificado', 'estrella'];
+const iconosPilares = ['hoja', 'escudo', 'medalla', 'brote'];
+---
+<section id={t.id} class="tema-oscuro relative overflow-hidden py-seccion" aria-labelledby="titulo-valores" data-escena="valores">
+  <svg class="pointer-events-none absolute -right-16 -bottom-10 w-72 text-marca opacity-25" viewBox="0 0 100 100" aria-hidden="true">
+    <path fill="currentColor" d="M10 90C10 45 40 12 92 8c-3 50-34 80-82 82z" />
+  </svg>
+
+  <div class="contenedor relative">
+    <h2 id="titulo-valores" class="text-h2" data-revelar>{t.titulo}</h2>
+    <p class="mt-4 max-w-texto text-lead text-crema" data-revelar>{t.intro}</p>
+
+    <div class="mt-bloque grid gap-bloque lg:grid-cols-12">
+      <div class="lg:col-span-7">
+        <h3 class="text-h3">{t.subtituloValores}</h3>
+        <ul class="mt-6 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3">
+          {negocio.valores.map((v, i) => (
+            <li class="flex min-w-0 flex-col items-start gap-3 pl-2">
+              <span class="insignia-icono" data-icono-animado={`valor-${i}`}>
+                <Icono nombre={iconosValores[i] ?? 'estrella'} class="size-7" />
+              </span>
+              <span class="max-w-full font-display text-lg leading-tight font-bold break-words hyphens-auto text-blanco">{v}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="@container rounded-panel bg-bosque-noche/60 p-6 sm:p-8 lg:col-span-5" data-revelar>
+        <h3 class="text-h3">{t.subtituloPilares}</h3>
+        <p class="mt-2 text-crema">{t.introPilares}</p>
+        <!-- 1 columna si el panel es estrecho; 2 cuando caben insignia + texto -->
+        <ul class="mt-6 grid grid-cols-1 gap-4 @min-[21rem]:grid-cols-2">
+          {negocio.pilares.map((p, i) => (
+            <li class="flex min-w-0 items-center gap-3 pl-2">
+              <span class="insignia-icono insignia-icono-chica" data-icono-animado={`pilar-${i}`}>
+                <Icono nombre={iconosPilares[i] ?? 'hoja'} class="size-5" />
+              </span>
+              <span class="min-w-0 font-bold break-words text-crema">{p}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Insignia: aro oro + interior verde marca, icono en crema */
+  .insignia-icono {
+    display: inline-flex;
+    width: 3.5rem;
+    height: 3.5rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-bosque-noche);
+    color: var(--color-hoja);
+    box-shadow: 0 0 0 3px var(--color-maiz), 0 0 0 7px var(--color-bosque-noche);
+  }
+  .insignia-icono-chica {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+</style>

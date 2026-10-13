@@ -1,0 +1,605 @@
+{
+  "moneda": "USD",
+  "avisoPrecios": "Precios referenciales. Consulta disponibilidad y precio vigente por WhatsApp.",
+  "avisoMarcas": "Marcas registradas de sus respectivos propietarios.",
+  "categorias": [
+    {
+      "id": "aves",
+      "nombre": "Aves de corral",
+      "descripcion": "Balanceados para pollos y gallos, más bebederos y comederos para tu galpón.",
+      "animales": ["Aves"],
+      "imagen": "/img/productos/14-balanceados-camperito.webp",
+      "imagenesRelacionadas": [
+        "/img/productos/07-nutritivos-linea-premium.webp",
+        "/img/productos/10-bebederos-comederos-aves.webp"
+      ]
+    },
+    {
+      "id": "cerdos",
+      "nombre": "Cerdos",
+      "descripcion": "Balanceados para cada etapa: inicial, crecimiento, engorde, gestantes y lactantes.",
+      "animales": ["Cerdos"],
+      "imagen": "/img/productos/21-nutritivos-cerdos-vacas-cuyes.webp",
+      "imagenesRelacionadas": [
+        "/img/productos/07-nutritivos-linea-premium.webp"
+      ]
+    },
+    {
+      "id": "vacas",
+      "nombre": "Vacas",
+      "descripcion": "Balanceados para vacas lecheras de alta producción.",
+      "animales": ["Vacas"],
+      "imagen": "/img/productos/21-nutritivos-cerdos-vacas-cuyes.webp",
+      "imagenesRelacionadas": [
+        "/img/productos/07-nutritivos-linea-premium.webp"
+      ]
+    },
+    {
+      "id": "especies-menores",
+      "nombre": "Cuyes y conejos",
+      "descripcion": "Balanceados para especies menores, en crecimiento y engorde.",
+      "animales": ["Cuyes", "Conejos"],
+      "imagen": "/img/productos/21-nutritivos-cerdos-vacas-cuyes.webp",
+      "imagenesRelacionadas": [
+        "/img/productos/07-nutritivos-linea-premium.webp"
+      ]
+    },
+    {
+      "id": "granos",
+      "nombre": "Granos y subproductos",
+      "descripcion": "Maíz, trigo, arrocillo, afrecho, sal y melaza para complementar la dieta de tus animales.",
+      "animales": ["Aves", "Cerdos", "Vacas", "Cuyes", "Conejos"],
+      "imagen": "/img/productos/09-maiz.webp",
+      "imagenesRelacionadas": [
+        "/img/productos/08-afrecho-trigo-arrocillo.webp",
+        "/img/productos/13-sal-melaza.webp"
+      ]
+    },
+    {
+      "id": "perros",
+      "nombre": "Perros",
+      "descripcion": "Alimento para cachorros, adultos y senior de todas las razas, y masticables para premiarlos.",
+      "animales": ["Perros"],
+      "imagen": "/img/productos/12-procan-perros.webp",
+      "imagenesRelacionadas": [
+        "/img/productos/15-procan-perros-2.webp",
+        "/img/productos/18-nutrapro-dogchow-procat.webp",
+        "/img/productos/16-masticables.webp",
+        "/img/productos/22-masticables-mascan.webp"
+      ]
+    },
+    {
+      "id": "gatos",
+      "nombre": "Gatos",
+      "descripcion": "Alimento y arenas sanitarias para que tu gato esté sano y su espacio limpio.",
+      "animales": ["Gatos"],
+      "imagen": "/img/productos/11-arena-gatos.webp",
+      "imagenesRelacionadas": [
+        "/img/productos/18-nutrapro-dogchow-procat.webp"
+      ]
+    },
+    {
+      "id": "tilapia",
+      "nombre": "Tilapia",
+      "descripcion": "Balanceado tilapero con la proteína justa para cada etapa.",
+      "animales": ["Tilapias"],
+      "imagen": "/img/productos/17-tilapia.webp",
+      "imagenesRelacionadas": []
+    },
+    {
+      "id": "accesorios",
+      "nombre": "Accesorios para mascotas",
+      "descripcion": "Comederos y bebederos prácticos para perros y gatos.",
+      "animales": ["Perros", "Gatos"],
+      "imagen": "/img/productos/19-bebederos-mascotas.webp",
+      "imagenesRelacionadas": []
+    },
+    {
+      "id": "semillas",
+      "nombre": "Semillas",
+      "descripcion": "Semillas de alta calidad para tu huerto.",
+      "animales": [],
+      "imagen": "/img/productos/20-semillas.webp",
+      "imagenesRelacionadas": []
+    }
+  ],
+  "productos": [
+    {
+      "id": "camperito-crecimiento",
+      "nombre": "Balanceado Camperito crecimiento",
+      "marca": "Camperito",
+      "presentacion": null,
+      "descripcion": "Balanceado para pollos en etapa de crecimiento.",
+      "precio": 28.0,
+      "precioDesde": false,
+      "categoria": "aves"
+    },
+    {
+      "id": "camperito-engorde",
+      "nombre": "Balanceado Camperito engorde",
+      "marca": "Camperito",
+      "presentacion": null,
+      "descripcion": "Balanceado para pollos en etapa de engorde.",
+      "precio": 28.0,
+      "precioDesde": false,
+      "categoria": "aves"
+    },
+    {
+      "id": "nutritivos-pollos",
+      "nombre": "Balanceados Nutritivos para pollos",
+      "marca": "Nutritivos",
+      "presentacion": null,
+      "descripcion": "Línea inicial, crecimiento y engorde.",
+      "precio": 31.0,
+      "precioDesde": true,
+      "categoria": "aves"
+    },
+    {
+      "id": "nutritivos-premium-nutri-pollos",
+      "nombre": "Nutri Pollos – Línea Premium",
+      "marca": "Nutritivos",
+      "presentacion": "Sacos de 30 a 40 kg",
+      "descripcion": "Balanceado premium para pollos.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "aves"
+    },
+    {
+      "id": "nutritivos-premium-gallos-pelea",
+      "nombre": "Gallos de pelea – Línea Premium",
+      "marca": "Nutritivos",
+      "presentacion": "Sacos de 30 a 40 kg",
+      "descripcion": "Balanceado premium para gallos de pelea.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "aves"
+    },
+    {
+      "id": "bebederos-plasticos-aves",
+      "nombre": "Bebederos plásticos para aves",
+      "marca": null,
+      "presentacion": null,
+      "descripcion": "Bebederos plásticos para galpones y criaderos.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "aves"
+    },
+    {
+      "id": "comederos-aves",
+      "nombre": "Comederos para aves",
+      "marca": null,
+      "presentacion": "Galvanizados y plásticos",
+      "descripcion": "Comederos resistentes para tus aves.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "aves"
+    },
+    {
+      "id": "nutritivos-cerdos",
+      "nombre": "Balanceados Nutritivos cerdos",
+      "marca": "Nutritivos",
+      "presentacion": null,
+      "descripcion": "Para cada etapa: inicial, crecimiento, engorde, gestantes y lactantes.",
+      "precio": 30.0,
+      "precioDesde": true,
+      "categoria": "cerdos"
+    },
+    {
+      "id": "nutritivos-premium-nutri-cerdos",
+      "nombre": "Nutri Cerdos – Línea Premium",
+      "marca": "Nutritivos",
+      "presentacion": "Sacos de 30 a 40 kg",
+      "descripcion": "Balanceado premium para cerdos.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "cerdos"
+    },
+    {
+      "id": "nutri-vacas",
+      "nombre": "Balanceado Nutri Vacas",
+      "marca": "Nutritivos",
+      "presentacion": null,
+      "descripcion": "Para vacas de alta producción de leche.",
+      "precio": 22.5,
+      "precioDesde": false,
+      "categoria": "vacas"
+    },
+    {
+      "id": "nutritivos-premium-nutri-vacas",
+      "nombre": "Nutri Vacas lecheras – Línea Premium",
+      "marca": "Nutritivos",
+      "presentacion": "Sacos de 30 a 40 kg",
+      "descripcion": "Balanceado premium para vacas lecheras.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "vacas"
+    },
+    {
+      "id": "nutri-cuyes",
+      "nombre": "Balanceado Nutri Cuyes",
+      "marca": "Nutritivos",
+      "presentacion": null,
+      "descripcion": "Para cuyes y conejos en crecimiento y engorde.",
+      "precio": 29.0,
+      "precioDesde": false,
+      "categoria": "especies-menores"
+    },
+    {
+      "id": "nutritivos-premium-nutri-cuyes",
+      "nombre": "Nutri Cuyes – Línea Premium",
+      "marca": "Nutritivos",
+      "presentacion": "Sacos de 30 a 40 kg",
+      "descripcion": "Balanceado premium para cuyes y conejos.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "especies-menores"
+    },
+    {
+      "id": "maiz-grano",
+      "nombre": "Maíz en grano",
+      "marca": "Hinojosa",
+      "presentacion": null,
+      "descripcion": "Maíz entero de nuestra marca propia.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "granos"
+    },
+    {
+      "id": "maiz-molido-natural",
+      "nombre": "Maíz molido natural",
+      "marca": "Hinojosa",
+      "presentacion": null,
+      "descripcion": "Maíz molido, sin aditivos.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "granos"
+    },
+    {
+      "id": "maiz-molido-vitaminizado",
+      "nombre": "Maíz molido vitaminizado",
+      "marca": "Hinojosa",
+      "presentacion": null,
+      "descripcion": "Maíz molido con vitaminas añadidas.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "granos"
+    },
+    {
+      "id": "trigo-natural",
+      "nombre": "Trigo natural",
+      "marca": "Hinojosa",
+      "presentacion": null,
+      "descripcion": "Trigo en grano, natural.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "granos"
+    },
+    {
+      "id": "arrocillo",
+      "nombre": "Arrocillo",
+      "marca": "Hinojosa",
+      "presentacion": null,
+      "descripcion": "Arroz partido para complementar la alimentación.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "granos"
+    },
+    {
+      "id": "afrecho-trigo",
+      "nombre": "Afrecho de trigo",
+      "marca": "Molinos Cordillera",
+      "presentacion": "Saco de 45 kg",
+      "descripcion": "Subproducto de trigo rico en fibra.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "granos"
+    },
+    {
+      "id": "sal-grano",
+      "nombre": "Sal en grano",
+      "marca": "Hinojosa",
+      "presentacion": null,
+      "descripcion": "Sal en grano para tus animales.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "granos"
+    },
+    {
+      "id": "melaza",
+      "nombre": "Melaza",
+      "marca": "Hinojosa",
+      "presentacion": null,
+      "descripcion": "Melaza para complementar la dieta.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "granos"
+    },
+    {
+      "id": "procan-medianas-grandes",
+      "nombre": "Pro-Can razas medianas y grandes",
+      "marca": "Pro-Can",
+      "presentacion": null,
+      "descripcion": "Para cachorros y adultos de razas medianas y grandes.",
+      "precio": 1.0,
+      "precioDesde": true,
+      "categoria": "perros"
+    },
+    {
+      "id": "procan-cachorros-adultos",
+      "nombre": "Pro-Can cachorros y adultos",
+      "marca": "Pro-Can",
+      "presentacion": null,
+      "descripcion": "Alimento completo para cachorros y adultos.",
+      "precio": 2.25,
+      "precioDesde": true,
+      "categoria": "perros"
+    },
+    {
+      "id": "procan-pequenas-miniaturas",
+      "nombre": "Pro-Can razas pequeñas y miniaturas",
+      "marca": "Pro-Can",
+      "presentacion": null,
+      "descripcion": "Para cachorros y adultos de razas pequeñas y miniaturas.",
+      "precio": 1.4,
+      "precioDesde": true,
+      "categoria": "perros"
+    },
+    {
+      "id": "buen-can",
+      "nombre": "Buen Can",
+      "marca": "Buen Can",
+      "presentacion": null,
+      "descripcion": "Alimento para perros.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "perros"
+    },
+    {
+      "id": "cani-premium",
+      "nombre": "Cani Premium adultos y senior",
+      "marca": "Cani",
+      "presentacion": null,
+      "descripcion": "Alimento premium para perros adultos y senior.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "perros"
+    },
+    {
+      "id": "nutrapro-perros",
+      "nombre": "NutraPro cachorro y adulto",
+      "marca": "NutraPro",
+      "presentacion": "2 kg y 4 kg",
+      "descripcion": "Alimento para cachorros y adultos.",
+      "precio": 8.0,
+      "precioDesde": true,
+      "categoria": "perros"
+    },
+    {
+      "id": "dog-chow-premium",
+      "nombre": "Dog Chow Premium",
+      "marca": "Dog Chow",
+      "presentacion": null,
+      "descripcion": "Alimento premium para perros.",
+      "precio": 2.25,
+      "precioDesde": true,
+      "categoria": "perros"
+    },
+    {
+      "id": "mascan-huesos-prensados",
+      "nombre": "Mascan huesos prensados",
+      "marca": "Mascan",
+      "presentacion": "Sabor pollo, res/carne y mini huesos en funda",
+      "descripcion": "Masticables para premiar y entretener a tu perro.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "perros",
+      "subcategoria": "masticables"
+    },
+    {
+      "id": "mascan-multisabor",
+      "nombre": "Mascan multisabor",
+      "marca": "Mascan",
+      "presentacion": null,
+      "descripcion": "Masticables de varios sabores.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "perros",
+      "subcategoria": "masticables"
+    },
+    {
+      "id": "procan-palitos-rejos",
+      "nombre": "Pro-Can palitos y rejos con colágeno",
+      "marca": "Pro-Can",
+      "presentacion": null,
+      "descripcion": "Masticables con colágeno.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "perros",
+      "subcategoria": "masticables"
+    },
+    {
+      "id": "bio-cani-canelones",
+      "nombre": "Bio Cani canelones",
+      "marca": "Bio Cani",
+      "presentacion": null,
+      "descripcion": "Masticables tipo canelón.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "perros",
+      "subcategoria": "masticables"
+    },
+    {
+      "id": "procat-alimento",
+      "nombre": "Pro-Cat alimento para gatos",
+      "marca": "Pro-Cat",
+      "presentacion": null,
+      "descripcion": "Alimento completo para gatos.",
+      "precio": 2.5,
+      "precioDesde": true,
+      "categoria": "gatos"
+    },
+    {
+      "id": "procat-arena",
+      "nombre": "Arena sanitaria Pro-Cat",
+      "marca": "Pro-Cat",
+      "presentacion": null,
+      "descripcion": "Arena sanitaria para gatos.",
+      "precio": 5.5,
+      "precioDesde": false,
+      "categoria": "gatos"
+    },
+    {
+      "id": "nutrapro-arena",
+      "nombre": "Arena premium NutraPro",
+      "marca": "NutraPro",
+      "presentacion": null,
+      "descripcion": "Arena sanitaria premium para gatos.",
+      "precio": 6.0,
+      "precioDesde": false,
+      "categoria": "gatos"
+    },
+    {
+      "id": "freemiau-arena",
+      "nombre": "Arena absorbente Freemiau",
+      "marca": "Freemiau",
+      "presentacion": null,
+      "descripcion": "Arena absorbente para gatos.",
+      "precio": 7.0,
+      "precioDesde": false,
+      "categoria": "gatos"
+    },
+    {
+      "id": "bio-alimentar-tilapia",
+      "nombre": "Balanceado tilapero Bio Alimentar Premium",
+      "marca": "Bio Alimentar",
+      "presentacion": "Sacos de 40 kg y 20 kg",
+      "descripcion": "Balanceado para tilapia con proteína ajustada a cada etapa.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "tilapia"
+    },
+    {
+      "id": "comederos-plasticos-mascotas",
+      "nombre": "Comederos plásticos",
+      "marca": null,
+      "presentacion": null,
+      "descripcion": "Comederos plásticos para perros y gatos.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "accesorios"
+    },
+    {
+      "id": "bebederos-mascotas",
+      "nombre": "Bebederos",
+      "marca": null,
+      "presentacion": null,
+      "descripcion": "Bebederos para mascotas.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "accesorios"
+    },
+    {
+      "id": "comederos-dobles-dispensador",
+      "nombre": "Comederos dobles y con dispensador",
+      "marca": null,
+      "presentacion": null,
+      "descripcion": "Comida y agua en un solo lugar.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "accesorios"
+    },
+    {
+      "id": "semilla-tomate",
+      "nombre": "Semilla de tomate",
+      "marca": "Agrícola Santo Domingo",
+      "presentacion": null,
+      "descripcion": "Semilla de alta calidad.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "semillas"
+    },
+    {
+      "id": "semilla-sandia",
+      "nombre": "Semilla de sandía",
+      "marca": "Agrícola Santo Domingo",
+      "presentacion": null,
+      "descripcion": "Semilla de alta calidad.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "semillas"
+    },
+    {
+      "id": "semilla-melon",
+      "nombre": "Semilla de melón",
+      "marca": "Agrícola Santo Domingo",
+      "presentacion": null,
+      "descripcion": "Semilla de alta calidad.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "semillas"
+    },
+    {
+      "id": "semilla-pimiento",
+      "nombre": "Semilla de pimiento",
+      "marca": "Agrícola Santo Domingo",
+      "presentacion": null,
+      "descripcion": "Semilla de alta calidad.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "semillas"
+    },
+    {
+      "id": "semilla-perejil",
+      "nombre": "Semilla de perejil",
+      "marca": "Agrícola Santo Domingo",
+      "presentacion": null,
+      "descripcion": "Semilla de alta calidad.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "semillas"
+    },
+    {
+      "id": "semilla-cebolla-colorada",
+      "nombre": "Semilla de cebolla colorada",
+      "marca": "Agrícola Santo Domingo",
+      "presentacion": null,
+      "descripcion": "Semilla de alta calidad.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "semillas"
+    },
+    {
+      "id": "semilla-cebollin",
+      "nombre": "Semilla de cebollín",
+      "marca": "Agrícola Santo Domingo",
+      "presentacion": null,
+      "descripcion": "Semilla de alta calidad.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "semillas"
+    },
+    {
+      "id": "semilla-pepino",
+      "nombre": "Semilla de pepino",
+      "marca": "Agrícola Santo Domingo",
+      "presentacion": null,
+      "descripcion": "Semilla de alta calidad.",
+      "precio": null,
+      "precioDesde": false,
+      "categoria": "semillas"
+    }
+  ],
+  "tablaProteinaTilapia": {
+    "titulo": "Proteína por etapa – Tilapia",
+    "producto": "bio-alimentar-tilapia",
+    "etapas": [
+      { "etapa": "Alevín", "proteina": 45 },
+      { "etapa": "Preinicial", "proteina": 42 },
+      { "etapa": "Inicial", "proteina": 38 },
+      { "etapa": "Crecimiento", "proteina": 32 },
+      { "etapa": "Desarrollo", "proteina": 28 },
+      { "etapa": "Engorde", "proteina": 24 }
+    ],
+    "unidad": "%"
+  }
+}

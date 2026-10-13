@@ -1,0 +1,68 @@
+---
+// Contacto y redes: WhatsApp, telefono y Facebook. Cada canal se enlaza solo
+// si su dato esta confirmado en negocio.json; si no, "Por confirmar".
+import BotonWhatsapp from './BotonWhatsapp.astro';
+import Icono from './Icono.astro';
+import { datoConfirmado, enlaceTelefono, textos, PENDIENTE } from '../lib/negocio';
+
+const t = textos.contacto;
+const telefono = datoConfirmado('telefono');
+const hrefTelefono = enlaceTelefono();
+const facebook = datoConfirmado('facebook');
+const whatsapp = datoConfirmado('whatsapp');
+const hayPendientes = !telefono || !facebook || !whatsapp;
+---
+<section id={t.id} class="relative overflow-hidden bg-crema py-seccion" aria-labelledby="titulo-contacto" data-escena="contacto">
+  <div class="contenedor">
+    <div class="max-w-texto" data-revelar-hijos>
+      <h2 id="titulo-contacto" class="text-h2">{t.titulo}</h2>
+      <p class="mt-4 text-lead">{t.intro}</p>
+    </div>
+
+    <ul class="mt-bloque grid gap-5 md:grid-cols-3">
+      <li class="tarjeta flex flex-col gap-4 p-6" data-revelar>
+        <span class="inline-flex size-12 items-center justify-center rounded-full bg-marca-fuerte text-blanco">
+          <Icono nombre="whatsapp" class="size-6" />
+        </span>
+        <h3 class="text-h3">WhatsApp</h3>
+        <div class="mt-auto"><BotonWhatsapp texto={t.ctaWhatsapp} /></div>
+      </li>
+
+      <li class="tarjeta flex flex-col gap-4 p-6" data-revelar>
+        <span class="inline-flex size-12 items-center justify-center rounded-full bg-hoja-claro text-marca-fuerte">
+          <Icono nombre="telefono" class="size-6" />
+        </span>
+        <h3 class="text-h3">Teléfono</h3>
+        <div class="mt-auto">
+          {hrefTelefono ? (
+            <a href={hrefTelefono} class="boton boton-terciario">
+              {t.ctaTelefono}: <span class="cifra">{telefono}</span>
+            </a>
+          ) : (
+            <span class="pendiente">{PENDIENTE}</span>
+          )}
+        </div>
+      </li>
+
+      <li class="tarjeta flex flex-col gap-4 p-6" data-revelar>
+        <span class="inline-flex size-12 items-center justify-center rounded-full bg-hoja-claro text-marca-fuerte">
+          <Icono nombre="facebook" class="size-6" />
+        </span>
+        <h3 class="text-h3">Facebook</h3>
+        <div class="mt-auto">
+          {facebook ? (
+            <a href={facebook} class="boton boton-terciario" target="_blank" rel="noopener">
+              {t.ctaFacebook}<span class="sr-only"> (se abre en una pestaña nueva)</span>
+            </a>
+          ) : (
+            <span class="pendiente">{PENDIENTE}</span>
+          )}
+        </div>
+      </li>
+    </ul>
+
+    {hayPendientes && (
+      <p class="mt-6 font-semibold text-tinta-suave">{t.contactoPendiente}</p>
+    )}
+  </div>
+</section>

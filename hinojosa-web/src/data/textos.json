@@ -1,0 +1,167 @@
+{
+  "navegacion": [
+    { "id": "inicio", "texto": "Inicio" },
+    { "id": "quienes-somos", "texto": "Quiénes somos" },
+    { "id": "canela", "texto": "Canela" },
+    { "id": "categorias", "texto": "Qué vendemos" },
+    { "id": "catalogo", "texto": "Catálogo" },
+    { "id": "ubicacion", "texto": "Ubicación" },
+    { "id": "contacto", "texto": "Contacto" }
+  ],
+  "comunes": {
+    "botonWhatsapp": "Escríbenos por WhatsApp",
+    "botonFlotanteWhatsapp": "¿Te ayudamos? Escríbenos",
+    "etiquetaFlotanteWhatsapp": "Abrir WhatsApp de Comercial Hinojosa",
+    "porConfirmar": "Por confirmar",
+    "datoNoDisponible": "Muy pronto publicaremos este dato.",
+    "mensajeWhatsapp": "Hola, Comercial Hinojosa. Quisiera información sobre ",
+    "mensajeWhatsappGeneral": "Hola, Comercial Hinojosa. Quisiera información sobre sus productos."
+  },
+  "hero": {
+    "id": "inicio",
+    "antetitulo": "Comercial Hinojosa",
+    "titulo": "Nutrición que da vida",
+    "subtitulo": "Balanceados, alimentos y productos para tus animales. Te atendemos con calidez y te ayudamos a elegir lo mejor.",
+    "ctaPrimario": "Escríbenos por WhatsApp",
+    "ctaSecundario": "Ver productos",
+    "ctaSecundarioAncla": "#catalogo"
+  },
+  "quienes-somos": {
+    "id": "quienes-somos",
+    "titulo": "Somos parte de tu familia",
+    "intro": "En Comercial Hinojosa alimentamos a tus aves, cerdos, vacas, cuyes, conejos, tilapias y mascotas. Te escuchamos, te orientamos y te recomendamos lo que de verdad necesitan.",
+    "tarjetaMision": {
+      "titulo": "Nuestra misión",
+      "texto": "Brindar alimentos y productos de calidad para animales, ofreciendo una atención amable, responsable y cercana que satisfaga las necesidades de nuestros clientes."
+    },
+    "tarjetaVision": {
+      "titulo": "Nuestra visión",
+      "texto": "Ser una empresa líder y reconocida en la comercialización de alimentos y productos para animales, destacándonos por nuestra calidad, buen servicio y compromiso con nuestros clientes."
+    },
+    "cta": "Conoce lo que vendemos",
+    "ctaAncla": "#categorias"
+  },
+  "canela": {
+    "id": "canela",
+    "antetitulo": "Conoce a nuestra mascota",
+    "titulo": "¡Hola, soy Canela!",
+    "frase": "Soy alegre, cariñosa y siempre estoy lista para jugar",
+    "intro": "Con mi gorra verde y mi pañuelo con la \"H\", te acompaño en cada visita. Pregúntame lo que quieras: aquí cuidamos a tus animales como de la casa.",
+    "lema": "Tu mejor aliado para tus animales",
+    "interaccion": "Tócame y te saludo",
+    "cta": "Escríbenos por WhatsApp"
+  },
+  "categorias": {
+    "id": "categorias",
+    "titulo": "¿Qué vendemos?",
+    "intro": "Todo para alimentar y cuidar a tus animales, en un solo lugar. Elige una categoría y descubre los productos.",
+    "ctaTarjeta": "Ver productos",
+    "ctaFinal": "¿No encuentras lo que buscas? Pregúntanos por WhatsApp"
+  },
+  "catalogo": {
+    "id": "catalogo",
+    "titulo": "Nuestro catálogo",
+    "intro": "Marcas que distribuimos y nuestra línea propia de granos. Consulta disponibilidad y precio vigente antes de venir.",
+    "filtroTodos": "Todos",
+    "etiquetaFiltro": "Filtrar por categoría",
+    "prefijoDesde": "Desde",
+    "sinPrecio": "Consulta el precio",
+    "ctaProducto": "Consultar por WhatsApp",
+    "etiquetaPresentacion": "Presentación",
+    "etiquetaMarca": "Marca",
+    "tablaTilapia": {
+      "titulo": "Proteína por etapa de la tilapia",
+      "intro": "Usa el balanceado adecuado en cada etapa para un mejor crecimiento.",
+      "columnaEtapa": "Etapa",
+      "columnaProteina": "Proteína"
+    },
+    "avisoPrecios": "Precios referenciales. Consulta disponibilidad y precio vigente por WhatsApp.",
+    "avisoMarcas": "Marcas registradas de sus respectivos propietarios."
+  },
+  "valores": {
+    "id": "valores",
+    "titulo": "Lo que nos mueve",
+    "intro": "Calidad, confianza y compromiso en cada atención.",
+    "subtituloValores": "Nuestros valores",
+    "subtituloPilares": "Nuestra esencia",
+    "introPilares": "Productos naturales, confiables, de calidad y sostenibles."
+  },
+  "por-que-elegirnos": {
+    "id": "por-que-elegirnos",
+    "titulo": "¿Por qué elegirnos?",
+    "intro": "Calidad que alimenta, amor que se siente.",
+    "razones": [
+      {
+        "titulo": "Calidad",
+        "texto": "Trabajamos con marcas reconocidas y nuestra línea propia de granos."
+      },
+      {
+        "titulo": "Nutrición balanceada",
+        "texto": "Alimento para cada especie y cada etapa: del alevín al engorde, del cachorro al senior."
+      },
+      {
+        "titulo": "Atención cercana",
+        "texto": "Te escuchamos y te recomendamos lo que tus animales necesitan."
+      },
+      {
+        "titulo": "Ubicación",
+        "texto": "Estamos en un punto estratégico, fácil de llegar."
+      }
+    ],
+    "contadores": [
+      {
+        "valor": 8,
+        "sufijo": "",
+        "etiqueta": "tipos de animales atendidos",
+        "fuente": "negocio.json > animalesAtendidos (longitud)"
+      },
+      {
+        "valor": 10,
+        "sufijo": "",
+        "etiqueta": "categorías de productos",
+        "fuente": "productos.json > categorias (longitud)"
+      },
+      {
+        "valor": 48,
+        "sufijo": "",
+        "etiqueta": "productos en el catálogo",
+        "fuente": "productos.json > productos (longitud)"
+      },
+      {
+        "valor": 6,
+        "sufijo": "",
+        "etiqueta": "etapas en nuestra tabla para tilapia",
+        "fuente": "productos.json > tablaProteinaTilapia.etapas (longitud)"
+      }
+    ],
+    "notaContadores": "Conviene calcular estos valores en el frontend a partir de los JSON (campo fuente) para que se actualicen solos."
+  },
+  "ubicacion": {
+    "id": "ubicacion",
+    "titulo": "Visítanos",
+    "intro": "Te esperamos con la mejor atención. Ven a conocernos.",
+    "etiquetaDireccion": "Dirección",
+    "etiquetaCiudad": "Ciudad",
+    "etiquetaHorario": "Horario de atención",
+    "ctaComoLlegar": "Cómo llegar",
+    "ctaWhatsapp": "Pregúntanos cómo llegar",
+    "mapaNoDisponible": "Muy pronto verás aquí nuestro mapa."
+  },
+  "contacto": {
+    "id": "contacto",
+    "titulo": "Hablemos",
+    "intro": "¿Tienes una consulta sobre un producto o un precio? Escríbenos y te respondemos.",
+    "ctaWhatsapp": "Escríbenos por WhatsApp",
+    "ctaTelefono": "Llámanos",
+    "ctaFacebook": "Síguenos en Facebook",
+    "contactoPendiente": "Muy pronto publicaremos nuestros datos de contacto."
+  },
+  "footer": {
+    "lema": "Comercial Hinojosa siempre a tu lado",
+    "descripcion": "Venta de balanceados · Alimentos y productos para animales",
+    "avisoMarcas": "Marcas registradas de sus respectivos propietarios.",
+    "avisoPrecios": "Precios referenciales. Consulta disponibilidad y precio vigente por WhatsApp.",
+    "copyright": "© {anio} Comercial Hinojosa. Todos los derechos reservados.",
+    "volverArriba": "Volver arriba"
+  }
+}

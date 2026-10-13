@@ -1,0 +1,109 @@
+---
+// Fuentes autoalojadas (@fontsource, version exacta en package.json): solo el
+// subconjunto latin y los pesos que se usan, con font-display: swap. Sin
+// peticiones a Google (la hoja de Google Fonts bloqueaba el render).
+import '@fontsource/nunito/latin-400.css';
+import '@fontsource/nunito/latin-600.css';
+import '@fontsource/nunito/latin-700.css';
+import '@fontsource/baloo-2/latin-700.css';
+import '@fontsource/baloo-2/latin-800.css';
+import '@fontsource/cormorant-garamond/latin-700.css';
+import '@fontsource/caveat-brush/latin-400.css';
+import '../styles/global.css';
+import { negocio } from '../lib/negocio';
+import { IMAGEN_SOCIAL, urlAbsoluta, localeOg, datosEstructurados, jsonLd } from '../lib/seo';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const animales = negocio.animalesAtendidos.map((a) => a.toLowerCase());
+const listaAnimales = `${animales.slice(0, -1).join(', ')} y ${animales.at(-1)}`;
+
+const {
+  title = `${negocio.nombre} | Balanceados y alimentos para animales`,
+  description = `${negocio.nombre}: venta de balanceados, alimentos y productos para ${listaAnimales}. ${negocio.eslogan}.`,
+} = Astro.props;
+
+// Sin `site` en astro.config.mjs (aun no hay dominio) estas URLs son null y
+// se omiten canonical, og:url y og:image: Open Graph exige URL absoluta.
+const canonical = urlAbsoluta(Astro.url.pathname, Astro.site);
+const imagenSocial = urlAbsoluta(IMAGEN_SOCIAL.ruta, Astro.site);
+const esquema = jsonLd(datosEstructurados(Astro.site, description));
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#1b4d2b" />
+    <meta name="generator" content={Astro.generator} />
+    {canonical && <link rel="canonical" href={canonical} />}
+
+    <!-- Open Graph / redes sociales -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={localeOg()} />
+    <meta property="og:site_name" content={negocio.nombre} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {imagenSocial && (
+      <>
+        <meta property="og:image" content={imagenSocial} />
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image:width" content={String(IMAGEN_SOCIAL.width)} />
+        <meta property="og:image:height" content={String(IMAGEN_SOCIAL.height)} />
+        <meta property="og:image:alt" content={IMAGEN_SOCIAL.alt} />
+      </>
+    )}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {imagenSocial && (
+      <>
+        <meta name="twitter:image" content={imagenSocial} />
+        <meta name="twitter:image:alt" content={IMAGEN_SOCIAL.alt} />
+      </>
+    )}
+
+    <!-- Datos estructurados (schema.org): solo datos confirmados de negocio.json -->
+    <script is:inline type="application/ld+json" set:html={esquema} />
+
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Estado inicial: JS disponible y preferencia de "Pausar animaciones"
+         (se aplica antes del primer pintado para no ver movimiento) -->
+    <script is:inline>
+      (function () {
+        var html = document.documentElement;
+        html.classList.add('js');
+        try {
+          if (localStorage.getItem('hinojosa-movimiento') === 'pausado') {
+            html.setAttribute('data-movimiento', 'pausado');
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="min-h-dvh">
+    <a
+      href="#contenido"
+      class="sr-only z-50 rounded-boton bg-bosque font-bold text-blanco shadow-elevada focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:px-5 focus:py-3"
+    >
+      Saltar al contenido
+    </a>
+    <slot />
+
+    <!-- Fase 4: arranque de animaciones. Pesa ~2 kB; GSAP, Lenis y Three.js
+         se descargan despues, en idle, solo si el dispositivo y el usuario
+         lo permiten (src/lib/animacion/arranque.ts). -->
+    <script>
+      import '../lib/animacion/arranque';
+    </script>
+  </body>
+</html>

@@ -1,0 +1,124 @@
+---
+// Conoce a Canela. Version sin 3D: video en bucle recortado a cuadrado
+// (sin autoplay con reduced motion o con animaciones pausadas; preload="none").
+// Gancho para la fase 4: data-escena="canela" y data-canela-visual (hueco
+// donde ira Canela 3D; el video/poster queda como respaldo).
+import BotonWhatsapp from './BotonWhatsapp.astro';
+import { textos } from '../lib/negocio';
+
+const t = textos.canela;
+---
+<section id={t.id} class="overflow-hidden bg-blanco py-seccion" aria-labelledby="titulo-canela" data-escena="canela">
+  <div class="contenedor grid items-center gap-bloque md:grid-cols-2">
+    <div class="relative mx-auto w-full max-w-[26rem] md:order-2" data-canela-visual data-revelar="insignia">
+      <div class="absolute -inset-3 rotate-3 rounded-panel bg-hoja-claro" aria-hidden="true"></div>
+      <div class="relative aspect-square overflow-hidden rounded-panel border-4 border-bosque shadow-tarjeta ring-4 ring-maiz ring-inset">
+        <!-- Poster como imagen lazy: el atributo poster de <video> se descarga
+             al inicio aunque haya preload="none". El <video> solo se crea con
+             JS en >= 768 px, sin ahorro de datos ni gama baja y si se acepta
+             movimiento; en movil queda el poster (B4 del informe de QA). -->
+        <img
+          class="size-full object-cover"
+          src="/video/posters/canela.webp"
+          width="720"
+          height="1280"
+          alt=""
+          loading="lazy"
+          decoding="async"
+          data-video-poster
+          data-video-webm="/video/canela.webm"
+          data-video-mp4="/video/canela.mp4"
+        />
+      </div>
+    </div>
+
+    <div class="md:order-1" data-revelar-hijos>
+      <p class="font-script text-acento text-canela-oscuro">{t.antetitulo}</p>
+      <h2 id="titulo-canela" class="mt-1 text-h2">{t.titulo}</h2>
+
+      <figure class="relative mt-6 max-w-texto">
+        <blockquote class="rounded-tarjeta rounded-bl-none bg-maiz px-5 py-4 font-display text-h3 font-bold text-tinta">
+          <p>«{t.frase}»</p>
+        </blockquote>
+        <figcaption class="sr-only">Canela</figcaption>
+      </figure>
+
+      <p class="mt-6 max-w-texto text-lead text-tinta">{t.intro}</p>
+      <p class="mt-4 font-display text-h3 font-bold text-marca-fuerte">{t.lema}</p>
+
+      <div class="mt-7">
+        <BotonWhatsapp texto={t.cta} />
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Video decorativo de Canela. No se descarga en movil (< 768 px), con
+  // ahorro de datos o gama baja, ni con movimiento reducido: queda el poster.
+  // Cuando se permite, se crea al acercarse a la vista y solo se reproduce si
+  // esta visible y las animaciones no estan pausadas.
+  import { gamaBaja, mqTableta, movimientoPermitido, alCambiarMovimiento } from '../lib/animacion/entorno';
+
+  const poster = document.querySelector<HTMLImageElement>('img[data-video-poster]');
+  const permitido = () => mqTableta.matches && !gamaBaja() && movimientoPermitido();
+
+  if (poster && 'IntersectionObserver' in window) {
+    let video: HTMLVideoElement | null = null;
+    let visible = false;
+    let posterEnVista = false;
+
+    const actualizar = () => {
+      if (!video) return;
+      if (visible && movimientoPermitido()) video.play().catch(() => {});
+      else video.pause();
+    };
+
+    const crear = () => {
+      if (video || !permitido()) return;
+      video = document.createElement('video');
+      video.className = poster.className;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.preload = 'none';
+      video.poster = poster.currentSrc || poster.src;
+      video.setAttribute('aria-hidden', 'true');
+      video.width = 720;
+      video.height = 1280;
+      for (const [src, tipo] of [
+        [poster.dataset.videoWebm, 'video/webm'],
+        [poster.dataset.videoMp4, 'video/mp4'],
+      ]) {
+        if (!src) continue;
+        const fuente = document.createElement('source');
+        fuente.src = src;
+        fuente.type = tipo!;
+        video.append(fuente);
+      }
+      io.unobserve(poster);
+      poster.replaceWith(video);
+      io.observe(video);
+    };
+
+    const io = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          if (e.target === poster) {
+            posterEnVista = e.isIntersecting;
+            if (posterEnVista) crear();
+          } else {
+            visible = e.isIntersecting;
+            actualizar();
+          }
+        }
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(poster);
+    alCambiarMovimiento(() => {
+      if (!video && posterEnVista) crear();
+      actualizar();
+    });
+  }
+</script>

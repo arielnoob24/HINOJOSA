@@ -1,0 +1,41 @@
+---
+// Boton de WhatsApp que respeta la regla de datos sin confirmar:
+// - con numero confirmado: enlace wa.me con mensaje prellenado;
+// - sin numero confirmado: texto NO interactivo "WhatsApp por confirmar"
+//   (sin href, sin foco), para no publicar un enlace roto.
+import Icono from './Icono.astro';
+import { enlaceWhatsapp, textos, PENDIENTE } from '../lib/negocio';
+
+interface Props {
+  texto?: string;
+  mensaje?: string;
+  ancho?: 'auto' | 'completo';
+  class?: string;
+}
+const {
+  texto = textos.comunes.botonWhatsapp,
+  mensaje = textos.comunes.mensajeWhatsappGeneral,
+  ancho = 'auto',
+  class: clase = '',
+} = Astro.props;
+
+const href = enlaceWhatsapp(mensaje);
+const anchoClase = ancho === 'completo' ? 'w-full sm:w-auto' : '';
+---
+{href ? (
+  <a
+    href={href}
+    class:list={['boton boton-principal', anchoClase, clase]}
+    target="_blank"
+    rel="noopener"
+    data-whatsapp
+  >
+    <Icono nombre="whatsapp" class="size-5 shrink-0" />
+    <span>{texto}<span class="sr-only"> (se abre en una pestaña nueva)</span></span>
+  </a>
+) : (
+  <span class:list={['boton boton-pendiente', anchoClase, clase]} data-whatsapp="pendiente">
+    <Icono nombre="whatsapp" class="size-5 shrink-0" />
+    <span>WhatsApp {PENDIENTE.toLowerCase()}</span>
+  </span>
+)}
