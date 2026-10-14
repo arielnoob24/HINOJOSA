@@ -2,13 +2,21 @@
 // Vista 2 - Quienes somos (guia-estilo 7.2): mosaico, todo visible, sin
 // clics. Tarjeta grande con el video de Canela jugando (arriba) y la frase
 // en una banda bosque OPACA (abajo, nunca sobre el video); Mision (blanca)
-// y Vision (bosque) a la derecha; 6 valores de una palabra.
+// y Vision (bosque) a la derecha; los 6 valores en UNA banda crema-oscuro
+// (icono 28 px + palabra, separados por un punto maiz de 6 px; N5).
+//
+// Video (N1, N2, N8): object-fit contain anclado abajo, para no cortar la
+// gorra de Canela; la caja tiene el gris del fondo del video (medido en el
+// poster: #EBEBE7) para que no se note el marco. En movil, 16/8.
+// Hover (N7): tilt (hasta --tilt-max) solo en la tarjeta grande y en la
+// banda de valores; Mision y Vision solo se elevan (no son pulsables).
 //
 // Video: muted loop playsinline, preload="none", poster. Solo se reproduce
 // con la vista activa, sin reduced motion y sin la pausa del usuario
 // (src/lib/video-vista.ts). Boton de pausa visible (WCAG 2.2.2).
 // Ganchos: [data-mosaico], [data-tarjeta-familia], video[data-video-vista],
-//          [data-tilt] (hover leve opcional), [data-icono-animado].
+//          [data-tilt] (tilt al pasar el raton), [data-elevar] (solo
+//          elevacion), [data-banda-valores], [data-icono-animado].
 import Vista from '../Vista.astro';
 import BotonPausa from '../BotonPausa.astro';
 import Icono from '../Icono.astro';
@@ -28,7 +36,7 @@ const poster = '/video/canela-jugando-poster.webp';
     <h2 id="titulo-nosotros" tabindex="-1" data-titulo-vista class="text-h2">{t.titulo}</h2>
 
     <div class="nos-mosaico" data-mosaico>
-      <article class="nos-familia" data-tarjeta-familia aria-labelledby="frase-familia">
+      <article class="nos-familia" data-tarjeta-familia data-tilt aria-labelledby="frase-familia">
         <div class="nos-video" style={`--poster-video: url(${poster})`}>
           <video
             muted
@@ -57,23 +65,23 @@ const poster = '/video/canela-jugando-poster.webp';
         </p>
       </article>
 
-      <article class="nos-tarjeta nos-mision" data-tilt aria-labelledby="eyebrow-mision">
+      <article class="nos-tarjeta nos-mision" data-elevar aria-labelledby="eyebrow-mision">
         <h3 id="eyebrow-mision" class="nos-eyebrow text-canela-oscuro">{t.tituloMision}</h3>
         <p class="nos-texto text-tinta">{p.mision}</p>
       </article>
 
-      <article class="nos-tarjeta nos-vision" data-tilt aria-labelledby="eyebrow-vision">
+      <article class="nos-tarjeta nos-vision" data-elevar aria-labelledby="eyebrow-vision">
         <h3 id="eyebrow-vision" class="nos-eyebrow text-maiz">{t.tituloVision}</h3>
         <p class="nos-texto text-blanco">{p.vision}</p>
       </article>
 
-      <section class="nos-valores" aria-labelledby="titulo-valores">
+      <section class="nos-valores" data-banda-valores data-tilt aria-labelledby="titulo-valores">
         <h3 id="titulo-valores" class="sr-only">{t.tituloValores}</h3>
         <ul class="nos-lista-valores">
           {p.valores.map((v, i) => (
-            <li class="nos-valor" data-tilt>
+            <li class="nos-valor">
               <span class="nos-valor-icono" aria-hidden="true" data-icono-animado={`valor-${i}`}>
-                <Icono nombre={iconosValores[i] ?? 'estrella'} class="size-6" />
+                <Icono nombre={iconosValores[i] ?? 'estrella'} class="size-7" />
               </span>
               <span class="nos-valor-palabra">{v}</span>
             </li>
@@ -108,24 +116,31 @@ const poster = '/video/canela-jugando-poster.webp';
     background: var(--color-bosque);
     box-shadow: var(--shadow-tarjeta);
   }
+  /* Caja del video: el gris del fondo del video, medido en el poster
+     (mediana de los bordes: #EBEBE7), para que el contain no deje un marco
+     visible (N1, N2). */
   .nos-video {
+    --gris-video: #ebebe7;
     position: relative;
     flex: 1 1 auto;
     min-height: 8rem;
-    aspect-ratio: 16 / 7;
-    background: var(--color-crema-oscuro);
+    aspect-ratio: 16 / 8;
+    background: var(--gris-video);
   }
-  /* Sin JS nadie asigna el poster al video: se ve como fondo (cover, igual
-     que el video). Con JS esta regla no aplica y no se descarga. */
+  /* Sin JS nadie asigna el poster al video: se ve como fondo, con el mismo
+     encuadre que el video. Con JS esta regla no aplica y no se descarga. */
   :global(html:not(.js)) .nos-video {
-    background: var(--color-crema-oscuro) var(--poster-video) center / cover no-repeat;
+    background: var(--gris-video) var(--poster-video) 50% 100% / contain no-repeat;
   }
+  /* contain + anclado abajo: Canela entera (con la gorra) y "de pie" sobre
+     la banda de la frase. */
   .nos-video video {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: 50% 100%;
   }
   :global(.nos-pausa) {
     position: absolute;
@@ -158,7 +173,7 @@ const poster = '/video/canela-jugando-poster.webp';
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 0.375rem;
+    gap: 0.5rem;
     border-radius: var(--radius-tarjeta);
     padding: clamp(1rem, 2.4vw, 1.75rem);
     box-shadow: var(--shadow-tarjeta);
@@ -171,6 +186,8 @@ const poster = '/video/canela-jugando-poster.webp';
     --color-foco: var(--color-foco-oscuro);
     background: var(--color-bosque);
   }
+  /* Antetitulo en 800; el texto en 400 a text-lead (N6): deja de competir
+     con la frase de marca. */
   .nos-eyebrow {
     font-family: var(--font-sans);
     font-size: var(--text-etiqueta);
@@ -185,34 +202,40 @@ const poster = '/video/canela-jugando-poster.webp';
     color: var(--color-canela-oscuro);
   }
   .nos-texto {
-    font-family: var(--font-display);
-    font-size: var(--text-h3);
-    line-height: var(--text-h3--line-height);
-    font-weight: 800;
+    font-family: var(--font-sans);
+    font-size: var(--text-lead);
+    line-height: var(--text-lead--line-height);
+    font-weight: 400;
     text-wrap: pretty;
+  }
+
+  /* --------- Valores: UNA banda crema-oscuro (N5) ---------
+     Icono suelto de 28 px + palabra; sin circulo (el aro maiz es solo de
+     los pilares de Por que). Bosque sobre crema-oscuro: 7.7:1. */
+  .nos-valores {
+    border-radius: var(--radius-tarjeta);
+    background: var(--color-crema-oscuro);
+    padding: 0.875rem 1rem;
   }
   .nos-lista-valores {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.625rem;
+    gap: 0.625rem 0.75rem;
   }
   .nos-valor {
     display: flex;
-    min-height: 2.5rem;
+    min-width: 0;
     align-items: center;
-    justify-content: center;
-    border: 1px solid var(--color-crema-oscuro);
-    border-radius: var(--radius-chip);
-    background: var(--color-blanco);
-    padding: 0.375rem 0.75rem;
-    text-align: center;
+    gap: 0.5rem;
   }
   .nos-valor-icono {
-    display: none;
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--color-bosque);
   }
   .nos-valor-palabra {
     font-weight: 800;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     line-height: 1.15;
     color: var(--color-bosque);
   }
@@ -245,46 +268,69 @@ const poster = '/video/canela-jugando-poster.webp';
     .nos-valores {
       grid-column: 1 / -1;
       grid-row: 3;
+      padding: clamp(0.75rem, 1.8dvh, 1.125rem) 1.5rem;
     }
+    /* En linea, separados por un punto maiz de 6 px (decorativo) */
     .nos-lista-valores {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: var(--spacing-mosaico);
-    }
-    .nos-valor {
-      flex-direction: column;
-      gap: 0.625rem;
-      min-height: 0;
-      border-radius: var(--radius-tarjeta);
-      padding: clamp(0.75rem, 2dvh, 1.25rem) 0.5rem;
-      box-shadow: var(--shadow-suave);
-    }
-    .nos-valor-icono {
-      display: inline-flex;
-      width: clamp(2.5rem, 6dvh, 3.5rem);
-      height: clamp(2.5rem, 6dvh, 3.5rem);
+      display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: center;
+      gap: 0.5rem 0;
+    }
+    .nos-valor + .nos-valor::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      flex: 0 0 auto;
+      margin-inline: clamp(0.75rem, 1.6vw, 1.5rem);
       border-radius: 50%;
-      background: var(--color-hoja-claro);
-      color: var(--color-bosque);
-      box-shadow: 0 0 0 2px var(--color-maiz);
+      background: var(--color-maiz);
+    }
+    .nos-valor {
+      gap: 0;
+    }
+    .nos-valor-icono {
+      margin-right: 0.5rem;
     }
     .nos-valor-palabra {
-      font-size: clamp(0.9375rem, 1.4vw, 1.25rem);
+      font-size: clamp(0.9375rem, 1.3vw, 1.1875rem);
+      white-space: nowrap;
     }
   }
 
-  /* Hover leve, solo raton y con movimiento permitido. Nunca revela nada. */
+  /* Pantallas bajas de escritorio (1366x650): text-lead escala con el
+     ancho, no con el alto, y Mision empujaba el mosaico 17 px por debajo
+     del pliegue. Se compactan texto y relleno de Mision/Vision. */
+  @media (min-width: 48rem) and (max-height: 43.75rem) {
+    .nos-texto {
+      font-size: 1.125rem;
+      line-height: 1.4;
+    }
+    .nos-tarjeta {
+      padding: 1rem 1.375rem;
+    }
+  }
+
+  /* --------- Hover (N7) ---------
+     Solo raton, con movimiento permitido y sin la pausa del sitio. Nunca
+     revela contenido. Tilt (hasta --tilt-max) en la tarjeta grande y en la
+     banda de valores; Mision y Vision solo se elevan: no son pulsables. */
   @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-    [data-tilt] {
+    :global(html:not([data-movimiento='pausado'])) :is([data-tilt], [data-elevar]) {
       transition: transform var(--duracion-hover) var(--ease-vista), box-shadow var(--duracion-hover) ease;
     }
-    [data-tilt]:hover {
-      transform: translateY(-4px) rotate(-1deg);
+    :global(html:not([data-movimiento='pausado'])) .nos-familia:hover {
+      transform: perspective(100rem) rotateY(calc(var(--tilt-max) * -1)) translateY(-4px);
       box-shadow: var(--shadow-elevada);
     }
-    :global(html[data-movimiento='pausado']) [data-tilt]:hover {
-      transform: none;
+    :global(html:not([data-movimiento='pausado'])) .nos-valores:hover {
+      transform: perspective(100rem) rotateX(var(--tilt-max)) translateY(-2px);
+      box-shadow: var(--shadow-tarjeta);
+    }
+    :global(html:not([data-movimiento='pausado'])) [data-elevar]:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-elevada);
     }
   }
 </style>

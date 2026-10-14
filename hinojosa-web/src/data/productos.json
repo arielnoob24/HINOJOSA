@@ -12,6 +12,7 @@
     {
       "id": "camperito-pollos",
       "categoria": "granja",
+      "animales": ["ave"],
       "nombre": "Camperito pollos crecimiento y engorde",
       "marca": "Camperito",
       "presentacion": null,
@@ -23,6 +24,7 @@
     {
       "id": "nutri-pollos",
       "categoria": "granja",
+      "animales": ["ave"],
       "nombre": "Nutri Pollos",
       "marca": "Nutritivos",
       "presentacion": "Inicial, crecimiento y engorde",
@@ -34,6 +36,7 @@
     {
       "id": "nutri-cerdos",
       "categoria": "granja",
+      "animales": ["cerdo"],
       "nombre": "Nutri Cerdos",
       "marca": "Nutritivos",
       "presentacion": "Inicial, crecimiento, engorde, gestantes y lactantes",
@@ -45,6 +48,7 @@
     {
       "id": "nutri-vacas",
       "categoria": "granja",
+      "animales": ["vaca"],
       "nombre": "Nutri Vacas lecheras",
       "marca": "Nutritivos",
       "presentacion": "Alta producción de leche",
@@ -56,6 +60,7 @@
     {
       "id": "nutri-cuyes",
       "categoria": "granja",
+      "animales": ["cuy", "conejo"],
       "nombre": "Nutri Cuyes",
       "marca": "Nutritivos",
       "presentacion": "Cuyes y conejos · crecimiento y engorde",
@@ -67,6 +72,7 @@
     {
       "id": "gallos-de-pelea",
       "categoria": "granja",
+      "animales": ["ave"],
       "nombre": "Gallos de pelea",
       "marca": "Nutritivos",
       "presentacion": "Sacos de 30 a 40 kg",
@@ -78,6 +84,7 @@
     {
       "id": "bio-alimentar-tilapero",
       "categoria": "granja",
+      "animales": ["tilapia"],
       "nombre": "Balanceado tilapero Premium",
       "marca": "Bio Alimentar",
       "presentacion": "Sacos de 40 kg y 20 kg",
@@ -89,6 +96,7 @@
     {
       "id": "melaza",
       "categoria": "granja",
+      "animales": ["vaca"],
       "nombre": "Melaza",
       "marca": "Hinojosa",
       "presentacion": null,
@@ -100,6 +108,7 @@
     {
       "id": "sal-en-grano",
       "categoria": "granja",
+      "animales": ["vaca"],
       "nombre": "Sal en grano",
       "marca": "Hinojosa",
       "presentacion": null,
@@ -113,6 +122,7 @@
     {
       "id": "procan-adultos",
       "categoria": "mascotas",
+      "animales": ["perro"],
       "nombre": "Pro-Can adultos razas medianas y grandes",
       "marca": "Pro-Can",
       "presentacion": null,
@@ -124,6 +134,7 @@
     {
       "id": "procan-cachorros",
       "categoria": "mascotas",
+      "animales": ["perro"],
       "nombre": "Pro-Can cachorros razas pequeñas",
       "marca": "Pro-Can",
       "presentacion": "Razas pequeñas y miniaturas",
@@ -135,6 +146,7 @@
     {
       "id": "buen-can-adultos",
       "categoria": "mascotas",
+      "animales": ["perro"],
       "nombre": "Buen Can adultos",
       "marca": "Buen Can",
       "presentacion": "Razas medianas y grandes",
@@ -146,6 +158,7 @@
     {
       "id": "dog-chow",
       "categoria": "mascotas",
+      "animales": ["perro"],
       "nombre": "Dog Chow",
       "marca": "Dog Chow",
       "presentacion": null,
@@ -157,6 +170,7 @@
     {
       "id": "procat-alimento",
       "categoria": "mascotas",
+      "animales": ["gato"],
       "nombre": "Pro-Cat alimento para gatos",
       "marca": "Pro-Cat",
       "presentacion": null,
@@ -168,6 +182,7 @@
     {
       "id": "nutrapro-arena",
       "categoria": "mascotas",
+      "animales": ["gato"],
       "nombre": "Arena sanitaria premium NutraPro",
       "marca": "NutraPro",
       "presentacion": null,
@@ -179,6 +194,7 @@
     {
       "id": "freemiau-arena",
       "categoria": "mascotas",
+      "animales": ["gato"],
       "nombre": "Arena absorbente Freemiau",
       "marca": "Freemiau",
       "presentacion": null,
@@ -190,6 +206,7 @@
     {
       "id": "procan-rejos-colageno",
       "categoria": "mascotas",
+      "animales": ["perro"],
       "nombre": "Pro-Can palitos y rejos con colágeno",
       "marca": "Pro-Can",
       "presentacion": null,
@@ -201,6 +218,7 @@
     {
       "id": "mascan-multisabor",
       "categoria": "mascotas",
+      "animales": ["perro"],
       "nombre": "Mascan multisabor",
       "marca": "Mascan",
       "presentacion": null,
@@ -212,6 +230,7 @@
     {
       "id": "mascan-huesos-prensados",
       "categoria": "mascotas",
+      "animales": ["perro"],
       "nombre": "Mascan huesos prensados",
       "marca": "Mascan",
       "presentacion": "Sabor pollo, res/carne y mini huesos",
@@ -223,6 +242,7 @@
     {
       "id": "mascan-hueso-masticable",
       "categoria": "mascotas",
+      "animales": ["perro"],
       "nombre": "Mascan hueso masticable",
       "marca": "Mascan",
       "presentacion": null,
@@ -234,6 +254,7 @@
     {
       "id": "bio-cani-canelones",
       "categoria": "mascotas",
+      "animales": ["perro"],
       "nombre": "Bio Cani canelones",
       "marca": "Bio Cani",
       "presentacion": null,
@@ -245,6 +266,7 @@
     {
       "id": "procan-cachorros-adultos",
       "categoria": "mascotas",
+      "animales": ["perro"],
       "nombre": "Pro-Can cachorros y adultos",
       "marca": "Pro-Can",
       "presentacion": null,
@@ -256,6 +278,7 @@
     {
       "id": "nutrapro-perros",
       "categoria": "mascotas",
+      "animales": ["perro"],
       "nombre": "NutraPro cachorro y adulto",
       "marca": "NutraPro",
       "presentacion": "2 kg y 4 kg",
@@ -267,6 +290,7 @@
     {
       "id": "cani-premium",
       "categoria": "mascotas",
+      "animales": ["perro"],
       "nombre": "Cani Premium adultos y senior",
       "marca": "Cani",
       "presentacion": null,
@@ -278,6 +302,7 @@
     {
       "id": "procat-arena",
       "categoria": "mascotas",
+      "animales": ["gato"],
       "nombre": "Arena sanitaria Pro-Cat",
       "marca": "Pro-Cat",
       "presentacion": null,
@@ -290,6 +315,7 @@
     {
       "id": "comedero-galvanizado",
       "categoria": "comederos",
+      "animales": ["ave"],
       "nombre": "Comedero galvanizado para aves",
       "marca": null,
       "presentacion": null,
@@ -301,6 +327,7 @@
     {
       "id": "comedero-plastico-aves",
       "categoria": "comederos",
+      "animales": ["ave"],
       "nombre": "Comedero plástico para aves",
       "marca": null,
       "presentacion": null,
@@ -312,6 +339,7 @@
     {
       "id": "bebedero-aves",
       "categoria": "comederos",
+      "animales": ["ave"],
       "nombre": "Bebedero plástico para aves",
       "marca": null,
       "presentacion": null,
@@ -323,6 +351,7 @@
     {
       "id": "comedero-perro-gato",
       "categoria": "comederos",
+      "animales": ["perro", "gato"],
       "nombre": "Comedero plástico para perros y gatos",
       "marca": null,
       "presentacion": null,
@@ -334,6 +363,7 @@
     {
       "id": "comedero-doble-dispensador",
       "categoria": "comederos",
+      "animales": ["perro", "gato"],
       "nombre": "Comedero doble y bebedero con dispensador",
       "marca": null,
       "presentacion": null,
@@ -346,6 +376,7 @@
     {
       "id": "maiz-en-grano",
       "categoria": "granos",
+      "animales": ["ave"],
       "nombre": "Maíz en grano",
       "marca": "Hinojosa",
       "presentacion": null,
@@ -357,6 +388,7 @@
     {
       "id": "maiz-molido-natural",
       "categoria": "granos",
+      "animales": ["ave", "cerdo"],
       "nombre": "Maíz molido natural",
       "marca": "Hinojosa",
       "presentacion": null,
@@ -368,6 +400,7 @@
     {
       "id": "maiz-molido-vitaminizado",
       "categoria": "granos",
+      "animales": ["ave", "cerdo"],
       "nombre": "Maíz molido vitaminizado",
       "marca": "Hinojosa",
       "presentacion": null,
@@ -379,6 +412,7 @@
     {
       "id": "trigo-natural",
       "categoria": "granos",
+      "animales": ["ave"],
       "nombre": "Trigo natural",
       "marca": "Hinojosa",
       "presentacion": null,
@@ -390,6 +424,7 @@
     {
       "id": "arrocillo",
       "categoria": "granos",
+      "animales": ["ave"],
       "nombre": "Arrocillo",
       "marca": "Hinojosa",
       "presentacion": null,
@@ -401,6 +436,7 @@
     {
       "id": "afrecho-de-trigo",
       "categoria": "granos",
+      "animales": ["cerdo", "vaca", "cuy", "conejo"],
       "nombre": "Afrecho de trigo",
       "marca": "Molinos Cordillera",
       "presentacion": "Saco de 45 kg",
@@ -412,6 +448,7 @@
     {
       "id": "semillas-hortalizas",
       "categoria": "granos",
+      "animales": [],
       "nombre": "Semillas de hortalizas",
       "marca": "Agrícola Santo Domingo",
       "presentacion": "Tomate, sandía, melón, pimiento, perejil, cebolla colorada, cebollín y pepino",

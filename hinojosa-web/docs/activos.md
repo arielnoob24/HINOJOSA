@@ -58,6 +58,19 @@ Fondos de origen:
 - `granja/sal-en-grano` (foto con fondo texturizado) y `granos/diferentes-tipos-de-semillas` (los bordes blancos de los sobres se confunden con el fondo): **se publican con su fondo**, rectangulares.
 - `comederos/bebedero` (2026-10-14): el original traía un **damero "transparente" pintado** y no se podía recortar. Se usa `bebedero_quitado_disque.jpg` (fondo quitado en Paint por el usuario, guardado en JPG sobre blanco puro), que `nuevos_req.py` recorta con `quitar_fondo_blanco` (tabla `REEMPLAZOS`). Ya se publica **transparente**, sin `conFondo`.
 
+### Tarjeta genérica de costal y trébol (SVG, `scripts-activos/marca_svg.py`, 2026-10-14)
+
+```bash
+python hinojosa-web/scripts-activos/marca_svg.py   # escribe trebol.svg y costal-generico.svg
+```
+
+| Ruta pública | Tamaño | Peso | Uso |
+|---|---|---|---|
+| `/img/productos/costal-generico.svg` | viewBox 200×260 | 0.9 KB (899 B) | Productos sin imagen al frente del carrusel (P5). Kraft `#E3CFA6` (degradado suave), contorno y costuras canela oscuro `#8A5A1F`, etiqueta crema `#F6F1E4` **vacía**: el nombre va en HTML encima, en la zona x 23–77 %, y 40–70 % de la imagen. Sin texto. Decorativa (`alt=""`): el nombre ya está en el HTML |
+| `/img/marca/trebol.svg` | viewBox 100×100 | 1.5 KB | Ver "Marca y favicons" |
+
+El trébol se traza desde `isotipo.png` (no hay logo vectorial): radio del contorno exterior en polares alrededor del centro marcado por las cuatro muescas, promedio de los tres cuadrantes sin mazorca y simetría de 4 ejes, curva suave. Es una silueta simplificada: las muescas quedan algo más redondeadas que en el isotipo. Cuando llegue el logo vectorial, sustituirlo por la forma original.
+
 ### Canela (`Mascota/Canela.png`, recortada con alfa)
 
 | Ruta pública | Dimensiones | Peso WebP / AVIF | Uso |
@@ -82,6 +95,40 @@ Original: 1920×1080, 24 fps, 7,96 s (191 cuadros), H.264 + audio AAC, 3,3 MB. *
 
 Safari (macOS/iOS) **no reproduce el alfa de VP9**: muestra fondo negro o no reproduce. Detectarlo y usar `canela-jugando-alfa-poster.webp` (o `canela-franja.webp`) en su lugar. Un HEVC con alfa (`.mov`) solo se puede codificar en macOS (VideoToolbox).
 
+### Canela corriendo: sprites de la franja de Inicio (fase 5-B, 2026-10-14)
+
+Fuente: `flow/Puppy_running_in_place_1080p_20261013235908.mp4` (Google Flow, 1920×1080, 24 fps, 10 s; no se modifica). Se regeneran con:
+
+```bash
+python hinojosa-web/scripts-activos/canela_carrera.py
+python hinojosa-web/scripts-activos/canela_carrera.py --preview hinojosa-web/capturas/fase5b/canela-sprites-preview.png
+# opciones: --cuadros DIR (conserva y reutiliza los cuadros recortados), --alto 320, --q 58, --qa 60
+```
+
+FFmpeg: variable `FFMPEG`, si no `ffmpeg` del PATH y, si tampoco, el binario de `imageio-ffmpeg`. Tarda ~1 min (recorta los 240 cuadros a 1080p en paralelo).
+
+| Ruta pública | Cuadros × tamaño | fps | Duración | Cuadros fuente (24 fps) | Peso |
+|---|---|---|---|---|---|
+| `/img/canela/carrera-arranque.webp` | 27 × 388×320 | 12 | 2,25 s | 11–71 (0,46–3,0 s), sin 39–45 | 207.3 KB |
+| `/img/canela/carrera-izq.webp` | 7 × 388×320 (bucle) | 12 | 0,58 s | 73–85 (3,04–3,63 s, periodo 14) | 53.7 KB |
+| `/img/canela/carrera-giro.webp` | 18 × 388×320 | 12 | 1,5 s | 100–134 (4,17–5,67 s) | 133.4 KB |
+| `/img/canela/carrera-der.webp` | 6 × 388×320 (bucle) | 12 | 0,5 s | 150–160 (6,25–6,75 s, periodo 12) | 47.6 KB |
+| `/img/canela/carrera.json` | medidas (cuadro, piezas, caja común, suelo, zancada) | | | | 2.1 KB |
+| **Total sprites** | 58 cuadros | | | | **442.1 KB** (presupuesto ≤ 450 KB) |
+
+- Tiras horizontales con alfa: el cuadro `k` está en `x = k·388`. Todas las piezas usan **la misma caja de recorte** (x 320–1525, y 50–1044 del video) y la misma escala (0,32193), así que Canela no salta al cambiar de pieza. `suelo` = 318 px: línea de las patas dentro del cuadro (para la sombra propia del sitio).
+- 320 px de alto = franja ×2 (Canela a ~160 px CSS). Calidad WebP 58 / alfa 60, con el alfa casi opaco (> 0,94) llevado a 1 y el casi transparente (< 0,05) a 0: con calidad 78/90 pesaban 938 KB.
+- **Recorte del fondo:** clave por azulidad normalizada `q = (B − max(R,G)) / B` (el fondo vale ~0,32 en todo el cuadro, también en la viñeta y en la sombra del suelo, que solo oscurece). `alpha = clip((0,25 − q) / 0,19)`. Los huecos de fondo entre las patas se recortan; los brillos azulados de los ojos (huecos pequeños no conectados) se fuerzan opacos. Color des-premultiplicado con una placa de fondo cuadrática por cuadro y **despill** (`B ≤ max(R,G)` donde queda tinte azul). Motas sueltas del ruido de compresión, eliminadas. La sombra del video se descarta.
+- **Control de halo:** píxeles de borde semitransparentes con azul > max(R,G)+10: 0,04–0,1 % por tira. Hoja de control sobre crema `#F6F1E4` y verde `#1B4D2B`: `capturas/fase5b/canela-sprites-preview.png`.
+- **Selección de cuadros** (diferencia media entre cuadros reducidos; movimiento medio entre cuadros consecutivos = 0,029):
+  - Ciclo izquierdo: el mejor empalme de 0,5–0,83 s con inicio en 2,5–3,1 s: periodo **14 cuadros** (0,583 s), error 0,0095.
+  - Ciclo derecho: la carrera derecha solo se repite desde ~6 s (entre 5,4 y 6 s acelera); periodo **12 cuadros** (0,5 s), error 0,0062.
+  - Arranque: de 0,46 s (antes está quieta: la página ya muestra `canela-franja`) hasta el cuadro anterior al inicio del ciclo izquierdo. Se saltan los cuadros 39–45 (1,6–1,9 s, quieta de pie; movimiento < 0,006 por cuadro).
+  - Giro: empieza en el cuadro 100, el más parecido al inicio del ciclo izquierdo (error 0,022: la página termina un ciclo y sigue con el giro) y termina en el 134, antes del cuadro más parecido al inicio del ciclo derecho (error 0,033, del orden de un cuadro de movimiento).
+- **Zancada** (`carrera.json` → `zancada`): **izq 283,9 px, der 247,2 px por ciclo** a la escala del cuadro (320 px de alto) → velocidad del suelo ≈ **487 y 494 px/s** (multiplicar por alto mostrado / 320). Método: corriendo en el sitio, la pata apoyada se desliza hacia atrás a la velocidad a la que avanzaría el cuerpo. En cada par de cuadros de 24 fps se toma la franja de contacto (22 px de alfa sobre el suelo del ciclo) y se busca el corrimiento horizontal que mejor superpone su perfil de alfa; zancada = mediana de los pasos con apoyo × cuadros del ciclo. Pasos medidos: izq ≈ 59–68 px/cuadro a 1080p, der ≈ 64–66.
+- No se espeja ningún ciclo (el texto de la gorra saldría al revés). **No hay giro derecha → izquierda:** espejar `carrera-giro` (`scaleX(-1)`) o reproducirlo al revés; se decide en la página.
+- Decorativos: `aria-hidden="true"` en el contenedor; cargarlos **después de `load`** (el logo sigue siendo el LCP). Con `prefers-reduced-motion`, solo `canela-franja`.
+
 ## Marca y favicons
 
 | Ruta pública | Dimensiones | Peso | Sección | `alt` sugerido |
@@ -92,6 +139,7 @@ Safari (macOS/iOS) **no reproduce el alfa de VP9**: muestra fondo negro o no rep
 | `/img/marca/isotipo.webp` | 263×257 | 11.2 KB | Header compacto, separadores, footer | Isotipo de Comercial Hinojosa: letra H sobre hojas verdes |
 | `/img/marca/isotipo.png` | 263×257 | 62.7 KB | Respaldo PNG transparente | Isotipo de Comercial Hinojosa |
 | `/img/marca/isotipo-96.webp` | 98×96, transparente | 5.2 KB | Barra de navegación (se pinta a 36–40 px; cubre 2x). Generado por `nuevos_req.py` desde `isotipo.png` (QA M7) | Isotipo de Comercial Hinojosa: letra H sobre hojas verdes |
+| `/img/marca/trebol.svg` | viewBox 100×100, una sola forma, `fill="currentColor"` | 1.5 KB (1565 B) | Hojas sueltas y marca de agua del fondo de Inicio y de Visítanos sin mapa (se colorea por CSS con `color`) | decorativo: `alt=""` / `aria-hidden="true"` |
 | `/favicon.svg` | 64×64 (PNG incrustado) | 6.1 KB | `<link rel="icon" type="image/svg+xml">` | (decorativo) |
 | `/favicon.ico` | 16, 32 y 48 px | 8.5 KB | Favicon clásico | (decorativo) |
 | `/favicon.png` | 32×32 | 2.6 KB | `<link rel="icon" type="image/png" sizes="32x32">` | (decorativo) |
@@ -181,6 +229,7 @@ Las imágenes del catálogo y los demás videos deben cargarse con `loading="laz
 - **Logo vectorial (SVG)**: no existe. El logo y el isotipo transparentes salen de un recorte rasterizado (~930 px) y se ven suaves en pantallas grandes. Tampoco hay versión blanca para fondos oscuros: conviene pedírsela a la dueña.
 - **Canela con el pulgar arriba**: no se puede aislar sin restos porque la tapan otros animales y el fondo del campo. Se entrega recortada en círculo con aro dorado y fondo crema. Necesita un arte limpio o fondo transparente de origen.
 - **AVIF**: el Pillow instalado no soporta AVIF; los activos de `Nuevos Req/` se codifican con `sharp` y sí tienen AVIF. Los afiches antiguos siguen solo en WebP.
+- **Canela corriendo (fase 5-B)**: sprites generados (442 KB, ver arriba). Falta el giro derecha → izquierda (no está en el video; espejar o invertir el giro en la página). Inicio pasa de ~210 KB a ~650 KB si se cargan los cuatro sprites después de `load` (< 1,5 MB).
 - **Perrito caminando en horizontal**: sigue sin llegar. `Canela Jugando.mp4` juega en el sitio; sirve para la franja como Canela quieta que juega (versión con alfa), no para cruzarla caminando.
 - **Activos antiguos**: los afiches de `/img/productos/*.webp` (+ `-480`), y los videos `hero`, `canela`, `catalogo`, `nosotros`, `mascotas` siguen en `public/` porque `src/` los referencia (directamente o vía `src/lib/imagenes.ts`, que añade `-480`). Borrarlos cuando `src/` pase a las rutas nuevas. `/img/canela/conoce-a-canela*` ya no tiene referencias en `src/` (la sección se quitó), pero no lo reemplazan estos activos: se deja hasta confirmar.
 - **Lottie**: ni `lottie-web` ni `@lottiefiles/dotlottie-web` están instaladas.

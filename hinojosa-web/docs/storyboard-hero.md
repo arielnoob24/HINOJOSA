@@ -1,169 +1,233 @@
-# Storyboard: Canela en Inicio y transición entre vistas
+# Storyboard: Inicio (Canela corriendo, entrada) y transición entre vistas
 
-> Fase 1 (diseño), reescrito el 2026-10-12. Sustituye al storyboard anterior (hero 3D con Canela grande en insignia, granos con paralaje de scroll, entradas escalonadas por sección), que **ya no existe**: el sitio es ahora de 5 vistas sin scroll (`PLAN.md`, sección 3) y el único personaje animado es Canela cruzando la franja inferior de Inicio (sección 0 y vista 1).
-> Tokens: `src/styles/tokens.css` (`--canela-*`, `--duracion-vista`, `--ease-*`, `animate-canela-*`, `animate-vista-*`). Guía: `docs/guia-estilo.md`.
-> Criterio de movimiento: skill `motion-and-storytelling` (sutileza, ease-out para entrar, solo `transform`/`opacity`, un movimiento por región).
-
----
-
-## 0. Activo y requisitos previos
-
-**Activo:** `Nuevos Req/Mascota/Canela.png` — render estilo 3D, 2752×1536, Canela **sentada y de frente**, gorra verde y collar con dije de trébol "H". La figura ocupa solo el centro del lienzo (aprox. x 860–1930, y 85–1480 px del original): proporción del recorte **ancho/alto ≈ 0,76** (`--canela-proporcion`).
-
-**Antes de animar, el agente de activos debe:**
-1. **Verificar el canal alfa.** El PLAN lo da por recortado, pero en la vista previa se ve un **fondo de estudio gris con degradado y sombra de suelo**. Comprobar con `sharp(...).metadata()` (`hasAlpha`) y el alfa de un píxel de esquina. Si no hay alfa real, hay que recortarla (manual o con eliminación de fondo y repaso del pelo) antes de usarla: un rectángulo gris saltando sobre el verde de Inicio no es aceptable.
-2. **Recortar al contenido** (`trim`) para que el lienzo no tenga 2/3 de aire: el tamaño en pantalla se calcula por el alto de la figura.
-3. **Quitar la sombra de suelo horneada** si la trae: la sombra la dibuja el CSS (sección 2.4) para que se encoja durante el salto.
-4. Exportar `public/img/canela/canela.webp` (+ `.avif`) a **160 y 320 px de alto** (1x/2x del tamaño máximo de 120 px), objetivo < 30 kB. `loading="eager"`, `fetchpriority="low"`, `decoding="async"`: el LCP es el logo, no Canela.
-
-**Plan B mientras no haya recorte limpio:** Canela dentro de un **medallón** (círculo con interior `crema`, aro `maiz` 3 px y aro `bosque` 6 px, recorte del busto con `object-fit: cover`), que salta exactamente con el mismo storyboard. Es la insignia de la marca, así que no desentona.
-
-**Sobre el video `Canela Jugando.mp4`:** si al revisarlo trae alfa o un fondo liso recortable, puede sustituir al salto (WebM VP9 con alfa + fallback). Este storyboard es el **bucle por defecto** que manda la sección 0 y no depende del video.
+> Reescrito el 2026-10-14 con las decisiones de `PLAN.md` §0-B y vista 1 ("Canela: carrera de borde a borde", sustituye a I8) y §3 ("Transición entre vistas", T1–T2 + A+).
+> **Sustituye** al storyboard anterior, en el que Canela era la foto sentada cruzando la franja a saltitos (se veía falso: una foto deslizándose) y la transición solo animaba la vista entrante (destello del fondo crema, duración percibida ~150 ms).
+> Contrato del router, de la transición y de la barra: skill `vistas-hinojosa` (manda sobre este documento si difieren). Guía: `docs/guia-estilo.md` §7.1 y §12. Criterio: skill `motion-and-storytelling`.
 
 ---
 
 ## 1. La idea en una frase
 
-Canela cruza la franja inferior de Inicio **de derecha a izquierda a saltitos cortos**, como un cachorro que va contento hacia algún sitio; sale por la izquierda, desaparece un rato y vuelve a entrar por la derecha. Es un adorno de fondo: se nota sin llamar la atención y **nunca compite con el botón "Ver productos"** (staging: ella vive en su franja, el contenido en la suya).
+Canela, la perrita de la marca, **está sentada** en la franja inferior de Inicio cuando llegas; se levanta y **sale corriendo de verdad** hasta el borde izquierdo, **frena y da la vuelta**, corre hasta el borde derecho, frena y da la vuelta, y así sigue. Un cachorro que juega en la puerta de la tienda: se nota, alegra, y **nunca compite con los botones** (vive en su propia fila del grid).
 
-Como el render es frontal y sentado, el desplazamiento se lee como "saltitos de conejo" de lado. La dirección la marca una **inclinación de 3° hacia la izquierda** en el aire (principio de arcos y anticipación), no un cambio de pose.
+Solo se sienta al principio. Nunca sale de la pantalla ni vuelve a entrar por un borde. Nunca gira de golpe.
 
 ---
 
-## 2. Especificación del bucle
+## 2. Canela: carrera de borde a borde
 
-### 2.1 Escala y posición
+### 2.1 Activos
 
-| Medida | 1440×900 | 768×1024 | 360×640 | Token |
+**Fuente:** `flow/Puppy_running_in_place_1080p_20261013235908.mp4` (1920×1080, 24 fps, 10 s; corre en el sitio, centrada, cámara fija). Tramos medidos en `PLAN.md` vista 1:
+
+| Tramo del video | Contenido | Sprite (12 fps) | Cuadros aprox. |
+|---|---|---|---|
+| 0,6–1,9 s | Sentada de frente → se levanta → gira a la izquierda | `canela-arranque` | 16 |
+| dentro de 2,0–4,8 s | Ciclo de carrera hacia la izquierda, bucle cerrado de 0,5–0,8 s | `canela-carrera-izq` | 6–10 |
+| ~4,8–5,5 s | Frena, gira pasando de frente, sale hacia la derecha | `canela-giro` | 8–9 |
+| dentro de 5,5–10 s | Ciclo de carrera **nativo** hacia la derecha, bucle cerrado | `canela-carrera-der` | 6–10 |
+
+- **No se espeja la carrera:** el texto "HINOJOSA" de la gorra saldría al revés. Se usa el tramo nativo hacia la derecha.
+- **Giro del borde derecho** (derecha → izquierda): no existe en el video. Opción A, `canela-giro` espejado con `scaleX(-1)` (el logo de la gorra se ve invertido ~0,3 s; a 112 px apenas se nota). Opción B, `canela-giro` reproducido al revés (las patas retroceden durante la frenada). Se decide al verlo en la página; la recomendación de dirección de arte es **A**, porque el movimiento físico manda sobre un detalle de 0,3 s.
+- Procesado (`activos-3d-video`, `nuevos_req.py`): fondo quitado con `modelo_fondo` + limpieza del tinte azul en el borde del pelaje; **sombra del video descartada**; sin audio; cada sprite a **2× la altura de la franja** (240 px de alto por cuadro), WebP en una tira horizontal. Presupuesto **≤ 450 kB los cuatro**; si se pasa, menos alto o menos cuadros (12 fps basta).
+- `Canela.png` / `canela-franja`: pose sentada para **la espera mientras cargan los sprites, el reposo y el movimiento reducido**.
+
+### 2.2 Escala y posición
+
+| Medida | 1440×900 | 1366×650 | 360×640 | Token |
 |---|---|---|---|---|
-| Alto de Canela | **112 px** (13 % de la vista útil de 836) | 120 px (tope) | **70 px** (13 % de 524) | `--canela-alto` |
-| Ancho (×0,76) | 85 px | 91 px | 53 px | `--canela-proporcion` |
-| Altura del salto (×0,16) | 18 px | 19 px | 11 px | `--canela-altura-salto` |
-| Franja reservada | 140 px (16,7 %) | 149 px | 91 px (17 %) | `--franja-canela` |
+| Alto de Canela | **112 px** (13 %) | 81 px | **70 px** (13 %) | `--canela-alto` (sin cambios) |
+| Caja del cuadro de carrera (ancho) | ≈ 1,35 × alto = 151 px | 109 px | 95 px | medir en el sprite |
+| Recorrido útil (franja − caja) | ≈ 1 200 px | ≈ 1 170 px | ≈ 265 px | se recalcula al redimensionar |
 
-- La franja es la **segunda fila del grid de Inicio** (`grid-template-rows: 1fr var(--franja-canela)`), no una capa absoluta encima del contenido. Por construcción Canela no puede tapar texto ni botón.
-- Línea de suelo: 10 px por encima del borde inferior de la vista. Canela apoya las patas ahí (`transform-origin: 50% 100%`).
-- `overflow: hidden` en la franja (no en la vista, para no recortar el anillo de foco del botón de pausa).
+- La franja es la **fila 2 del grid de Inicio** (`grid-template-rows: 1fr var(--franja-canela)`): por construcción Canela no tapa texto ni botones. `overflow: hidden` en la franja.
+- Línea de suelo a 10 px del borde inferior. `transform-origin: 50% 100%`.
+- **Igual en móvil** (decisión 0-B): mismo comportamiento, recorrido corto.
+- Límites del recorrido: `xMin = 8 px` y `xMax = anchoFranja − anchoCaja − 8 px`, medidos sobre la **nariz** (borde delantero de la caja en el sentido de la carrera). La nariz nunca pasa del límite.
+- Canela pasa **por detrás** del botón de pausa (`--z-control` > `--z-canela`).
 
-### 2.2 Ritmo
-
-| Parámetro | Valor | Motivo |
-|---|---|---|
-| Un saltito completo | **520 ms** (`--canela-salto`) | Dentro de los 400–600 ms del PLAN; a 520 ms se lee "alegre" sin parecer nervioso |
-| Ciclo completo escritorio | **11,5 s** = cruce 8,3 s (72 %) + pausa fuera 3,2 s (28 %) | ~184 px/s → unos 16 saltitos de ~95 px (0,85 × alto) por cruce |
-| Ciclo tableta (< 1024 px) | 9 s = 6,5 s + 2,5 s | ~150 px/s |
-| Ciclo móvil (< 768 px) | **6,5 s** = 4,7 s + 1,8 s | ~88 px/s → ~9 saltitos de ~46 px; en pantalla chica un cruce largo cansa |
-| Velocidad horizontal | **constante** durante el cruce | Es desplazamiento, no un elemento de UI que llega: el "ease" vive en cada salto. Acelerar y frenar el cruce haría que pareciera arrastrada |
-| Primera entrada | **1,2 s** después de mostrarse Inicio (`--canela-retraso`) | Primero se lee logo, lema y botón (scene setting); luego entra el adorno |
-| Pausa fuera de pantalla | 28 % del ciclo | Deja respirar la vista; el ojo vuelve al contenido |
-
-El número de saltos no tiene que ser entero por cruce: el salto es un bucle independiente y los bordes del cruce están fuera de pantalla, así que no se ve ningún corte.
-
-### 2.3 Anatomía de un saltito (520 ms)
+### 2.3 Secuencia (máquina de estados)
 
 ```
- tiempo:   0%        12%            50%             88%      100% = 0%
-           ▁▁        ▏▏             ╱╲              ▏▏       ▁▁
-          (aplasta) (estira, despega) (ápice, -3°)  (estira, cae) (aplasta)
- escala:  1.06×0.92  0.96×1.05      1×1             0.97×1.04  1.06×0.92
- subida:  0          -3 %·alto      -16 %·alto      -3 %·alto  0
- giro:    0°         -1°            -3°             -1°        0°
- curva:   ├ease-subir┤├─ease-subir──┤├──ease-caer───┤├ease-out┤
+           una sola vez por entrada en Inicio
+ ┌─────────┐ 0,6 s ┌──────────┐ ~1,3 s ┌──────────────┐  nariz en xMin  ┌──────────────┐
+ │ SENTADA ├──────►│ ARRANQUE ├───────►│ CARRERA ←    ├────────────────►│ GIRO (izq)   │
+ └─────────┘       └──────────┘        └──────▲───────┘                 └──────┬───────┘
+                                              │                                │ ~0,7 s
+                                       ┌──────┴───────┐  nariz en xMax  ┌──────▼───────┐
+                                       │ GIRO (der,   │◄────────────────┤ CARRERA →    │
+                                       │ espejado)    │                 └──────────────┘
+                                       └──────────────┘
 ```
 
-- **Squash & stretch leve**: máximo ±8 %, conservando aproximadamente el volumen (cuando ensancha, baja). Más se vería de goma.
-- **Anticipación** en el aplastamiento de contacto; **arco** en la subida desacelerada y la caída acelerada (gravedad).
-- El primer y el último cuadro son idénticos: **el bucle calza sin salto**.
-- Implementado en `@keyframes canela-salto` (`tokens.css`). Se aplica a la imagen (`.canela-salto`), dentro del envoltorio que cruza.
+| Estado | Sprite | Desplazamiento (`translateX` del envoltorio) | Sombra |
+|---|---|---|---|
+| **SENTADA** | Cuadro 0 de `canela-arranque`, quieto **0,6 s** | Ninguno. Posición inicial: lado derecho de la franja, a la izquierda del botón de pausa (`right: calc(var(--spacing-vista) + 44px + 16px)`) | `scaleX(0.6)`, opacidad 0,32 |
+| **ARRANQUE** | `canela-arranque` completo, una vez (~1,3 s) | Ninguno hasta el último cuarto; en el último 0,25 s acelera de 0 a `v` hacia la izquierda (ease-in) | `scaleX` 0,6 → 1 sincronizado con el cuadro en que se pone de perfil |
+| **CARRERA ←** | `canela-carrera-izq` en bucle | Velocidad constante `v` hacia la izquierda | `scaleX(1)`, opacidad 0,3, quieta (no rebota con cada zancada: sería ruido) |
+| **GIRO (izq)** | `canela-giro`, una vez | **Frena**: de `v` a 0 en los primeros `tFreno` ≈ 0,25 s (ease-out); quieta durante el giro; sale de 0 a `v` hacia la derecha en los últimos 0,2 s | `scaleX` 1 → **0,55** (cuadro en que está de frente) → 1 |
+| **CARRERA →** | `canela-carrera-der` en bucle | `v` constante hacia la derecha | `scaleX(1)` |
+| **GIRO (der)** | `canela-giro` espejado (opción A) | Igual que el giro izquierdo, en espejo | Igual |
 
-### 2.4 Sombra en el suelo
+**Cuándo empieza el giro:** cuando a la nariz le queda la distancia de frenada, `dFreno = v · tFreno / 2`, hasta el límite. Así se detiene **exactamente** en `xMin`/`xMax`: frena dentro de la pantalla, nunca se sale.
 
-- Elipse `div` hermana de la imagen, dentro del envoltorio que cruza: viaja en horizontal con Canela **pero no sube**.
-- Tamaño: 70 % del ancho de Canela × 10 px; color `rgb(0 0 0 / 1)` con la opacidad de la animación, `filter: blur(4px)` estático (no animado).
-- `@keyframes canela-sombra`, mismo período de 520 ms: en contacto escala 1 y opacidad 0,32; en el ápice escala 0,68 × 0,8 y opacidad 0,16. Así el salto se "ve" despegar del suelo.
+**Velocidad sincronizada con la zancada (que las patas no patinen):** `v = longitudZancada / duraciónCiclo`. La longitud de zancada se mide en el video: desplazamiento horizontal de una pata **apoyada** durante el contacto (px de video por segundo), multiplicado por `alto en pantalla / alto de Canela en el video`. Orientativo hasta medirlo: **≈ 2 × alto por segundo** → ~220 px/s a 1440×900 (≈ 5,5 s por tramo) y ~140 px/s a 360×640 (≈ 1,9 s por tramo). Se recalcula cuando cambia `--canela-alto` (redimensionar, girar el móvil).
 
-### 2.5 Estructura y capas
+**Cuadros:** el índice sale del tiempo transcurrido, `floor(t · 12) mod n`, nunca de contar fotogramas de `requestAnimationFrame` (a 120 Hz iría el doble de rápido). El sprite se mueve con `transform` dentro de una caja con `overflow: hidden` (más barato que `background-position`).
 
-```
-.franja-canela (fila 2 del grid, overflow hidden, position relative)
-├─ .canela-cruce   ← animate-canela-cruce   (envoltorio del tamaño de Canela, left:0, bottom:10px)
-│  ├─ .canela-sombra ← animate-canela-sombra
-│  └─ img.canela-salto ← animate-canela-salto (aria-hidden, alt="")
-└─ button.pausa   (44×44, abajo a la derecha, z-control)
-```
+**Línea de tiempo a 1440×900 (aprox.)**
 
-`@keyframes canela-cruce`: 0 % en `translateX(100vw)` (fuera por la derecha), 72 % en `translateX(-100%)` (fuera por la izquierda), 100 % igual (espera). Solo `transform`; nada de `left`.
+| t | Qué se ve |
+|---|---|
+| 0 | Inicio visible. Canela sentada a la derecha (si los sprites aún no han cargado, `canela-franja` sentada en el mismo sitio) |
+| 0,6 s | Se levanta y gira de perfil hacia la izquierda |
+| 1,9 s | Ya corre hacia la izquierda |
+| ≈ 7,0 s | Frena junto al borde izquierdo y da la vuelta |
+| ≈ 7,7 s | Corre hacia la derecha |
+| ≈ 13,2 s | Frena junto al borde derecho y da la vuelta (espejado) |
+| ≈ 13,9 s | Corre hacia la izquierda… y así sigue |
 
-### 2.6 Pausa (WCAG 2.2.2) y reposo
+### 2.4 Sombra propia
 
-- **Botón de pausa** visible en la esquina inferior derecha de la franja: 44×44, círculo `crema` opaco, borde 2 px `bosque`, icono `bosque`; `aria-pressed`, nombre "Pausar animación" / "Reanudar animación". Canela pasa **por detrás** (z-control > z-canela).
-- Al pausar, Canela **no se congela a media zancada ni queda invisible fuera de pantalla**: pasa al **cuadro de reposo** (abajo). Al reanudar, el ciclo reinicia desde la entrada por la derecha.
-- La preferencia se guarda (`localStorage`) y se refleja en `html[data-movimiento="pausado"]`, el mismo gancho que ya usa `global.css`.
+- Elipse hermana del sprite dentro del envoltorio que se desplaza: viaja con Canela **pero no sube ni baja**.
+- 70 % del ancho de la caja × 10 px, color `tinta` (nunca negro), `filter: blur(4px)` **estático**. Solo se animan `transform: scaleX()` y `opacity`.
+- Valores por estado en la tabla 2.3. **Se estrecha en el giro** porque Canela pasa de frente (el cuerpo visto de frente ocupa menos suelo).
 
-**Cuadro de reposo** (pausa y `prefers-reduced-motion: reduce`):
-- Canela sentada, escala 1, giro 0, apoyada en el suelo con su sombra en estado de contacto (0,32).
-- Posición: a la derecha de la franja, **a la izquierda del botón de pausa** — `right: calc(var(--spacing-vista) + 44px + 16px)`. Con reduced motion el botón de pausa se oculta (no hay nada que pausar) y Canela queda a `right: var(--spacing-vista)`.
-- Es literalmente el render original: no hay que extraer ningún cuadro.
-- Con reduced motion no se aplica ninguna de las tres animaciones (no basta con acortar duraciones: el `global.css` actual las reduce a 0,01 ms con 1 iteración, lo que dejaría a Canela en el 100 % del cruce, **fuera de pantalla**). La regla es explícita: `animation: none` en `.canela-cruce`, `.canela-salto` y `.canela-sombra`, más la posición de reposo.
-
-### 2.7 Ciclo de vida
+### 2.5 Pausa, movimiento reducido y ciclo de vida
 
 | Situación | Comportamiento |
 |---|---|
-| Carga directa en `#inicio` | Retraso de 1,2 s y empieza a cruzar |
-| Se sale de Inicio | La vista pasa a `display: none`: las animaciones CSS se detienen solas (sin coste) |
-| Se vuelve a Inicio | Se reinician desde el principio: entra por la derecha tras el retraso. No se "retoma" a media pantalla |
-| Pestaña en segundo plano | El navegador ya pausa las animaciones; no hace falta JS |
-| Táctil / gama baja | Mismo bucle (es CSS barato: 3 transforms y 1 opacidad). Si el perfil de rendimiento lo pide, el ciclo móvil puede alargar la pausa |
+| Se pulsa **Pausar** durante la animación | **Congela el cuadro actual y la posición** (WCAG 2.2.2). Al reanudar sigue desde ahí, en el mismo estado y sentido |
+| Se entra en Inicio con la pausa ya activa (preferencia guardada, `html[data-movimiento="pausado"]`) | **Sentada y fija** (`Canela.png`) en la posición de reposo. Al reanudar, empieza la secuencia desde SENTADA |
+| `prefers-reduced-motion: reduce` | **Sentada y fija** (`Canela.png`) en reposo, sin sprites (**no se descargan**) y sin botón de pausa (no hay nada que pausar); Canela a `right: var(--spacing-vista)` |
+| Carga directa en `#inicio` | Sprites pedidos **después del evento `load`** (el logo sigue siendo el LCP). Mientras tanto `canela-franja` sentada. Cuando llegan, la secuencia arranca desde SENTADA (sin fundido: es la misma pose) |
+| Se sale de Inicio | Se cancela el `requestAnimationFrame` (0 rAF fuera de Inicio) |
+| Se vuelve a Inicio | Empieza otra vez **desde SENTADA**. No se retoma a media pantalla |
+| Redimensionar | Se recalculan límites, `v` y `dFreno`; si Canela queda fuera del nuevo recorrido, se coloca en el límite y sigue en el mismo sentido |
+| Pestaña en segundo plano | El navegador para el rAF; al volver se toma un nuevo `t0` (sin saltos) |
+| Mientras no estén los sprites procesados | Se mantiene la animación actual (`animate-canela-*` en `tokens.css`). **No se fabrica una carrera con la foto fija** |
 
-**Implementación recomendada: solo CSS** (los keyframes ya están en `tokens.css`). No hace falta GSAP en Inicio, lo que ayuda al presupuesto de < 1,5 MB de la vista.
+- Decorativa: `aria-hidden="true"`, sin `alt`.
+- Botón de pausa: 44×44, abajo a la derecha de la franja, círculo `crema` opaco, borde 2 px `bosque`, icono `bosque`; `aria-pressed`, "Pausar animación" / "Reanudar animación".
+
+### 2.6 Estructura
+
+```
+.franja-canela (fila 2 del grid, overflow hidden, position relative)
+├─ .canela-recorrido   ← translateX(x) (JS, rAF)          aria-hidden
+│  ├─ .canela-sombra   ← scaleX / opacity
+│  └─ .canela-caja     (overflow hidden, tamaño de un cuadro; scaleX(-1) solo en GIRO der)
+│     └─ img.canela-tira  ← translateX(-cuadro · ancho)
+└─ button.pausa (z-control)
+```
+
+Implementación: un módulo propio (`src/lib/animacion/canela.ts`, de `animacion-interaccion`) con la máquina de estados. GSAP no hace falta en Inicio. Los keyframes `canela-cruce`, `canela-salto` y `canela-sombra` de `tokens.css` quedan como versión anterior hasta que los sprites estén integrados.
 
 ---
 
-## 3. Transición entre vistas
+## 3. Entrada de Inicio (I9)
 
-### 3.1 Decisión: **desplazamiento horizontal corto**, una sola metáfora para todo el sitio
+### 3.1 Carga directa (primera visita o recarga en `#inicio`)
 
-Las 5 vistas están en fila en la barra (izquierda → derecha) y `←`/`→` las recorren: el movimiento horizontal **confirma ese modelo espacial** (ir "a la derecha" de la barra = la vista nueva llega desde la derecha). Un fundido puro no transmite orden; un deslizamiento de pantalla completa obligaría a mostrar dos vistas a la vez (choca con `display: none` + `inert`) y es demasiado recorrido para usuarios sensibles al movimiento.
+Tras el LCP (primer pintado del logo), cascada **una sola vez**:
 
-| Parámetro | Valor |
-|---|---|
-| Qué se anima | **Solo la vista entrante.** La saliente pasa a `display: none` + `inert` al instante (un movimiento por región) |
-| Recorrido | 48 px (`--desplazamiento-vista`), no la pantalla entera |
-| Opacidad | 0 → 1 a la vez que el recorrido (acompaña al desplazamiento; no es un segundo efecto) |
-| Duración | **400 ms** (`--duracion-vista`, dentro de 350–450) |
-| Curva | `ease-vista` = `cubic-bezier(0.22, 1, 0.36, 1)` (ease-out) |
-| Dirección | Índice mayor (p. ej. Inicio → Productos): entra **desde la derecha** (`animate-vista-adelante`). Índice menor: **desde la izquierda** (`animate-vista-atras`). Botón "atrás" del navegador: según el índice resultante |
-| Indicador de la barra | La pastilla `bosque` se desliza al nuevo ítem en 300 ms con la misma curva, empezando a la vez |
-| Foco | Se mueve al `<h2>` de la vista nueva **al iniciar** la transición (no al terminar), para que el lector de pantalla anuncie ya |
-| Carga directa por hash | Sin transición: la vista aparece en su sitio |
-| Clics rápidos seguidos | La animación en curso se cancela y la nueva parte desde su estado inicial; nunca se encolan |
-| `prefers-reduced-motion` | **Corte seco**: cambio instantáneo, indicador incluido |
+| Orden | Elemento | Retraso | Movimiento | Duración | Curva |
+|---|---|---|---|---|---|
+| — | **Logo** | — | **Ninguno** (es el LCP) | — | — |
+| 1 | Acento "Tu mejor aliado para tus animales" | 0 ms | `opacity` 0 → 1, `translateY(12px)` → 0 | 400 ms | `ease-vista` |
+| 2 | Subtítulo | 80 ms | igual | 400 ms | `ease-vista` |
+| 3 | Botones ("Ver productos", "Cómo llegar") | 160 ms | igual | 400 ms | `ease-vista` |
+| 4 | Accesos por categoría | 240 ms | igual | 400 ms | `ease-vista` |
+| 5 | Fila de animales | 320 ms | igual | 400 ms | `ease-vista` |
+| 6 | Costales de frente (≥ 64rem) | 200 ms | **suben desde el horizonte**: `translateY(24px)` → 0 + `opacity` | 600 ms | `ease-vista` |
+| 7 | Costales de atrás | 280 ms | igual | 600 ms | `ease-vista` |
 
-Prohibido mezclar: ninguna vista entra con escala, desde abajo ni con fundido distinto. Dentro de una vista, nada más se anima mientras dura la entrada (el Lottie de los pilares empieza al terminar, a los 400 ms; Canela tiene su retraso de 1,2 s).
+- Fin de la cascada: ≈ 880 ms. Canela ya está sentada desde el primer cuadro (no tiene entrada propia; arranca a los 0,6 s, que coincide con la cascada sin competir: está en otra fila).
+- Granos, hojas y marca de agua: presentes desde el primer pintado, sin entrada.
+- **Sin JavaScript, o si el script falla, todo está visible:** el estado inicial oculto solo se aplica bajo `html[data-router="activo"]` y con movimiento permitido, y la animación usa `animation-fill-mode: both` (no se deja nada a `opacity: 0` por CSS base).
+- Con movimiento reducido o pausa: todo aparece en su sitio, sin cascada.
 
-### 3.2 Línea de tiempo de un cambio Inicio → Productos
+### 3.2 Llegada a Inicio desde otra vista
+
+**No** se repite la cascada I9: entra con la transición de vista (sección 4) y sus bloques `[data-entra]` (tabla 4.3). Un solo sistema de entrada por cambio de vista.
+
+---
+
+## 4. Transición entre vistas
+
+### 4.1 Decisión: fundido cruzado direccional en dos capas + entrada escalonada
+
+La metáfora sigue siendo **una sola**: desplazamiento horizontal en el orden de las vistas (la barra va de izquierda a derecha; `→` va a la siguiente). Lo que cambia es que ahora **las dos vistas conviven ~160 ms**, así nunca se ve el fondo del `body` entre ellas (T1), y la entrada dura de verdad lo que dice (T2).
+
+`dir` = +1 si la vista destino va después en el orden de la barra, −1 si va antes (también con "atrás" del navegador, según el índice resultante).
+
+| Capa | Propiedades | Duración | Retraso | Curva |
+|---|---|---|---|---|
+| **Saliente** | `opacity` 1 → 0, `translateX(0)` → `translateX(-dir · 1rem)`; `pointer-events: none`; **por debajo** de la entrante; `inert` desde t = 0 | **160 ms** | 0 | `--ease-salida` |
+| **Entrante** | `opacity` 0 → 1, `translateX(dir · 2.5rem)` → 0 | **380 ms** | **60 ms** | `cubic-bezier(0.25, 1, 0.5, 1)` |
+| **Bloques `[data-entra]`** de la entrante (2–3) | `opacity` 0 → 1, `translateX(dir · 1.5rem)` → 0 | **300 ms** | 60 ms + 50 ms × índice | `--ease-vista` |
+
+- Durante la transición las dos vistas ocupan la **misma celda** (la saliente con `position: absolute; inset: 0`), para que no se apilen en vertical.
+- `src/lib/animacion/vistas.ts` **devuelve una `Promise`** que se resuelve con el `animationend` de la saliente (tope de 200 ms). El router oculta la saliente (`hidden` + `inert`) cuando se resuelve, **nunca antes**.
+- El **foco** va al h2 (o al h1 en Inicio) de la entrante **en t = 0**, antes de cualquier animación.
+- Los nombres de keyframes y las variables (`--dir`, duraciones) los añade `animacion-interaccion` en `tokens.css`; sugerencia: `vista-sale`, `vista-entra`, `bloque-entra`. Los tokens actuales `--duracion-vista` (400 ms), `--desplazamiento-vista` (3rem) y `animate-vista-*` son de la versión 1.
+- Prohibido mezclar: ninguna vista entra con escala, desde abajo o con cortina. View Transitions API queda como mejora futura (misma coreografía).
+
+### 4.2 Línea de tiempo: Inicio → Productos (`dir` = +1)
 
 | t | Qué pasa |
 |---|---|
-| 0 ms | Clic en "Productos". Inicio → `display:none` + `inert`. Productos visible con `animate-vista-adelante`. Foco al `<h2>`. La pastilla de la barra empieza a deslizarse. Se pide la carga diferida del carrusel si no estaba |
-| 300 ms | La pastilla llega a "Productos" |
-| 400 ms | Productos en su sitio. El carrusel queda en reposo (no hace entrada propia) |
+| 0 ms | Clic en "Productos". Productos visible (sin `inert`, opacidad 0). Foco a su h2. Inicio pasa a `inert`, empieza a salir hacia la izquierda. La pastilla de la barra empieza a estirarse hacia la derecha. Se pide la carga diferida del carrusel. Se cancela el rAF de Canela |
+| 60 ms | Productos empieza a entrar desde 2,5rem a la derecha; bloque 1 (cabecera + pestañas) desde 1,5rem más |
+| 110 ms | Bloque 2 (anillo: ocupa su turno pero **no anima**, ver 4.3) |
+| 150 ms | El texto "Productos" de la barra pasa a blanco (la pastilla ya está debajo) |
+| 160 ms | Inicio en opacidad 0 → `animationend` → la promesa se resuelve → Inicio `hidden` |
+| 160 ms | Bloque 3 (panel de la lista) |
+| 240 ms | El borde delantero de la pastilla llega a "Productos" |
+| 300 ms | Llega el borde trasero: la pastilla está asentada |
+| 440 ms | Productos en su sitio |
+| 460 ms | Último bloque asentado. Fin |
+
+En pantalla nunca hay un fotograma con la saliente oculta y la entrante por debajo de 0,5 de opacidad (prueba 13 de `vistas-hinojosa`).
+
+### 4.3 Bloques `[data-entra]` por vista
+
+| Vista | Bloque 1 | Bloque 2 | Bloque 3 | Notas |
+|---|---|---|---|---|
+| Inicio | Acento + subtítulo + botones | Accesos + fila de animales | Vitrina (≥ 64rem) | El logo viaja con la capa de la vista, sin bloque propio. Canela empieza desde SENTADA |
+| Quiénes somos | Cabecera | Tarjeta grande | Misión + Visión + banda de valores | `play()` del video a los 400 ms |
+| Productos | Cabecera + pestañas | Anillo del carrusel (**sin animación propia**) | Panel de la lista | Regla M5 intacta (storyboard-carrusel) |
+| Por qué | Cabecera | Pilares | Diferenciales + animales | Los iconos de los pilares empiezan a los 400 ms |
+| Visítanos | Tarjeta de datos | Pin + aviso del mapa (o el mapa) | — | El pin conserva su rebote al llegar; el pie no anima |
+
+### 4.4 Casos
+
+| Situación | Comportamiento |
+|---|---|
+| Carga directa por hash | Sin transición: la vista aparece en su sitio (en Inicio, cascada I9) |
+| Clics rápidos | La animación en curso se cancela: la saliente anterior se oculta al instante y la nueva transición parte del estado actual. Nunca se encolan; termina en la última vista con una sola visible y el foco en su título |
+| `prefers-reduced-motion` o pausa del sitio | **Corte seco**: cambio instantáneo, pastilla incluida, sin bloques escalonados. Las `transition` nuevas se condicionan con `html:not([data-movimiento="pausado"])` |
+| Hoja de detalle abierta (móvil) | `←`/`→` no cambian de vista |
+
+### 4.5 Barra durante la transición
+
+Resumen (detalle en `vistas-hinojosa` y guía §6): pastilla con **estiramiento direccional** (borde delantero 240 ms, trasero 300 ms, `ease-vista`), ancho de los rótulos reservado en 800, texto blanco con 150 ms de retraso (o inversión con `clip-path`), `.anima` hasta `transitionend`; en móvil, "pop" del icono activo `scale(0.92)` → 1 en 220 ms con `--ease-rebote`.
 
 ---
 
-## 4. Otros movimientos de Inicio
+## 5. Otros movimientos de Inicio
 
-- **Granos de maíz** (6 como máximo, SVG inline `maiz`/`canela`, 12–24 px): paralaje con el ratón de **8 px máximo** (`--paralaje-max`), solo con `(hover: hover) and (pointer: fine)`, suavizado lerp 0,08 en `requestAnimationFrame`. Sin bucles propios: en reposo están quietos. Desactivado con reduced motion y con la pausa.
-- **Logo:** estático desde el primer cuadro (es el LCP; animar su opacidad empeora el LCP, como se midió en la fase 4 anterior).
-- **Botón "Ver productos":** `:active` → `scale(0.96)` en 90 ms. Sin pulsos ni brillos en bucle.
-- No hay secuencia de entrada: lema, subtítulo y botón están desde el primer pintado.
+- **Paralaje con el ratón** (≤ 8 px, `--paralaje-max`; lerp 0,08 en rAF): granos `data-profundidad 0.5`, costales `0.6`, hojas del trébol `0.2`; la marca de agua no se mueve. Solo `(hover: hover) and (pointer: fine)`; nada en táctil, con movimiento reducido o con la pausa.
+- **Logo:** estático desde el primer cuadro.
+- **Botones y chips:** `:active` → `scale(0.96)` en 90 ms. Sin pulsos ni brillos en bucle.
 
-## 5. Checklist (motion-and-storytelling)
+## 6. Checklist (motion-and-storytelling)
 
-- [x] Solo `transform` y `opacity` (la sombra usa `filter` estático, no animado).
-- [x] Ease-out al entrar (vista), arcos con gravedad en el salto, velocidad constante solo en el desplazamiento de Canela.
-- [x] Duraciones: vista 400 ms, salto 520 ms, indicador 300 ms.
-- [x] Un movimiento por región: la franja de Canela está separada del contenido; nada compite con la entrada de vista.
-- [x] Bucle > 5 s con pausa visible; reduced motion con cuadro de reposo **dentro** de la pantalla.
-- [x] Bucle que calza (primer cuadro = último).
+- [x] Solo `transform` y `opacity` (sombras con `filter` estático).
+- [x] Canela: anticipación (sentada → se levanta), frenada antes del giro, velocidad sincronizada con la zancada, arcos en el giro; nunca sale de la pantalla.
+- [x] Ease-out al entrar, ease-in al salir; la saliente dura menos que la entrante.
+- [x] Una metáfora (horizontal) en todo el sitio; la dirección coincide con el orden de la barra.
+- [x] Un movimiento por región: la franja de Canela es una fila propia; los bloques escalonados no se solapan con la entrada de los iconos ni del video (400 ms).
+- [x] Bucle de más de 5 s con pausa que congela; movimiento reducido o pausa global = Canela sentada y fija, sin sprites descargados.
+- [x] El foco se mueve antes de cualquier animación; sin JavaScript todo visible.
+- [x] El logo no se anima y sigue siendo el LCP; los sprites se piden tras `load`.

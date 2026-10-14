@@ -39,6 +39,27 @@
   --color-tinta-suave: #3d5a45;   /* texto secundario, bordes de campos (6.78 crema / 7.64 blanco) */
   --color-blanco: #ffffff;
 
+  /* ---------- Reparto del color (PLAN 2 "Reparto del color", aprobado 2026-10-14) ----------
+     Tono de apoyo "kraft / costal": bandas, sellos, tarima del carrusel,
+     cabeceras de grupo de la lista y tarjeta generica de costal. Es un NEUTRO
+     calido (cuenta en el 55 % claro), no un acento. Mapa por vista: guia 2.2.
+       tinta #14301D encima ........ 9.35  (cuerpo)
+       bosque #1B4D2B encima ....... 6.41  (titulos, nombre en la tarjeta de costal)
+       tinta-suave #3D5A45 encima .. 5.00  (texto secundario)
+       canela-oscuro encima ........ 3.85  SOLO texto grande (>= 24 px o 19 px 800)
+       marca-fuerte encima ......... 3.52  PROHIBIDO (no hay enlaces sobre kraft)
+       maiz encima ................. 1.18  solo decorativo; el trazo del h2 NO va sobre kraft
+       kraft sobre bosque .......... 6.41  (texto kraft en bandas verdes)
+       kraft sobre canela-oscuro ... 3.85  solo bordes/iconos o texto grande
+     Bandas canela oscuro: se reutiliza --color-canela-oscuro (#8a5a1f) como
+     FONDO: blanco encima 5.88, crema 5.22, maiz 3.27 (solo iconos/puntos),
+     hoja 2.62 (PROHIBIDO), bosque 1.66 (PROHIBIDO: el anillo de foco ahi es crema). */
+  --color-kraft: #e3cfa6;
+  --color-fila-activa-panel: #ffffff;              /* fila activa sobre el panel hoja-claro de la lista (+ barra bosque 4px): tinta encima 14.28 */
+  --color-filete-canela: rgb(138 90 31 / 0.35);    /* filete de la tarima kraft y borde de los sellos de costal (decorativo) */
+  --color-pendiente-oscuro: rgb(246 241 228 / 0.7); /* iconos de canales pendientes sobre la tarjeta bosque: 5.17 (solo iconos, el texto va en crema 8.69) */
+  --color-velo-costal: rgb(20 48 29 / 0.25);       /* capa de profundidad del costal de atras en la vitrina de Inicio */
+
   /* ---------- Tokens de ROL (la regla de contraste viaja con el token) ---------- */
   --color-fondo: #f6f1e4;              /* = crema */
   --color-superficie: #ffffff;         /* tarjetas, panel de lista, tarjeta del mapa (OPACA) */

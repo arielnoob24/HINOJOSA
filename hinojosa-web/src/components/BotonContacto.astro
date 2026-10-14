@@ -2,11 +2,15 @@
 // Boton de contacto que respeta la regla de datos sin confirmar:
 // - con enlace: <a> con nombre accesible explicito (y aviso de pestana
 //   nueva si corresponde);
-// - sin enlace: aviso NO interactivo "<canal>: PENDIENTE_CONFIRMAR" (sin
-//   href ni foco), para no publicar un enlace roto ni un dato inventado.
+// - sin enlace: texto NO interactivo y sin forma de boton (icono en gris +
+//   "<canal>: Muy pronto publicaremos este dato."), para no publicar un
+//   enlace roto ni un dato inventado. El marcador PENDIENTE_CONFIRMAR vive
+//   solo en negocio.json: nunca llega a la pantalla (auditoria V1).
+// Visitanos no usa esta rama: agrupa los canales pendientes en una sola
+// linea (ver VistaVisitanos.astro). Queda como respaldo para otros usos.
 // Sustituye a BotonWhatsapp.astro (se generalizo a Maps/WhatsApp/Llamar/Facebook).
 import Icono from './Icono.astro';
-import { PENDIENTE, textos } from '../lib/negocio';
+import { textos } from '../lib/negocio';
 
 interface Props {
   href: string | null;
@@ -34,9 +38,9 @@ const aviso = textos.comunes.abreEnPestanaNueva;
     {pestanaNueva && <span aria-hidden="true">↗</span>}
   </a>
 ) : (
-  <span class:list={['contacto', 'contacto-pendiente', clase]} data-contacto={icono} data-pendiente>
-    <Icono nombre={icono} class="size-5 shrink-0" />
-    <span>{texto}: <span class="contacto-marcador">{PENDIENTE}</span></span>
+  <span class:list={['contacto-pendiente', clase]} data-contacto={icono} data-pendiente>
+    <Icono nombre={icono} class="contacto-pendiente-icono size-5 shrink-0" />
+    <span>{texto}: {textos.comunes.datoPendiente}</span>
   </span>
 )}
 
@@ -79,19 +83,17 @@ const aviso = textos.comunes.abreEnPestanaNueva;
     text-decoration: underline;
     text-underline-offset: 4px;
   }
-  /* Aviso de dato pendiente: no es un control (borde discontinuo) */
+  /* Aviso de dato pendiente: texto corrido, sin borde, fondo ni alto de
+     boton (un "boton" que no hace nada parece un sitio roto). */
   .contacto-pendiente {
-    cursor: default;
-    border: 2px dashed var(--color-borde-pendiente);
-    background: transparent;
-    padding-inline: 0.875rem;
-    font-weight: 400;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     font-size: var(--text-chico);
+    line-height: var(--text-chico--line-height);
     color: var(--color-tinta-suave);
   }
-  .contacto-marcador {
-    font-weight: 800;
-    color: var(--color-canela-oscuro);
-    word-break: break-word;
+  .contacto-pendiente :global(.contacto-pendiente-icono) {
+    opacity: 0.7;
   }
 </style>

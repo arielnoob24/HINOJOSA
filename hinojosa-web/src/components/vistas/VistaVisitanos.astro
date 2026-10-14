@@ -1,20 +1,26 @@
 ---
 // Vista 5 - Visitanos (guia-estilo 7.5): mapa a sangre + tarjeta OPACA con
 // direccion, estado y horario, referencias, contacto; pie de una linea.
-// Solo se publica lo confirmado en negocio.json; lo demas lleva el marcador
-// PENDIENTE_CONFIRMAR, nunca un dato inventado.
+// Solo se publica lo confirmado en negocio.json. El marcador
+// PENDIENTE_CONFIRMAR vive solo en los datos (auditoria V1): en pantalla,
+// cada dato pendiente dice textos.comunes.datoPendiente y los canales de
+// contacto pendientes se agrupan en UNA linea, sin forma de boton.
+//
+// Sin coordenadas (V2, V3): fondo crema con textura de hojas y granos al
+// 8 % (sin calles falsas), pin grande y tarjeta "Muy pronto, el mapa".
+// V4: el CTA se llama "Como llegar" y el dato, "Referencias".
 //
 // Ganchos: [data-mapa] (src/lib/mapa.ts, carga diferida al entrar),
-//          [data-estado-horario] (src/lib/horario.ts),
-//          [data-fachada] (hueco para la foto/video de la fachada: aun no hay
-//          activo, por eso no se pinta).
+//          [data-mapa-vacio], [data-estado-horario] (src/lib/horario.ts),
+//          [data-dato-pendiente], [data-contacto-pendiente] (linea unica de
+//          canales pendientes), [data-fachada] (hueco para la foto/video de
+//          la fachada: aun no hay activo, por eso no se pinta).
 import Vista from '../Vista.astro';
 import BotonContacto from '../BotonContacto.astro';
 import Icono from '../Icono.astro';
 import {
   negocio,
   textos,
-  PENDIENTE,
   datoConfirmado,
   referenciasConfirmadas,
   horarioConfirmado,
@@ -24,6 +30,7 @@ import {
 } from '../../lib/negocio';
 
 const t = textos.visitanos;
+const pendiente = textos.comunes.datoPendiente;
 const direccion = datoConfirmado('direccion');
 const ciudad = datoConfirmado('ciudad');
 const referencias = referenciasConfirmadas();
@@ -33,15 +40,41 @@ const maps = datoConfirmado('googleMaps');
 const whatsapp = enlaceWhatsapp();
 const telefono = enlaceTelefono();
 const facebook = datoConfirmado('facebook');
-const hayPendientes = !maps || !whatsapp || !telefono || !facebook;
+
+// Canales en el orden de la tarjeta. Los confirmados son enlaces reales;
+// los pendientes solo aportan su icono (en gris) a la linea agrupada.
+const canales = [
+  { href: maps, texto: t.ctaMaps, nombre: t.nombreAccesibleMaps, icono: 'mapa', variante: 'cta' as const, ancho: true, pestana: true },
+  { href: whatsapp, texto: t.ctaWhatsapp, nombre: t.nombreAccesibleWhatsapp, icono: 'whatsapp', variante: 'primario' as const, ancho: false, pestana: true },
+  { href: telefono, texto: t.ctaLlamar, nombre: t.nombreAccesibleLlamar, icono: 'telefono', variante: 'primario' as const, ancho: false, pestana: false },
+  { href: facebook, texto: t.ctaFacebook, nombre: t.nombreAccesibleFacebook, icono: 'facebook', variante: 'enlace' as const, ancho: true, pestana: true },
+];
+const confirmados = canales.filter((c) => c.href);
+const pendientes = canales.filter((c) => !c.href);
+const textoPendientes = confirmados.length ? t.contactoPendienteParcial : t.contactoPendiente;
 const anio = new Date().getFullYear();
-// Texto local (MIGRAR a textos.visitanos)
-const mapaPendiente = 'El mapa aparecerá cuando confirmemos la ubicación exacta. La dirección está en la tarjeta.';
+
+// Textura del fondo sin mapa: hojas y granos al 8 % (tesela de 160 px,
+// ~1 kB en linea). Decorativa: sin calles ni manzanas que se lean como
+// una ubicacion real.
+const textura =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><g opacity=".08">' +
+  '<path transform="translate(14 22) rotate(-24)" d="M0 26C0 11 11 0 28 0c0 16-11 26-28 26z" fill="#1b4d2b"/>' +
+  '<path transform="translate(96 92) rotate(38)" d="M0 22C0 9 9 0 24 0c0 14-9 22-24 22z" fill="#2e8b2e"/>' +
+  '<path transform="translate(128 18) rotate(80)" d="M0 16C0 7 7 0 18 0c0 10-7 16-18 16z" fill="#1b4d2b"/>' +
+  '<path transform="translate(8 134) rotate(-60)" d="M0 14C0 6 6 0 16 0c0 9-6 14-16 14z" fill="#2e8b2e"/>' +
+  '<ellipse cx="112" cy="40" rx="6" ry="8.5" transform="rotate(28 112 40)" fill="#c98a3a"/>' +
+  '<ellipse cx="44" cy="120" rx="6" ry="8.5" transform="rotate(-32 44 120)" fill="#c98a3a"/>' +
+  '<ellipse cx="66" cy="62" rx="4.5" ry="6.5" transform="rotate(12 66 62)" fill="#f2b823"/>' +
+  '<ellipse cx="146" cy="134" rx="4.5" ry="6.5" transform="rotate(-18 146 134)" fill="#c98a3a"/>' +
+  '</g></svg>';
+const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURIComponent(textura)}")`;
 ---
 <Vista id="visitanos" nombre={textos.navegacion[4].texto} cuerpo="visitanos-cuerpo">
   <div class="vis-escena">
     <div
-      class="vis-mapa"
+      class:list={['vis-mapa', !coords && 'vis-mapa-sin-ubicacion']}
+      style={estiloTextura}
       data-mapa
       data-captura-flechas
       data-lat={coords ? String(coords.lat) : ''}
@@ -55,9 +88,24 @@ const mapaPendiente = 'El mapa aparecerá cuando confirmemos la ubicación exact
           <circle cx="32" cy="30" r="17" fill="#fff" stroke="#f2b823" stroke-width="4" />
           <path d="M26 21v18M38 21v18M26 30h12" stroke="#1b4d2b" stroke-width="5" stroke-linecap="round" />
         </svg>
-        {!coords && <p class="vis-mapa-texto">{mapaPendiente}</p>}
+        {!coords && (
+          <div class="vis-pronto">
+            <img
+              src="/img/marca/isotipo-96.webp"
+              alt=""
+              width="98"
+              height="96"
+              decoding="async"
+              class="vis-pronto-isotipo"
+            />
+            <p class="vis-pronto-texto">
+              <strong class="vis-pronto-titulo">{t.mapaProntoTitulo}</strong>
+              <span>{t.mapaPendiente}</span>
+            </p>
+          </div>
+        )}
       </div>
-      <p class="vis-mapa-texto vis-mapa-error" role="status" data-mapa-estado hidden>{t.mapaNoDisponible}</p>
+      <p class="vis-mapa-error" role="status" data-mapa-estado hidden>{t.mapaNoDisponible}</p>
     </div>
 
     <article class="vis-tarjeta" aria-labelledby="titulo-visitanos">
@@ -87,33 +135,49 @@ const mapaPendiente = 'El mapa aparecerá cuando confirmemos la ubicación exact
             {direccion ? (
               <>{direccion}{ciudad && <>, {ciudad}</>}</>
             ) : (
-              <span class="pendiente">{PENDIENTE}</span>
+              <span class="vis-pendiente" data-dato-pendiente>{pendiente}</span>
             )}
           </dd>
         </div>
         <div>
           <dt>{t.etiquetaHorario}</dt>
-          <dd>{horario?.texto ?? <span class="pendiente">{PENDIENTE}</span>}</dd>
+          <dd>{horario?.texto ?? <span class="vis-pendiente" data-dato-pendiente>{pendiente}</span>}</dd>
         </div>
         <div>
-          <dt>{t.etiquetaComoLlegar}</dt>
+          <dt>{t.etiquetaReferencias}</dt>
           <dd>
             {referencias ? (
               <ul class="vis-referencias">{referencias.map((r) => <li>{r}</li>)}</ul>
             ) : (
-              <span class="pendiente">{PENDIENTE}</span>
+              <span class="vis-pendiente" data-dato-pendiente>{pendiente}</span>
             )}
           </dd>
         </div>
       </dl>
 
-      <div class="vis-acciones">
-        <BotonContacto href={maps} texto={t.ctaMaps} nombreAccesible={t.nombreAccesibleMaps} icono="mapa" variante="cta" class="vis-accion-ancha" />
-        <BotonContacto href={whatsapp} texto={t.ctaWhatsapp} nombreAccesible={t.nombreAccesibleWhatsapp} icono="whatsapp" />
-        <BotonContacto href={telefono} texto={t.ctaLlamar} nombreAccesible={t.nombreAccesibleLlamar} icono="telefono" pestanaNueva={false} />
-        <BotonContacto href={facebook} texto={t.ctaFacebook} nombreAccesible={t.nombreAccesibleFacebook} icono="facebook" variante="enlace" class="vis-accion-ancha" />
-      </div>
-      {hayPendientes && <p class="vis-nota">{t.contactoPendiente}</p>}
+      {confirmados.length > 0 && (
+        <div class="vis-acciones">
+          {confirmados.map((c) => (
+            <BotonContacto
+              href={c.href}
+              texto={c.texto}
+              nombreAccesible={c.nombre}
+              icono={c.icono}
+              variante={c.variante}
+              pestanaNueva={c.pestana}
+              class={c.ancho ? 'vis-accion-ancha' : ''}
+            />
+          ))}
+        </div>
+      )}
+      {pendientes.length > 0 && (
+        <p class="vis-contacto-pendiente" data-contacto-pendiente>
+          <span class="vis-contacto-iconos" aria-hidden="true">
+            {pendientes.map((c) => <Icono nombre={c.icono} class="size-5" />)}
+          </span>
+          <span>{textoPendientes}</span>
+        </p>
+      )}
     </article>
   </div>
 
@@ -136,17 +200,20 @@ const mapaPendiente = 'El mapa aparecerá cuando confirmemos la ubicación exact
     flex-direction: column;
     min-height: 0;
   }
+  /* Fondo del mapa: crema + textura de hojas y granos al 8 % (V3). Con
+     coordenadas, las teselas de Leaflet lo cubren. */
   .vis-mapa {
     position: relative;
     height: 12.5rem;
     flex: 0 0 auto;
     overflow: hidden;
     background-color: var(--color-crema);
-    background-image:
-      linear-gradient(var(--color-crema-oscuro) 2px, transparent 2px),
-      linear-gradient(90deg, var(--color-crema-oscuro) 2px, transparent 2px);
-    background-size: 48px 48px;
+    background-image: var(--textura-mapa);
+    background-size: 160px 160px;
     background-position: center;
+  }
+  .vis-mapa-sin-ubicacion {
+    height: 11rem;
   }
   .vis-mapa :global(.mapa-lienzo) {
     position: absolute;
@@ -157,33 +224,60 @@ const mapaPendiente = 'El mapa aparecerá cuando confirmemos la ubicación exact
     position: absolute;
     inset: 0;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    text-align: center;
+    gap: 0.875rem;
+    padding: 1rem 1rem 2.25rem; /* abajo: la tarjeta monta 1.5rem */
   }
   .vis-mapa-vacio[hidden] {
     display: none;
   }
   .vis-pin {
-    width: 3rem;
+    width: 4rem;
+    flex: 0 0 auto;
   }
-  .vis-mapa-texto {
-    max-width: 30ch;
+  /* "Muy pronto, el mapa": tarjeta opaca con el isotipo */
+  .vis-pronto {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 19rem;
+    border: 1px solid var(--color-crema-oscuro);
     border-radius: var(--radius-tarjeta);
-    background: var(--color-blanco);
-    padding: 0.5rem 0.875rem;
-    font-size: var(--text-chico);
-    color: var(--color-tinta);
+    background: var(--color-superficie);
+    padding: 0.75rem 1rem 0.75rem 0.75rem;
     box-shadow: var(--shadow-suave);
+  }
+  .vis-pronto-isotipo {
+    width: 2.5rem;
+    height: auto;
+    flex: 0 0 auto;
+  }
+  .vis-pronto-texto {
+    display: grid;
+    gap: 0.125rem;
+    font-size: var(--text-chico);
+    line-height: var(--text-chico--line-height);
+    color: var(--color-tinta-suave);
+  }
+  .vis-pronto-titulo {
+    font-size: var(--text-etiqueta);
+    font-weight: 800;
+    color: var(--color-bosque);
   }
   .vis-mapa-error {
     position: absolute;
     left: 50%;
     top: 1rem;
+    max-width: 30ch;
     translate: -50% 0;
+    border-radius: var(--radius-tarjeta);
+    background: var(--color-blanco);
+    padding: 0.5rem 0.875rem;
+    font-size: var(--text-chico);
+    color: var(--color-tinta);
+    text-align: center;
+    box-shadow: var(--shadow-suave);
   }
   .vis-mapa-error[hidden] {
     display: none;
@@ -245,6 +339,10 @@ const mapaPendiente = 'El mapa aparecerá cuando confirmemos la ubicación exact
   .vis-datos dd {
     color: var(--color-tinta);
   }
+  /* Dato pendiente: texto humano en tinta suave (7.64 sobre blanco) */
+  .vis-pendiente {
+    color: var(--color-tinta-suave);
+  }
   .vis-referencias {
     list-style: disc;
     padding-left: 1.25rem;
@@ -255,14 +353,32 @@ const mapaPendiente = 'El mapa aparecerá cuando confirmemos la ubicación exact
     gap: 0.5rem;
     margin-top: 1.125rem;
   }
-  .vis-acciones :global(.vis-accion-ancha),
-  .vis-acciones :global([data-pendiente]) {
+  .vis-acciones :global(.vis-accion-ancha) {
     grid-column: 1 / -1;
   }
-  .vis-nota {
-    margin-top: 0.75rem;
+  /* Canales pendientes: UNA linea de texto con sus iconos en gris. Sin
+     borde, fondo ni alto de boton: no es un control (V1). */
+  .vis-contacto-pendiente {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    border-top: 1px solid var(--color-crema-oscuro);
+    padding-top: 0.875rem;
     font-size: var(--text-chico);
+    line-height: var(--text-chico--line-height);
     color: var(--color-tinta-suave);
+  }
+  .vis-contacto-iconos {
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 0.375rem;
+    opacity: 0.7;
+  }
+  .vis-acciones + .vis-contacto-pendiente {
+    border-top: 0;
+    padding-top: 0;
+    margin-top: 0.75rem;
   }
   .vis-pie {
     --color-foco: var(--color-foco-oscuro);
@@ -296,6 +412,25 @@ const mapaPendiente = 'El mapa aparecerá cuando confirmemos la ubicación exact
     .vis-mapa-vacio {
       /* el marcador se centra en la mitad derecha, libre de la tarjeta */
       left: calc(var(--container-tarjeta-mapa) + var(--spacing-vista));
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .vis-pin {
+      width: 4.5rem;
+    }
+    .vis-pronto {
+      flex-direction: column;
+      gap: 0.5rem;
+      max-width: 17rem;
+      padding: 1.25rem 1.5rem 1.375rem;
+      text-align: center;
+    }
+    .vis-pronto-isotipo {
+      width: 3rem;
+    }
+    .vis-pronto-texto {
+      gap: 0.25rem;
     }
     .vis-escena {
       justify-content: center;
@@ -341,16 +476,16 @@ const mapaPendiente = 'El mapa aparecerá cuando confirmemos la ubicación exact
       gap: 0.5rem;
       margin-top: 0.75rem;
     }
-    .vis-acciones :global(.vis-accion-ancha),
-    .vis-acciones :global([data-pendiente]) {
+    .vis-acciones :global(.vis-accion-ancha) {
       grid-column: auto;
     }
     .vis-acciones :global(.contacto) {
       min-height: 2.75rem;
       padding-inline: 0.625rem;
     }
-    .vis-nota {
-      margin-top: 0.5rem;
+    .vis-contacto-pendiente {
+      margin-top: 0.75rem;
+      padding-top: 0.625rem;
     }
   }
 </style>

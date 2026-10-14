@@ -1,0 +1,100 @@
+{
+  "fuente": "Puppy_running_in_place_1080p_20261013235908.mp4",
+  "cuadro": {
+    "ancho": 388,
+    "alto": 320
+  },
+  "escala": 0.32193,
+  "cajaComunFuente": {
+    "x": 320,
+    "y": 50,
+    "ancho": 1205,
+    "alto": 994
+  },
+  "suelo": 318.1,
+  "piezas": {
+    "arranque": {
+      "src": "/img/canela/carrera-arranque.webp",
+      "cuadros": 27,
+      "fps": 12,
+      "duracion": 2.25,
+      "bucle": false,
+      "cuadrosFuente": [
+        11,
+        71
+      ],
+      "segundosFuente": [
+        0.458,
+        3.042
+      ],
+      "kB": 207.3
+    },
+    "izq": {
+      "src": "/img/canela/carrera-izq.webp",
+      "cuadros": 7,
+      "fps": 12,
+      "duracion": 0.583,
+      "bucle": true,
+      "cuadrosFuente": [
+        73,
+        85
+      ],
+      "segundosFuente": [
+        3.042,
+        3.625
+      ],
+      "kB": 53.7
+    },
+    "giro": {
+      "src": "/img/canela/carrera-giro.webp",
+      "cuadros": 18,
+      "fps": 12,
+      "duracion": 1.5,
+      "bucle": false,
+      "cuadrosFuente": [
+        100,
+        134
+      ],
+      "segundosFuente": [
+        4.167,
+        5.667
+      ],
+      "kB": 133.4
+    },
+    "der": {
+      "src": "/img/canela/carrera-der.webp",
+      "cuadros": 6,
+      "fps": 12,
+      "duracion": 0.5,
+      "bucle": true,
+      "cuadrosFuente": [
+        150,
+        160
+      ],
+      "segundosFuente": [
+        6.25,
+        6.75
+      ],
+      "kB": 47.6
+    }
+  },
+  "zancada": {
+    "izq": 283.9,
+    "der": 247.2,
+    "metodo": "mediana del corrimiento por cuadro de las patas apoyadas (franja de contacto sobre el suelo, correlacion del perfil de alfa) x cuadros de 24 fps del ciclo, en px a la escala del cuadro",
+    "velocidad": {
+      "izq": 487.0,
+      "der": 494.4,
+      "unidad": "px de cuadro por segundo (multiplicar por altoMostrado/alto)"
+    }
+  },
+  "empalmes": {
+    "bucleIzq": 0.0095,
+    "bucleDer": 0.0062,
+    "salidaGiro": 0.0224,
+    "entradaDer": 0.0326,
+    "movimientoMedio": 0.0293
+  },
+  "derivaHorizontalFuente": 199.5,
+  "kBTotal": 442.1
+}

@@ -5,7 +5,10 @@
 //   de fondo + peso 800 hacen que no dependa solo del color (WCAG 1.4.1).
 // - >= 48rem: barra superior. < 48rem: logo arriba y los 5 enlaces abajo,
 //   con icono + palabra (objetivos de 44 px o mas).
-// - Etiquetas cortas hasta 64rem (no caben las largas con el logo).
+// - Etiquetas cortas hasta 64rem (no caben las largas con el logo). Si la
+//   larga empieza por la corta ("Por que" / "Por que elegirnos"), el resto
+//   va en sr-only: nombre accesible completo sin romper 2.5.3 (G5).
+// - < 48rem con router: barra superior de 44 px e isotipo de 32 px (G5).
 // Gancho de animacion: [data-barra], a[data-nav-vista], [aria-current].
 import Icono from './Icono.astro';
 import { negocio, textos } from '../lib/negocio';
@@ -28,15 +31,15 @@ const extra: Record<string, { corto: string; icono: string }> = {
       <img
         src="/img/marca/isotipo-96.webp"
         srcset="/img/marca/isotipo-96.webp 98w, /img/marca/isotipo.webp 263w"
-        sizes="(min-width: 40rem) 2.5rem, 2.25rem"
+        sizes="(min-width: 48rem) 2.5rem, 2rem"
         alt=""
         width="98"
         height="96"
-        class="size-9 shrink-0 sm:size-10"
+        class="barra-isotipo shrink-0"
         decoding="async"
       />
       <span class="font-display leading-none font-extrabold text-bosque">
-        <span class="block text-[0.6875rem] tracking-[0.2em] text-canela-oscuro">COMERCIAL</span>
+        <span class="block text-[0.75rem] tracking-[0.16em] text-canela-oscuro">COMERCIAL</span>
         <span class="text-lg">Hinojosa</span><span class="sr-only">, {negocio.nombre}: ir al inicio</span>
       </span>
     </a>
@@ -55,7 +58,11 @@ const extra: Record<string, { corto: string; icono: string }> = {
                 <span class="barra-icono"><Icono nombre={x.icono} class="size-6" /></span>
                 {distinto ? (
                   <>
-                    <span class="lg:hidden">{x.corto}</span>
+                    {e.texto.startsWith(x.corto) ? (
+                      <span class="lg:hidden">{x.corto}<span class="sr-only">{e.texto.slice(x.corto.length)}</span></span>
+                    ) : (
+                      <span class="lg:hidden">{x.corto}</span>
+                    )}
                     <span class="hidden lg:inline">{e.texto}</span>
                   </>
                 ) : (
@@ -95,6 +102,10 @@ const extra: Record<string, { corto: string; icono: string }> = {
     gap: 0.625rem;
     border-radius: var(--radius-boton);
     padding-right: 0.5rem;
+  }
+  .barra-isotipo {
+    width: 2.5rem;
+    height: 2.5rem;
   }
   .barra-lista {
     display: flex;
@@ -190,6 +201,20 @@ const extra: Record<string, { corto: string; icono: string }> = {
     }
     .barra-lista {
       flex-wrap: nowrap;
+    }
+  }
+
+  /* --------- Movil --------- */
+  @media (max-width: 47.999rem) {
+    .barra-isotipo {
+      width: 2rem;
+      height: 2rem;
+    }
+    /* G5: barra superior de 44 px (el token vale 52 px en movil). Se
+       sobrescribe aqui, con mas especificidad que :root, para que las
+       vistas (padding-top: var(--spacing-barra)) se ajusten solas. */
+    :global(html[data-router]) {
+      --spacing-barra: 2.75rem;
     }
   }
 
