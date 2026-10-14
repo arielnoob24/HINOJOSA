@@ -1,75 +1,204 @@
 ---
-// Vista 1 - Inicio (guia-estilo 7.1, storyboard-hero 2): logo en insignia
-// (es el h1), lema manuscrito, subtitulo y un solo CTA. Abajo, la franja de
-// Canela como SEGUNDA FILA del grid: nunca tapa texto ni boton.
+// Vista 1 - Inicio (guia-estilo 7.1, PLAN.md vista 1 "vitrina lateral",
+// storyboard-hero 3 y 5). Bloque centrado: logo en insignia (es el h1 y el
+// LCP; no se anima), acento manuscrito, subtitulo, dos botones, accesos por
+// categoria y fila de animales. En >= 64rem, vitrina lateral con 2 costales
+// a cada lado. Abajo, la franja de Canela como SEGUNDA FILA del grid: nunca
+// tapa texto ni botones (y la vitrina se apoya en su borde superior).
 //
-// Ganchos para animacion-interaccion:
+// Ganchos:
 //   [data-escena="inicio"]                  raiz de la escena
-//   [data-capa="granos"][data-profundidad]  granos decorativos (paralaje <= 8 px)
-//   [data-perrito-pista]  .franja-canela    pista (overflow hidden)
-//   [data-perrito]        .canela-cruce     envoltorio que cruza (aria-hidden)
-//   .canela-sombra / img.canela-salto       sombra y salto
-//   [data-perrito-reposo]                   <picture>: el render es el cuadro de reposo
+//   [data-paralaje][data-profundidad="p"]   paralaje con el raton (paralaje.ts):
+//                                           granos 0.5, costales 0.6, hojas 0.2;
+//                                           la marca de agua no se mueve
+//   [data-abrir-categoria="<id>"]           acceso por categoria (catalogo.ts):
+//                                           <a href="#productos" data-abrir-categoria="granja">
+//                                           sin JS lleva a #productos; con JS deja
+//                                           elegida la pestana antes de navegar
+//   [data-entra] style="--orden: N"         entrada escalonada al llegar desde otra
+//                                           vista (vistas.ts): 0 acento/subtitulo/
+//                                           botones, 1 accesos/animales, 2 vitrina
+//   [data-cascada]                          entrada I9 solo en carga directa (CSS
+//                                           de esta vista); el script pone
+//                                           #inicio[data-cascada-hecha] al terminar
+//                                           o al cambiar de vista, y ya no se repite
+//   [data-perrito-pista]  .franja-canela    pista (overflow hidden); el script
+//                                           pone data-canela="carrera" mientras
+//                                           se ve el sprite
+//   [data-perrito]        .canela-cruce     Canela sentada (canela-franja): reposo,
+//                                           espera de los sprites, sin JS, reduced
+//                                           motion y pausa al entrar (aria-hidden)
+//   [data-canela-recorrido] .canela-recorrido  translateX de la carrera (JS)
+//   [data-canela-caja]    .canela-caja      un cuadro, overflow hidden; dentro, las
+//                                           4 tiras de sprites que crea el script
+//   [data-canela-sombra]  .canela-sombra    sombra propia (scaleX en el giro)
 //   [data-boton-pausa]                      WCAG 2.2.2 (evento hinojosa:movimiento)
 //
-// El bucle es solo CSS (keyframes de tokens.css) y SOLO se aplica con JS,
-// sin reduced motion y sin pausa. En cualquier otro caso: animation none y
-// Canela sentada a la derecha (no congelada ni fuera de pantalla).
+// La carrera de borde a borde la hace src/lib/animacion/canela-carrera.ts
+// (maquina de estados, sprites tras `load`). Sin JS, sin sprites, con
+// reduced motion o con la pausa activa al entrar: Canela sentada a la
+// derecha (canela-franja), nunca una franja vacia.
+//
+// LCP: el logo. Los costales miden como mucho min(24dvh, 15vw) de alto
+// (guia 7.1, I2), llevan fetchpriority="low" y solo se pintan en >= 64rem
+// (por debajo, display:none y loading="lazy": el navegador no los pide).
 import Vista from '../Vista.astro';
 import BotonPausa from '../BotonPausa.astro';
+import Icono from '../Icono.astro';
 import { textos, altDe } from '../../lib/negocio';
 
 const t = textos.inicio;
-const lema = textos.inicio.titulo; // "Nutricion que da vida"
+
+// Vitrina (guia 7.1): frente = exterior, mas grande; atras = hacia el logo,
+// 80 %, con velo de tinta al 25 %. Medidas reales de las variantes -400.
+const costal = (ruta: string, ancho: number, giro: number, posicion: 'frente' | 'atras', paso: number) => ({
+  base: `/img/productos/${ruta}-400`,
+  ancho,
+  giro,
+  posicion,
+  paso,
+});
+const vitrina = [
+  { lado: 'izq', costales: [costal('granja/pollos', 265, -5, 'frente', 0), costal('mascotas/procan-adultos', 206, 4, 'atras', 1)] },
+  { lado: 'der', costales: [costal('granos/maiz-en-grano', 277, 5, 'frente', 0), costal('granja/cerdos', 260, -4, 'atras', 1)] },
+];
+
+// Fondo (I7): posiciones fijas (no aleatorias en cada carga), en % de la escena.
+// `movil: false` = solo desde 48rem (en 360 px quedarian detras del texto).
+const hojas = [
+  { x: 3, y: 6, s: 72, g: -18, o: 0.25, movil: true },
+  { x: 86, y: 4, s: 56, g: 24, o: 0.2, movil: true },
+  { x: 16, y: 34, s: 48, g: 40, o: 0.3, movil: false },
+  { x: 82, y: 36, s: 96, g: -30, o: 0.2, movil: false },
+  { x: 67, y: 8, s: 48, g: 12, o: 0.25, movil: false },
+];
+// Trebol del isotipo (public/img/marca/trebol.svg), inline: un <symbol> que
+// usan las hojas y la marca de agua. NO como mask-image/background con url():
+// Chrome cuenta ese fondo como candidato a LCP (la marca de agua de 70dvh
+// le quitaba el LCP al logo a los ~1,5 s). Un <svg> inline no es candidato.
+const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12.8Q59.2 11.5 61.2 10.4Q63.2 9.2 65.5 8.3Q67.7 7.4 70.1 6.7Q72.4 5.9 75 5.5Q77.6 5 80.2 4.9Q82.9 4.8 85.6 5Q88.3 5.1 90.9 5.8Q93.5 6.5 95.4 8.1Q97.2 9.7 97.9 12.2Q98.6 14.7 98.8 17.3Q99 20 99 22.5Q99 25 98.8 27.4Q98.6 29.9 98.2 32.2Q97.7 34.5 97 36.7Q96.3 38.9 95.3 40.9Q94.3 43 92.6 44.9Q90.9 46.8 89.8 48.4Q88.6 50 89.8 51.6Q90.9 53.2 92.6 55.1Q94.3 57 95.3 59.1Q96.3 61.1 97 63.3Q97.7 65.5 98.2 67.8Q98.6 70.1 98.8 72.6Q99 75 99 77.5Q99 80 98.8 82.7Q98.6 85.3 97.9 87.8Q97.2 90.3 95.4 91.9Q93.5 93.5 90.9 94.2Q88.3 94.9 85.6 95Q82.9 95.2 80.2 95.1Q77.6 95 75 94.5Q72.4 94.1 70.1 93.3Q67.7 92.6 65.5 91.7Q63.2 90.8 61.2 89.6Q59.2 88.5 57.5 87.2Q55.7 85.9 54.2 84.9Q52.7 84 51.3 83.6Q50 83.3 48.7 83.6Q47.3 84 45.8 84.9Q44.3 85.9 42.5 87.2Q40.8 88.5 38.8 89.6Q36.8 90.8 34.5 91.7Q32.3 92.6 29.9 93.3Q27.6 94.1 25 94.5Q22.4 95 19.8 95.1Q17.1 95.2 14.4 95Q11.7 94.9 9.1 94.2Q6.5 93.5 4.6 91.9Q2.8 90.3 2.1 87.8Q1.4 85.3 1.2 82.7Q1 80 1 77.5Q1 75 1.2 72.6Q1.4 70.1 1.8 67.8Q2.3 65.5 3 63.3Q3.7 61.1 4.7 59.1Q5.7 57 7.4 55.1Q9.1 53.2 10.2 51.6Q11.4 50 10.2 48.4Q9.1 46.8 7.4 44.9Q5.7 43 4.7 40.9Q3.7 38.9 3 36.7Q2.3 34.5 1.8 32.2Q1.4 29.9 1.2 27.4Q1 25 1 22.5Q1 20 1.2 17.3Q1.4 14.7 2.1 12.2Q2.8 9.7 4.6 8.1Q6.5 6.5 9.1 5.8Q11.7 5.1 14.4 5Q17.1 4.8 19.8 4.9Q22.4 5 25 5.5Q27.6 5.9 29.9 6.7Q32.3 7.4 34.5 8.3Q36.8 9.2 38.8 10.4Q40.8 11.5 42.5 12.8Q44.3 14.1 45.8 15.1Q47.3 16 48.7 16.4Z';
 const granos = [
-  { x: 9, y: 16, s: 18, g: 30 },
-  { x: 86, y: 12, s: 14, g: -25 },
-  { x: 90, y: 56, s: 20, g: 40 },
-  { x: 6, y: 62, s: 12, g: -35 },
-  { x: 24, y: 6, s: 12, g: 20, ancho: true },
-  { x: 74, y: 78, s: 14, g: 15, ancho: true },
+  { x: 11, y: 20, s: 32, g: 30, movil: false },
+  { x: 90, y: 24, s: 28, g: -25, movil: true },
+  { x: 6, y: 50, s: 24, g: -35, movil: false },
 ];
 ---
 <Vista id="inicio" nombre={textos.navegacion[0].texto} class="vista-inicio tema-oscuro" cuerpo="inicio-cuerpo">
   <div class="inicio-escena" data-escena="inicio">
-    <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true" data-capa="granos" data-profundidad="0.3">
-      {granos.map((g) => (
+    <!-- Fondo: hojas del trebol (lejos) y granos de maiz (cerca). Decorativo. -->
+    <div class="inicio-fondo" aria-hidden="true">
+      {hojas.map((h) => (
         <svg
-          class:list={['absolute opacity-80', g.ancho && 'hidden md:block']}
-          style={`left:${g.x}%;top:${g.y}%;width:${g.s}px;rotate:${g.g}deg`}
-          viewBox="0 0 20 26"
+          class:list={['inicio-hoja', !h.movil && 'solo-amplio']}
+          style={`left:${h.x}%;top:${h.y}%;width:${h.s}px;rotate:${h.g}deg;opacity:${h.o}`}
+          viewBox="0 0 100 100"
+          data-paralaje
+          data-profundidad="0.2"
         >
+          <use href="#inicio-trebol" />
+        </svg>
+      ))}
+      <svg class="inicio-simbolos" aria-hidden="true" focusable="false">
+        <symbol id="inicio-trebol" viewBox="0 0 100 100">
+          <path fill="currentColor" d={trebol} />
+        </symbol>
+        <symbol id="inicio-grano" viewBox="0 0 20 26">
           <ellipse cx="10" cy="13" rx="8.5" ry="11.5" fill="#f2b823" />
           <ellipse cx="7" cy="9" rx="3" ry="5" fill="#fff" opacity=".35" />
-          <path d="M4 20c3 4 9 4 12 0" fill="none" stroke="#c98a3a" stroke-width="2" stroke-linecap="round" />
+          <path d="M10 3.5v19M4 20c3 4 9 4 12 0" fill="none" stroke="#c98a3a" stroke-width="1.6" stroke-linecap="round" />
+        </symbol>
+      </svg>
+      {granos.map((g) => (
+        <svg
+          class:list={['inicio-grano', !g.movil && 'solo-amplio']}
+          style={`left:${g.x}%;top:${g.y}%;width:${g.s}px;rotate:${g.g}deg`}
+          viewBox="0 0 20 26"
+          data-paralaje
+          data-profundidad="0.5"
+        >
+          <use href="#inicio-grano" />
         </svg>
       ))}
     </div>
 
+    <!-- Vitrina lateral (I1, I2): solo >= 64rem. Decorativa. -->
+    <div class="inicio-vitrina" aria-hidden="true" data-entra style="--orden: 2">
+      {vitrina.map((l) => (
+        <div class={`vitrina-lado vitrina-${l.lado}`}>
+          {l.costales.map((c) => (
+            <div
+              class={`costal costal-${c.posicion}`}
+              style={`--giro:${c.giro}deg;--velo:url(${c.base}.webp);--velo-avif:url(${c.base}.avif)`}
+              data-paralaje
+              data-profundidad="0.6"
+              data-cascada={c.posicion}
+            >
+              <picture>
+                <source type="image/avif" srcset={`${c.base}.avif`} />
+                <img
+                  src={`${c.base}.webp`}
+                  width={c.ancho}
+                  height="400"
+                  alt=""
+                  decoding="async"
+                  loading="lazy"
+                  fetchpriority="low"
+                  draggable="false"
+                />
+              </picture>
+              {c.posicion === 'atras' && <span class="costal-velo"></span>}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+
     <div class="inicio-centro">
-      <h1 id="titulo-inicio" tabindex="-1" data-titulo-vista class="inicio-insignia">
-        <img
-          src="/img/marca/logo.webp"
-          srcset="/img/marca/logo-480.webp 480w, /img/marca/logo.webp 929w"
-          sizes="(min-width: 48rem) 400px, 60vw"
-          width="929"
-          height="489"
-          alt={altDe('/img/marca/logo.webp')}
-          loading="eager"
-          fetchpriority="high"
-          class="inicio-logo"
-          data-logo-inicio
-        />
-      </h1>
-      <p class="inicio-lema" data-entra style="--orden: 0">{lema}</p>
-      <p class="inicio-subtitulo" data-entra style="--orden: 0">{t.subtitulo}</p>
-      <a href={t.ctaDestino} class="boton boton-oro inicio-cta" data-cta-inicio data-entra style="--orden: 0">{t.cta}</a>
+      <div class="inicio-marco">
+        <!-- Marca de agua del trebol del isotipo (I7), detras de la insignia. Estatica. -->
+        <svg class="inicio-marca-agua" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#inicio-trebol" /></svg>
+        <h1 id="titulo-inicio" tabindex="-1" data-titulo-vista class="inicio-insignia">
+          <img
+            src="/img/marca/logo.webp"
+            srcset="/img/marca/logo-480.webp 480w, /img/marca/logo.webp 929w"
+            sizes="(min-width: 48rem) 400px, 60vw"
+            width="929"
+            height="489"
+            alt={altDe('/img/marca/logo.webp')}
+            loading="eager"
+            fetchpriority="high"
+            class="inicio-logo"
+            data-logo-inicio
+          />
+        </h1>
+      </div>
+      <p class="inicio-acento" data-entra data-cascada style="--orden: 0; --paso: 0">{t.acento}</p>
+      <p class="inicio-subtitulo" data-entra data-cascada style="--orden: 0; --paso: 1">{t.subtitulo}</p>
+      <div class="inicio-botones" data-entra data-cascada style="--orden: 0; --paso: 2">
+        <a href={t.ctaDestino} class="boton boton-oro inicio-boton" data-cta-inicio>{t.cta}</a>
+        <a href={t.ctaSecundarioDestino} class="boton inicio-boton inicio-boton-secundario" data-cta-como-llegar>{t.ctaSecundario}</a>
+      </div>
+      <ul class="inicio-accesos" aria-label={t.etiquetaAccesos} data-entra data-cascada style="--orden: 1; --paso: 3">
+        {t.accesos.map((a) => (
+          <li>
+            <a href="#productos" class="inicio-acceso" data-abrir-categoria={a.categoria}>{a.texto}</a>
+          </li>
+        ))}
+      </ul>
+      <ul class="inicio-animales" aria-label={t.etiquetaAnimales} data-entra data-cascada style="--orden: 1; --paso: 4">
+        {t.animales.map((a) => (
+          <li>
+            <Icono nombre={a.icono} class="inicio-animal-icono" />
+            <span>{a.texto}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   </div>
 
   <div class="franja-canela" data-franja-perrito data-perrito-pista>
     <div class="canela-cruce" aria-hidden="true" data-perrito>
-      <span class="canela-sombra"></span>
+      <span class="canela-sombra canela-sombra-reposo"></span>
       <picture data-perrito-reposo>
         <source type="image/avif" srcset="/img/canela/canela-franja.avif 1x, /img/canela/canela-franja@2x.avif 2x" />
         <img
@@ -83,79 +212,407 @@ const granos = [
         />
       </picture>
     </div>
+    <div class="canela-recorrido" aria-hidden="true" data-canela-recorrido>
+      <span class="canela-sombra canela-sombra-carrera" data-canela-sombra></span>
+      <div class="canela-caja" data-canela-caja></div>
+    </div>
   </div>
   <BotonPausa slot="fuera" tema="claro" class="inicio-pausa" />
 </Vista>
 
 <style>
+  /* Respaldo del acento mientras llega Caveat Brush (font-display: swap).
+     Con el respaldo de --font-script (Segoe Print, 417 px a 24 px) la frase
+     "Tu mejor aliado para tus animales" se partia en dos lineas en 360 px y
+     en 1440 px: salto de maquetacion al cambiar de fuente y, en movil, un
+     bloque de texto mayor que el logo como candidato a LCP. Estas caras NO
+     descargan nada (local()) y ajustan el ancho al de Caveat Brush (283 px):
+     Arial/Helvetica 361 px -> 78 %, Roboto 325 px -> 87 % (medido). */
+  @font-face {
+    font-family: 'Acento respaldo';
+    src: local('Arial'), local('Helvetica'), local('Liberation Sans');
+    size-adjust: 78%;
+  }
+  @font-face {
+    font-family: 'Acento respaldo android';
+    src: local('Roboto');
+    size-adjust: 87%;
+  }
+
+  /* Fondo (I7): degradado radial bosque -> bosque-noche (guia 2.2, Inicio) */
   :global(.vista-inicio) {
     background: radial-gradient(ellipse 70% 65% at 50% 40%, var(--color-bosque) 0%, var(--color-bosque-noche) 100%);
   }
   :global(.inicio-cuerpo) {
     display: grid !important;
-    grid-template-rows: minmax(0, 1fr) var(--franja-canela);
+    /* min-content: si el bloque central no cabe (pantallas por debajo de
+       360x640), la fila crece y la vista se desplaza (excepcion de scroll
+       de vistas-hinojosa) en vez de montarse sobre la franja de Canela */
+    grid-template-rows: minmax(min-content, 1fr) var(--franja-canela);
   }
   .inicio-escena {
+    /* Locales de la vista (no son tokens globales) */
+    --costal-alto: min(24dvh, 15vw);
+    --hueco: clamp(0.5rem, 2.2dvh, 1.25rem);
     position: relative;
+    isolation: isolate; /* la marca de agua (z -1) queda sobre el fondo de la vista */
     display: flex;
     min-height: 0;
-    align-items: center;
+    align-items: safe center; /* si no cabe, nunca se corta por arriba */
     justify-content: center;
+    overflow-x: clip; /* la marca de agua de 70dvh nunca crea scroll lateral */
   }
+
+  /* ---------- Fondo decorativo ---------- */
+  .inicio-fondo {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .inicio-simbolos {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+  .inicio-hoja {
+    position: absolute;
+    height: auto;
+    color: var(--color-hoja);
+  }
+  .inicio-grano {
+    position: absolute;
+    height: auto;
+  }
+  .solo-amplio {
+    display: none;
+  }
+  @media (min-width: 48rem) {
+    .solo-amplio {
+      display: block;
+    }
+  }
+
+  /* ---------- Bloque central ---------- */
   .inicio-centro {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 44rem;
-    padding: var(--spacing-bloque) 1rem;
+    max-width: 36rem;
+    /* arriba, ademas, los 12 px del aro de la insignia */
+    padding: calc(var(--hueco) * 0.5 + 0.75rem) 1rem calc(var(--hueco) * 0.5);
     text-align: center;
   }
-  /* Insignia: interior blanco, aro maiz 4 px, aro exterior bosque 8 px */
+  .inicio-marco {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+  /* Marca de agua del trebol (I7): ~70dvh, hoja al 5 %, centrada detras */
+  .inicio-marca-agua {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: -2; /* debajo de hojas, granos y vitrina */
+    width: 70dvh;
+    height: 70dvh;
+    translate: -50% -50%;
+    color: var(--color-hoja);
+    opacity: 0.05;
+    pointer-events: none;
+  }
+  /* Insignia: interior blanco y aro triple (I6): maiz 4, bosque-noche 6,
+     horizonte-fuerte 2 (el aro exterior ya no cae bosque sobre bosque) */
   .inicio-insignia {
     display: grid;
     place-items: center;
-    width: min(80vw, 26dvh * 1.6, 30rem);
+    width: min(80vw, 24dvh * 1.6, 30rem); /* 154 px de alto en 360x640: el logo (17,5k px2) le saca margen al subtitulo (14k) como LCP */
     aspect-ratio: 1.6;
     border-radius: 50%;
     background: var(--color-blanco);
     box-shadow:
       0 0 0 4px var(--color-maiz),
-      0 0 0 12px var(--color-bosque),
+      0 0 0 10px var(--color-bosque-noche),
+      0 0 0 12px var(--color-horizonte-fuerte),
       var(--shadow-elevada);
   }
   .inicio-logo {
     width: 74%;
     height: auto;
   }
-  .inicio-lema {
-    margin-top: clamp(1rem, 3dvh, 1.5rem);
-    font-family: var(--font-script);
+  .inicio-acento {
+    margin-top: calc(var(--hueco) + 0.5rem); /* deja libre el aro de 12 px */
+    font-family: 'Caveat Brush', 'Acento respaldo', 'Acento respaldo android', cursive;
     font-size: var(--text-acento);
     line-height: var(--text-acento--line-height);
-    color: var(--color-maiz);
+    color: var(--color-maiz); /* 7.98 sobre bosque-noche, 5.44 sobre bosque */
+    text-wrap: balance;
   }
   .inicio-subtitulo {
-    margin-top: 0.5rem;
+    margin-top: 0.375rem;
     max-width: 28ch;
     font-size: var(--text-lead);
     line-height: var(--text-lead--line-height);
     color: var(--color-crema);
+    text-wrap: balance;
   }
-  .inicio-cta {
-    margin-top: clamp(1rem, 3.5dvh, 2rem);
-    min-width: min(100%, 14rem);
+
+  /* Botones (I3): CTA oro principal + "Como llegar" secundario invertido */
+  .inicio-botones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: calc(var(--hueco) + 0.25rem);
+  }
+  .inicio-boton {
+    padding-inline: 0.75rem;
     font-weight: 800;
   }
-  @media (max-width: 47.999rem) {
-    .inicio-cta {
-      width: 100%;
+  .inicio-boton-secundario {
+    border: 2px solid var(--color-crema); /* 8.69-12.76 sobre el degradado */
+    color: var(--color-crema);
+  }
+  .inicio-boton-secundario:hover {
+    background-color: rgb(246 241 228 / 0.12);
+  }
+
+  /* Accesos por categoria (I3): chips-enlace de 44 px */
+  .inicio-accesos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.375rem;
+    margin-top: var(--hueco);
+  }
+  .inicio-acceso {
+    display: inline-flex;
+    min-height: var(--spacing-objetivo);
+    align-items: center;
+    padding-inline: 0.625rem;
+    border: 1.5px solid var(--color-hoja); /* 4.36 sobre bosque */
+    border-radius: var(--radius-chip);
+    font-size: var(--text-etiqueta);
+    font-weight: 800;
+    line-height: var(--text-etiqueta--line-height);
+    color: var(--color-crema);
+    text-decoration: none;
+  }
+  .inicio-acceso:hover {
+    background-color: rgb(123 191 58 / 0.15);
+  }
+
+  /* Fila de animales (I5): informativa, sin bordes ni fondo */
+  .inicio-animales {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem 0;
+    margin-top: calc(var(--hueco) * 0.75);
+    font-size: var(--text-etiqueta);
+    line-height: var(--text-etiqueta--line-height);
+    color: var(--color-crema);
+  }
+  .inicio-animales li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .inicio-animales li + li::before {
+    content: '';
+    flex: none;
+    width: 5px;
+    height: 5px;
+    margin-inline: 0.3rem 0.05rem;
+    border-radius: 50%;
+    background: var(--color-maiz);
+  }
+  .inicio-animales :global(.inicio-animal-icono) {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: none;
+    color: var(--color-hoja);
+  }
+
+  /* Pulsacion (90 ms) solo con movimiento permitido: la pausa del sitio
+     no anula `transition` (vistas-hinojosa, regla de las transiciones) */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not([data-movimiento='pausado'])) .inicio-acceso {
+      transition:
+        background-color var(--duracion-hover) ease,
+        transform var(--duracion-presion) ease-out;
+    }
+    .inicio-acceso:active {
+      transform: scale(0.96);
     }
   }
+
   @media (min-width: 48rem) {
     .inicio-insignia {
-      width: min(30rem, 34dvh * 1.6);
+      width: min(30rem, 30dvh * 1.6);
+    }
+    .inicio-botones {
+      display: flex;
+      justify-content: center;
+      width: auto;
+    }
+    .inicio-boton {
+      min-width: 12rem;
+      min-height: 3.25rem;
+      padding-inline: 1.5rem;
+    }
+    .inicio-accesos {
+      gap: 0.5rem;
+    }
+    .inicio-acceso {
+      padding-inline: 1rem;
+    }
+    .inicio-animales li {
+      gap: 0.375rem;
+    }
+    .inicio-animales li + li::before {
+      margin-inline: 0.625rem 0.25rem;
+    }
+    .inicio-animales :global(.inicio-animal-icono) {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
+
+  /* Pantallas bajas de escritorio (1366x650, 1280x720): el presupuesto
+     vertical de la guia (465 de 482 px) solo cabe con la insignia a 27dvh,
+     el subtitulo en una linea y botones de 48 px. */
+  @media (min-width: 48rem) and (max-height: 760px) {
+    .inicio-insignia {
+      width: min(30rem, 27dvh * 1.6);
+    }
+    .inicio-subtitulo {
+      max-width: none;
+    }
+    .inicio-boton {
+      min-height: 3rem;
+    }
+  }
+
+  /* ---------- Vitrina lateral (I1, I2): solo >= 64rem ---------- */
+  .inicio-vitrina {
+    display: none;
+  }
+  @media (min-width: 64rem) {
+    .inicio-vitrina {
+      position: absolute;
+      inset: 0;
+      z-index: -1; /* por debajo del bloque central, por encima del fondo */
+      display: block;
+      pointer-events: none;
+    }
+    .vitrina-lado {
+      position: absolute;
+      bottom: 0.375rem; /* base sobre el horizonte de la franja */
+      display: flex;
+      align-items: flex-end;
+    }
+    .vitrina-izq {
+      left: var(--spacing-vista);
+    }
+    .vitrina-der {
+      right: var(--spacing-vista);
+      flex-direction: row-reverse; /* frente siempre en el exterior */
+    }
+    .costal {
+      position: relative;
+      flex: none;
+      height: var(--costal-alto);
+    }
+    .costal picture,
+    .costal img {
+      display: block;
+      height: 100%;
+      width: auto;
+    }
+    .costal picture,
+    .costal-velo {
+      rotate: var(--giro);
+      transform-origin: 50% 100%;
+    }
+    /* Sombra de contacto: 70 % del ancho x 12 px, tinta al 35 %, blur estatico */
+    .costal::after {
+      content: '';
+      position: absolute;
+      left: 15%;
+      bottom: -6px;
+      z-index: -1;
+      width: 70%;
+      height: 12px;
+      border-radius: 50%;
+      background: rgb(20 48 29 / 0.35);
+      filter: blur(6px);
+    }
+    .costal-frente {
+      z-index: 1;
+    }
+    /* Atras: 80 %, hacia el logo, solapado ~30 % y 6 % mas arriba */
+    .costal-atras {
+      height: calc(var(--costal-alto) * 0.8);
+      margin-bottom: calc(var(--costal-alto) * 0.06);
+    }
+    .vitrina-izq .costal-atras {
+      margin-left: calc(var(--costal-alto) * -0.16);
+    }
+    .vitrina-der .costal-atras {
+      margin-right: calc(var(--costal-alto) * -0.16);
+    }
+    /* Velo de profundidad: tinta al 25 % recortada con la silueta del costal */
+    .costal-velo {
+      position: absolute;
+      inset: 0;
+      background: var(--color-velo-costal);
+      mask: var(--velo) center / contain no-repeat;
+      mask-image: image-set(var(--velo-avif) type('image/avif'), var(--velo) type('image/webp'));
+    }
+  }
+  /* ---------- Entrada I9: solo en carga directa en #inicio ----------
+     Cascada una sola vez (storyboard-hero 3.1): acento 0, subtitulo 80,
+     botones 160, accesos 240, animales 320 ms (400 ms, translateY 12 px);
+     costales de frente 200 y de atras 280 ms (600 ms, suben 24 px desde el
+     horizonte). El logo no se anima. fill-mode both: si el script fallara,
+     todo termina visible. Al llegar desde otra vista NO se repite (el
+     script marca data-cascada-hecha y entra con [data-entra], vistas.ts).
+     Usa `transform`; el paralaje usa `translate` y el giro `rotate`. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js:not([data-movimiento='pausado'])) :global(#inicio:not([data-cascada-hecha])) [data-cascada] {
+      animation: inicio-cascada 400ms var(--ease-vista) calc(var(--paso, 0) * 80ms) both;
+    }
+    :global(html.js:not([data-movimiento='pausado'])) :global(#inicio:not([data-cascada-hecha])) [data-cascada='frente'] {
+      animation: inicio-costal 600ms var(--ease-vista) 200ms both;
+    }
+    :global(html.js:not([data-movimiento='pausado'])) :global(#inicio:not([data-cascada-hecha])) [data-cascada='atras'] {
+      animation: inicio-costal 600ms var(--ease-vista) 280ms both;
+    }
+  }
+  @keyframes inicio-cascada {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes inicio-costal {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
     }
   }
 
@@ -186,14 +643,58 @@ const granos = [
   }
   .canela-sombra {
     position: absolute;
-    left: 15%;
     bottom: -5px;
-    width: 70%;
     height: 10px;
     border-radius: 50%;
     background: rgb(0 0 0);
-    opacity: 0.32;
     filter: blur(4px);
+    pointer-events: none;
+  }
+  .canela-sombra-reposo {
+    left: 15%;
+    width: 70%;
+    opacity: 0.32;
+  }
+
+  /* Carrera (canela-carrera.ts). Oculta hasta que el script tiene los
+     sprites decodificados; entonces se cambia la foto sentada por el
+     cuadro 0 del arranque (misma pose, mismo sitio: sin fundido). */
+  .canela-recorrido {
+    position: absolute;
+    left: 0;
+    bottom: 10px;
+    z-index: var(--z-canela);
+    visibility: hidden;
+    pointer-events: none;
+    will-change: transform;
+  }
+  .franja-canela[data-canela='carrera'] .canela-recorrido {
+    visibility: visible;
+  }
+  .franja-canela[data-canela='carrera'] .canela-cruce {
+    visibility: hidden;
+  }
+  .canela-caja {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+  .canela-caja :global(img) {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    max-width: none;
+    user-select: none;
+  }
+  /* Sombra en la linea de suelo del sprite (suelo 318/320: el borde de la
+     caja). Centrada bajo el cuerpo; solo se anima scaleX desde el script. */
+  .canela-sombra-carrera {
+    left: 19%;
+    width: 62%;
+    bottom: -4px;
+    opacity: 0.3;
+    transform-origin: 50% 50%;
   }
 
   /* Boton de pausa: abajo a la derecha, por encima de Canela */
@@ -216,29 +717,17 @@ const granos = [
     }
   }
 
-  /* Bucle: solo con JS, sin reduced motion y sin pausa */
-  @media (prefers-reduced-motion: no-preference) {
-    :global(html.js:not([data-movimiento='pausado'])) .canela-cruce {
-      left: 0;
-      right: auto;
-      animation: var(--animate-canela-cruce);
-    }
-    :global(html.js:not([data-movimiento='pausado'])) .canela-salto {
-      animation: var(--animate-canela-salto);
-    }
-    :global(html.js:not([data-movimiento='pausado'])) .canela-sombra {
-      animation: var(--animate-canela-sombra);
-    }
-  }
-  /* Reduced motion: no hay nada que pausar; Canela mas a la derecha */
+  /* Reduced motion: no hay nada que pausar; Canela sentada mas a la derecha
+     (el script tampoco descarga los sprites) */
   @media (prefers-reduced-motion: reduce) {
     .canela-cruce {
       right: var(--spacing-vista);
-      animation: none !important;
     }
-    .canela-salto,
-    .canela-sombra {
-      animation: none !important;
+    .canela-recorrido {
+      display: none;
+    }
+    .franja-canela .canela-cruce {
+      visibility: visible !important;
     }
     :global(.inicio-pausa) {
       display: none !important;
@@ -248,4 +737,22 @@ const granos = [
 
 <script>
   import '../../lib/animacion/paralaje';
+  import '../../lib/animacion/canela-carrera';
+  import { alCambiarVista, vistaActual } from '../../lib/router';
+
+  // Entrada I9 (cascada) solo en carga directa en #inicio. En cuanto se
+  // cambia de vista, o al acabar la cascada, se marca y no se repite: al
+  // volver a Inicio entra con la transicion de vista ([data-entra]), y
+  // quitar/volver a poner la pausa no la relanza.
+  const inicio = document.getElementById('inicio');
+  if (inicio) {
+    const marcar = () => inicio.setAttribute('data-cascada-hecha', '');
+    if (vistaActual() !== 'inicio') marcar();
+    else window.setTimeout(marcar, 1400); // ultimo costal: 280 + 600 ms
+    const quitar = alCambiarVista((d) => {
+      if (d.inicial) return;
+      marcar();
+      quitar();
+    });
+  }
 </script>
