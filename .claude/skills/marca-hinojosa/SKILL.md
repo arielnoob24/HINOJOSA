@@ -8,8 +8,8 @@ description: Paleta con contrastes ya verificados, tipografía, tono de voz y re
 Fuente única de verdad para color, tipografía, tono y logo. Si algo aquí contradice a `PLAN.md`, manda `PLAN.md` y hay que actualizar esta skill.
 
 **Negocio:** venta de balanceados, alimentos y productos para animales.
-**Lema:** "Nutrición que da vida".
-**Mascota:** Canela, perrita con gorra verde y pañuelo con la "H". Es parte de la marca (logo, insignia, gráficos), **no** una sección del sitio ni un personaje 3D.
+**Lema:** "Nutrición que da vida". Ya va **dentro del logo**: no se repite como texto al lado del logo. En Inicio, el acento manuscrito bajo el logo es **"Tu mejor aliado para tus animales"** (decisión 2026-10-13, `PLAN.md` §0-B).
+**Mascota:** Canela, perrita con gorra verde y pañuelo con la "H". Es parte de la marca (logo, insignia, gráficos), **no** una sección del sitio ni un personaje 3D. Aparece **solo en Inicio y Quiénes somos**.
 
 ---
 
@@ -26,6 +26,17 @@ Fuente única de verdad para color, tipografía, tono y logo. Si algo aquí cont
 | Texto | verde casi negro | `#14301D` |
 
 Proporción aproximada: **60 % blanco/crema · 30 % verde · 10 % oro**.
+
+**Reparto real (revisión 2026-10-14, `PLAN.md` §2 "Reparto del color"):** el sitio usaba en la práctica dos colores (crema + bosque) y el oro y el canela casi no aparecían, por eso las vistas claras parecían plantilla. Reglas vigentes:
+- **No pongas tarjetas blancas con sombra sobre crema** como recurso por defecto (blanco/crema ≈ 1,1:1, se distinguen solo por la sombra). Alterna superficies `crema-oscuro` `#EDE4CC` y `hoja-claro` `#EAF4DC`.
+- **Cada vista clara lleva al menos una banda `bosque`.**
+- Al terminar una vista, estima a ojo la proporción real de cada color; si el oro y el canela no llegan juntos a ~10 %, falta acento.
+- **Aprobado el 2026-10-14:**
+  - Proporción objetivo en las vistas claras: **55 % crema · 30 % verde · 15 % oro + canela** (sustituye al 60/30/10 en esas vistas; Inicio sigue siendo mayoritariamente verde oscuro).
+  - **Trazo de pincel maíz bajo los h2** en lugar del subrayado verde (decorativo, no necesita 3:1; el subrayado verde se confundía con un enlace).
+  - **Canela oscuro `#8A5A1F` como fondo de banda**, con texto blanco (5.88) o crema (5.22).
+  - **Tono kraft / costal `#E3CFA6`** (`--color-kraft`) para bandas, sellos y la tarima del carrusel. Ver la tabla de la sección 2.
+  - Más oro como **detalle** (separadores, aros de pilares, pin, marca de agua), nunca como texto sobre claro.
 
 > Los hex son aproximados, tomados de los afiches. Al obtener el logo vectorial hay que afinarlos **y volver a calcular la tabla de la sección 2**.
 
@@ -66,6 +77,11 @@ Colores derivados (definidos en `hinojosa-web/src/styles/tokens.css`, calculados
 | `#267A2C` marca-fuerte | `#FFFFFF` / `#F6F1E4` | **5.38 / 4.77** | Enlaces de texto (no botones) |
 | `#C98A3A` (pelaje de Canela) | `#1B4D2B` | 3.35 | Solo decorativo: Canela sobre el fondo de Inicio |
 | `#EAF4DC` | `#F6F1E4` | 1.01 | **No** sirve como única señal de estado activo |
+| `#14301D` | `#E3CFA6` kraft | **9.35** | Texto de cuerpo sobre bandas kraft (2026-10-14) |
+| `#1B4D2B` | `#E3CFA6` | **6.41** | Títulos sobre kraft |
+| `#3D5A45` | `#E3CFA6` | **5.00** | Texto secundario sobre kraft |
+| `#8A5A1F` | `#E3CFA6` | 3.85 | Solo texto grande (≥ 24 px o 19 px en negrita) sobre kraft |
+| `#FFFFFF` / `#F6F1E4` | `#8A5A1F` canela-oscuro | **5.88 / 5.22** | Texto sobre bandas canela oscuro |
 | `#F2B823` (CTA) | `#F6F1E4` | 1.60 | Sobre claro, el CTA oro lleva borde `#1B4D2B` 2 px (8.69) |
 
 ### Combinaciones PROHIBIDAS
@@ -116,24 +132,37 @@ Cálido, familiar, confiable, cercano. El cliente es un ganadero, avicultor o du
 - Frases de marca disponibles: "Nutrición que da vida" (principal) · "Somos parte de tu familia" · "Tu mejor aliado para tus animales" · "Comercial Hinojosa siempre a tu lado" · "Calidad, Confianza, Compromiso".
 
 ### Datos que nunca se inventan
-Teléfono, WhatsApp, dirección, ciudad, horario, referencias para llegar, enlaces de redes y precios. Si falta uno, se escribe `PENDIENTE_CONFIRMAR` y se reporta. Un dato falso de contacto o de precio hace daño real al negocio.
+Teléfono, WhatsApp, dirección, ciudad, horario, referencias para llegar, enlaces de redes, precios, año de apertura e historia. Si falta uno, en **los datos** (`negocio.json`) se escribe `PENDIENTE_CONFIRMAR` y se reporta. Un dato falso de contacto o de precio hace daño real al negocio.
+
+**El marcador nunca llega a la pantalla.** `PENDIENTE_CONFIRMAR` es para los datos y para QA. Al visitante se le muestra texto humano: `textos.comunes.datoPendiente` ("Muy pronto publicaremos este dato.") o `textos.visitanos.contactoPendiente`. Los canales de contacto pendientes se agrupan en una sola línea, sin forma de botón: un botón que no hace nada parece un sitio roto.
 
 Los precios de los afiches van siempre acompañados de **"Precios referenciales — consulta disponibilidad"**.
 
 ---
 
-## 5. Logo y marcas
+## 5. Sistema visual entre vistas (auditoría 2026-10-13)
+
+- **Títulos de vista:** antetítulo (Nunito 800, mayúsculas, `text-etiqueta`, `canela-oscuro`: 5.88 sobre blanco, 5.22 sobre crema) + `h2` con una frase corta sacada de los eslóganes reales. Textos propuestos en `PLAN.md` §3, **pendientes de aprobación**; no los cambies sin ella.
+- **Icono en círculo con aro maíz:** solo para los 4 pilares de "Por qué elegirnos". Valores y animales llevan icono suelto. Repetir el mismo círculo en tres familias hace que el sitio parezca plantilla.
+- **Tamaño mínimo de texto: 13 px**, también en la barra.
+- **No dupliques mensajes:** antes de añadir un texto, comprueba que no esté ya en el logo, en la barra o en la vista vecina (el lema en Inicio, "calidad" entre Quiénes somos y Por qué, el diferencial de especies junto a la fila de animales).
+- **Tarjetas que no son pulsables** no se inclinan al pasar el ratón: solo se elevan. El tilt (`--tilt-max`, 3°) se reserva a superficies decorativas.
+
+---
+
+## 6. Logo y marcas
 
 - Se usa **solo el logo nuevo**: H blanca sobre trébol verde con maíz, "COMERCIAL" en dorado, "HINOJOSA" en verde degradado. El logo "ANTES" del primer afiche está **descartado**.
 - Variantes: completo vertical, isotipo "H" suelto, versión blanca para fondos oscuros, favicon. Archivos en `hinojosa-web/public/img/marca/`.
 - El logo no se deforma, no se recolorea y no se pone sobre fondos que le quiten contraste. Sobre fondo oscuro va la versión blanca.
 - La optimización de imágenes **no** puede degradar el logo: se mantiene en SVG o PNG nítido, nunca en un WebP agresivo.
 - **Marcas de terceros** (Pro-Can, Camperito, Nutritivos, Dog Chow, NutraPro, Bio Alimentar, Cani, Molinos Cordillera, Freemiau, Mascan…): se mencionan solo como productos que el local distribuye, con la nota al pie **"Marcas registradas de sus respectivos propietarios."** No se usan sus logos como si fueran de la marca propia.
+- **Imágenes generadas o editadas con IA:** nunca pidas "fondo transparente": casi todas pintan un damero falso (pasó con `bebedero.png`). Pide un **color plano** que no exista en el objeto (azul `#0047BB` para Canela, porque su gorra y collar son verdes; verde croma `#00B140` para productos sin verde) y se quita después en `scripts-activos/`.
 - Las imágenes de los afiches son **referencia gráfica**, no fuente final. Varias parecen generadas con IA: antes de publicarlas hay que confirmar con la dueña los derechos de uso.
 
 ---
 
-## 6. Al escribir tokens
+## 7. Al escribir tokens
 
 Define los colores como tokens con nombre de rol, no de color, para que la regla de contraste viaje con el token:
 

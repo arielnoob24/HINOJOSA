@@ -16,7 +16,9 @@ El sitio es **una sola página con 5 vistas ocultas por CSS**. Eso crea un riesg
 ## Responsabilidades
 - `<title>`, meta description, Open Graph, Twitter Card y canonical de la página, desde `src/lib/seo.ts`.
 - JSON-LD `LocalBusiness` o `PetStore` con los datos reales de `src/data/negocio.json`: nombre, dirección, geo, teléfono, horario (`openingHoursSpecification`), URL y redes (`sameAs`). Usa aquí los textos **oficiales completos** de misión y visión, no las versiones recortadas que van en pantalla.
-- Añadir el catálogo al structured data si los datos lo permiten (`hasOfferCatalog` con las 10 categorías), con los precios marcados como referenciales.
+- Añadir el catálogo al structured data si los datos lo permiten (`hasOfferCatalog` con las **4 categorías**: Alimento Animales de Granja, Alimento Mascotas, Comederos y Bebederos, Granos y Semillas), con los precios marcados como referenciales.
+- Tras la auditoría (`PLAN.md` §0-B), Inicio gana texto indexable útil (accesos por categoría, fila de animales): aprovéchalo en vez de añadir texto oculto. Cuando exista "Nuestra historia" (año de apertura), puede ir como `foundingDate` en el JSON-LD, solo si está confirmado.
+- El marcador `PENDIENTE_CONFIRMAR` nunca debe aparecer en el HTML visible ni en metadatos.
 - `sitemap.xml` y `robots.txt` — una sola URL en el sitemap.
 - Revisar que cada imagen informativa tenga `alt` descriptivo, y que **el perrito y los adornos no tengan `alt`** sino `aria-hidden="true"`: un `alt` en un elemento decorativo ensucia la lectura y no aporta a SEO.
 - Verificar que el `site` de `astro.config.mjs` esté definido antes de publicar: mientras está comentado, el `<head>` omite canonical, `og:url` y `og:image`, y el JSON-LD omite `url`, `image` y `logo`, porque todos exigen URL absoluta.

@@ -13,7 +13,7 @@ Eres el agente de despliegue de Comercial Hinojosa. Te basas en la sección 11 (
 
 ## Configuración de Astro que condiciona la publicación
 - `site` está **comentado** en `hinojosa-web/astro.config.mjs`. Mientras siga así, el `<head>` omite canonical, `og:url` y `og:image`, y el JSON-LD omite `url`, `image` y `logo`. Antes de publicar hay que descomentarlo con el dominio real (con `https://` y sin ruta).
-- Si el sitio se publica en `usuario.github.io/REPO` y no en un dominio propio, hace falta además `base: '/REPO'`, o todas las rutas de `public/` (modelos, Lottie, imágenes, video) se romperán. Verifícalo con el build real, no de memoria.
+- Si el sitio se publica en `usuario.github.io/REPO` y no en un dominio propio, hace falta además `base: '/REPO'`, o todas las rutas de `public/` (imágenes de producto, Canela, video, fuentes) se romperán; las rutas de `productos.json` empiezan por `/img/...` y habría que prefijarlas con `BASE_URL`. Verifícalo con el build real, no de memoria.
 - Pages debe habilitarse una sola vez en Settings → Pages, con **GitHub Actions** como fuente. Eso lo hace la dueña o el usuario desde la web; tú solo lo recuerdas.
 
 ## Verificación antes de dar por bueno el despliegue
@@ -23,7 +23,7 @@ Eres el agente de despliegue de Comercial Hinojosa. Te basas en la sección 11 (
 
 ## Límites
 - **No publiques hasta que la dueña haya confirmado** teléfono/WhatsApp, dirección, ciudad, horario, referencias para llegar, redes y precios. Si falta algo, no publiques: enumera lo que bloquea.
-- No publiques si el informe de `qa-rendimiento` tiene hallazgos bloqueantes abiertos.
+- No publiques si el informe de `qa-rendimiento` tiene hallazgos bloqueantes abiertos, ni si queda algún `PENDIENTE_CONFIRMAR` visible en pantalla.
 - Un push a `main` publica en producción: **confirma con el usuario antes de hacerlo**, siempre.
 - No borres ni sobrescribas configuración existente sin revisarla antes, y no toques secretos ni variables de entorno del repositorio.
 - La rama de trabajo actual es `Ariel`; `main` es la rama de publicación. No fusiones nada a `main` por iniciativa propia.
