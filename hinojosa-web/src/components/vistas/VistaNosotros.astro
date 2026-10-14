@@ -1,9 +1,10 @@
 ---
 // Vista 2 - Quienes somos (guia-estilo 7.2): mosaico, todo visible, sin
 // clics. Tarjeta grande con el video de Canela jugando (arriba) y la frase
-// en una banda bosque OPACA (abajo, nunca sobre el video); Mision (blanca)
-// y Vision (bosque) a la derecha; los 6 valores en UNA banda crema-oscuro
-// (icono 28 px + palabra, separados por un punto maiz de 6 px; N5).
+// en una banda bosque OPACA (abajo, nunca sobre el video); Mision
+// (canela oscuro, .tema-canela) y Vision (bosque) a la derecha; los 6
+// valores en UNA banda hoja-claro (icono 28 px + palabra, separados por un
+// punto maiz de 6 px; N5). Reparto del color: guia 2.2 (bloque 13).
 //
 // Video (N1, N2, N8): object-fit contain anclado abajo, para no cortar la
 // gorra de Canela; la caja tiene el gris del fondo del video (medido en el
@@ -33,7 +34,7 @@ const poster = '/video/canela-jugando-poster.webp';
 ---
 <Vista id="nosotros" nombre={textos.navegacion[1].texto} cuerpo="nosotros-cuerpo">
   <div class="nos-marco">
-    <h2 id="titulo-nosotros" tabindex="-1" data-titulo-vista class="text-h2" data-entra style="--orden: 0">{t.titulo}</h2>
+    <h2 id="titulo-nosotros" tabindex="-1" data-titulo-vista class="text-h2 titulo-vista" data-entra style="--orden: 0">{t.titulo}</h2>
 
     <div class="nos-mosaico" data-mosaico>
       <article class="nos-familia" data-tarjeta-familia data-tilt data-entra style="--orden: 1" aria-labelledby="frase-familia">
@@ -65,12 +66,12 @@ const poster = '/video/canela-jugando-poster.webp';
         </p>
       </article>
 
-      <article class="nos-tarjeta nos-mision" data-elevar data-entra style="--orden: 2" aria-labelledby="eyebrow-mision">
-        <h3 id="eyebrow-mision" class="nos-eyebrow text-canela-oscuro">{t.tituloMision}</h3>
-        <p class="nos-texto text-tinta">{p.mision}</p>
+      <article class="nos-tarjeta nos-mision tema-canela" data-elevar data-entra style="--orden: 2" aria-labelledby="eyebrow-mision">
+        <h3 id="eyebrow-mision" class="nos-eyebrow">{t.tituloMision}</h3>
+        <p class="nos-texto">{p.mision}</p>
       </article>
 
-      <article class="nos-tarjeta nos-vision" data-elevar data-entra style="--orden: 2" aria-labelledby="eyebrow-vision">
+      <article class="nos-tarjeta nos-vision tema-oscuro" data-elevar data-entra style="--orden: 2" aria-labelledby="eyebrow-vision">
         <h3 id="eyebrow-vision" class="nos-eyebrow text-maiz">{t.tituloVision}</h3>
         <p class="nos-texto text-blanco">{p.vision}</p>
       </article>
@@ -114,7 +115,7 @@ const poster = '/video/canela-jugando-poster.webp';
     overflow: hidden;
     border-radius: var(--radius-tarjeta-grande);
     background: var(--color-bosque);
-    box-shadow: var(--shadow-tarjeta);
+    box-shadow: var(--shadow-suave);
   }
   /* Caja del video: el gris del fondo del video, medido en el poster
      (mediana de los bordes: #EBEBE7), para que el contain no deje un marco
@@ -176,15 +177,23 @@ const poster = '/video/canela-jugando-poster.webp';
     gap: 0.5rem;
     border-radius: var(--radius-tarjeta);
     padding: clamp(1rem, 2.4vw, 1.75rem);
-    box-shadow: var(--shadow-tarjeta);
+    box-shadow: var(--shadow-suave);
   }
+  /* Mision: el bloque canela de la vista (.tema-canela): antetitulo crema
+     800 (5.22), texto blanco (5.88), foco crema. */
   .nos-mision {
-    border: 1px solid var(--color-crema-oscuro);
-    background: var(--color-blanco);
+    background: var(--color-canela-oscuro);
   }
+  .nos-mision .nos-texto {
+    color: var(--color-blanco);
+  }
+  /* Vision: bosque (.tema-oscuro): antetitulo maiz (5.44), texto blanco
+     (9.80), foco maiz. */
   .nos-vision {
-    --color-foco: var(--color-foco-oscuro);
     background: var(--color-bosque);
+  }
+  .nos-vision .nos-texto {
+    color: var(--color-blanco);
   }
   /* Antetitulo en 800; el texto en 400 a text-lead (N6): deja de competir
      con la frase de marca. */
@@ -199,7 +208,7 @@ const poster = '/video/canela-jugando-poster.webp';
     color: var(--color-maiz);
   }
   .nos-mision .nos-eyebrow {
-    color: var(--color-canela-oscuro);
+    color: var(--color-crema);
   }
   .nos-texto {
     font-family: var(--font-sans);
@@ -209,12 +218,12 @@ const poster = '/video/canela-jugando-poster.webp';
     text-wrap: pretty;
   }
 
-  /* --------- Valores: UNA banda crema-oscuro (N5) ---------
-     Icono suelto de 28 px + palabra; sin circulo (el aro maiz es solo de
-     los pilares de Por que). Bosque sobre crema-oscuro: 7.7:1. */
+  /* --------- Valores: UNA banda hoja-claro (N5, guia 2.2) ---------
+     Icono suelto de 28 px trazo bosque (8.62) + palabra 800 tinta (12.57);
+     sin circulo (el aro maiz es solo de los pilares de Por que). */
   .nos-valores {
     border-radius: var(--radius-tarjeta);
-    background: var(--color-crema-oscuro);
+    background: var(--color-hoja-claro);
     padding: 0.875rem 1rem;
   }
   .nos-lista-valores {
@@ -237,7 +246,7 @@ const poster = '/video/canela-jugando-poster.webp';
     font-weight: 800;
     font-size: 0.9375rem;
     line-height: 1.15;
-    color: var(--color-bosque);
+    color: var(--color-tinta);
   }
 
   @media (min-width: 48rem) {
@@ -326,11 +335,11 @@ const poster = '/video/canela-jugando-poster.webp';
     }
     :global(html:not([data-movimiento='pausado'])) .nos-valores:hover {
       transform: perspective(100rem) rotateX(var(--tilt-max)) translateY(-2px);
-      box-shadow: var(--shadow-tarjeta);
+      box-shadow: var(--shadow-suave);
     }
     :global(html:not([data-movimiento='pausado'])) [data-elevar]:hover {
       transform: translateY(-4px);
-      box-shadow: var(--shadow-elevada);
+      box-shadow: var(--shadow-suave);
     }
   }
 </style>

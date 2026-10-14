@@ -34,7 +34,7 @@
   --color-marca-fuerte: #267a2c;  /* enlaces de texto sobre claro (4.77 crema / 5.38 blanco). No es color de boton */
   --color-hoja-claro: #eaf4dc;    /* superficie tintada: fila activa, pastilla "Abierto" */
   --color-maiz-oscuro: #d99e0f;   /* hover del CTA oro (tinta encima 6.02) */
-  --color-crema-oscuro: #ede4cc;  /* tarjetas alternas, tarima del carrusel, bordes decorativos */
+  --color-crema-oscuro: #ede4cc;  /* superficie calida: pestanas inactivas, pastilla "Cerrado" (tinta 11.27, bosque 7.73). Trazo maiz encima PROHIBIDO (1.42) */
   --color-canela-oscuro: #8a5a1f; /* texto canela legible (5.22 crema / 5.88 blanco) */
   --color-tinta-suave: #3d5a45;   /* texto secundario, bordes de campos (6.78 crema / 7.64 blanco) */
   --color-blanco: #ffffff;
@@ -62,7 +62,7 @@
 
   /* ---------- Tokens de ROL (la regla de contraste viaja con el token) ---------- */
   --color-fondo: #f6f1e4;              /* = crema */
-  --color-superficie: #ffffff;         /* tarjetas, panel de lista, tarjeta del mapa (OPACA) */
+  --color-superficie: #ffffff;         /* blanco opaco. Desde el reparto del color (guia 2.2) YA NO es la superficie por defecto: panel = hoja-claro, tarjeta del mapa = bosque */
   --color-texto: #14301d;              /* = tinta */
   --color-texto-suave: #3d5a45;        /* = tinta-suave */
   --color-titulo: #1b4d2b;             /* = bosque */
@@ -92,7 +92,7 @@
   --color-velo-franja: rgb(16 48 27 / 0.6);       /* degradado de la franja de Canela */
   --color-pausa-oscuro: rgb(16 48 27 / 0.85);     /* fondo del boton de pausa sobre bosque (crema encima) */
   --color-foco-estudio: rgb(255 255 255 / 0.85);  /* foco de luz detras del producto al frente */
-  --color-tarima-filete: rgb(123 191 58 / 0.35);  /* borde de la tarima del carrusel (decorativo) */
+  --color-tarima-filete: rgb(123 191 58 / 0.35);  /* SIN USO desde 2026-10-14: la tarima kraft lleva --color-filete-canela */
   --color-silueta-carga: rgb(237 228 204 / 0.6);  /* hueco 3:4 mientras carga una imagen (crema-oscuro 60 %) */
 
   /* ---------- Familias (3) y pesos (4) ----------
@@ -199,49 +199,6 @@
      FUERA de @theme, mas abajo: Tailwind poda los @keyframes de @theme que
      no usa ninguna variable --animate-*, y estos se usan desde global.css
      y desde el CSS con ambito de Barra.astro. */
-
-  /* Canela: tres capas sincronizadas (ver storyboard-hero.md)
-     .canela-cruce  -> envoltorio, viaja de derecha a izquierda
-     .canela-salto  -> la imagen, salta con squash & stretch
-     .canela-sombra -> elipse en el suelo, no sube; se encoge en el apice */
-  --animate-canela-cruce: canela-cruce var(--canela-ciclo) linear var(--canela-retraso) infinite both;
-  --animate-canela-salto: canela-salto var(--canela-salto) linear infinite;
-  --animate-canela-sombra: canela-sombra var(--canela-salto) linear infinite;
-
-  /* El envoltorio mide lo mismo que Canela y parte de left:0.
-     0-72 %: cruza a velocidad constante (es desplazamiento, no UI: el
-     "ease" lo pone el salto). 72-100 %: espera fuera de pantalla. */
-  @keyframes canela-cruce {
-    0% { transform: translate3d(100vw, 0, 0); }
-    72% { transform: translate3d(-100%, 0, 0); }
-    100% { transform: translate3d(-100%, 0, 0); }
-  }
-  /* transform-origin: 50% 100% (las patas). Squash/stretch maximo +-8 %. */
-  @keyframes canela-salto {
-    0% {
-      transform: translate3d(0, 0, 0) scale(1.06, 0.92) rotate(0deg);
-      animation-timing-function: var(--ease-subir);
-    }
-    12% {
-      transform: translate3d(0, calc(var(--canela-alto) * -0.03), 0) scale(0.96, 1.05) rotate(-1deg);
-      animation-timing-function: var(--ease-subir);
-    }
-    50% {
-      transform: translate3d(0, calc(var(--canela-alto) * var(--canela-altura-salto) * -1), 0) scale(1, 1) rotate(-3deg);
-      animation-timing-function: var(--ease-caer);
-    }
-    88% {
-      transform: translate3d(0, calc(var(--canela-alto) * -0.03), 0) scale(0.97, 1.04) rotate(-1deg);
-      animation-timing-function: ease-out;
-    }
-    100% {
-      transform: translate3d(0, 0, 0) scale(1.06, 0.92) rotate(0deg);
-    }
-  }
-  @keyframes canela-sombra {
-    0%, 100% { transform: scale(1, 1); opacity: 0.32; }
-    50% { transform: scale(0.68, 0.8); opacity: 0.16; }
-  }
 }
 
 /* ---------- Keyframes de la transicion de vista y de la barra ---------- */
@@ -301,13 +258,9 @@
   --carrusel-oscuro-max: 0.45;      /* opacidad de la capa tinta sobre el producto de mas atras */
   --carrusel-opacidad-min: 0.4;     /* opacidad del producto de mas atras */
 
-  /* Canela (bucle de Inicio) */
+  /* Canela (carrera de Inicio: canela-carrera.ts usa el alto; los sprites y tiempos van en public/img/canela/carrera.json) */
   --canela-alto: clamp(4rem, 12.5dvh, 7.5rem);  /* 112 px en 1440x900 (13 % de la vista) */
   --canela-proporcion: 0.76;                    /* ancho / alto del recorte de Canela.png */
-  --canela-salto: 520ms;                        /* un saltito completo; rango 400-600 */
-  --canela-altura-salto: 0.16;                  /* x canela-alto: 18 px escritorio, 11 px movil */
-  --canela-ciclo: 11.5s;                        /* cruce 72 % (8.3 s) + pausa fuera 28 % (3.2 s) */
-  --canela-retraso: 1.2s;                       /* espera antes de la primera entrada */
   --franja-canela: calc(var(--canela-alto) * 1.16 + 0.625rem); /* zona reservada abajo en Inicio */
 
   /* Micro-interacciones */
@@ -324,19 +277,11 @@
   --z-barra: 50;
 }
 
-/* Tableta */
-@media (max-width: 63.999rem) {
-  :root {
-    --canela-ciclo: 9s;               /* cruce 6.5 s + pausa 2.5 s */
-  }
-}
-
 /* Movil: barra superior compacta + barra inferior de 5 iconos */
 @media (max-width: 47.999rem) {
   :root {
     --spacing-barra: 2.75rem;         /* 44 px (G5): las dos barras pasan de 116 a 108 px de 640 */
     --canela-alto: clamp(4rem, 11dvh, 5.5rem); /* 70 px en 360x640 (13 % de la vista util) */
-    --canela-ciclo: 6.5s;             /* cruce 4.7 s + pausa 1.8 s */
     --carrusel-perspectiva: 600px;
     --carrusel-ancho: 7.25rem;        /* 116 px -> 155 px de alto */
     --carrusel-hueco: 0.625rem;

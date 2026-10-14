@@ -7,8 +7,13 @@
 // contacto pendientes se agrupan en UNA linea, sin forma de boton.
 //
 // Sin coordenadas (V2, V3): fondo crema con textura de hojas y granos al
-// 8 % (sin calles falsas), pin grande y tarjeta "Muy pronto, el mapa".
+// 8 % (sin calles falsas), marca de agua del trebol en maiz al 15 %, pin
+// grande y aviso "Muy pronto, el mapa" en un bloque canela oscuro.
 // V4: el CTA se llama "Como llegar" y el dato, "Referencias".
+// Reparto del color (guia 2.2, bloque 13): tarjeta de datos bosque opaca
+// (.tema-oscuro, el bloque verde de la vista): etiquetas maiz, valores
+// blanco, datoPendiente crema, CTA oro sin borde, WhatsApp/Llamar en
+// secundario invertido; aviso del mapa en .tema-canela.
 //
 // Ganchos: [data-mapa] (src/lib/mapa.ts, carga diferida al entrar),
 //          [data-mapa-vacio], [data-estado-horario] (src/lib/horario.ts),
@@ -45,8 +50,8 @@ const facebook = datoConfirmado('facebook');
 // los pendientes solo aportan su icono (en gris) a la linea agrupada.
 const canales = [
   { href: maps, texto: t.ctaMaps, nombre: t.nombreAccesibleMaps, icono: 'mapa', variante: 'cta' as const, ancho: true, pestana: true },
-  { href: whatsapp, texto: t.ctaWhatsapp, nombre: t.nombreAccesibleWhatsapp, icono: 'whatsapp', variante: 'primario' as const, ancho: false, pestana: true },
-  { href: telefono, texto: t.ctaLlamar, nombre: t.nombreAccesibleLlamar, icono: 'telefono', variante: 'primario' as const, ancho: false, pestana: false },
+  { href: whatsapp, texto: t.ctaWhatsapp, nombre: t.nombreAccesibleWhatsapp, icono: 'whatsapp', variante: 'invertido' as const, ancho: false, pestana: true },
+  { href: telefono, texto: t.ctaLlamar, nombre: t.nombreAccesibleLlamar, icono: 'telefono', variante: 'invertido' as const, ancho: false, pestana: false },
   { href: facebook, texto: t.ctaFacebook, nombre: t.nombreAccesibleFacebook, icono: 'facebook', variante: 'enlace' as const, ancho: true, pestana: true },
 ];
 const confirmados = canales.filter((c) => c.href);
@@ -69,6 +74,11 @@ const textura =
   '<ellipse cx="146" cy="134" rx="4.5" ry="6.5" transform="rotate(-18 146 134)" fill="#c98a3a"/>' +
   '</g></svg>';
 const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURIComponent(textura)}")`;
+// Trebol del isotipo redibujado (el mismo trazado que la marca de agua de
+// VistaInicio.astro). Inline y no como fondo CSS: no compite como LCP.
+// Marca de agua (maiz al 15 %) y simbolo del aviso del mapa (kraft).
+const trebol =
+  'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12.8Q59.2 11.5 61.2 10.4Q63.2 9.2 65.5 8.3Q67.7 7.4 70.1 6.7Q72.4 5.9 75 5.5Q77.6 5 80.2 4.9Q82.9 4.8 85.6 5Q88.3 5.1 90.9 5.8Q93.5 6.5 95.4 8.1Q97.2 9.7 97.9 12.2Q98.6 14.7 98.8 17.3Q99 20 99 22.5Q99 25 98.8 27.4Q98.6 29.9 98.2 32.2Q97.7 34.5 97 36.7Q96.3 38.9 95.3 40.9Q94.3 43 92.6 44.9Q90.9 46.8 89.8 48.4Q88.6 50 89.8 51.6Q90.9 53.2 92.6 55.1Q94.3 57 95.3 59.1Q96.3 61.1 97 63.3Q97.7 65.5 98.2 67.8Q98.6 70.1 98.8 72.6Q99 75 99 77.5Q99 80 98.8 82.7Q98.6 85.3 97.9 87.8Q97.2 90.3 95.4 91.9Q93.5 93.5 90.9 94.2Q88.3 94.9 85.6 95Q82.9 95.2 80.2 95.1Q77.6 95 75 94.5Q72.4 94.1 70.1 93.3Q67.7 92.6 65.5 91.7Q63.2 90.8 61.2 89.6Q59.2 88.5 57.5 87.2Q55.7 85.9 54.2 84.9Q52.7 84 51.3 83.6Q50 83.3 48.7 83.6Q47.3 84 45.8 84.9Q44.3 85.9 42.5 87.2Q40.8 88.5 38.8 89.6Q36.8 90.8 34.5 91.7Q32.3 92.6 29.9 93.3Q27.6 94.1 25 94.5Q22.4 95 19.8 95.1Q17.1 95.2 14.4 95Q11.7 94.9 9.1 94.2Q6.5 93.5 4.6 91.9Q2.8 90.3 2.1 87.8Q1.4 85.3 1.2 82.7Q1 80 1 77.5Q1 75 1.2 72.6Q1.4 70.1 1.8 67.8Q2.3 65.5 3 63.3Q3.7 61.1 4.7 59.1Q5.7 57 7.4 55.1Q9.1 53.2 10.2 51.6Q11.4 50 10.2 48.4Q9.1 46.8 7.4 44.9Q5.7 43 4.7 40.9Q3.7 38.9 3 36.7Q2.3 34.5 1.8 32.2Q1.4 29.9 1.2 27.4Q1 25 1 22.5Q1 20 1.2 17.3Q1.4 14.7 2.1 12.2Q2.8 9.7 4.6 8.1Q6.5 6.5 9.1 5.8Q11.7 5.1 14.4 5Q17.1 4.8 19.8 4.9Q22.4 5 25 5.5Q27.6 5.9 29.9 6.7Q32.3 7.4 34.5 8.3Q36.8 9.2 38.8 10.4Q40.8 11.5 42.5 12.8Q44.3 14.1 45.8 15.1Q47.3 16 48.7 16.4Z';
 ---
 <Vista id="visitanos" nombre={textos.navegacion[4].texto} cuerpo="visitanos-cuerpo">
   <div class="vis-escena">
@@ -81,6 +91,9 @@ const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURICompon
       data-lng={coords ? String(coords.lng) : ''}
       data-nombre={negocio.nombre}
     >
+      {!coords && (
+        <svg class="vis-marca-agua" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path fill="currentColor" d={trebol} /></svg>
+      )}
       <div class="vis-mapa-vacio" data-mapa-vacio data-entra style="--orden: 1" aria-hidden={coords ? 'true' : undefined}>
         <svg class="vis-pin" viewBox="0 0 64 84" aria-hidden="true">
           <ellipse cx="32" cy="80" rx="14" ry="3.5" fill="#14301d" opacity=".18" />
@@ -89,15 +102,8 @@ const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURICompon
           <path d="M26 21v18M38 21v18M26 30h12" stroke="#1b4d2b" stroke-width="5" stroke-linecap="round" />
         </svg>
         {!coords && (
-          <div class="vis-pronto">
-            <img
-              src="/img/marca/isotipo-96.webp"
-              alt=""
-              width="98"
-              height="96"
-              decoding="async"
-              class="vis-pronto-isotipo"
-            />
+          <div class="vis-pronto tema-canela">
+            <svg class="vis-pronto-isotipo" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path fill="currentColor" d={trebol} /></svg>
             <p class="vis-pronto-texto">
               <strong class="vis-pronto-titulo">{t.mapaProntoTitulo}</strong>
               <span>{t.mapaPendiente}</span>
@@ -108,9 +114,9 @@ const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURICompon
       <p class="vis-mapa-error" role="status" data-mapa-estado hidden>{t.mapaNoDisponible}</p>
     </div>
 
-    <article class="vis-tarjeta" aria-labelledby="titulo-visitanos" data-entra style="--orden: 0">
+    <article class="vis-tarjeta tema-oscuro" aria-labelledby="titulo-visitanos" data-entra style="--orden: 0">
       <p class="vis-eyebrow">{t.titulo}</p>
-      <h2 id="titulo-visitanos" tabindex="-1" data-titulo-vista class="vis-nombre">{negocio.nombre}</h2>
+      <h2 id="titulo-visitanos" tabindex="-1" data-titulo-vista class="vis-nombre titulo-vista">{negocio.nombre}</h2>
 
       {horario && horario.zona && (
         <p
@@ -232,38 +238,55 @@ const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURICompon
   .vis-mapa-vacio[hidden] {
     display: none;
   }
+  /* Marca de agua del trebol (V3): maiz al 15 %, centrada en la zona libre
+     de la tarjeta. Decorativa, por debajo del pin y del aviso. */
+  .vis-marca-agua {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 92%;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    color: var(--color-maiz);
+    opacity: 0.15;
+    pointer-events: none;
+  }
   .vis-pin {
     width: 4rem;
     flex: 0 0 auto;
   }
-  /* "Muy pronto, el mapa": tarjeta opaca con el isotipo */
+  /* "Muy pronto, el mapa": el bloque canela de la vista (.tema-canela).
+     Texto blanco (5.88); trebol kraft (3.85, solo simbolo). */
   .vis-pronto {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 0.75rem;
     max-width: 19rem;
-    border: 1px solid var(--color-crema-oscuro);
     border-radius: var(--radius-tarjeta);
-    background: var(--color-superficie);
     padding: 0.75rem 1rem 0.75rem 0.75rem;
     box-shadow: var(--shadow-suave);
   }
   .vis-pronto-isotipo {
     width: 2.5rem;
-    height: auto;
+    height: 2.5rem;
     flex: 0 0 auto;
+    color: var(--color-kraft);
   }
   .vis-pronto-texto {
     display: grid;
     gap: 0.125rem;
     font-size: var(--text-chico);
     line-height: var(--text-chico--line-height);
-    color: var(--color-tinta-suave);
+    color: var(--color-blanco);
   }
   .vis-pronto-titulo {
     font-size: var(--text-etiqueta);
     font-weight: 800;
-    color: var(--color-bosque);
+    color: var(--color-blanco);
+  }
+  .vis-pin {
+    position: relative;
   }
   .vis-mapa-error {
     position: absolute;
@@ -283,23 +306,24 @@ const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURICompon
     display: none;
   }
 
-  /* Tarjeta: blanca 100 % opaca (nunca cristal sobre el mapa) */
+  /* Tarjeta: bosque 100 % opaca (.tema-oscuro; nunca cristal sobre el
+     mapa). Es el bloque verde de la vista. */
   .vis-tarjeta {
     position: relative;
     z-index: var(--z-flotante);
     margin: -1.5rem 0 0;
-    border: 1px solid var(--color-crema-oscuro);
     border-radius: var(--radius-tarjeta-grande) var(--radius-tarjeta-grande) 0 0;
-    background: var(--color-superficie);
     padding: 1.25rem 1rem 1.5rem;
     box-shadow: var(--shadow-flotante);
   }
+  /* Antetitulo maiz (5.44 sobre bosque); h2 blanco (9.80) con el trazo
+     maiz (global.css) */
   .vis-eyebrow {
     font-size: var(--text-etiqueta);
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--color-canela-oscuro);
+    color: var(--color-maiz);
   }
   .vis-nombre {
     font-size: min(var(--text-h2), 1.75rem);
@@ -331,17 +355,20 @@ const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURICompon
     gap: 0.625rem;
     margin-top: 0.875rem;
   }
+  /* Etiquetas maiz 800 (5.44), valores blanco (9.80) */
   .vis-datos dt {
     font-size: var(--text-chico);
     font-weight: 800;
-    color: var(--color-tinta-suave);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-maiz);
   }
   .vis-datos dd {
-    color: var(--color-tinta);
+    color: var(--color-blanco);
   }
-  /* Dato pendiente: texto humano en tinta suave (7.64 sobre blanco) */
+  /* Dato pendiente: texto humano en crema (8.69 sobre bosque) */
   .vis-pendiente {
-    color: var(--color-tinta-suave);
+    color: var(--color-crema);
   }
   .vis-referencias {
     list-style: disc;
@@ -358,22 +385,24 @@ const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURICompon
   }
   /* Canales pendientes: UNA linea de texto con sus iconos en gris. Sin
      borde, fondo ni alto de boton: no es un control (V1). */
+  /* Iconos pendiente-oscuro (crema al 70 %: 5.17 sobre bosque), texto
+     crema (8.69); filete hoja al 40 % (decorativo) */
   .vis-contacto-pendiente {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     margin-top: 1rem;
-    border-top: 1px solid var(--color-crema-oscuro);
+    border-top: 1px solid var(--color-horizonte-fuerte);
     padding-top: 0.875rem;
     font-size: var(--text-chico);
     line-height: var(--text-chico--line-height);
-    color: var(--color-tinta-suave);
+    color: var(--color-crema);
   }
   .vis-contacto-iconos {
     display: inline-flex;
     flex: 0 0 auto;
     gap: 0.375rem;
-    opacity: 0.7;
+    color: var(--color-pendiente-oscuro);
   }
   .vis-acciones + .vis-contacto-pendiente {
     border-top: 0;
@@ -419,6 +448,12 @@ const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURICompon
     .vis-pin {
       width: 4.5rem;
     }
+    /* Marca de agua ~60dvh, centrada en la zona libre a la derecha de la
+       tarjeta */
+    .vis-marca-agua {
+      left: calc(50% + (var(--container-tarjeta-mapa) + var(--spacing-vista)) / 2);
+      height: 60dvh;
+    }
     .vis-pronto {
       flex-direction: column;
       gap: 0.5rem;
@@ -463,6 +498,9 @@ const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURICompon
     }
     .vis-mapa-vacio {
       left: calc(min(32rem, 46vw) + var(--spacing-vista));
+    }
+    .vis-marca-agua {
+      left: calc(50% + (min(32rem, 46vw) + var(--spacing-vista)) / 2);
     }
     .vis-datos {
       grid-template-columns: repeat(2, minmax(0, 1fr));

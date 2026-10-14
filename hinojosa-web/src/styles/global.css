@@ -76,6 +76,20 @@
     color: var(--color-blanco);
   }
 
+  /* Bandas y bloques canela oscuro (reparto del color, guia 2.2; uno por
+     vista como maximo). Texto blanco 5.88 o crema 5.22; iconos crema,
+     kraft (3.85) o maiz (3.27, solo icono/punto); foco crema 3 px (5.22).
+     PROHIBIDO dentro: bosque (1.66), hoja (2.62), marca-fuerte, y texto
+     kraft por debajo de 24 px. */
+  .tema-canela {
+    --color-foco: var(--color-crema);
+    background-color: var(--color-canela-oscuro);
+    color: var(--color-blanco);
+  }
+  .tema-canela :where(h1, h2, h3) {
+    color: var(--color-blanco);
+  }
+
   /* Foco: 3px solido + separacion; contraste >= 3:1 con el fondo
      (bosque sobre crema 8.69:1, maiz sobre bosque 5.44:1) */
   :focus-visible {
@@ -214,17 +228,63 @@ html[data-vista-inicial="visitanos"] .vista:not(#visitanos) {
   display: none;
 }
 
-/* Titulo de vista: recibe el foco por programa (tabindex=-1). Subrayado
-   discreto en lugar del anillo. */
+/* Trazo de pincel maiz bajo los h2 de vista (guia 2.3, aprobado
+   2026-10-14). Sustituye al subrayado verde, que se leia como enlace.
+   Mascara CSS: el color sigue siendo el token y no hay peticion extra.
+   Decorativo (no necesita 3:1). Solo sobre crema, hoja-claro, blanco o
+   bosque; NUNCA sobre kraft (1.18) ni crema-oscuro (1.42). No va en
+   Inicio (no hay h2) ni bajo h3. Sin animacion propia: entra con el
+   bloque del titulo ([data-entra]). */
+:root {
+  --trazo-pincel: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M2 7.5C30 4.2 62 3.4 98 4.1c34 .6 66 1.9 99 .8l1 3.2c-35 2.4-68 2.6-101 2.1-32-.5-63-.4-95 1.3z'/%3E%3C/svg%3E");
+}
+.titulo-vista {
+  width: fit-content;
+  max-width: 100%;
+  text-wrap: balance;
+}
+.titulo-vista::after {
+  content: "";
+  display: block;
+  width: clamp(4.5rem, 55%, 13rem); /* 55 % del ancho del h2, nunca todo */
+  height: clamp(0.375rem, 0.9dvh, 0.5rem); /* 8 px a 1440x900, 6 px a 360x640 */
+  margin-top: 0.3em;
+  /* Redondeado a px enteros: el trazo no debe dejar media fila de pixel
+     a todo lo que va debajo. En Productos (movil) una fraccion de mas
+     recortaba 1 fila del render provisional al medir el LCP y el anillo
+     pasaba a ser un LCP nuevo y tardio (regla M5). */
+  height: round(clamp(0.375rem, 0.9dvh, 0.5rem), 1px);
+  margin-top: round(0.3em, 1px);
+  background: var(--color-maiz);
+  -webkit-mask: var(--trazo-pincel) no-repeat 0 0 / 100% 100%;
+  mask: var(--trazo-pincel) no-repeat 0 0 / 100% 100%;
+  transform: rotate(-1deg);
+  transform-origin: left center;
+  pointer-events: none;
+}
+@media (forced-colors: active) {
+  .titulo-vista::after {
+    display: none;
+  }
+}
+
+/* Titulo de vista: recibe el foco por programa (tabindex=-1). En lugar
+   del anillo, el trazo de pincel se alarga a todo el ancho del titulo
+   (cambio de forma, no solo de color; ya no hay subrayado verde que se
+   confunda con un enlace). Con forced-colors (sin trazo), anillo del
+   sistema. La insignia de Inicio (h1 con el logo) no lleva trazo y
+   conserva su comportamiento. */
 [data-titulo-vista]:focus {
   outline: none;
 }
-[data-titulo-vista]:focus-visible {
-  outline: none;
-  text-decoration: underline;
-  text-decoration-color: var(--color-hoja);
-  text-decoration-thickness: 0.12em;
-  text-underline-offset: 0.18em;
+.titulo-vista:focus-visible::after {
+  width: 100%;
+  min-width: 4.5rem;
+}
+@media (forced-colors: active) {
+  .titulo-vista:focus-visible {
+    outline: 3px solid CanvasText;
+  }
 }
 
 /* Barra inferior en movil: la vista reserva su alto */

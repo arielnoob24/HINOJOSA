@@ -9,6 +9,10 @@
 // Visitanos no usa esta rama: agrupa los canales pendientes en una sola
 // linea (ver VistaVisitanos.astro). Queda como respaldo para otros usos.
 // Sustituye a BotonWhatsapp.astro (se generalizo a Maps/WhatsApp/Llamar/Facebook).
+// Variantes (guia 3.4): cta (oro; con borde bosque sobre claro, sin borde
+// dentro de .tema-oscuro), primario (bosque + blanco, sobre claro),
+// invertido (secundario invertido: borde y texto crema, para bloques
+// bosque), enlace (marca-fuerte sobre claro; crema dentro de .tema-oscuro).
 import Icono from './Icono.astro';
 import { textos } from '../lib/negocio';
 
@@ -17,7 +21,7 @@ interface Props {
   texto: string;
   nombreAccesible: string;
   icono: string;
-  variante?: 'cta' | 'primario' | 'enlace';
+  variante?: 'cta' | 'primario' | 'invertido' | 'enlace';
   pestanaNueva?: boolean;
   class?: string;
 }
@@ -69,6 +73,20 @@ const aviso = textos.comunes.abreEnPestanaNueva;
   .contacto-cta:hover {
     background: var(--color-cta-hover);
   }
+  /* Sobre bosque el oro ya contrasta (5.44): sin borde */
+  :global(.tema-oscuro) .contacto-cta {
+    border-color: transparent;
+  }
+  /* Secundario invertido: borde 2 px y texto crema (8.69 sobre bosque);
+     hover crema al 12 % */
+  .contacto-invertido {
+    border: 2px solid var(--color-crema);
+    background: transparent;
+    color: var(--color-crema);
+  }
+  .contacto-invertido:hover {
+    background: rgb(246 241 228 / 0.12);
+  }
   .contacto-primario {
     background: var(--color-boton-fondo);
     color: var(--color-boton-texto);
@@ -83,6 +101,10 @@ const aviso = textos.comunes.abreEnPestanaNueva;
     text-decoration: underline;
     text-underline-offset: 4px;
   }
+  /* marca-fuerte no sirve sobre bosque: crema (8.69) */
+  :global(.tema-oscuro) .contacto-enlace {
+    color: var(--color-crema);
+  }
   /* Aviso de dato pendiente: texto corrido, sin borde, fondo ni alto de
      boton (un "boton" que no hace nada parece un sitio roto). */
   .contacto-pendiente {
@@ -95,5 +117,13 @@ const aviso = textos.comunes.abreEnPestanaNueva;
   }
   .contacto-pendiente :global(.contacto-pendiente-icono) {
     opacity: 0.7;
+  }
+  /* Sobre bosque: texto crema (8.69), icono pendiente-oscuro (5.17) */
+  :global(.tema-oscuro) .contacto-pendiente {
+    color: var(--color-crema);
+  }
+  :global(.tema-oscuro) .contacto-pendiente :global(.contacto-pendiente-icono) {
+    opacity: 1;
+    color: var(--color-pendiente-oscuro);
   }
 </style>

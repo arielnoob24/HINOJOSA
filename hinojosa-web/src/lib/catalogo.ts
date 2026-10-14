@@ -527,9 +527,10 @@ alEntrarEnVista('productos', () => raiz?.setAttribute('data-catalogo-listo', '')
 //   ocultar justo la categoria pedida).
 // - Clic con modificadores o boton central: navegacion normal (pestana
 //   nueva = Productos con la categoria por defecto).
-// - Animales (vista Por que): el mismo patron con data-abrir-animal="..."
-//   cuando exista el campo `animales` en productos.json; el oyente se
-//   anade aqui, junto a este.
+// - Animales (vista Por que, Q4; 2026-10-14): el mismo patron con
+//   <a href="#productos" data-abrir-animal="ave|cerdo|vaca|cuy|conejo|
+//   perro|gato|tilapia">Aves</a> -> abrirAnimal(), mas abajo: rellena el
+//   buscador con la palabra del enlace en lugar de elegir pestana.
 // ---------------------------------------------------------------------
 /** Deja elegida la categoria `cat` para cuando se entre en Productos. */
 export function abrirCategoria(cat: string) {
@@ -546,12 +547,42 @@ export function abrirCategoria(cat: string) {
   return true;
 }
 
+/**
+ * Deja Productos filtrado por un animal (Q4, vista Por que). Mismo patron
+ * que abrirCategoria: corre ANTES del hashchange. Escribe en el buscador la
+ * palabra visible del enlace ("Aves", "Tilapias"; el buscador ya entiende
+ * plurales y la compara solo con el campo `animales`), filtra en el acto y
+ * pone al frente el primer resultado, asi la vista entra ya filtrada y con
+ * el carrusel en un producto de ese animal. La busqueda queda escrita y
+ * con su boton de borrar: el visitante ve por que la lista es mas corta.
+ */
+export function abrirAnimal(clave: string, palabra = clave) {
+  const input = q<HTMLInputElement>('[data-buscador]');
+  if (!datos || !input || !datos.productos.some((p) => p.animales.includes(clave))) return false;
+  input.value = palabra;
+  filtrar(palabra);
+  const primero = filas.find((f) => !f.fila.hidden);
+  if (primero && primero.id !== actualId) seleccionar(primero.id, { origen: 'busqueda', anunciarCambio: false });
+  const quitar = alCambiarVista((d) => {
+    quitar();
+    if (d.vista !== 'productos') return;
+    requestAnimationFrame(() => {
+      const lista = q('[data-lista-catalogo]');
+      if (lista) lista.scrollTop = 0;
+    });
+  });
+  return true;
+}
+
 document.addEventListener(
   'click',
   (ev) => {
     if (ev.defaultPrevented || ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
-    const a = (ev.target as Element | null)?.closest?.<HTMLAnchorElement>('a[data-abrir-categoria]');
-    if (a) abrirCategoria(a.dataset.abrirCategoria!);
+    const objetivo = ev.target as Element | null;
+    const a = objetivo?.closest?.<HTMLAnchorElement>('a[data-abrir-categoria]');
+    if (a) return void abrirCategoria(a.dataset.abrirCategoria!);
+    const an = objetivo?.closest?.<HTMLAnchorElement>('a[data-abrir-animal]');
+    if (an) abrirAnimal(an.dataset.abrirAnimal!, an.textContent?.trim() || an.dataset.abrirAnimal!);
   },
   { capture: true },
 );
