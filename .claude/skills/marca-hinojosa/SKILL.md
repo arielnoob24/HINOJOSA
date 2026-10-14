@@ -82,6 +82,7 @@ Colores derivados (definidos en `hinojosa-web/src/styles/tokens.css`, calculados
 | `#3D5A45` | `#E3CFA6` | **5.00** | Texto secundario sobre kraft |
 | `#8A5A1F` | `#E3CFA6` | 3.85 | Solo texto grande (≥ 24 px o 19 px en negrita) sobre kraft |
 | `#FFFFFF` / `#F6F1E4` | `#8A5A1F` canela-oscuro | **5.88 / 5.22** | Texto sobre bandas canela oscuro |
+| `#8A5A1F` canela-oscuro | `#EAF4DC` hoja-claro | **5.18** | Antetítulos canela sobre bandas hoja-claro (p. ej. "Animales que atendemos") |
 
 Ratios adicionales del mapa de color (2026-10-14): ver `hinojosa-web/docs/guia-estilo.md` §3. **Prohibidos nuevos:** trazo o texto maíz sobre kraft (1.18) o sobre crema-oscuro (1.42); `marca-fuerte` sobre crema-oscuro (4.25) o kraft (3.52) como texto normal; `bosque` (1.66) u `hoja` (2.62) sobre canela-oscuro (en bandas canela el foco va en crema, clase `.tema-canela`).
 | `#F2B823` (CTA) | `#F6F1E4` | 1.60 | Sobre claro, el CTA oro lleva borde `#1B4D2B` 2 px (8.69) |
