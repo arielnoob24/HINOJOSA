@@ -1,0 +1,90 @@
+{
+ "m5-1440": {
+  "pendienteAlMontar": true,
+  "tMontadoAprox": 518,
+  "tRetiradaProvisional": 1767,
+  "fotogramasConAmbas": 89,
+  "maxDifRectPx": 0,
+  "frenteOpacidadMin": 1,
+  "imgOpacidadMin": 0,
+  "lcp": [
+   {
+    "t": 348,
+    "el": "provisional",
+    "url": "balanceado-camperito-crecimiento-y-engorde-400.avif"
+   }
+  ],
+  "pixel": {
+   "pendienteAlCapturar": true,
+   "caja": {
+    "x": 337,
+    "y": 395,
+    "width": 216,
+    "height": 288
+   }
+  }
+ },
+ "m5-360-lento": {
+  "pendienteAlMontar": false,
+  "tMontadoAprox": 19592,
+  "tRetiradaProvisional": null,
+  "fotogramasConAmbas": 0,
+  "maxDifRectPx": null,
+  "frenteOpacidadMin": null,
+  "imgOpacidadMin": null,
+  "lcp": [
+   {
+    "t": 1788,
+    "el": "SPAN.font-display leading-none font-extrabold text-bosque",
+    "url": ""
+   },
+   {
+    "t": 2712,
+    "el": "H2.text-h2",
+    "url": ""
+   },
+   {
+    "t": 2752,
+    "el": "provisional",
+    "url": "balanceado-camperito-crecimiento-y-engorde-400.avif"
+   }
+  ],
+  "pixel": null
+ },
+ "m5-412-lento": {
+  "pendienteAlMontar": false,
+  "tMontadoAprox": 17590,
+  "tRetiradaProvisional": null,
+  "fotogramasConAmbas": 0,
+  "maxDifRectPx": null,
+  "frenteOpacidadMin": null,
+  "imgOpacidadMin": null,
+  "lcp": [
+   {
+    "t": 1552,
+    "el": "SPAN.font-display leading-none font-extrabold text-bosque",
+    "url": ""
+   },
+   {
+    "t": 2212,
+    "el": "H2.text-h2",
+    "url": ""
+   },
+   {
+    "t": 2460,
+    "el": "provisional",
+    "url": "balanceado-camperito-crecimiento-y-engorde-400.avif"
+   }
+  ],
+  "pixel": null
+ },
+ "acceso-comederos-desde-inicio": {
+  "pendiente": false,
+  "provisionalVisible": false,
+  "categoria": "comederos",
+  "rotulo": "Comedero galvanizado para aves",
+  "frente": "comedero-galvanizado"
+ },
+ "axe-1440": [],
+ "axe-360": []
+}

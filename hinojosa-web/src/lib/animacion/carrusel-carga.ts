@@ -44,9 +44,16 @@ if (document.querySelector('[data-carrusel-escena]')) {
   alEntrarEnVista(
     'productos',
     () => {
+      // La provisional es el primer producto de la primera categoria. Si se
+      // llega con otro ya elegido (accesos por categoria de Inicio,
+      // catalogo.abrirCategoria), no sirve: quedaria debajo de un frente
+      // distinto y se veria por sus zonas transparentes.
+      const marco = document.querySelector<HTMLElement>('[data-frente-provisional]');
+      const activo = window.hinojosaCatalogo?.estado().id;
+      if (marco && activo && marco.dataset.frenteProvisional !== activo) quitarPendiente();
       // Tarjeta provisional: si se llega desde otra vista aun no tiene src
       // (al entrar directo por #productos se lo puso el script inline)
-      const provisional = document.querySelector<HTMLImageElement>('[data-frente-provisional] img');
+      const provisional = marco?.querySelector<HTMLImageElement>('img');
       if (provisional && !provisional.getAttribute('src') && html.hasAttribute('data-carrusel-pendiente')) {
         provisional.src = provisional.dataset.src ?? '';
       }

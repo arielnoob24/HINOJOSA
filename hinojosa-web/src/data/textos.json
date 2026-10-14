@@ -18,9 +18,28 @@
 
   "inicio": {
     "titulo": "Nutrición que da vida",
+    "_titulo": "El lema va dentro del logo (alt del h1); no se repite como texto en pantalla (I4).",
+    "acento": "Tu mejor aliado para tus animales",
+    "_acento": "negocio.json > esloganesSecundarios. Si cambia y trae letras nuevas, regenerar el subconjunto de Caveat Brush (global.css).",
     "subtitulo": "Venta de balanceados y productos para tus animales",
     "cta": "Ver productos",
     "ctaDestino": "#productos",
+    "ctaSecundario": "Cómo llegar",
+    "ctaSecundarioDestino": "#visitanos",
+    "etiquetaAccesos": "Ver productos por categoría",
+    "accesos": [
+      { "categoria": "granja", "texto": "Granja" },
+      { "categoria": "mascotas", "texto": "Mascotas" },
+      { "categoria": "comederos", "texto": "Comederos" },
+      { "categoria": "granos", "texto": "Granos" }
+    ],
+    "etiquetaAnimales": "Animales que atendemos",
+    "animales": [
+      { "icono": "ave", "texto": "Aves" },
+      { "icono": "cerdo", "texto": "Cerdos" },
+      { "icono": "perro", "texto": "Mascotas" },
+      { "icono": "pez", "texto": "Tilapias" }
+    ],
     "pausarAnimacion": "Pausar animación",
     "reanudarAnimacion": "Reanudar animación"
   },

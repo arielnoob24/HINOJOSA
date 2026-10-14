@@ -11,9 +11,11 @@
 
 /* Caveat Brush: subconjunto de glifos (QA M3). El paquete completo de
    @fontsource pesaba 66 kB para 2-3 frases y retrasaba el primer pintado.
-   Contiene solo los caracteres de las frases con --font-script (lema de
-   Inicio, frase de Por que, "familia" de Quienes somos), en mayusculas y
-   minusculas, mas espacio y puntuacion basica; 9 kB.
+   Contiene solo los caracteres de las frases con --font-script (acento de
+   Inicio "Tu mejor aliado para tus animales", frase de Por que, "familia"
+   de Quienes somos; se conservan las letras del antiguo lema), en
+   mayusculas y minusculas, con vocales con tilde, mas espacio y
+   puntuacion basica; 9,5 kB (regenerado 2026-10-14 con fonttools 4.67).
    SI CAMBIA ALGUNA DE ESAS FRASES en textos.json y trae letras nuevas, hay
    que regenerarlo (si no, esas letras salen en la fuente de respaldo):
      pip install fonttools brotli

@@ -6,19 +6,42 @@
 // Anillo de "carteles": cada producto se coloca en su punto del circulo con
 // translate3d(x, y, z) dentro de un contenedor con `perspective`, y SIEMPRE
 // mira al frente (no hay rotateY: los envases no se deforman ni se
-// espejan). GSAP anima un solo numero, la posicion `p` del anillo (en
-// pasos), y render() escribe transform / opacity / z-index / oscurecido.
+// espejan). GSAP anima unos pocos numeros (posicion `p` del anillo en
+// pasos, aparicion y radio de la escena, llegada del frente, tarjeta
+// generica, rotulo) y render() escribe transform / opacity / z-index.
 //
 // El estado (categoria y producto seleccionados) vive SOLO en catalogo.ts:
-// aqui se escucha `hinojosa:producto` y se llama a seleccionar(). La lista,
-// las pestanas, las flechas, el teclado y la region aria-live ya los
-// gestiona catalogo.ts; este modulo solo pinta y gira.
+// aqui se escucha `hinojosa:producto`. La lista, las pestanas, las flechas,
+// el teclado y la region aria-live ya los gestiona catalogo.ts; este modulo
+// pinta, gira y decide CUANDO se ve cada cambio (C1-C8, PLAN.md vista 3):
+//   C1 cache de items por categoria (se desmontan, no se destruyen; nunca
+//      mas de 12 en escena), precarga con img.decode() (tope 250 ms desde
+//      el clic) y fundido de 200 ms de cada imagen que llega tarde. NUNCA en
+//      el primer montaje (regla M5, ver carrusel-carga.ts).
+//   C2 rotulo con salida y entrada en el sentido del giro.
+//   C3 ancho del chip de precio animado.
+//   C4 resaltado visual de la fila al asentarse (catalogo.resaltarFila).
+//   C5 cambio de categoria con medio giro direccional, tarima fundida y
+//      radio interpolado.
+//   C7 rotulo atenuado mientras se arrastra. C8 llegada del frente.
+//   P5 tarjeta generica (costal) al frente para productos sin foto.
+//   P9 un lanzamiento mueve como mucho 2 posiciones.
 //
 // Nunca gira solo. Con reduced motion o con la pausa del usuario todo
 // cambio es instantaneo (y el arrastre da pasos discretos, sin inercia).
 // Sin soporte de 3D no se monta y se queda la rejilla de respaldo.
 import { gsap } from 'gsap/gsap-core';
-import { estado, seleccionar, mostrarEnLista, productosDelAnillo, sizesAnillo, type DetalleProducto, type ProductoDatos } from '../catalogo';
+import {
+  estado,
+  seleccionar,
+  mostrarEnLista,
+  resaltarFila,
+  productosDelAnillo,
+  sizesAnillo,
+  IMAGEN_GENERICA,
+  type DetalleProducto,
+  type ProductoDatos,
+} from '../catalogo';
 import { alCambiarVista } from '../router';
 import { curvaDeToken, movimientoPermitido, ms, px, token } from './movimiento';
 
@@ -28,33 +51,61 @@ interface Item {
   tarjeta: HTMLElement;
   oscuro: HTMLElement;
   sombra: HTMLElement;
-  /** Aparicion 0..1 (entrada tras un cambio de categoria). */
-  a: number;
-  retraso: number;
+  img: HTMLImageElement;
   error: boolean;
   /** Asigna srcset/src (se difiere en los laterales del primer montaje). */
   cargar: () => void;
 }
 
+type Animacion = ReturnType<typeof gsap.to> | ReturnType<typeof gsap.timeline>;
+type Linea = ReturnType<typeof gsap.timeline>;
+
 const raiz = document.getElementById('productos');
 const carrusel = raiz?.querySelector<HTMLElement>('[data-carrusel]') ?? null;
 const hueco = carrusel?.querySelector<HTMLElement>('[data-carrusel-escena]') ?? null;
 const rotulo = raiz?.querySelector<HTMLElement>('[data-carrusel-rotulo]') ?? null;
+const mqMovil = window.matchMedia('(max-width: 47.999rem)');
 
+// Numeros que anima GSAP (render() los traduce a estilos)
 const pos = { p: 0 };
-const escenaAnim = { o: 1, s: 1 };
-const entrada = { t: 0 };
+/** a: aparicion de la escena (productos + tarima), r: radio pintado (C5). */
+const fase = { a: 1, r: 260 };
+/** Llegada del frente (C8): 0 en reposo de giro, 1 asentado. */
+const llegada = { l: 0 };
+/** Tarjeta generica (P5): 0 oculta, 1 tapando el producto de la posicion costalK. */
+const costal = { v: 0 };
+
 let items: Item[] = [];
+const cache = new Map<string, Item[]>();
 let categoria = '';
-let radio = 260;
-let giro: ReturnType<typeof gsap.to> | null = null;
+let radioDestino = 260;
+let llegadaK = -1;
+let costalK = -1;
+let destinoGiro = 0;
+
+let giro: Animacion | null = null;
+let animFase: Animacion | null = null;
+let animLlegada: Animacion | null = null;
+let animCostal: Animacion | null = null;
+let animRotulo: Animacion | null = null;
+let animChip: Animation | null = null;
+
 let secuencia = 0;
 let cambiando = false;
+let destinoCambio = '';
+let vistaActiva = true;
+/** Primer montaje (regla M5): sin fundidos ni llegada animada. */
+let primerMontaje = true;
 
 let anillo: HTMLElement;
 let escena3d: HTMLElement;
 let tarima: HTMLElement;
 let avisoError: HTMLElement;
+let costalEl: HTMLElement;
+let costalSombra: HTMLElement;
+let costalNombre: HTMLElement;
+/** Sin src hasta que se use: oculto no debe pedirse ni competir por el LCP (M5). */
+let costalImg: HTMLImageElement;
 
 // Parametros (tokens.css; los de tamano cambian en movil)
 const cfg = {
@@ -66,12 +117,29 @@ const cfg = {
   giro: 450,
   giroExtra: 60,
   giroMax: 750,
-  salida: 150,
-  entrada: 300,
+};
+// Tiempos de C1-C8 (PLAN.md vista 3; storyboard-carrusel 6.6). Locales: no
+// hay tokens para ellos en tokens.css.
+const T = {
+  categoriaSalida: 160,
+  categoriaEntrada: 320,
+  precargaTope: 250,
+  rotuloSalida: 110,
+  rotuloSalidaMin: 50,
+  rotuloEntrada: 200,
+  rotuloMeta: 40,
+  rotuloArrastre: 120,
+  chip: 200,
+  llegada: 180,
+  llegadaVuelta: 100,
+  costal: 200,
 };
 const curvaGiro = curvaDeToken('--ease-giro', [0.22, 1.3, 0.36, 1]);
 const curvaVista = curvaDeToken('--ease-vista', [0.22, 1, 0.36, 1]);
 const curvaSalida = curvaDeToken('--ease-salida', [0.4, 0, 1, 1]);
+
+/** Movimiento permitido y vista visible: si no, todo cambio es instantaneo. */
+const animar = () => vistaActiva && movimientoPermitido();
 
 function leerConfig() {
   cfg.ancho = items[0]?.el.offsetWidth || px(token('--carrusel-ancho'), 180);
@@ -82,20 +150,17 @@ function leerConfig() {
   cfg.giro = ms(token('--duracion-giro'), 450);
   cfg.giroExtra = ms(token('--duracion-giro-extra'), 60);
   cfg.giroMax = ms(token('--duracion-giro-max'), 750);
-  cfg.salida = ms(token('--duracion-categoria-salida'), 150);
-  cfg.entrada = ms(token('--duracion-categoria-entrada'), 300);
 }
 
 const modulo = (n: number, m: number) => ((n % m) + m) % m;
 
-/** r = max(radio-min, (ancho + hueco) / (2 tan(pi/N))) */
+/** r = max(radio-min, (ancho + hueco) / (2 tan(pi/N))). La tarima se dimensiona al radio destino; el interpolado lo pone su scale. */
 function calcularRadio() {
   const n = items.length;
-  radio = n < 3 ? cfg.radioMin : Math.max(cfg.radioMin, (cfg.ancho + cfg.hueco) / (2 * Math.tan(Math.PI / n)));
-  const d = 2 * radio + cfg.ancho;
+  radioDestino = n < 3 ? cfg.radioMin : Math.max(cfg.radioMin, (cfg.ancho + cfg.hueco) / (2 * Math.tan(Math.PI / n)));
+  const d = 2 * radioDestino + cfg.ancho;
   tarima.style.width = tarima.style.height = `${d}px`;
   tarima.style.margin = `0 0 ${-d / 2}px ${-d / 2}px`;
-  tarima.style.transform = `translate3d(0, 0, ${(-radio).toFixed(1)}px) rotateX(90deg)`;
 }
 
 // ---------------------------------------------------------------------
@@ -104,37 +169,58 @@ function calcularRadio() {
 function render() {
   const n = items.length;
   if (!n) return;
+  const r = fase.r;
   const frente = modulo(Math.round(pos.p), n);
   for (let k = 0; k < n; k++) {
     const it = items[k];
     const phi = (2 * Math.PI * (k - pos.p)) / n; // 0 = al frente
     const c = Math.cos(phi);
-    const x = radio * Math.sin(phi);
-    const z = radio * (c - 1); // el frente queda en z = 0 (tamano 1:1)
+    const x = r * Math.sin(phi);
+    const z = r * (c - 1); // el frente queda en z = 0 (tamano 1:1)
     const d = (1 + c) / 2; // 1 al frente, 0 detras
-    const y = 12 * (1 - it.a); // entrada: sube 12 px
-    it.el.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, ${z.toFixed(2)}px)`;
-    it.el.style.opacity = ((cfg.opacidadMin + (1 - cfg.opacidadMin) * d) * it.a).toFixed(3);
-    it.el.style.zIndex = String(Math.round(d * 100));
+    const l = k === llegadaK ? llegada.l : 0;
+    const base = (cfg.opacidadMin + (1 - cfg.opacidadMin) * d) * fase.a;
+    const transform = `translate3d(${x.toFixed(2)}px, ${(-4 * l).toFixed(2)}px, ${z.toFixed(2)}px)`;
+    const zIndex = String(Math.round(d * 100));
+    it.el.style.transform = transform;
+    it.el.style.opacity = (k === costalK ? base * (1 - costal.v) : base).toFixed(3);
+    it.el.style.zIndex = zIndex;
     it.oscuro.style.opacity = (cfg.oscuroMax * (1 - d)).toFixed(3);
-    it.sombra.style.opacity = (0.1 + 0.25 * d).toFixed(3);
+    pintarSombra(it.sombra, d, l);
     it.el.toggleAttribute('data-frente', k === frente);
+    if (k === costalK && costal.v > 0) {
+      costalEl.style.transform = transform;
+      costalEl.style.opacity = (base * costal.v).toFixed(3);
+      costalEl.style.zIndex = zIndex;
+      pintarSombra(costalSombra, d, l);
+    }
   }
+  const conCostal = costal.v > 0 && costalK >= 0;
+  if (conCostal && !costalImg.src) costalImg.src = IMAGEN_GENERICA;
+  costalEl.style.display = conCostal ? '' : 'none';
+  // Tarima: se funde con los productos y sigue al radio interpolado (C5)
+  const escala = (2 * r + cfg.ancho) / (2 * radioDestino + cfg.ancho);
+  tarima.style.opacity = fase.a.toFixed(3);
+  tarima.style.transform = `translate3d(0, 0, ${(-r).toFixed(1)}px) rotateX(90deg) scale(${escala.toFixed(4)})`;
 }
 
-function pintarEscena() {
-  escena3d.style.opacity = escenaAnim.o.toFixed(3);
-  escena3d.style.transform = escenaAnim.s === 1 ? '' : `scale(${escenaAnim.s.toFixed(4)})`;
+/** Sombra de contacto: mas intensa y ancha en la llegada (C8: 0,35 -> 0,5, scaleX 1,06). */
+function pintarSombra(s: HTMLElement, d: number, l: number) {
+  s.style.opacity = (0.1 + 0.25 * d + 0.15 * l).toFixed(3);
+  s.style.transform = l > 0 ? `scaleX(${(1 + 0.06 * l).toFixed(4)})` : '';
 }
 
 // ---------------------------------------------------------------------
-// Rotulo: catalogo.ts lo escribe al seleccionar; aqui solo se RETRASA el
-// cambio visible hasta el 50 % del giro (fundido de 120 ms). No se guarda
-// estado propio: se muestra lo que catalogo.ts ya escribio.
+// Rotulo (C2, C3, C7). catalogo.ts lo escribe al seleccionar; aqui se
+// RETIENE el texto visible y se cambia cuando el producto nuevo llega al
+// frente, con salida y entrada en el sentido del giro.
 // ---------------------------------------------------------------------
 const camposRotulo = rotulo
   ? (['nombre', 'categoria', 'posicion', 'precio'].map((c) => rotulo.querySelector<HTMLElement>(`[data-rotulo-${c}]`)) as (HTMLElement | null)[])
   : [];
+const rNombre = rotulo?.querySelector<HTMLElement>('[data-rotulo-nombre]') ?? null;
+const rMeta = rotulo?.querySelector<HTMLElement>('[data-rotulo-meta]') ?? null;
+const rChip = rotulo?.querySelector<HTMLElement>('[data-rotulo-precio]') ?? null;
 const leerRotulo = () => camposRotulo.map((el) => el?.textContent ?? '');
 const escribirRotulo = (v: string[]) =>
   camposRotulo.forEach((el, i) => {
@@ -142,30 +228,245 @@ const escribirRotulo = (v: string[]) =>
   });
 let rotuloVisible: string[] = leerRotulo();
 let rotuloPendiente: string[] | null = null;
+/** Opacidad y desplazamiento del nombre (n) y de la linea de categoria/precio (m). */
+const rs = { no: 1, nx: 0, mo: 1, mx: 0 };
+
+function pintarRotulo() {
+  if (rNombre) {
+    rNombre.style.opacity = rs.no >= 1 ? '' : rs.no.toFixed(3);
+    rNombre.style.transform = rs.nx ? `translateX(${rs.nx.toFixed(2)}px)` : '';
+  }
+  if (rMeta) {
+    rMeta.style.opacity = rs.mo >= 1 ? '' : rs.mo.toFixed(3);
+    rMeta.style.transform = rs.mx ? `translateX(${rs.mx.toFixed(2)}px)` : '';
+  }
+}
 
 function retenerRotulo() {
   const nuevo = leerRotulo();
-  if (nuevo.join('\u0000') === rotuloVisible.join('\u0000')) return;
+  if (nuevo.join('\u0000') === rotuloVisible.join('\u0000')) {
+    rotuloPendiente = null;
+    return;
+  }
   rotuloPendiente = nuevo;
   escribirRotulo(rotuloVisible);
 }
 
-function soltarRotulo(fundido: boolean) {
+/** Escribe el texto pendiente; con movimiento, el chip anima su ancho (C3). */
+function cambiarTexto() {
   if (!rotuloPendiente) return;
+  animChip?.cancel();
+  animChip = null;
+  const w0 = rChip?.getBoundingClientRect().width ?? 0;
   escribirRotulo(rotuloPendiente);
   rotuloVisible = rotuloPendiente;
   rotuloPendiente = null;
-  if (fundido && rotulo && movimientoPermitido()) {
-    rotulo.classList.remove('rotulo-fundido');
-    void rotulo.offsetWidth;
-    rotulo.classList.add('rotulo-fundido');
+  if (!rChip || !w0 || !animar()) return;
+  const w1 = rChip.getBoundingClientRect().width;
+  if (Math.abs(w1 - w0) < 0.5) return;
+  animChip = rChip.animate([{ width: `${w0}px` }, { width: `${w1}px` }], {
+    duration: T.chip,
+    easing: token('--ease-vista') || 'ease-out',
+  });
+  animChip.onfinish = () => (animChip = null);
+}
+
+/** Cambio sin animacion (movimiento reducido, pausa, sincronizacion por detras). */
+function rotuloYa() {
+  animRotulo?.kill();
+  animRotulo = null;
+  if (rotuloPendiente) cambiarTexto();
+  rs.no = rs.mo = 1;
+  rs.nx = rs.mx = 0;
+  pintarRotulo();
+}
+
+/** Vuelve al reposo (tras atenuarlo al arrastrar sin cambiar de producto). */
+function rotuloAlReposo() {
+  if (rs.no >= 1 && rs.mo >= 1 && !rs.nx && !rs.mx) return;
+  animRotulo?.kill();
+  animRotulo = gsap.to(rs, { no: 1, mo: 1, nx: 0, mx: 0, duration: T.rotuloEntrada / 1000, ease: curvaVista, onUpdate: pintarRotulo });
+}
+
+/** Entrada desde el lado contrario (+12 px -> 0); la meta 40 ms despues. */
+function anadirEntrada(tl: Linea, dir: number, t: number) {
+  tl.call(
+    () => {
+      cambiarTexto();
+      rs.no = rs.mo = 0;
+      rs.nx = rs.mx = 12 * dir;
+      pintarRotulo();
+    },
+    undefined,
+    t / 1000,
+  );
+  const dur = T.rotuloEntrada / 1000;
+  tl.fromTo(rs, { no: 0, nx: 12 * dir }, { no: 1, nx: 0, duration: dur, ease: curvaVista, immediateRender: false }, t / 1000);
+  tl.fromTo(rs, { mo: 0, mx: 12 * dir }, { mo: 1, mx: 0, duration: dur, ease: curvaVista, immediateRender: false }, (t + T.rotuloMeta) / 1000);
+}
+
+/**
+ * C2: sale en el sentido del giro (dir +1 = los productos van a la
+ * izquierda, el texto sale a -12 px) y el texto cambia en `tCambio` ms,
+ * cuando el producto destino ocupa el frente. La salida (110 ms, 60 como
+ * minimo si el giro es muy rapido) termina antes de que el frente deje de
+ * ser el producto de partida (`tSale`): en un salto largo, los productos
+ * intermedios pasan con el rotulo ya fuera. tCambio null: solo la salida
+ * (el cambio lo hace entrarRotulo al empezar la entrada de una categoria).
+ *
+ * Nota: con --ease-giro el anillo recorre medio paso en ~12 % del tiempo,
+ * asi que anclar el cambio al 50 % del TIEMPO (storyboard 6.6) dejaba el
+ * nombre viejo bajo el producto nuevo ~170 ms. Se ancla al cruce real.
+ */
+function programarRotulo(dir: number, tCambio: number | null, tSale = tCambio ?? 0) {
+  if (!rotuloPendiente) return rotuloAlReposo();
+  if (!animar()) return rotuloYa();
+  animRotulo?.kill();
+  const limite = Math.min(tSale, tCambio ?? Infinity);
+  const salida = tCambio === null ? T.rotuloSalida : Math.min(T.rotuloSalida, Math.max(T.rotuloSalidaMin, limite));
+  const inicio = tCambio === null ? 0 : Math.max(0, limite - salida);
+  const tl = gsap.timeline({ onUpdate: pintarRotulo });
+  // Salida acortada (giro muy rapido): lineal, para que se vaya de verdad a tiempo
+  const curva = salida < T.rotuloSalida ? 'none' : curvaSalida;
+  tl.to(rs, { no: 0, mo: 0, nx: -12 * dir, mx: -12 * dir, duration: salida / 1000, ease: curva }, inicio / 1000);
+  if (tCambio !== null) anadirEntrada(tl, dir, Math.max(tCambio, inicio + salida));
+  animRotulo = tl;
+}
+
+function entrarRotulo(dir: number) {
+  if (!rotuloPendiente) return rotuloAlReposo();
+  if (!animar()) return rotuloYa();
+  animRotulo?.kill();
+  const tl = gsap.timeline({ onUpdate: pintarRotulo });
+  // Si la salida no termino (entrada muy rapida), se acaba en 50 ms
+  let t = 0;
+  if (rs.no > 0.01 || rs.mo > 0.01) {
+    tl.to(rs, { no: 0, mo: 0, nx: -12 * dir, mx: -12 * dir, duration: T.rotuloSalidaMin / 1000, ease: curvaSalida }, 0);
+    t = T.rotuloSalidaMin;
   }
+  anadirEntrada(tl, dir, t);
+  animRotulo = tl;
+}
+
+/** C7: mientras se arrastra, el rotulo se atenua a 0,5 (no cambia el texto). */
+function atenuarRotulo() {
+  animRotulo?.kill();
+  if (!animar()) {
+    rs.no = rs.mo = 0.5;
+    rs.nx = rs.mx = 0;
+    pintarRotulo();
+    animRotulo = null;
+    return;
+  }
+  animRotulo = gsap.to(rs, { no: 0.5, mo: 0.5, nx: 0, mx: 0, duration: T.rotuloArrastre / 1000, ease: curvaVista, onUpdate: pintarRotulo });
+}
+
+/**
+ * Fraccion de la duracion en que el anillo ha recorrido `recorrido` pasos de
+ * `pasos`: (pasos - 0,5) da cuando el destino ocupa el frente; 0,5 cuando
+ * el de partida deja de ocuparlo.
+ */
+function fraccionCruce(pasos: number, recorrido = pasos - 0.5) {
+  const f = recorrido / pasos;
+  if (f <= 0) return 0;
+  for (let i = 1; i <= 200; i++) if (curvaGiro(i / 200) >= f) return i / 200;
+  return 1;
 }
 
 // ---------------------------------------------------------------------
-// Construccion de una categoria
+// Llegada del frente (C8) y tarjeta generica (P5)
 // ---------------------------------------------------------------------
-function crearItem(p: ProductoDatos): Item {
+function llegar(k: number) {
+  animLlegada?.kill();
+  llegadaK = k;
+  if (!animar()) {
+    llegada.l = 1;
+    animLlegada = null;
+    return render();
+  }
+  llegada.l = 0;
+  animLlegada = gsap.to(llegada, { l: 1, duration: T.llegada / 1000, ease: curvaVista, onUpdate: render });
+}
+
+/** Al empezar otro giro, el frente vuelve a su sitio (100 ms). */
+function bajarLlegada() {
+  animLlegada?.kill();
+  animLlegada = null;
+  if (llegada.l <= 0) return;
+  if (!animar()) {
+    llegada.l = 0;
+    return;
+  }
+  animLlegada = gsap.to(llegada, { l: 0, duration: T.llegadaVuelta / 1000, ease: curvaSalida, onUpdate: render });
+}
+
+function mostrarCostal(p: ProductoDatos) {
+  const n = items.length;
+  if (!n) return;
+  animCostal?.kill();
+  // Tapa la posicion que queda (o quedara) al frente
+  const k = modulo(Math.round(giro ? destinoGiro : pos.p), n);
+  const fin = () => {
+    animCostal = null;
+    const e = estado();
+    if (e.id === p.id) {
+      mostrarEnLista(e.id);
+      resaltarFila(e.id);
+    }
+  };
+  const poner = () => {
+    costalNombre.textContent = p.nombre;
+    costalK = k;
+    render();
+  };
+  programarRotulo(1, 0);
+  if (!animar()) {
+    poner();
+    costal.v = 1;
+    render();
+    return fin();
+  }
+  // El costal aparece cuando el rotulo ya salio (50 ms): nunca el nombre
+  // viejo bajo el costal nuevo. Si ya habia uno (otro producto sin foto),
+  // se apaga en esos 50 ms y vuelve con el nombre nuevo.
+  const tl = gsap.timeline({ onUpdate: render, onComplete: fin });
+  if (costal.v > 0) tl.to(costal, { v: 0, duration: T.rotuloSalidaMin / 1000, ease: 'none' });
+  else tl.to({}, { duration: T.rotuloSalidaMin / 1000 });
+  tl.call(poner);
+  tl.to(costal, { v: 1, duration: T.costal / 1000, ease: curvaVista });
+  animCostal = tl;
+}
+
+function ocultarCostal() {
+  animCostal?.kill();
+  animCostal = null;
+  if (costal.v <= 0) {
+    costalK = -1;
+    return;
+  }
+  if (!animar()) {
+    costal.v = 0;
+    costalK = -1;
+    return render();
+  }
+  animCostal = gsap.to(costal, {
+    v: 0,
+    delay: T.rotuloSalidaMin / 1000, // tras la salida del rotulo (50 ms)
+    duration: T.costal / 1000,
+    ease: curvaVista,
+    onUpdate: render,
+    onComplete() {
+      costalK = -1;
+      animCostal = null;
+      render();
+    },
+  });
+}
+
+// ---------------------------------------------------------------------
+// Items y cache por categoria (C1)
+// ---------------------------------------------------------------------
+function crearItem(p: ProductoDatos, fundir: boolean): Item {
   const el = document.createElement('div');
   el.className = 'anillo-item';
   el.dataset.id = p.id;
@@ -174,9 +475,11 @@ function crearItem(p: ProductoDatos): Item {
   sombra.className = 'anillo-sombra';
 
   const tarjeta = document.createElement('span');
-  tarjeta.className = p.conFondo ? 'anillo-tarjeta anillo-placa cargando' : 'anillo-tarjeta cargando';
+  tarjeta.className = 'anillo-tarjeta cargando';
+  if (p.conFondo) tarjeta.classList.add('anillo-placa');
+  // C1: fundido de 200 ms al llegar la imagen. Nunca en el primer montaje (M5).
+  if (fundir) tarjeta.classList.add('fundir');
 
-  // 400/800 px segun el ancho de la tarjeta (movil 116 px, escritorio 180 px)
   const sizes = sizesAnillo();
   const picture = document.createElement('picture');
   const source = p.avif ? document.createElement('source') : null;
@@ -208,7 +511,7 @@ function crearItem(p: ProductoDatos): Item {
   tarjeta.append(picture, oscuro);
   el.append(sombra, tarjeta);
 
-  const item: Item = { p, el, tarjeta, oscuro, sombra, a: 1, retraso: 0, error: false, cargar };
+  const item: Item = { p, el, tarjeta, oscuro, sombra, img, error: false, cargar };
   img.addEventListener('load', () => {
     tarjeta.classList.remove('cargando');
     // La capa de oscurecido usa la silueta del recorte (misma imagen ya en cache)
@@ -227,32 +530,66 @@ function crearItem(p: ProductoDatos): Item {
     const nombre = document.createElement('span');
     nombre.textContent = p.nombre;
     tarjeta.prepend(nombre);
-    if (items.length && items.every((i) => i.error)) avisoError.hidden = false;
+    if (items.includes(item) && items.every((i) => i.error)) avisoError.hidden = false;
   });
   return item;
 }
 
-/**
- * diferirLaterales (solo en el primer montaje): la imagen del frente se pide
- * ya y las de los laterales cuando el frente se ha pintado. Asi, al entrar
- * directo por #productos, las otras 8 no compiten con la imagen LCP (QA M5).
- */
-function construir(cat: string, indice: number, diferirLaterales = false) {
+/** Items de una categoria: de la cache o recien creados (sin pedir aun la imagen). */
+function itemsDe(cat: string): Item[] {
+  let lista = cache.get(cat);
+  if (!lista) {
+    lista = productosDelAnillo(cat).map((p) => crearItem(p, !primerMontaje));
+    cache.set(cat, lista);
+  }
+  return lista;
+}
+
+/** Desmonta los items de la escena (quedan en la cache) y monta los de `cat`. */
+function montarCategoria(cat: string) {
   for (const it of items) it.el.remove();
   categoria = cat;
-  items = productosDelAnillo(cat).map(crearItem);
+  items = itemsDe(cat);
+  items.forEach((i) => i.cargar());
+  escena3d.append(...items.map((i) => i.el));
+  avisoError.hidden = !(items.length && items.every((i) => i.error));
+  leerConfig();
+  calcularRadio();
+}
+
+/** C1: espera a que las imagenes esten decodificadas, con tope. */
+function precargar(lista: Item[], tope: number): Promise<void> {
+  const todas = Promise.all(lista.map((i) => (i.img.complete && i.img.naturalWidth ? null : i.img.decode().catch(() => undefined)))).then(
+    () => undefined,
+  );
+  return Promise.race([todas, new Promise<void>((res) => window.setTimeout(res, Math.max(0, tope)))]);
+}
+
+/**
+ * Primer montaje (regla M5): la imagen del frente se pide ya y las de los
+ * laterales cuando el frente se ha pintado, para que no compitan con la
+ * imagen LCP al entrar directo por #productos. Sin fundidos: el frente queda
+ * identico a la tarjeta provisional (que esta debajo) hasta que esta se
+ * retira en la primera interaccion o a los 1,5 s (carrusel-carga.ts).
+ */
+function construirInicial(cat: string, indice: number) {
+  categoria = cat;
+  items = itemsDe(cat);
   const frente = items[modulo(Math.max(0, indice), items.length || 1)];
-  if (!diferirLaterales || !frente) {
-    items.forEach((i) => i.cargar());
-  } else {
+  if (frente) {
     frente.cargar();
     const resto = () => requestAnimationFrame(() => requestAnimationFrame(() => items.forEach((i) => i.cargar())));
-    const img = frente.tarjeta.querySelector('img');
-    if (!img || img.complete) resto();
+    if (frente.img.complete) resto();
     else {
-      img.addEventListener('load', resto, { once: true });
-      img.addEventListener('error', resto, { once: true });
-      window.setTimeout(resto, 1500);
+      let hecho = false;
+      const una = () => {
+        if (hecho) return;
+        hecho = true;
+        resto();
+      };
+      frente.img.addEventListener('load', una, { once: true });
+      frente.img.addEventListener('error', una, { once: true });
+      window.setTimeout(una, 1500);
     }
   }
   escena3d.append(...items.map((i) => i.el));
@@ -260,12 +597,54 @@ function construir(cat: string, indice: number, diferirLaterales = false) {
   pos.p = Math.max(0, indice);
   leerConfig();
   calcularRadio();
+  fase.r = radioDestino;
+  // El frente arranca ya "llegado" (C8): la provisional lleva el mismo -4 px
+  llegadaK = modulo(Math.round(pos.p), items.length || 1);
+  llegada.l = 1;
   render();
+  primerMontaje = false;
 }
 
 // ---------------------------------------------------------------------
 // Movimiento
 // ---------------------------------------------------------------------
+function matarTodo() {
+  for (const a of [giro, animFase, animLlegada, animCostal, animRotulo]) a?.kill();
+  giro = animFase = animLlegada = animCostal = animRotulo = null;
+  animChip?.finish();
+  animChip = null;
+}
+
+/**
+ * Estado final sin animar: movimiento reducido o pausa, fila tocada en
+ * movil (la hoja de detalle tapa el anillo) y salida de la vista.
+ */
+function sincronizarYa() {
+  secuencia++;
+  cambiando = false;
+  destinoCambio = '';
+  matarTodo();
+  const e = estado();
+  if (e.categoria && (e.categoria !== categoria || !items.length)) montarCategoria(e.categoria);
+  const n = items.length;
+  fase.a = 1;
+  fase.r = radioDestino;
+  if (n) pos.p = modulo(e.frente, n);
+  if (e.sinImagen && e.producto && n) {
+    costalNombre.textContent = e.producto.nombre;
+    costalK = modulo(e.frente, n);
+    costal.v = 1;
+  } else {
+    costalK = -1;
+    costal.v = 0;
+  }
+  llegadaK = n ? modulo(Math.round(pos.p), n) : -1;
+  llegada.l = 1;
+  rotuloYa();
+  render();
+  if (e.id) resaltarFila(e.id);
+}
+
 function girarA(indice: number) {
   const n = items.length;
   if (!n || indice < 0) return;
@@ -275,105 +654,153 @@ function girarA(indice: number) {
   giro?.kill();
   giro = null;
 
-  if (!movimientoPermitido() || Math.abs(delta) < 1e-3) {
+  if (!animar()) {
     pos.p = modulo(destino, n);
+    llegada.l = 0;
     render();
-    soltarRotulo(false);
+    rotuloYa();
     asentar();
     return;
   }
+  if (Math.abs(delta) < 1e-3) {
+    // Ya esta al frente (p. ej. se deja la tarjeta generica): solo el rotulo
+    programarRotulo(1, 0);
+    if (llegadaK !== modulo(Math.round(pos.p), n) || llegada.l < 1) asentar();
+    else mostrarFila();
+    return;
+  }
+  bajarLlegada();
   // 450 ms + 60 ms por paso extra, tope 750 ms. Se recalcula desde la
   // posicion actual: las pulsaciones seguidas no se encolan.
   const pasos = Math.max(1, Math.ceil(Math.abs(delta) - 1e-6));
   const duracion = Math.min(cfg.giroMax, cfg.giro + cfg.giroExtra * (pasos - 1));
-  let soltado = false;
+  // Cuando llega el destino al frente y cuando se va el de partida
+  const abs = Math.abs(delta);
+  const s = Math.sign(delta);
+  const hastaSalir = Math.min(abs, Math.max(0, 0.5 + (Math.round(pos.p) - pos.p) * s));
+  programarRotulo(s, fraccionCruce(abs) * duracion, fraccionCruce(abs, hastaSalir) * duracion);
+  destinoGiro = destino;
   giro = gsap.to(pos, {
     p: destino,
     duration: duracion / 1000,
     ease: curvaGiro,
-    onUpdate() {
-      render();
-      if (!soltado && this.progress() >= 0.5) {
-        soltado = true;
-        soltarRotulo(true);
-      }
-    },
+    onUpdate: render,
     onComplete() {
-      pos.p = modulo(pos.p, n);
-      render();
-      if (!soltado) soltarRotulo(true);
       giro = null;
+      pos.p = modulo(pos.p, n);
+      if (costalK >= 0 && costal.v <= 0) costalK = -1;
+      render();
       asentar();
     },
   });
 }
 
-/** Al asentarse el giro, la fila activa entra en la lista (storyboard 6.4). */
-function asentar() {
+function mostrarFila() {
   const e = estado();
-  if (e.categoria === categoria && e.id) mostrarEnLista(e.id);
+  if (e.categoria === categoria && e.id) {
+    mostrarEnLista(e.id);
+    resaltarFila(e.id);
+  }
 }
 
-/** 0-150 ms salen; 150 ms se sustituye; 150-450 ms entran del frente hacia atras. */
-function cambiarCategoria() {
+/** Al asentarse el giro: la fila entra en la lista y se resalta (C4) y llega el frente (C8). */
+function asentar() {
+  mostrarFila();
+  if (items.length) llegar(modulo(Math.round(pos.p), items.length));
+}
+
+/** Orden de las pestanas (sentido del medio giro de C5). */
+function ordenCategoria(cat: string) {
+  const botones = Array.from(raiz?.querySelectorAll<HTMLElement>('[data-categoria-boton]') ?? []);
+  return botones.findIndex((b) => b.dataset.categoriaBoton === cat);
+}
+
+/**
+ * C5 + C1. Sale: medio paso en el sentido de las pestanas y fundido de
+ * productos y tarima (160 ms). Mientras, se piden y decodifican las imagenes
+ * de la categoria nueva (tope 250 ms desde el clic). Entra: desde el lado
+ * opuesto, ya en el producto elegido, con el radio interpolado (320 ms).
+ */
+function cambiarCategoria(cat: string) {
   const gen = ++secuencia;
-  giro?.kill();
-  giro = null;
-  gsap.killTweensOf(escenaAnim);
-  gsap.killTweensOf(entrada);
-
-  if (!movimientoPermitido()) {
-    const e = estado();
-    escenaAnim.o = escenaAnim.s = 1;
-    pintarEscena();
-    construir(e.categoria, e.indice);
-    cambiando = false;
-    soltarRotulo(false);
-    return;
-  }
-
+  const desde = cambiando ? destinoCambio : categoria;
+  const dir = Math.sign(ordenCategoria(cat) - ordenCategoria(desde)) || 1;
   cambiando = true;
-  gsap.to(escenaAnim, {
-    o: 0,
-    s: 0.96,
-    duration: cfg.salida / 1000,
-    ease: curvaSalida,
-    onUpdate: pintarEscena,
-    onComplete() {
-      if (gen !== secuencia) return;
-      const e = estado();
-      construir(e.categoria, 0);
-      // Orden de entrada: del frente hacia atras, 20 ms entre productos (tope 120)
-      const n = items.length;
-      items.forEach((it, k) => {
-        it.retraso = Math.min(120, Math.min(k, n - k) * 20);
-        it.a = 0;
-      });
-      escenaAnim.o = escenaAnim.s = 1;
-      pintarEscena();
-      render();
-      cambiando = false;
-      // Si se eligio desde la lista un producto que no queda al frente, el
-      // rotulo espera al salto (girarA lo suelta al 50 %): no se adelanta.
-      if (estado().indice <= 0) soltarRotulo(true);
+  destinoCambio = cat;
+  giro?.kill();
+  animFase?.kill();
+  animCostal?.kill();
+  giro = animFase = animCostal = null;
+  bajarLlegada();
 
-      const total = cfg.entrada + 120;
-      entrada.t = 0;
-      gsap.to(entrada, {
-        t: total,
-        duration: total / 1000,
-        ease: 'none',
-        onUpdate() {
-          for (const it of items) it.a = curvaVista(Math.min(1, Math.max(0, (entrada.t - it.retraso) / cfg.entrada)));
-          render();
-        },
-        onComplete() {
-          for (const it of items) it.a = 1;
-          render();
-          // Si se eligio un producto concreto de otra categoria (lista), ahora el salto
-          if (gen === secuencia && estado().categoria === categoria) girarA(estado().indice);
-        },
-      });
+  const nuevos = itemsDe(cat);
+  nuevos.forEach((i) => i.cargar());
+  const listas = precargar(nuevos, T.precargaTope);
+
+  programarRotulo(dir, null);
+  const salida = new Promise<void>((res) => {
+    if (fase.a <= 0.001) return res();
+    const dur = (T.categoriaSalida / 1000) * Math.max(0.4, fase.a);
+    animFase = gsap.to(fase, { a: 0, duration: dur, ease: curvaSalida, onUpdate: render, onComplete: res });
+    giro = gsap.to(pos, { p: pos.p + 0.5 * dir, duration: dur, ease: curvaSalida });
+  });
+
+  void Promise.all([salida, listas]).then(() => {
+    if (gen !== secuencia) return;
+    entrarCategoria(dir);
+  });
+}
+
+function entrarCategoria(dir: number) {
+  const e = estado();
+  const rViejo = fase.r;
+  giro?.kill();
+  animFase?.kill();
+  montarCategoria(e.categoria);
+  cambiando = false;
+  destinoCambio = '';
+  const n = items.length;
+  if (!n) return sincronizarYa();
+  const idx = modulo(e.frente, n);
+  if (e.sinImagen && e.producto) {
+    costalNombre.textContent = e.producto.nombre;
+    costalK = idx;
+    costal.v = 1;
+  } else {
+    costalK = -1;
+    costal.v = 0;
+  }
+  animLlegada?.kill();
+  animLlegada = null;
+  llegadaK = -1;
+  llegada.l = 0;
+  pos.p = idx - 0.5 * dir;
+  fase.a = 0;
+  fase.r = rViejo;
+  render();
+  entrarRotulo(dir);
+  const dur = T.categoriaEntrada / 1000;
+  animFase = gsap.to(fase, {
+    a: 1,
+    r: radioDestino,
+    duration: dur,
+    ease: curvaVista,
+    onUpdate: render,
+    onComplete() {
+      animFase = null;
+      fase.r = radioDestino;
+    },
+  });
+  destinoGiro = idx;
+  giro = gsap.to(pos, {
+    p: idx,
+    duration: dur,
+    ease: curvaGiro,
+    onUpdate: render,
+    onComplete() {
+      giro = null;
+      render();
+      asentar();
     },
   });
 }
@@ -381,9 +808,17 @@ function cambiarCategoria() {
 function alProducto(ev: CustomEvent<DetalleProducto>) {
   const d = ev.detail;
   retenerRotulo();
-  if (d.categoria !== categoria) return cambiarCategoria();
-  if (cambiando) return; // la construccion leera el estado mas reciente
-  if (!d.enCarrusel) return soltarRotulo(false); // producto sin imagen: el anillo no se mueve
+  // Movil: la fila abre la hoja de detalle, que tapa el anillo; se
+  // sincroniza por detras sin animar (storyboard 6.7)
+  if (!animar() || (d.origen === 'lista' && mqMovil.matches)) return sincronizarYa();
+  if (cambiando) {
+    // La entrada leera el estado mas reciente; solo otra categoria reinicia
+    if (d.categoria !== destinoCambio) cambiarCategoria(d.categoria);
+    return;
+  }
+  if (d.categoria !== categoria) return cambiarCategoria(d.categoria);
+  if (!d.enCarrusel) return mostrarCostal(d.producto);
+  ocultarCostal();
   girarA(d.indice);
 }
 
@@ -428,6 +863,8 @@ function alMover(ev: PointerEvent) {
     a.movido = true;
     anillo.setPointerCapture(a.id);
     anillo.classList.add('arrastrando');
+    bajarLlegada();
+    atenuarRotulo();
   }
   // 1 paso cada 0,8 x ancho de tarjeta; arrastrar a la izquierda trae el siguiente
   let p = a.p0 - dx / (0.8 * cfg.ancho);
@@ -452,13 +889,18 @@ function alSoltar(ev: PointerEvent) {
   if (!a.movido) {
     // Toque: en un lateral gira hasta el; en el frente solo se asienta
     if (ev.type === 'pointerup' && a.item && a.item !== actual.id) seleccionar(a.item, { origen: 'carrusel' });
-    else girarA(actual.indice);
+    else girarA(actual.frente);
     return;
   }
-  // Inercia: un lanzamiento rapido suma como maximo 3 pasos
+  // Inercia (P9): un lanzamiento rapido suma como maximo 2 pasos, y el
+  // gesto entero no pasa de 2 posiciones salvo que el dedo ya las recorriera
   const reciente = ev.timeStamp - a.ultimoT < 80;
-  const extra = movimientoPermitido() && reciente ? Math.max(-3, Math.min(3, Math.round(a.v * 180))) : 0;
-  const destino = modulo(Math.round(pos.p) + extra, n);
+  const soltado = Math.round(pos.p);
+  let extra = movimientoPermitido() && reciente ? Math.max(-2, Math.min(2, Math.round(a.v * 180))) : 0;
+  const recorrido = soltado - Math.round(a.p0);
+  const tope = Math.max(2, Math.abs(recorrido));
+  extra = Math.max(-tope - recorrido, Math.min(tope - recorrido, extra));
+  const destino = modulo(soltado + extra, n);
   const id = items[destino]?.p.id;
   if (!id || id === actual.id) girarA(destino);
   else seleccionar(id, { origen: 'carrusel' });
@@ -469,6 +911,27 @@ function alSoltar(ev: PointerEvent) {
 // ---------------------------------------------------------------------
 function soporta3d() {
   return typeof CSS !== 'undefined' && CSS.supports('perspective', '1px') && CSS.supports('transform-style', 'preserve-3d');
+}
+
+/** P5: costal generico con el nombre en HTML encima (zona x 23-77 %, y 40-70 % del dibujo). */
+function crearCostal() {
+  costalEl = document.createElement('div');
+  costalEl.className = 'anillo-item anillo-item-costal';
+  costalEl.style.display = 'none';
+  costalSombra = document.createElement('span');
+  costalSombra.className = 'anillo-sombra';
+  const tarjeta = document.createElement('span');
+  tarjeta.className = 'anillo-tarjeta anillo-costal';
+  const img = document.createElement('img');
+  img.alt = '';
+  img.width = 200;
+  img.height = 260;
+  img.draggable = false;
+  costalImg = img;
+  costalNombre = document.createElement('span');
+  costalNombre.className = 'anillo-costal-nombre';
+  tarjeta.append(img, costalNombre);
+  costalEl.append(costalSombra, tarjeta);
 }
 
 function montar() {
@@ -482,7 +945,8 @@ function montar() {
   escena3d.className = 'anillo-escena';
   tarima = document.createElement('div');
   tarima.className = 'anillo-tarima';
-  escena3d.append(tarima);
+  crearCostal();
+  escena3d.append(tarima, costalEl);
   anillo.append(escena3d);
 
   // Error de carga (heuristica 9): fuera del aria-hidden para que se lea
@@ -496,14 +960,19 @@ function montar() {
   reintentar.type = 'button';
   reintentar.className = 'anillo-reintentar';
   reintentar.textContent = 'Reintentar';
-  reintentar.addEventListener('click', () => construir(categoria, modulo(Math.round(pos.p), items.length || 1)));
+  reintentar.addEventListener('click', () => {
+    for (const it of items) it.el.remove();
+    cache.delete(categoria);
+    items = [];
+    sincronizarYa();
+  });
   avisoError.append(texto, reintentar);
 
   hueco.append(anillo, avisoError);
   carrusel.dataset.modo = '3d';
 
   const e = estado();
-  construir(e.categoria, e.indice, true);
+  construirInicial(e.categoria, e.frente);
 
   window.addEventListener('hinojosa:producto', alProducto);
   anillo.addEventListener('pointerdown', alPulsar);
@@ -515,25 +984,50 @@ function montar() {
   new ResizeObserver(() => {
     leerConfig();
     calcularRadio();
+    if (!animFase) fase.r = radioDestino;
     render();
   }).observe(carrusel);
 
-  // Fuera de Productos no queda nada en marcha: se terminan los tweens y el
-  // ticker de GSAP se duerme solo (autoSleep). No hay bucle de render.
+  // Fuera de Productos no queda nada en marcha: todo pasa a su estado final
+  // y el ticker de GSAP se duerme en el acto (sin esperar a su autoSleep de
+  // 120 fotogramas). No hay bucle de render.
   alCambiarVista((d) => {
-    if (d.vista === 'productos') return;
-    // En orden: cada fase puede lanzar la siguiente al completarse
-    gsap.getTweensOf(escenaAnim).forEach((t) => t.progress(1));
-    gsap.getTweensOf(entrada).forEach((t) => t.progress(1));
-    if (giro) giro.progress(1);
+    vistaActiva = d.vista === 'productos';
+    if (vistaActiva) return;
+    sincronizarYa();
+    gsap.ticker.sleep();
   });
 
-  window.hinojosaCarrusel = { modo: '3d', posicion: () => pos.p, girando: () => Boolean(giro?.isActive()) };
+  window.hinojosaCarrusel = {
+    modo: '3d',
+    posicion: () => pos.p,
+    girando: () => Boolean(giro?.isActive()),
+    diagnostico: () => ({
+      p: pos.p,
+      a: fase.a,
+      r: fase.r,
+      radio: radioDestino,
+      llegadaK,
+      llegada: llegada.l,
+      costalK,
+      costal: costal.v,
+      rotulo: { ...rs },
+      categoria,
+      enEscena: escena3d.querySelectorAll('.anillo-item:not(.anillo-item-costal)').length,
+      cache: Array.from(cache.keys()),
+      cambiando,
+    }),
+  };
 }
 
 declare global {
   interface Window {
-    hinojosaCarrusel?: { modo: string; posicion: () => number; girando: () => boolean };
+    hinojosaCarrusel?: {
+      modo: string;
+      posicion: () => number;
+      girando: () => boolean;
+      diagnostico?: () => Record<string, unknown>;
+    };
   }
 }
 

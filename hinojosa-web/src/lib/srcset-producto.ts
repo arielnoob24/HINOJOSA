@@ -84,8 +84,13 @@ export function miniaturaLista(mini: string | null): { src: string; srcset?: str
   return { src: chica, srcset: `${chica} 2x, ${mini} 4x`, w: mChica.w, h: mChica.h };
 }
 
-/** Tarjeta del anillo: --carrusel-ancho (116 px en movil, 180 px en escritorio). */
-export const SIZES_ANILLO = '(max-width: 47.999rem) 7.25rem, 11.25rem';
+/**
+ * Tarjeta del anillo: --carrusel-ancho. 116 px en movil, 180 px entre 48 y
+ * 64rem y, en >= 64rem, clamp(11.25rem, 24dvh, 15rem) (P7): se declara el
+ * tope de 15rem (240 px) para que el frente grande no se pida corto. A 1x
+ * sigue saliendo la variante de 400 px de alto (la de la precarga de M5).
+ */
+export const SIZES_ANILLO = '(max-width: 47.999rem) 7.25rem, (min-width: 64rem) 15rem, 11.25rem';
 /**
  * Celda de la rejilla de respaldo (3:4, ~60-145 px). Se usa el MISMO `sizes`
  * que el anillo a proposito: la rejilla se pinta un instante al entrar en

@@ -186,7 +186,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
                (Un fondo CSS o un <img loading="lazy"> no le valian a Chrome
                como LCP a tiempo.) Decorativa: el nombre esta en el rotulo y
                en la lista. */
-            <div class="prod-frente" aria-hidden="true" data-frente-provisional>
+            <div class="prod-frente" aria-hidden="true" data-frente-provisional={frente.id}>
               <span class:list={['prod-frente-tarjeta', conFondo(frente) && 'prod-frente-placa']}>
                 <img data-src={frenteAvif} alt="" width="600" height="800" fetchpriority="high" />
               </span>
@@ -235,18 +235,21 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
         <button type="button" class="prod-flecha prod-flecha-der" aria-label={t.siguiente} data-carrusel-siguiente>
           <Icono nombre="flecha_derecha" class="size-6" />
         </button>
+
+        <!-- Rotulo dentro del carrusel: en movil las flechas van a sus lados,
+             fuera del escenario (P9). Lo anima carrusel.ts (C2, C3) -->
+        <div class="prod-rotulo" data-carrusel-rotulo>
+          <p class="prod-rotulo-nombre" data-rotulo-nombre></p>
+          <p class="prod-rotulo-meta" data-rotulo-meta>
+            <span data-rotulo-categoria></span>
+            <!-- Sin posicion (producto sin imagen) el separador no se pinta (P5, CSS :has) -->
+            <span class="prod-rotulo-sep" aria-hidden="true">·</span>
+            <span data-rotulo-posicion></span>
+            <span class="prod-chip cifra" data-rotulo-precio></span>
+          </p>
+        </div>
       </div>
 
-      <div class="prod-rotulo" data-carrusel-rotulo data-solo-js>
-        <p class="prod-rotulo-nombre" data-rotulo-nombre></p>
-        <p class="prod-rotulo-meta">
-          <span data-rotulo-categoria></span>
-          <!-- Sin posicion (producto sin imagen) el separador no se pinta (P5, CSS :has) -->
-          <span class="prod-rotulo-sep" aria-hidden="true">·</span>
-          <span data-rotulo-posicion></span>
-          <span class="prod-chip cifra" data-rotulo-precio></span>
-        </p>
-      </div>
       <p class="sr-only" aria-live="polite" aria-atomic="true" data-carrusel-anuncio></p>
 
       <!-- Sin JS: 4 tarjetas de categoria que llevan a su grupo de la lista -->
@@ -403,6 +406,20 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   .prod-pestana:hover {
     background: var(--color-hoja-claro);
   }
+  .prod-pestana:active {
+    transform: scale(0.97);
+  }
+  /* C6: color en 180 ms y pulsacion en 90 ms. Solo con movimiento (ni
+     reduced motion ni la pausa del sitio) */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not([data-movimiento='pausado'])) .prod-pestana {
+      transition:
+        background-color var(--duracion-pestana) var(--ease-vista),
+        border-color var(--duracion-pestana) var(--ease-vista),
+        color var(--duracion-pestana) var(--ease-vista),
+        transform var(--duracion-presion) ease-out;
+    }
+  }
   .prod-pestana[aria-pressed='true'] {
     border-color: var(--color-bosque);
     background: var(--color-bosque);
@@ -415,22 +432,37 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   }
 
   /* ---------- Escenario ---------- */
+  /* Rejilla del carrusel: fila 1 = escena (el anillo pasa por debajo de
+     las flechas), fila 2 = rotulo. En movil las flechas bajan a la fila 2,
+     a los lados del rotulo, fuera del escenario (P9). */
   .prod-escenario {
     position: relative;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem 0.5rem;
+  }
+  .prod-escena {
+    position: relative;
+    grid-area: 1 / 1 / 2 / -1;
+    align-self: stretch;
+    min-width: 0;
     min-height: 14rem;
+    overflow-y: auto;
+    padding: 4px;
     border-radius: var(--radius-panel);
     background: radial-gradient(ellipse 60% 70% at 50% 45%, var(--color-foco-estudio), transparent 75%);
   }
-  .prod-escena {
+  .prod-flecha-izq {
+    grid-area: 1 / 1;
+  }
+  .prod-flecha-der {
+    grid-area: 1 / 3;
+  }
+  .prod-rotulo {
+    grid-area: 2 / 1 / 3 / -1;
     min-width: 0;
-    height: 100%;
-    max-height: 100%;
-    overflow-y: auto;
-    padding: 4px;
   }
   /* Con el carrusel 3D montado, la rejilla de respaldo se retira */
   .prod-escenario[data-modo='3d'] .prod-rejilla {
@@ -468,6 +500,9 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     aspect-ratio: 3 / 4;
     margin-left: calc(var(--carrusel-ancho) / -2);
     border-radius: var(--radius-tarjeta);
+    /* El frente del anillo arranca "llegado" (C8: 4 px arriba); la
+       provisional va igual para seguir identica debajo (regla M5) */
+    transform: translateY(-4px);
   }
   .prod-frente-tarjeta img {
     display: block;
@@ -554,7 +589,6 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     border-radius: 50%;
     background: var(--color-blanco);
     color: var(--color-bosque);
-    transition: background-color var(--duracion-hover) ease, color var(--duracion-hover) ease, transform var(--duracion-presion) ease-out;
   }
   .prod-flecha:hover {
     background: var(--color-bosque);
@@ -563,10 +597,36 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   .prod-flecha:active {
     transform: scale(0.94);
   }
+  /* C8: el chevron se mueve 3 px en su direccion al pulsar (90 ms) y vuelve (150 ms) */
+  .prod-flecha-izq:active :global(svg) {
+    transform: translateX(-3px);
+  }
+  .prod-flecha-der:active :global(svg) {
+    transform: translateX(3px);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not([data-movimiento='pausado'])) .prod-flecha {
+      transition:
+        background-color var(--duracion-hover) ease,
+        color var(--duracion-hover) ease,
+        transform var(--duracion-presion) ease-out;
+    }
+    :global(html:not([data-movimiento='pausado'])) .prod-flecha :global(svg) {
+      transition: transform 150ms var(--ease-vista);
+    }
+    :global(html:not([data-movimiento='pausado'])) .prod-flecha:active :global(svg) {
+      transition-duration: var(--duracion-presion);
+    }
+  }
 
   /* ---------- Rotulo ---------- */
   .prod-rotulo {
     text-align: center;
+  }
+  /* C2: carrusel.ts anima opacity/translateX de nombre y meta por separado */
+  .prod-rotulo-nombre,
+  .prod-rotulo-meta {
+    will-change: transform, opacity;
   }
   .prod-rotulo-nombre {
     font-family: var(--font-serif);
@@ -586,12 +646,17 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     margin-top: 0.25rem;
     color: var(--color-tinta-suave);
   }
+  /* C3: carrusel.ts anima su ancho al cambiar ("$2.25" / "Consulta
+     precio"); nowrap + overflow para que el texto no salte de linea */
   .prod-chip {
+    overflow: hidden;
     border-radius: var(--radius-chip);
     background: var(--color-maiz);
     padding: 0.125rem 0.625rem;
     font-weight: 800;
     color: var(--color-tinta);
+    text-align: center;
+    white-space: nowrap;
   }
   .prod-chip:empty {
     display: none;
@@ -762,6 +827,8 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     display: none;
   }
   .prod-fila {
+    position: relative;
+    isolation: isolate;
     display: grid;
     grid-template-columns: 2.5rem minmax(0, 1fr) auto;
     align-items: center;
@@ -776,13 +843,56 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   .prod-fila:hover {
     background: var(--color-crema);
   }
-  /* Fila activa: fondo hoja-claro + barra bosque 4 px + nombre 800 */
-  .prod-fila[aria-current='true'] {
-    border-left-color: var(--color-bosque);
-    background: var(--color-fila-activa);
+  /* Fila activa (C4): aria-current lo pone catalogo.ts en el acto; el
+     resaltado VISUAL va en data-resaltada, que llega al asentarse el anillo
+     (o en el acto si se toco la fila). Fondo por capa (opacidad) y barra
+     bosque de 4 px que crece con scaleY; nombre 800. */
+  .prod-fila::before,
+  .prod-fila::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
   }
-  .prod-fila[aria-current='true'] .prod-fila-nombre {
+  .prod-fila::before {
+    top: 0;
+    bottom: 0;
+    left: -4px;
+    width: 4px;
+    border-radius: 4px 0 0 4px;
+    background: var(--color-bosque);
+    transform: scaleY(0);
+  }
+  .prod-fila::after {
+    inset: 0 0 0 -4px;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--color-fila-activa);
+    opacity: 0;
+  }
+  .prod-fila[data-resaltada]::before {
+    transform: scaleY(1);
+  }
+  .prod-fila[data-resaltada]::after {
+    opacity: 1;
+  }
+  .prod-fila[data-resaltada] .prod-fila-nombre {
     font-weight: 800;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not([data-movimiento='pausado'])) .prod-fila::before {
+      transition: transform 150ms var(--ease-salida);
+    }
+    :global(html:not([data-movimiento='pausado'])) .prod-fila[data-resaltada]::before {
+      transition: transform 250ms var(--ease-vista);
+    }
+    :global(html:not([data-movimiento='pausado'])) .prod-fila::after {
+      transition: opacity 200ms var(--ease-vista);
+    }
+  }
+  @media (forced-colors: active) {
+    .prod-fila[data-resaltada] {
+      border-left-color: Highlight;
+    }
   }
   .prod-mini {
     display: inline-flex;
@@ -891,8 +1001,26 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
 
   /* ---------- Movil: la vista entera hace scroll interno ---------- */
   @media (max-width: 47.999rem) {
-    .prod-escenario {
+    .prod-escena {
       height: 15rem;
+    }
+    /* P9: flechas fuera del escenario, a los lados del rotulo (junto a la
+       linea de categoria y posicion) para no tapar los renders */
+    .prod-flecha-izq {
+      grid-area: 2 / 1;
+      align-self: end;
+    }
+    .prod-flecha-der {
+      grid-area: 2 / 3;
+      align-self: end;
+    }
+    .prod-rotulo {
+      grid-area: 2 / 2;
+    }
+    /* C3: el nombre reserva dos lineas para que el rotulo no salte */
+    .prod-rotulo-nombre {
+      min-height: 2.4em;
+      min-height: 2lh;
     }
     .prod-grupo-titulo {
       position: static;
@@ -1003,6 +1131,13 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       flex: 1 1 auto;
       min-height: 0;
     }
+    .prod-escena {
+      min-height: 0;
+    }
+    /* Sin anillo 3D, la rejilla de respaldo va entre las flechas */
+    .prod-escenario:not([data-modo='3d']) .prod-escena {
+      grid-column: 2;
+    }
     .prod-rejilla {
       grid-template-columns: repeat(auto-fill, minmax(clamp(5rem, 8vw, 7.5rem), 1fr));
       gap: 0.75rem;
@@ -1028,15 +1163,18 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       --carrusel-ancho: clamp(11.25rem, 24dvh, 15rem);
     }
   }
+  /* Tiempo local de C6 (no hay token en tokens.css) */
+  .prod-carrusel {
+    --duracion-pestana: 180ms;
+  }
 </style>
 
 <!-- Carrusel CSS 3D (src/lib/animacion/carrusel.ts). El JS crea el anillo,
      asi que estas reglas son globales (sin el atributo de ambito de Astro). -->
 <style is:global>
-  /* El escenario es la referencia del anillo (que pasa por debajo de las
-     flechas); el hueco central deja de recortar. */
+  /* La escena (fila 1 del carrusel, de borde a borde: el anillo pasa por
+     debajo de las flechas) es la referencia del anillo; deja de recortar. */
   .prod-escenario[data-modo='3d'] .prod-escena {
-    position: static;
     overflow: visible;
     padding: 0;
   }
@@ -1095,15 +1233,39 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     display: block;
     border-radius: var(--radius-tarjeta);
   }
-  /* Silueta 3:4 mientras llega la imagen, sin shimmer */
-  .anillo-tarjeta.cargando {
+  /* Silueta 3:4 mientras llega la imagen, sin shimmer (capa propia para
+     poder fundirla con la imagen, C1) */
+  .anillo-tarjeta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
     background: var(--color-silueta-carga);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .anillo-tarjeta.cargando::before {
+    opacity: 1;
+  }
+  .anillo-tarjeta.cargando img {
+    opacity: 0;
   }
   .anillo-tarjeta picture,
   .anillo-tarjeta img {
     display: block;
     width: 100%;
     height: 100%;
+  }
+  .anillo-tarjeta picture {
+    position: relative; /* por encima de la silueta */
+  }
+  /* C1: la imagen que llega despues del primer montaje se funde en 200 ms
+     (la clase .fundir no la lleva nunca el primer montaje: regla M5) */
+  @media (prefers-reduced-motion: no-preference) {
+    html:not([data-movimiento='pausado']) .anillo-tarjeta.fundir::before,
+    html:not([data-movimiento='pausado']) .anillo-tarjeta.fundir img {
+      transition: opacity 200ms var(--ease-vista);
+    }
   }
   .anillo-tarjeta img {
     object-fit: contain;
@@ -1150,6 +1312,34 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     background: var(--color-tinta);
     filter: blur(6px);
   }
+  /* P5: costal generico al frente para productos sin foto, con el nombre
+     en HTML encima de la etiqueta del dibujo (x 23-77 %, y 40-70 % del
+     SVG de 200x260, que en la tarjeta 3:4 queda apoyado abajo) */
+  .anillo-costal {
+    container-type: inline-size;
+  }
+  .anillo-costal-nombre {
+    position: absolute;
+    top: 41.5%;
+    left: 23%;
+    right: 23%;
+    height: 29.25%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 8.5cqi;
+    line-height: 1.05;
+    text-align: center;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+    color: var(--color-bosque);
+  }
+  .anillo-sombra {
+    transform-origin: 50% 50%;
+  }
   .anillo-tarjeta.sin-imagen {
     display: flex;
     align-items: center;
@@ -1188,18 +1378,6 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   .anillo-reintentar:hover {
     background: var(--color-bosque);
     color: var(--color-blanco);
-  }
-  /* El rotulo cambia al 50 % del giro con un fundido de 120 ms */
-  .rotulo-fundido {
-    animation: rotulo-fundido 120ms ease-out;
-  }
-  @keyframes rotulo-fundido {
-    from {
-      opacity: 0.15;
-    }
-    to {
-      opacity: 1;
-    }
   }
 </style>
 

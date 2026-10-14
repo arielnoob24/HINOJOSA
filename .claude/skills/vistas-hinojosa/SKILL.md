@@ -32,7 +32,14 @@ Esto no es un detalle de estilo: cambia cómo se construye, cómo se anima, cóm
 7. `←` / `→` y `AvPág` / `RePág` cambian de vista, **pero solo cuando el foco no está dentro de un campo de texto.** Si te olvidas de esto, las flechas dejan de mover el cursor en el buscador del catálogo y lo rompes. **Segunda excepción:** con el foco dentro del carrusel de Productos (contenedor con `data-captura-flechas`), `←`/`→` giran el carrusel y no cambian de vista. El router ignora el evento si `e.target.closest('input, textarea, select, [contenteditable], [data-captura-flechas]')`.
 8. **Sin JavaScript, las 5 vistas quedan visibles una debajo de otra.** Degradación honesta, nunca una pantalla en blanco. Esto implica que el `overflow: hidden` y el `display: none` los aplica el router al arrancar, no el CSS base.
 
-**Mecanismos de navegación (decisión 2026-10-13, `PLAN.md` §0-B):** solo la barra y el teclado (`←`/`→`, `AvPág`/`RePág`). **No** se añade cambio de vista con rueda del ratón ni con deslizamiento, ni enlaces "Siguiente →" al pie de las vistas. Sí se permiten anclas contextuales dentro del contenido (botón "Cómo llegar" y accesos por categoría de Inicio, animales enlazados a Productos): son anclas reales a un hash, con parámetro de categoría o animal cuando haga falta, y pasan por el router como cualquier otra.
+**Mecanismos de navegación (decisión 2026-10-13, `PLAN.md` §0-B):** solo la barra y el teclado (`←`/`→`, `AvPág`/`RePág`). **No** se añade cambio de vista con rueda del ratón ni con deslizamiento, ni enlaces "Siguiente →" al pie de las vistas. Sí se permiten anclas contextuales dentro del contenido (botón "Cómo llegar" y accesos por categoría de Inicio, animales enlazados a Productos): son anclas reales a un hash y pasan por el router como cualquier otra.
+
+**Esquema de anclas con categoría o animal (implementado 2026-10-14):** el hash es solo el de la vista; el dato va en un atributo.
+```html
+<a href="#productos" data-abrir-categoria="granja">Granja</a>
+<a href="#productos" data-abrir-animal="perro">Perros</a>   <!-- para los animales de Por qué -->
+```
+Un oyente en fase de captura en `src/lib/catalogo.ts` (`abrirCategoria()`) prepara el catálogo antes del `hashchange`: elige el primer producto de la categoría (origen `'pestana'`), vacía el buscador y, si Productos ya está visible, lleva la lista al grupo. Para animales, el oyente equivalente rellena el buscador con el animal. Clics con modificadores o con el botón central navegan normal. Sin JS, el enlace lleva a `#productos`. **Nunca** `#productos?cat=…`: rompe el hash de la vista.
 
 ---
 

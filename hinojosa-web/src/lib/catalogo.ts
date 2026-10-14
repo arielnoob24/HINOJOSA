@@ -29,7 +29,7 @@
 // anillo solo tiene los que tienen foto, asi que cuando faltan fotos en la
 // categoria el rotulo lo aclara: "4 de 12 con foto" (Mascotas: 16 en la
 // pestana, 12 en el anillo). Si todos tienen foto: "4 de 9".
-import { alEntrarEnVista } from './router';
+import { alCambiarVista, alEntrarEnVista } from './router';
 import { indexar, prepararConsulta, buscar, type Indexado } from './busqueda';
 
 export interface ProductoDatos {
@@ -91,6 +91,8 @@ const anillo = new Map<string, ProductoDatos[]>(); // categoria -> productos con
 const totalPorCategoria = new Map<string, number>(); // todos, con y sin imagen
 let categoria = '';
 let actualId = '';
+/** Posicion del anillo que ocupa el frente (se conserva al elegir un producto sin foto, P5). */
+let frenteAnillo = 0;
 let temporizadorAnuncio = 0;
 
 const mqReducido = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -114,6 +116,8 @@ export function estado() {
     id: actualId,
     /** Posicion 0-based en el anillo, o -1 (sin imagen). */
     indice: p ? lista.indexOf(p) : -1,
+    /** Posicion del anillo al frente: el indice o, sin imagen, la que la tarjeta generica tapa (P5). */
+    frente: frenteAnillo,
     /** Productos del anillo (con foto) de la categoria activa. */
     total: lista.length,
     /** Todos los productos de la categoria (lo que cuentan pestana y lista). */
@@ -166,6 +170,8 @@ function pintarSeleccion() {
     if (b.dataset.rejillaProducto === actualId) b.setAttribute('aria-current', 'true');
     else b.removeAttribute('aria-current');
   }
+  // aria-current inmediato (accesibilidad). El resaltado VISUAL
+  // (data-resaltada) lo pone resaltarFila(), al asentarse el anillo (C4).
   for (const b of qa('[data-seleccionar-producto]')) {
     if (b.dataset.seleccionarProducto === actualId) b.setAttribute('aria-current', 'true');
     else b.removeAttribute('aria-current');
@@ -196,6 +202,17 @@ function anunciar(p: ProductoDatos) {
   temporizadorAnuncio = window.setTimeout(() => {
     region.textContent = texto;
   }, 250);
+}
+
+/**
+ * Resaltado visual de la fila (C4): fondo y barra de 4 px. Sin anillo 3D o
+ * si el clic viene de la propia lista, en el acto; con el anillo, lo llama
+ * carrusel.ts al asentarse el giro. La fila anterior lo pierde a la vez.
+ */
+export function resaltarFila(id: string = actualId) {
+  for (const b of qa('[data-seleccionar-producto]')) {
+    b.toggleAttribute('data-resaltada', b.dataset.seleccionarProducto === id);
+  }
 }
 
 /** Desplaza la lista (y solo la lista) para que la fila quede a la vista. */
@@ -238,6 +255,8 @@ export function seleccionar(id: string, { origen = 'api' as Origen, anunciarCamb
   }
   categoria = p.categoria;
   actualId = id;
+  if (nuevo >= 0) frenteAnillo = nuevo;
+  else if (cambioCategoria) frenteAnillo = 0; // la tarjeta generica tapa el primero
   if (cambioCategoria) pintarPestanas();
   pintarSeleccion();
   // Con el anillo 3D montado, un giro (flechas, teclado, arrastre, celda)
@@ -245,6 +264,9 @@ export function seleccionar(id: string, { origen = 'api' as Origen, anunciarCamb
   // lo hace carrusel.ts al terminar el giro. Las pestanas, al grupo, ya.
   const esperaGiro = window.hinojosaCarrusel?.modo === '3d' && origen !== 'pestana' && origen !== 'api';
   if (origen !== 'lista' && origen !== 'inicial' && !esperaGiro) mostrarEnLista(id, origen === 'pestana');
+  // C4: con el anillo 3D, el resaltado visual espera a que se asiente
+  // (carrusel.ts); desde la lista o sin anillo, inmediato.
+  if (window.hinojosaCarrusel?.modo !== '3d' || origen === 'lista' || origen === 'inicial') resaltarFila(id);
   if (anunciarCambio && origen !== 'inicial') anunciar(p);
 
   const detalle: DetalleProducto = {
@@ -270,8 +292,10 @@ export function seleccionarCategoria(cat: string, { origen = 'api' as Origen } =
 function paso(delta: 1 | -1, origen: Origen) {
   const lista = anillo.get(categoria) ?? [];
   if (!lista.length) return;
+  // Producto sin foto al frente (P5): se cuenta desde la posicion que tapa
   const i = lista.findIndex((x) => x.id === actualId);
-  const j = i < 0 ? 0 : (i + delta + lista.length) % lista.length;
+  const base = i < 0 ? Math.min(frenteAnillo, lista.length - 1) : i;
+  const j = (base + delta + lista.length) % lista.length;
   seleccionar(lista[j].id, { origen });
 }
 export const siguiente = (origen: Origen = 'api') => paso(1, origen);
@@ -486,3 +510,48 @@ arrancar();
 // Las imagenes de la rejilla son loading="lazy" dentro de una vista oculta:
 // no se descargan hasta entrar en Productos. Nada mas que diferir aqui.
 alEntrarEnVista('productos', () => raiz?.setAttribute('data-catalogo-listo', ''), { unaVez: true });
+
+// ---------------------------------------------------------------------
+// Anclas que abren Productos con una categoria elegida (I3; decidido
+// 2026-10-14). ESQUEMA, reutilizable desde cualquier vista:
+//
+//   <a href="#productos" data-abrir-categoria="granja">Granja</a>
+//
+// - El hash es SOLO el de la vista (#productos): el router no cambia, el
+//   historial y "atras" funcionan igual y sin JS el enlace lleva a
+//   Productos (con la primera categoria). No se usan "#productos?cat=...".
+// - Con JS, este oyente (fase de captura, antes que el del router) elige
+//   la pestana en catalogo.ts ANTES de que cambie el hash, asi Productos ya
+//   entra con esa categoria; despues, con la vista visible, lleva la lista
+//   al grupo. Si habia una busqueda escrita, se vacia (si no, podria
+//   ocultar justo la categoria pedida).
+// - Clic con modificadores o boton central: navegacion normal (pestana
+//   nueva = Productos con la categoria por defecto).
+// - Animales (vista Por que): el mismo patron con data-abrir-animal="..."
+//   cuando exista el campo `animales` en productos.json; el oyente se
+//   anade aqui, junto a este.
+// ---------------------------------------------------------------------
+/** Deja elegida la categoria `cat` para cuando se entre en Productos. */
+export function abrirCategoria(cat: string) {
+  if (!datos?.categorias.some((c) => c.id === cat)) return false;
+  if (q<HTMLInputElement>('[data-buscador]')?.value) limpiarBusqueda();
+  const primero = anillo.get(cat)?.[0] ?? datos.productos.find((p) => p.categoria === cat);
+  // Sin anuncio en la region viva: el router ya lleva el foco al h2 y el
+  // lector lo anuncia; el producto se leeria encima.
+  if (primero && cat !== categoria) seleccionar(primero.id, { origen: 'pestana', anunciarCambio: false });
+  const quitar = alCambiarVista((d) => {
+    quitar();
+    if (d.vista === 'productos') requestAnimationFrame(() => mostrarEnLista(actualId, true));
+  });
+  return true;
+}
+
+document.addEventListener(
+  'click',
+  (ev) => {
+    if (ev.defaultPrevented || ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
+    const a = (ev.target as Element | null)?.closest?.<HTMLAnchorElement>('a[data-abrir-categoria]');
+    if (a) abrirCategoria(a.dataset.abrirCategoria!);
+  },
+  { capture: true },
+);
