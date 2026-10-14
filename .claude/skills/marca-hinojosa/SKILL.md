@@ -157,7 +157,7 @@ Los precios de los afiches van siempre acompañados de **"Precios referenciales 
 - El logo no se deforma, no se recolorea y no se pone sobre fondos que le quiten contraste. Sobre fondo oscuro va la versión blanca.
 - La optimización de imágenes **no** puede degradar el logo: se mantiene en SVG o PNG nítido, nunca en un WebP agresivo.
 - **Marcas de terceros** (Pro-Can, Camperito, Nutritivos, Dog Chow, NutraPro, Bio Alimentar, Cani, Molinos Cordillera, Freemiau, Mascan…): se mencionan solo como productos que el local distribuye, con la nota al pie **"Marcas registradas de sus respectivos propietarios."** No se usan sus logos como si fueran de la marca propia.
-- **Imágenes generadas o editadas con IA:** nunca pidas "fondo transparente": casi todas pintan un damero falso (pasó con `bebedero.png`). Pide un **color plano** que no exista en el objeto (azul `#0047BB` para Canela, porque su gorra y collar son verdes; verde croma `#00B140` para productos sin verde) y se quita después en `scripts-activos/`.
+- **Imágenes generadas o editadas con IA:** nunca pidas "fondo transparente": casi todas pintan un damero falso (pasó con `bebedero.png`). Pide un **color plano** que no exista en el objeto (azul `#0047BB` para Canela, porque su gorra y collar son verdes; verde croma `#00B140` para productos sin verde) y se quita después en `scripts-activos/`. Si se quita el fondo a mano (Paint, Adobe Express…), **guardar en PNG**: en JPG la transparencia se convierte en blanco (pasó con el bebedero; se recuperó porque el fondo quedó blanco puro).
 - Las imágenes de los afiches son **referencia gráfica**, no fuente final. Varias parecen generadas con IA: antes de publicarlas hay que confirmar con la dueña los derechos de uso.
 
 ---

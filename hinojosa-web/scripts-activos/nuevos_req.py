@@ -56,7 +56,15 @@ CON_FONDO = {
     "melaza.jpg": (18, 40),                     # fondo gris liso de estudio: se recorta
     "sal en grano.jpg": None,                   # foto con fondo texturizado: se deja
     "diferentes tipos de semillas.jpg": None,   # bordes blancos de los sobres se confunden con el fondo
-    "bebedero.png": None,                       # damero "falso transparente" pintado + producto blanco
+}
+
+# Originales que se sustituyen por una version corregida que dejo el usuario en la
+# misma carpeta (se publica con el slug del original y la version corregida no
+# genera un producto propio).
+# bebedero.png traia un damero "falso transparente" pintado; el usuario le quito el
+# fondo en Paint, pero lo guardo en JPG, asi que llega sobre blanco puro.
+REEMPLAZOS = {
+    "bebedero.png": "bebedero_quitado_disque.jpg",
 }
 
 
@@ -119,6 +127,21 @@ def quitar_fondo_liso(rgb: np.ndarray, t_fondo: float, t_solido: float) -> Image
     return Image.fromarray(np.dstack([np.clip(col, 0, 255), alpha * 255]).astype(np.uint8), "RGBA")
 
 
+def quitar_fondo_blanco(rgb: np.ndarray, umbral: float = 2, d_solido: float = 18) -> Image.Image:
+    """RGBA sin el blanco puro conectado con los bordes. Para productos blancos sobre
+    blanco: `quitar_fondo_liso` toma su sombreado neutro por sombra y lo vacia."""
+    rgbf = rgb.astype(np.float32)
+    dist = (255 - rgbf).max(2)
+    fondo = flood_desde_bordes(dist <= umbral)
+    banda = dilatar(fondo, 2) & ~fondo
+    alpha = np.ones(dist.shape, np.float32)
+    alpha[banda] = np.clip(dist / d_solido, 0, 1)[banda]
+    alpha[fondo] = 0
+    a3 = np.maximum(alpha, 1e-3)[..., None]
+    col = np.where(alpha[..., None] > 0, (rgbf - (1 - a3) * 255) / a3, 0)
+    return Image.fromarray(np.dstack([np.clip(col, 0, 255), alpha * 255]).astype(np.uint8), "RGBA")
+
+
 def recortar_contenido(im: Image.Image, margen: int = 6, umbral: int = 8) -> Image.Image:
     if im.mode != "RGBA":
         return im
@@ -137,9 +160,13 @@ def maestros(tmp: Path) -> tuple[list[dict], list[str]]:
         for f in sorted((CATALOGO / carpeta).iterdir()):
             if f.suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp"}:
                 continue
+            if f.name in REEMPLAZOS.values():
+                continue
             s = slug(f.name)
             im = Image.open(f)
-            if f.name in CON_FONDO:
+            if f.name in REEMPLAZOS:
+                im = quitar_fondo_blanco(np.asarray(Image.open(f.with_name(REEMPLAZOS[f.name])).convert("RGB")))
+            elif f.name in CON_FONDO:
                 params = CON_FONDO[f.name]
                 if params:
                     im = quitar_fondo_liso(np.asarray(im.convert("RGB")), *params)

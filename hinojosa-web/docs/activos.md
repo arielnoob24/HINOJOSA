@@ -55,7 +55,8 @@ Por archivo: WebP 800 de 30 a 124 KB (media ≈ 72 KB), AVIF ≈ 40 % menos, min
 
 Fondos de origen:
 - `granja/melaza`: venía con fondo gris de estudio. **Recortado** (modelo de fondo cuadrático + relleno desde los bordes); la sombra de contacto se conserva como sombra negra semitransparente.
-- `granja/sal-en-grano` (foto con fondo texturizado), `granos/diferentes-tipos-de-semillas` (los bordes blancos de los sobres se confunden con el fondo) y `comederos/bebedero` (trae un **damero "transparente" pintado** dentro de la imagen y el producto es blanco): **se publican con su fondo**, rectangulares. El bebedero se ve mal sobre cualquier fondo: hay que pedir al cliente un PNG con transparencia real.
+- `granja/sal-en-grano` (foto con fondo texturizado) y `granos/diferentes-tipos-de-semillas` (los bordes blancos de los sobres se confunden con el fondo): **se publican con su fondo**, rectangulares.
+- `comederos/bebedero` (2026-10-14): el original traía un **damero "transparente" pintado** y no se podía recortar. Se usa `bebedero_quitado_disque.jpg` (fondo quitado en Paint por el usuario, guardado en JPG sobre blanco puro), que `nuevos_req.py` recorta con `quitar_fondo_blanco` (tabla `REEMPLAZOS`). Ya se publica **transparente**, sin `conFondo`.
 
 ### Canela (`Mascota/Canela.png`, recortada con alfa)
 

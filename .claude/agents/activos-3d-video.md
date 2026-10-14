@@ -19,7 +19,7 @@ Eres el agente de activos de Comercial Hinojosa. Te basas en las secciones 0, 0-
 | Costales de la vitrina de Inicio | Bloque 4 | Ya existen las `-400.avif` de `granja/pollos`, `mascotas/procan-adultos`, `granos/maiz-en-grano`, `granja/cerdos`. Verifica peso (~16 kB c/u) y que su área pintada a ≤ 24dvh quede por debajo de la del logo (~66 000 px² a 1440×900), para que el logo siga siendo el LCP |
 | Trébol del isotipo en SVG | Hojas sueltas y marca de agua del fondo de Inicio y de Visítanos sin mapa | SVG inline optimizado, < 2 kB, sin texto. Sale del logo; si no hay vectorial, trázalo simple y repórtalo |
 | Tarjeta genérica de costal | Productos sin imagen al frente del carrusel (P5) | Silueta de costal en la paleta de marca con hueco para el nombre en HTML (el texto no va dentro de la imagen) |
-| Bebedero | P3 | El PNG trae un damero gris/blanco **pintado**. Se probó quitarlo por código (relleno desde los bordes sobre píxeles claros y neutros, 2026-10-14) y **no es fiable**: los brillos del frasco blanco tienen el mismo tono que los cuadros claros y bajo los platos el damero está sombreado. No lo reintentes por umbrales. El usuario lo rehará con IA (`flow/PROMPTS.md`, sección "Bebedero"): si llega `flow/bebedero-nuevo.png` con **alfa real**, úsalo tal cual; si llega sobre **verde croma `#00B140`**, añádelo a `CON_FONDO` con parámetros de `quitar_fondo_liso` y verifica sobre crema y sobre bosque que no quede halo verde. Mientras tanto, tarjeta `sin-imagen` |
+| Bebedero | P3 | ✅ Resuelto el 2026-10-14. El usuario quitó el fondo en Paint y lo guardó en JPG sobre blanco (`Nuevos Req/CatalogoF/Comederos y Bebederos/bebedero_quitado_disque.jpg`). `nuevos_req.py` lo usa en lugar de `bebedero.png` (tabla `REEMPLAZOS`) y lo recorta con `quitar_fondo_blanco` (relleno desde los bordes del blanco puro, umbral 2). **No uses `quitar_fondo_liso` para productos blancos sobre blanco**: toma su sombreado neutro por sombra y los vacía |
 | Canela con alfa en Quiénes somos | N1/N2 | Ya existe `canela-jugando-alfa.webm` y su póster. Mide el gris del fondo del video normal (para el fondo de la caja si se usa `contain`) y repórtalo en hex |
 | Sellos de especie (vista 4) | Q1 | `-thumb-80` de pollos, cerdos, vacas y cuyes (~4 kB c/u). Ya existen: confirma rutas |
 | Fachada | Visítanos | **Pendiente de la dueña.** Cuando llegue: WebM VP9 + MP4 H.264 + `poster`, 288×200 visibles |
@@ -35,7 +35,7 @@ No está en el PATH. Se usa el binario del paquete de Python `imageio-ffmpeg`: `
 - Las fuentes recortadas (`src/assets/fonts/caveat-brush-acento.woff2`) se regeneran cuando cambian las frases manuscritas; el comando está comentado en `global.css`. Con el acento nuevo de Inicio ("Tu mejor aliado para tus animales") hay que regenerarla.
 
 ## Límites
-- No inventes ni generes con IA un activo que debe entregar la dueña (fachada, local, equipo, bebedero con alfa, logo vectorial). Repórtalo como pendiente.
+- No inventes ni generes con IA un activo que debe entregar la dueña (fachada, local, equipo, logo vectorial). Repórtalo como pendiente.
 - No retoques fotos de producto ni cambies el contenido de los videos sin aprobación.
 - Los renders parecen generados con IA y llevan marcas de terceros: los derechos de uso los confirma la dueña.
 - Si una herramienta (ffmpeg, Python, Pillow) no está disponible, dilo; no supongas el resultado.

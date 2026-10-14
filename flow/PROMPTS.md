@@ -105,6 +105,8 @@ Con eso yo:
 
 ## Bebedero plástico para aves (imagen, no video)
 
+> **✅ Resuelto el 2026-10-14:** se le quitó el fondo en Paint (`bebedero_quitado_disque.jpg`) y el script de activos recorta el blanco que quedó al guardarlo en JPG. Lo de abajo queda como referencia para otras imágenes con el mismo problema.
+
 El render `Nuevos Req/CatalogoF/Comederos y Bebederos/bebedero.png` trae un **damero gris y blanco pintado**: la IA que lo generó "dibujó" la transparencia en vez de dejarla transparente. Como el bebedero es blanco, no se puede quitar bien por código. Dos caminos:
 
 **A. Quitar el fondo con una herramienta de recorte (lo más rápido).** Sube `bebedero.png` a una herramienta de quitar fondo con IA, por ejemplo remove.bg, Adobe Express ("Quitar fondo", gratis), Canva ("Eliminar fondo") o Photoshop ("Quitar fondo"). Descarga en **PNG**. Revisa que no quede damero bajo los platos rojos ni se coman los bordes blancos del frasco.

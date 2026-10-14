@@ -318,8 +318,7 @@
       "precio": null,
       "precioDesde": false,
       "imagen": "/img/productos/comederos/bebedero.webp",
-      "destacado": false,
-      "conFondo": true
+      "destacado": false
     },
     {
       "id": "comedero-perro-gato",

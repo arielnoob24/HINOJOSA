@@ -12,7 +12,7 @@ La guía de estilo, los tokens (`src/styles/tokens.css`) y los storyboards exist
 - **Inicio (§7.1 de la guía): vitrina lateral.** Bloque centrado + 2 costales a cada lado en ≥ 64rem (≤ 24dvh, rotación ±4–6°, el de atrás con tinta al 25 %), acento "Tu mejor aliado para tus animales", botones "Ver productos" + "Cómo llegar", accesos por categoría, fila de animales, aro triple de la insignia, fondo con granos grandes + hojas + marca de agua del trébol. El hero partido con Canela grande se **descartó**.
 - **Canela (storyboard-hero):** carrera real de borde a borde con giro en cada borde; solo se sienta al principio (especificación en `PLAN.md` vista 1). Reescribe el storyboard del bucle: el actual describe la foto deslizándose a saltitos.
 - **Quiénes somos:** video con `contain` (no cortar la gorra), valores en una banda única, Misión/Visión en Nunito 400 `text-lead`, tilt solo en superficies no pulsables.
-- **Productos:** producto al frente más grande en escritorio, miniaturas de 48 px, bebedero sin damero, tarjeta genérica para productos sin imagen, hoja de detalle móvil, transiciones C1–C8 (storyboard-carrusel).
+- **Productos:** producto al frente más grande en escritorio, miniaturas de 48 px, tarjeta genérica para productos sin imagen, hoja de detalle móvil, transiciones C1–C8 (storyboard-carrusel).
 - **Por qué:** título arriba, círculo con aro solo en pilares, sellos de costal junto a animales.
 - **Visítanos:** fondo sin mapa con textura de marca (sin calles falsas), contactos pendientes en una línea.
 - **Sistema:** antetítulo + h2 en todas las vistas (textos pendientes de aprobación), barra con "COMERCIAL" a 12 px y barra móvil de 44 px.

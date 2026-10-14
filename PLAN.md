@@ -15,7 +15,7 @@ Carpeta `Nuevos Req/` (originales, **no se modifican**; la versión web se gener
 |---|---|---|
 | `Mascota/Canela.png` | Render estilo 3D de Canela sentada, 2752×1536, PNG recortado con alfa | Pose inicial de Canela en Inicio, primer cuadro de los clips de Flow (`flow/canela-inicio-azul.png`) y fallback de `prefers-reduced-motion` |
 | `Mascota/Canela Jugando.mp4` | Video de Canela jugando (3,3 MB), fondo gris de estudio | Recuadro de video en la tarjeta grande de "Quiénes somos" (pausable, silenciado, con `poster`). Existe además una versión con alfa (`canela-jugando-alfa.webm`) |
-| `CatalogoF/<categoría>/*.png` | 33 renders de producto, casi todos recortados con alfa (excepto `bebedero.png`, que trae un damero pintado, y `melaza.jpg`, `sal en grano.jpg`, `diferentes tipos de semillas.jpg`, con fondo) | Carrusel de Productos, miniaturas de la lista y vitrina de Inicio |
+| `CatalogoF/<categoría>/*.png` | 33 renders de producto, casi todos recortados con alfa (excepto `bebedero.png`, que trae un damero pintado — sustituido por `bebedero_quitado_disque.jpg`, ver P3 —, y `melaza.jpg`, `sal en grano.jpg`, `diferentes tipos de semillas.jpg`, con fondo) | Carrusel de Productos, miniaturas de la lista y vitrina de Inicio |
 
 **Consecuencias sobre el plan:**
 1. **4 categorías**, tal como las clasificó el cliente: **Alimento Animales de Granja** (`granja`) · **Alimento Mascotas** (`mascotas`) · **Comederos y Bebederos** (`comederos`) · **Granos y Semillas** (`granos`).
@@ -359,7 +359,7 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 - Bajo el anillo, el **rótulo**: nombre del producto al frente (Cormorant), categoría, posición y chip de precio.
 - **Nuevo (P2):** botón **"Preguntar por este producto"** junto al rótulo: `wa.me` con el nombre del producto cuando WhatsApp esté confirmado; mientras tanto "¿Dónde comprarlo? → Visítanos".
 - Producto al frente más grande en escritorio: `--carrusel-ancho: clamp(11.25rem, 24dvh, 15rem)` en ≥ 64rem (P7).
-- **Bebedero (P3):** el render trae un **damero gris y blanco pintado** (no es transparencia real). Se probó quitarlo por código (2026-10-14) y **no es fiable**: el bebedero es blanco con brillos del mismo tono que los cuadros claros, y bajo la base el damero está sombreado. Solución: rehacer el recorte con una herramienta de IA de quitar fondos o regenerar la imagen **sobre un color plano** (ver `flow/PROMPTS.md`, sección "Bebedero") y pasarla por `scripts-activos/nuevos_req.py`. Mientras tanto, tarjeta `sin-imagen` en el carrusel y en la lista.
+- **Bebedero (P3): ✅ resuelto el 2026-10-14.** El render original traía un damero pintado que no se podía quitar por código. El usuario le quitó el fondo en Paint (`Nuevos Req/CatalogoF/Comederos y Bebederos/bebedero_quitado_disque.jpg`); como lo guardó en JPG llegó sobre blanco puro, y `nuevos_req.py` lo recorta con `quitar_fondo_blanco` (tabla `REEMPLAZOS`: se publica con el slug `bebedero` y el JPG no crea un producto aparte). Las versiones web ya son transparentes y se quitó `conFondo` del producto en `productos.json`. Comprobado en `#productos` a 1440×900.
 - **Productos sin imagen (P5):** tarjeta genérica (costal con el nombre) al frente al elegirlos en la lista; sin "·" colgando cuando no hay posición.
 - **Inercia (P9):** un deslizamiento mueve 1–2 posiciones como máximo. En móvil, las flechas fuera del escenario o junto al rótulo.
 
@@ -541,7 +541,7 @@ hinojosa-web/
 | 33 renders de producto (`-400`, `-thumb`, `-thumb-80`) | ✅ Generado | Carrusel, lista, vitrina de Inicio, sellos de la vista 4 |
 | Trébol del isotipo en SVG (hojas y marca de agua) | ⏳ Por crear (< 3 kB) | Fondo de Inicio y de Visítanos sin mapa |
 | Tarjeta genérica de costal para productos sin imagen | ⏳ Por crear | Carrusel (P5) |
-| Bebedero sin damero | ⏳ El usuario lo rehace con IA (recorte de fondo o regenerado sobre color plano); el recorte por código no es fiable | Carrusel y lista (P3) |
+| Bebedero sin damero | ✅ 2026-10-14: fondo quitado en Paint por el usuario + recorte del blanco en `nuevos_req.py` | Carrusel y lista (P3) |
 | Foto / video de la fachada | ❌ Pedir a la dueña | Visítanos |
 | Foto del local o del equipo | ❌ Pedir a la dueña | Quiénes somos ("Nuestra historia") |
 | Logo vectorial | ❌ Pedir a la dueña | Afinar paleta y nitidez |
@@ -653,7 +653,7 @@ En `.claude/skills/` del proyecto:
 | 6 | Barra: ancho reservado, estiramiento, hover, pulsación, pop móvil, inversión de texto (B1–B4) | animacion-interaccion | No |
 | 7 | Quiénes somos: encuadre del video, banda de valores, tipografía de Misión/Visión, hover (N1, N2, N5–N8) | frontend, direccion-arte | No |
 | 8 | Productos en móvil: buscador arriba y hoja de detalle; inercia; flechas (P6, P9) | frontend, animacion-interaccion | No |
-| 9 | Carrusel: cambio de categoría direccional, pestañas, arrastre, llegada (C5–C8); producto al frente más grande; bebedero (P3, P7, P10) | animacion-interaccion, frontend | No |
+| 9 | Carrusel: cambio de categoría direccional, pestañas, arrastre, llegada (C5–C8); producto al frente más grande; miniaturas (P7, P10). Bebedero (P3) ya resuelto | animacion-interaccion, frontend | No |
 | 10 | Sistema de títulos, diferenciales, marcas, pilares, sellos y enlaces de animales (G3, Q1–Q7) | contenido-estrategia, direccion-arte, frontend | **Sí** (textos) |
 | 11 | "Preguntar por este producto", accesos de contacto en la barra (P2, G1) | frontend | **Sí** (WhatsApp) |
 | 12 | Pulidos: G4, G5, V4 | frontend | No |
@@ -682,13 +682,12 @@ En `.claude/skills/` del proyecto:
 - [ ] Confirmar datos del negocio (sección 1), incluida una línea de historia
 - [ ] Obtener logo en vectorial
 - [ ] Fotos del local, la fachada y (opcional) el equipo
-- [ ] PNG del bebedero con alfa real
 - [ ] Aprobar los textos del sistema de títulos (sección 3) y los de la vista 4 marcados con 🔒
 - [x] Recibir los archivos del perrito y las imágenes de producto (2026-10-12)
 - [x] Router de vistas probado con teclado
 - [x] Auditoría de UI/UX/movimiento (2026-10-13, `auditoria.md`)
 - [x] Decisiones de la auditoría tomadas (sección 0-B)
-- [ ] Bebedero sin damero: recorte con IA o regenerado sobre color plano (`flow/PROMPTS.md`)
+- [x] Bebedero sin damero (2026-10-14)
 - [x] Decidir las propuestas de color (sección 2, "Reparto del color"): aprobadas el 2026-10-14
 - [x] Video de Canela corriendo generado en Flow (`flow/Puppy_running_in_place_1080p_20261013235908.mp4`)
 - [ ] Fase 5-B: bloques 1 a 12 (incluido 4-B) + cierre de QA

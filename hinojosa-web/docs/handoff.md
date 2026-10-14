@@ -38,8 +38,8 @@ El sitio por vistas está **construido y verificado**, y ya hay una **auditoría
 4. **Plan reescrito** sin lo obsoleto (Three.js, `.glb`, Lottie, Lenis, 10 categorías, ruleta de costales) y con la **fase 5-B** (bloques 1–13 + 4-B + cierre de QA).
 5. **Agentes y skills** puestos al día con todo lo anterior.
 6. **Video de Canela** generado por el usuario en Google Flow y revisado: `flow/Puppy_running_in_place_1080p_20261013235908.mp4`.
-7. **Bebedero:** se intentó quitar el damero pintado por código y **no es fiable**; el usuario lo rehará con IA.
-8. Commit `3168635` subido a `origin/Ariel`.
+7. **Bebedero: resuelto.** El damero pintado no se podía quitar por código. El usuario le quitó el fondo en Paint y lo guardó en JPG (`Nuevos Req/CatalogoF/Comederos y Bebederos/bebedero_quitado_disque.jpg`, sobre blanco puro). `scripts-activos/nuevos_req.py` ahora lo usa en lugar de `bebedero.png` (tabla `REEMPLAZOS`) y lo recorta con la función nueva `quitar_fondo_blanco`. Se regeneraron solo `public/img/productos/comederos/bebedero*` (ya transparentes) y se quitó `conFondo` del producto `bebedero-aves` en `productos.json`. Comprobado con captura en `#productos`. **Es el único cambio de código del sitio en esta sesión.**
+8. Commits en `origin/Ariel`: `3168635` (auditoría, plan, agentes, skills, `flow/`), `9ba2526` (handoff) y el del bebedero.
 
 ## Video de Canela: lo que hay que saber para procesarlo
 
@@ -71,7 +71,7 @@ El sitio por vistas está **construido y verificado**, y ya hay una **auditoría
 | 6 | Barra B1–B4 | No |
 | 7 | Quiénes somos (video sin cortar la gorra, banda de valores) | No |
 | 8 | Productos en móvil: hoja de detalle | No |
-| 9 | Carrusel C5–C8, bebedero, tamaños | Bebedero: falta la imagen |
+| 9 | Carrusel C5–C8, tamaños, miniaturas (el bebedero ya está resuelto) | No |
 | 10 | Títulos, diferenciales, marcas, pilares | **Sí:** textos por aprobar |
 | 11 | "Preguntar por este producto", contacto en la barra | **Sí:** WhatsApp de la dueña |
 | 12 | Pulidos | No |
@@ -82,7 +82,7 @@ Al último aviso del 2026-10-14 se le propuso al usuario empezar por los bloques
 
 ## Pendiente del usuario o de la dueña
 
-- **Usuario:** bebedero sin damero → `flow/bebedero-nuevo.png` (recorte con IA en PNG con alfa, o regenerado sobre verde croma `#00B140`; prompt en `flow/PROMPTS.md`). Aprobar los textos de títulos y los de Por qué marcados 🔒.
+- **Usuario:** aprobar los textos de títulos y los de Por qué marcados 🔒. Decidir por dónde empezar la fase 5-B.
 - **Dueña:** dirección, ciudad, coordenadas, referencias, teléfono/WhatsApp, horario, Facebook; año de apertura o una línea de historia; foto del local, la fachada o el equipo; logo vectorial; 21 precios sin dato; derechos de uso de los renders.
 
 ## Cuidado al implementar (no romper lo que ya funciona)
@@ -92,7 +92,9 @@ Al último aviso del 2026-10-14 se le propuso al usuario empezar por los bloques
 - **La pausa del sitio** (`html[data-movimiento="pausado"]`) hoy anula `animation` pero **no** `transition`: toda transición nueva debe condicionarse.
 - **`vistas.ts` debe devolver una `Promise`**: hoy no lo hace y por eso se ve el fondo crema entre vistas.
 - **Nunca mostrar `PENDIENTE_CONFIRMAR` en pantalla**; vive solo en `negocio.json`.
-- **Imágenes con IA:** nunca pedir "fondo transparente" (pintan un damero); pedir un color plano.
+- **Imágenes con IA:** nunca pedir "fondo transparente" (pintan un damero); pedir un color plano. Al quitar fondos a mano, guardar en PNG (en JPG la transparencia pasa a blanco).
+- **Productos blancos sobre blanco:** recortar con `quitar_fondo_blanco`, no con `quitar_fondo_liso` (este vacía el sombreado neutro creyendo que es sombra).
+- Para regenerar un solo producto sin recodificar todo, ver cómo se hizo con el bebedero: `nr.maestros(tmp)`, filtrar los trabajos por nombre y `nr.codificar(seleccion, tmp)`.
 
 ## Bloqueantes para publicar (sin cambios)
 
