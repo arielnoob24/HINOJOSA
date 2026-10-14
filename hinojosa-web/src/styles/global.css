@@ -121,6 +121,11 @@ html[data-movimiento="pausado"] *,
 html[data-movimiento="pausado"] *::before,
 html[data-movimiento="pausado"] *::after {
   animation: none !important;
+  /* La pausa tambien corta las transiciones (antes solo las animaciones:
+     auditoria 7). 0,01 ms y no 0: asi transitionend sigue llegando y el
+     codigo que lo espera no se queda colgado. */
+  transition-duration: 0.01ms !important;
+  transition-delay: 0ms !important;
 }
 
 @layer components {
@@ -261,13 +266,38 @@ html:not(.js) [data-solo-js] {
    MOVIMIENTO (fase 4, JS en src/lib/animacion/)
    ===================================================================== */
 
-/* Transicion entre vistas (vistas.ts): solo la ENTRANTE, 48 px + fundido,
-   400 ms ease-vista. El router no la pide con reduced motion ni pausa. */
-html[data-router] .vista[data-entrando="adelante"] {
-  animation: var(--animate-vista-adelante);
+/* Transicion entre vistas (vistas.ts; skill vistas-hinojosa, storyboard-hero 4).
+   Dos capas en la misma celda (las vistas ya son absolute inset 0):
+   - saliente [data-saliendo][data-sale]: por DEBAJO, se aparta 1 rem
+     hacia -dir y se funde en 160 ms. La oculta el router cuando la
+     promesa de vistas.ts se resuelve (animationend), nunca antes.
+   - entrante [data-entrando]: por ENCIMA, llega desde dir x 2,5 rem,
+     380 ms con 60 ms de retraso.
+   - bloques [data-entra] de la entrante (contrato: style="--orden: N",
+     N = 0 titulo, 1 principal, 2 secundario): desde dir x 1,5 rem,
+     300 ms, 60 ms + N x 50 ms.
+   El estado oculto de partida solo existe mientras dura la animacion
+   (fill-mode both sobre atributos que pone el JS): sin JS, con reduced
+   motion o con la pausa nada queda a opacidad 0. El router ni siquiera
+   llama a la transicion en esos casos (corte seco). */
+html[data-router] .vista[data-saliendo][data-sale] {
+  z-index: 0;
+  animation: vista-sale var(--duracion-vista-sale) var(--ease-salida) both;
 }
-html[data-router] .vista[data-entrando="atras"] {
-  animation: var(--animate-vista-atras);
+html[data-router] .vista[data-entrando] {
+  z-index: 1;
+  animation: vista-entra var(--duracion-vista-entra) var(--ease-entra-vista) var(--retraso-vista-entra) both;
+}
+html[data-router] .vista[data-entrando] [data-entra] {
+  animation: bloque-entra var(--duracion-bloque) var(--ease-vista)
+    calc(var(--retraso-vista-entra) + var(--orden, 0) * var(--escalon-bloque)) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-router] .vista[data-saliendo][data-sale],
+  html[data-router] .vista[data-entrando],
+  html[data-router] .vista[data-entrando] [data-entra] {
+    animation: none !important;
+  }
 }
 
 /* Entrada unica de iconos (entradas.ts): el circulo aparece con escala

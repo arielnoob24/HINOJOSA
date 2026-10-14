@@ -15,7 +15,22 @@
 //     { origen: 'carrusel' }). Las flechas ya llaman siguiente()/anterior().
 //   - Teclado: [data-carrusel] lleva data-captura-flechas; aqui ←/→ giran
 //     y Inicio/Fin van al primero/ultimo. El router no cambia de vista.
+//   - Productos sin imagen (P5): el estado guarda el producto activo aunque
+//     no este en el anillo (estado().producto, estado().sinImagen) y el
+//     evento trae `imagenFrente` (su imagen o IMAGEN_GENERICA, el costal
+//     generico). El carrusel decide como ponerlo al frente.
+//   - Buscador (P1, P4, P8): src/lib/busqueda.ts compara; aqui se pinta
+//     (filas, "N de TOTAL" por grupo, atajos sin resultados) y, si el
+//     producto activo queda oculto por la busqueda, el primer resultado
+//     pasa al frente (origen 'busqueda').
+//
+// RECUENTOS (P4, decidido 2026-10-14): la pestana y la cabecera de grupo
+// cuentan TODOS los productos de la categoria (lo mismo que la lista). El
+// anillo solo tiene los que tienen foto, asi que cuando faltan fotos en la
+// categoria el rotulo lo aclara: "4 de 12 con foto" (Mascotas: 16 en la
+// pestana, 12 en el anillo). Si todos tienen foto: "4 de 9".
 import { alEntrarEnVista } from './router';
+import { indexar, prepararConsulta, buscar, type Indexado } from './busqueda';
 
 export interface ProductoDatos {
   id: string;
@@ -30,13 +45,18 @@ export interface ProductoDatos {
   /** srcset 400/800 px (WebP y AVIF), generado en el build (src/lib/srcset-producto.ts). */
   srcset: { webp: string; avif: string } | null;
   conFondo: boolean;
+  /** Especies a las que sirve (perro, gato, ave, cerdo, vaca, cuy, conejo, tilapia). */
+  animales: string[];
 }
+
+/** Costal generico para productos sin imagen (guia-estilo 7.3, P5). */
+export const IMAGEN_GENERICA = '/img/productos/costal-generico.svg';
 export interface CategoriaDatos {
   id: string;
   nombre: string;
   nombreCorto: string;
 }
-export type Origen = 'inicial' | 'pestana' | 'flechas' | 'teclado' | 'rejilla' | 'lista' | 'carrusel' | 'api';
+export type Origen = 'inicial' | 'pestana' | 'flechas' | 'teclado' | 'rejilla' | 'lista' | 'carrusel' | 'busqueda' | 'api';
 export interface DetalleProducto {
   id: string;
   categoria: string;
@@ -49,6 +69,10 @@ export interface DetalleProducto {
   /** Pasos con signo por el camino mas corto (0 si cambia de categoria o no esta en el anillo). */
   pasos: number;
   origen: Origen;
+  /** Producto activo completo (tambien si no tiene imagen). */
+  producto: ProductoDatos;
+  /** Imagen a mostrar al frente: la del producto o IMAGEN_GENERICA. */
+  imagenFrente: string;
 }
 
 const raiz = document.getElementById('productos');
@@ -64,6 +88,7 @@ const datos = datosEl
 
 const porId = new Map<string, ProductoDatos>();
 const anillo = new Map<string, ProductoDatos[]>(); // categoria -> productos con imagen
+const totalPorCategoria = new Map<string, number>(); // todos, con y sin imagen
 let categoria = '';
 let actualId = '';
 let temporizadorAnuncio = 0;
@@ -84,7 +109,29 @@ function plantilla(texto: string, v: Record<string, string | number>) {
 export function estado() {
   const p = porId.get(actualId);
   const lista = anillo.get(categoria) ?? [];
-  return { categoria, id: actualId, indice: p ? lista.indexOf(p) : -1, total: lista.length };
+  return {
+    categoria,
+    id: actualId,
+    /** Posicion 0-based en el anillo, o -1 (sin imagen). */
+    indice: p ? lista.indexOf(p) : -1,
+    /** Productos del anillo (con foto) de la categoria activa. */
+    total: lista.length,
+    /** Todos los productos de la categoria (lo que cuentan pestana y lista). */
+    totalCategoria: totalPorCategoria.get(categoria) ?? lista.length,
+    producto: p ?? null,
+    sinImagen: p ? !p.imagen : false,
+  };
+}
+
+/** Datos de un producto por id (hoja de detalle, carrusel). */
+export const producto = (id: string): ProductoDatos | undefined => porId.get(id);
+
+/** Si en la categoria hay productos fuera del anillo, la posicion dice "con foto". */
+function textoPosicion(larga: boolean, indice: number, total: number, cat: string) {
+  const conFoto = (totalPorCategoria.get(cat) ?? total) > total;
+  const clave = larga ? (conFoto ? 'posicionLargaConFoto' : 'posicionLarga') : conFoto ? 'posicionConFoto' : 'posicion';
+  const respaldo = larga ? 'Producto {i} de {n}' : '{i} de {n}';
+  return plantilla(datos?.textos[clave] ?? respaldo, { i: indice + 1, n: total });
 }
 
 /** Atributo `sizes` de las tarjetas del anillo (VistaProductos.astro). */
@@ -95,7 +142,7 @@ export function productosDelAnillo(cat: string): readonly ProductoDatos[] {
   return anillo.get(cat) ?? [];
 }
 
-function nombreCategoria(id: string) {
+export function nombreCategoria(id: string) {
   return datos?.categorias.find((c) => c.id === id)?.nombre ?? id;
 }
 
@@ -129,10 +176,13 @@ function pintarSeleccion() {
   const nombre = q('[data-rotulo-nombre]');
   const cat = q('[data-rotulo-categoria]');
   const pos = q('[data-rotulo-posicion]');
+  const sep = q('[data-rotulo-separador]');
   const precio = q('[data-rotulo-precio]');
   if (nombre) nombre.textContent = p.nombre;
   if (cat) cat.textContent = nombreCategoria(p.categoria);
-  if (pos) pos.textContent = indice >= 0 ? plantilla(datos?.textos.posicion ?? '{i} de {n}', { i: indice + 1, n: total }) : '';
+  // Sin posicion (producto sin imagen): ni texto ni separador colgando (P5)
+  if (pos) pos.textContent = indice >= 0 ? textoPosicion(false, indice, total, p.categoria) : '';
+  if (sep) sep.hidden = indice < 0;
   if (precio) precio.textContent = p.precioTexto;
 }
 
@@ -140,7 +190,7 @@ function anunciar(p: ProductoDatos) {
   const region = q('[data-carrusel-anuncio]');
   if (!region) return;
   const { indice, total } = estado();
-  const posicion = indice >= 0 ? `. ${plantilla(datos?.textos.posicionLarga ?? 'Producto {i} de {n}', { i: indice + 1, n: total })}` : '';
+  const posicion = indice >= 0 ? `. ${textoPosicion(true, indice, total, p.categoria)}` : '';
   const texto = `${p.nombre}${posicion}, ${nombreCategoria(p.categoria)}`;
   window.clearTimeout(temporizadorAnuncio);
   temporizadorAnuncio = window.setTimeout(() => {
@@ -206,6 +256,8 @@ export function seleccionar(id: string, { origen = 'api' as Origen, anunciarCamb
     cambioCategoria,
     pasos,
     origen,
+    producto: p,
+    imagenFrente: p.imagen ?? IMAGEN_GENERICA,
   };
   window.dispatchEvent(new CustomEvent<DetalleProducto>('hinojosa:producto', { detail: detalle }));
 }
@@ -226,27 +278,56 @@ export const siguiente = (origen: Origen = 'api') => paso(1, origen);
 export const anterior = (origen: Origen = 'api') => paso(-1, origen);
 
 // ---------------------------------------------------------------------
-// Buscador
+// Buscador (P1, P4, P8)
 // ---------------------------------------------------------------------
-const normalizar = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .trim();
-
+interface FilaIndexada extends Indexado {
+  fila: HTMLElement;
+  id: string;
+}
+let filas: FilaIndexada[] = [];
 let temporizadorBusqueda = 0;
+let ultimaConsulta = '';
+
+function indexarFilas() {
+  filas = qa('[data-producto-fila]').map((fila) => {
+    const id = fila.dataset.productoFila!;
+    return { fila, id, ...indexar(fila.dataset.busqueda ?? '', porId.get(id)?.animales ?? []) };
+  });
+}
+
+function textoConteo(n: number) {
+  return n === 1 ? (datos?.textos.conteoUno ?? '1 producto') : plantilla(datos?.textos.conteo ?? '{n} productos', { n });
+}
+function textoResultados(n: number) {
+  return n === 1
+    ? (datos?.textos.resultadosUno ?? '1 producto encontrado')
+    : plantilla(datos?.textos.resultados ?? '{n} productos encontrados', { n });
+}
+
 function filtrar(texto: string) {
-  const t = normalizar(texto);
-  const palabras = t.split(/\s+/).filter(Boolean);
+  const consulta = prepararConsulta(texto);
+  const ok = buscar(consulta, filas);
   let visibles = 0;
-  for (const fila of qa('[data-producto-fila]')) {
-    const ok = !palabras.length || palabras.every((w) => (fila.dataset.busqueda ?? '').includes(w));
-    fila.hidden = !ok;
-    if (ok) visibles++;
-  }
+  let primero: string | null = null;
+  filas.forEach((f, i) => {
+    const ve = ok.has(i);
+    f.fila.hidden = !ve;
+    if (ve) {
+      visibles++;
+      primero ??= f.id;
+    }
+  });
+  // Grupos: se ocultan si quedan vacios; la cabecera dice "N de TOTAL" al filtrar
   for (const g of qa('[data-grupo]')) {
-    g.hidden = !qa('[data-producto-fila]', g).some((f) => !f.hidden);
+    const enGrupo = qa('[data-producto-fila]', g);
+    const n = enGrupo.filter((f) => !f.hidden).length;
+    const total = enGrupo.length;
+    g.hidden = n === 0;
+    const conteo = q('[data-grupo-conteo]', g);
+    if (conteo) {
+      conteo.textContent =
+        consulta && n < total ? plantilla(datos?.textos.conteoFiltrado ?? '{n} de {total}', { n, total }) : textoConteo(total);
+    }
   }
   const vacio = q('[data-sin-resultados]');
   const termino = q('[data-termino-buscado]');
@@ -254,18 +335,34 @@ function filtrar(texto: string) {
   if (termino) termino.textContent = texto.trim();
   const borrar = q<HTMLButtonElement>('[data-borrar-busqueda]');
   if (borrar) borrar.hidden = texto.length === 0;
+  const ver = q<HTMLButtonElement>('[data-ver-resultados]');
+  if (ver) ver.hidden = !consulta; // sin resultados lleva a los atajos de categoria
 
-  // Aviso del resultado, con retardo para no hablar en cada tecla
+  // Aviso del resultado (y el carrusel sigue a la busqueda), con retardo
+  // para no hablar ni girar en cada tecla
   window.clearTimeout(temporizadorBusqueda);
+  const clave = consulta ? texto.trim() : '';
+  const elegido = primero;
   temporizadorBusqueda = window.setTimeout(() => {
     const region = q('[data-resultado-busqueda]');
-    if (!region) return;
-    region.textContent = !palabras.length
-      ? ''
-      : visibles === 0
-        ? datos?.textos.sinResultados ?? ''
-        : plantilla(datos?.textos.conteo ?? '{n} productos', { n: visibles });
+    if (region) {
+      region.textContent = !consulta ? '' : visibles === 0 ? (datos?.textos.sinResultados ?? '') : textoResultados(visibles);
+    }
+    // P8: si el producto activo quedo oculto, el primer resultado pasa al
+    // frente. Si sigue a la vista, no se mueve nada (menos giros inutiles).
+    const activa = filas.find((f) => f.id === actualId);
+    if (consulta && elegido && clave !== ultimaConsulta && (!activa || activa.fila.hidden)) {
+      seleccionar(elegido, { origen: 'busqueda', anunciarCambio: false });
+    }
+    ultimaConsulta = clave;
   }, 450);
+}
+
+/** Vacia el buscador y muestra la lista completa. */
+export function limpiarBusqueda() {
+  const input = q<HTMLInputElement>('[data-buscador]');
+  if (input) input.value = '';
+  filtrar('');
 }
 
 // ---------------------------------------------------------------------
@@ -275,6 +372,7 @@ function arrancar() {
   if (!raiz || !datos) return;
   for (const p of datos.productos) {
     porId.set(p.id, p);
+    totalPorCategoria.set(p.categoria, (totalPorCategoria.get(p.categoria) ?? 0) + 1);
     if (p.imagen) {
       const l = anillo.get(p.categoria) ?? [];
       if (l.length < 12) l.push(p); // tope duro de 12 en escena
@@ -299,11 +397,32 @@ function arrancar() {
     const fila = el.closest<HTMLElement>('[data-seleccionar-producto]');
     if (fila) return seleccionar(fila.dataset.seleccionarProducto!, { origen: 'lista' });
     if (el.closest('[data-borrar-busqueda]')) {
-      const input = q<HTMLInputElement>('[data-buscador]');
-      if (input) {
-        input.value = '';
-        filtrar('');
-        input.focus();
+      limpiarBusqueda();
+      q<HTMLInputElement>('[data-buscador]')?.focus();
+      return;
+    }
+    // Sin resultados: atajo a una categoria (limpia la busqueda, activa la
+    // pestana y lleva el foco a la cabecera de ese grupo en la lista)
+    const atajo = el.closest<HTMLElement>('[data-atajo-categoria]');
+    if (atajo) {
+      const cat = atajo.dataset.atajoCategoria!;
+      limpiarBusqueda();
+      if (cat !== categoria) seleccionarCategoria(cat, { origen: 'pestana' });
+      else mostrarEnLista(actualId, true);
+      q<HTMLElement>(`#grupo-${cat}`)?.focus();
+      return;
+    }
+    // Movil: "Ver en la lista" baja hasta el primer resultado
+    if (el.closest('[data-ver-resultados]')) {
+      // Primer resultado o, si no hay, el mensaje con los atajos
+      const f = filas.find((x) => !x.fila.hidden);
+      const destino = f ? f.fila : q('[data-sin-resultados]');
+      const foco = f
+        ? f.fila.querySelector<HTMLElement>('[data-seleccionar-producto]')
+        : q<HTMLElement>('[data-atajo-categoria]');
+      if (destino && foco) {
+        destino.scrollIntoView({ block: 'center', behavior: mqReducido.matches ? 'auto' : 'smooth' });
+        foco.focus({ preventScroll: true });
       }
     }
   });
@@ -325,13 +444,13 @@ function arrancar() {
   });
 
   // Buscador
+  indexarFilas();
   const input = q<HTMLInputElement>('[data-buscador]');
   input?.addEventListener('input', () => filtrar(input.value));
   input?.addEventListener('keydown', (ev) => {
     if (ev.key === 'Escape' && input.value) {
       ev.preventDefault();
-      input.value = '';
-      filtrar('');
+      limpiarBusqueda();
     }
   });
   if (input?.value) filtrar(input.value); // valor restaurado por el navegador
@@ -343,7 +462,7 @@ function arrancar() {
     if (p) seleccionar(p.id, { origen: 'inicial' });
   }
 
-  window.hinojosaCatalogo = { seleccionar, seleccionarCategoria, siguiente, anterior, estado };
+  window.hinojosaCatalogo = { seleccionar, seleccionarCategoria, siguiente, anterior, estado, producto };
 }
 
 declare global {
@@ -354,6 +473,7 @@ declare global {
       siguiente: typeof siguiente;
       anterior: typeof anterior;
       estado: typeof estado;
+      producto: typeof producto;
     };
   }
   interface WindowEventMap {

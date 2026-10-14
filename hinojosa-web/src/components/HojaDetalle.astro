@@ -1,0 +1,248 @@
+---
+// Hoja de detalle de producto en movil (P6, guia-estilo 7.3,
+// storyboard-carrusel 6.7, prueba 17 de vistas-hinojosa).
+// <dialog> modal: solo se abre por debajo de 48rem al tocar una fila de la
+// lista (src/lib/hoja-detalle.ts). En escritorio la fila sigue girando el
+// carrusel. Sin JS no se abre nunca (un <dialog> cerrado no se pinta) y la
+// lista sigue completa.
+//
+// Ganchos: [data-hoja-detalle] (dialog), [data-hoja-titulo] (recibe el
+// foco), [data-hoja-imagen], [data-hoja-detalle-texto], [data-hoja-categoria],
+// [data-hoja-precio], [data-hoja-cta], [data-hoja-cerrar].
+// data-captura-flechas: con la hoja abierta, ←/→ no cambian de vista.
+import Icono from './Icono.astro';
+import { textos } from '../lib/negocio';
+
+const t = textos.productos.hoja;
+---
+<dialog
+  id="hoja-producto"
+  class="hoja"
+  aria-labelledby="hoja-titulo"
+  data-hoja-detalle
+  data-captura-flechas
+>
+  <div class="hoja-contenido">
+    <span class="hoja-asa" aria-hidden="true"></span>
+    <div class="hoja-imagen" data-hoja-imagen></div>
+    <h2 id="hoja-titulo" class="hoja-titulo" tabindex="-1" data-hoja-titulo></h2>
+    <p class="hoja-detalle" data-hoja-detalle-texto></p>
+    <p class="hoja-meta">
+      <span data-hoja-categoria></span>
+      <span class="hoja-chip cifra" data-hoja-precio></span>
+    </p>
+    <a href={t.destino} class="boton boton-oro hoja-cta" data-hoja-cta>
+      <span>{t.dondeComprar}</span>
+      <span class="hoja-cta-destino">{t.irVisitanos} <Icono nombre="flecha_derecha" class="size-5" /></span>
+    </a>
+    <button type="button" class="boton hoja-cerrar" data-hoja-cerrar>
+      <Icono nombre="cerrar" class="size-5" />
+      {t.cerrar}
+    </button>
+  </div>
+</dialog>
+
+<style>
+  .hoja {
+    /* Pegada abajo, a todo el ancho (se anulan margin/max-* del UA) */
+    position: fixed;
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: none;
+    max-height: 85dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 1.75rem 1.75rem 0 0;
+    background: var(--color-crema);
+    padding: 0;
+    color: var(--color-tinta);
+    box-shadow: var(--shadow-flotante);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .hoja::backdrop {
+    background: var(--color-velo-franja);
+  }
+  .hoja-contenido {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  }
+  .hoja-asa {
+    align-self: center;
+    width: 2.5rem;
+    height: 0.25rem;
+    margin-bottom: 0.25rem;
+    border-radius: 999px;
+    background: var(--color-crema-oscuro);
+  }
+  .hoja-imagen {
+    display: flex;
+    height: clamp(8.5rem, 30dvh, 14rem);
+    align-items: flex-end;
+    justify-content: center;
+    border-radius: var(--radius-tarjeta);
+    background: radial-gradient(ellipse 60% 70% at 50% 50%, var(--color-foco-estudio), transparent 75%);
+    padding-block: 0.5rem;
+  }
+  .hoja-imagen :global(picture),
+  .hoja-imagen :global(img) {
+    display: block;
+    height: 100%;
+    max-width: 100%;
+  }
+  .hoja-imagen :global(img) {
+    width: auto;
+    object-fit: contain;
+    object-position: 50% 100%;
+  }
+  /* Imagen con fondo de estudio: placa redondeada, como en el carrusel */
+  .hoja-imagen :global(.hoja-placa) {
+    overflow: hidden;
+    border: 1px solid var(--color-crema-oscuro);
+    border-radius: var(--radius-tarjeta);
+    background: var(--color-blanco);
+    aspect-ratio: 3 / 4;
+  }
+  .hoja-imagen :global(.hoja-placa img) {
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+  /* Producto sin imagen: costal generico con el nombre en la etiqueta (P5) */
+  .hoja-imagen :global(.hoja-costal) {
+    position: relative;
+    height: 100%;
+    aspect-ratio: 200 / 260;
+  }
+  .hoja-imagen :global(.hoja-costal img) {
+    width: 100%;
+  }
+  .hoja-imagen :global(.hoja-costal span) {
+    position: absolute;
+    top: 40%;
+    left: 23%;
+    right: 23%;
+    height: 30%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 0.875rem;
+    line-height: 1.1;
+    text-align: center;
+    color: var(--color-bosque);
+  }
+  .hoja-titulo {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: var(--text-producto);
+    line-height: var(--text-producto--line-height);
+    color: var(--color-tinta);
+    text-wrap: balance;
+  }
+  /* Recibe el foco por programa: subrayado, como los titulos de vista */
+  .hoja-titulo:focus {
+    outline: none;
+  }
+  .hoja-titulo:focus-visible {
+    outline: none;
+    text-decoration: underline;
+    text-decoration-color: var(--color-hoja);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.18em;
+  }
+  .hoja-detalle {
+    color: var(--color-tinta-suave);
+  }
+  .hoja-detalle:empty {
+    display: none;
+  }
+  .hoja-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem 0.75rem;
+    color: var(--color-tinta-suave);
+  }
+  .hoja-chip {
+    border-radius: var(--radius-chip);
+    background: var(--color-maiz);
+    padding: 0.125rem 0.625rem;
+    font-weight: 800;
+    color: var(--color-tinta);
+  }
+  .hoja-cta {
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 0.5rem;
+    border: 2px solid var(--color-bosque);
+    column-gap: 0.375rem;
+  }
+  .hoja-cta-destino {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .hoja-cerrar {
+    width: 100%;
+    min-height: var(--spacing-objetivo);
+    border: 2px solid var(--color-bosque);
+    background: var(--color-blanco);
+    color: var(--color-bosque);
+  }
+  .hoja-cerrar:hover {
+    background: var(--color-bosque);
+    color: var(--color-blanco);
+  }
+
+  /* Entrada desde abajo (300 ms) y salida (200 ms). Con movimiento reducido
+     o pausa del sitio, global.css anula `animation`: aparece sin moverse. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not([data-movimiento='pausado'])) .hoja[open] {
+      animation: hoja-sube 300ms var(--ease-vista);
+    }
+    :global(html:not([data-movimiento='pausado'])) .hoja[open]::backdrop {
+      animation: hoja-telon 200ms ease-out;
+    }
+    :global(html:not([data-movimiento='pausado'])) .hoja[open][data-saliendo] {
+      animation: hoja-baja 200ms var(--ease-salida) forwards;
+    }
+    :global(html:not([data-movimiento='pausado'])) .hoja[open][data-saliendo]::backdrop {
+      animation: hoja-telon 200ms ease-in reverse forwards;
+    }
+  }
+  @keyframes hoja-sube {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  @keyframes hoja-baja {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes hoja-telon {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  import '../lib/hoja-detalle';
+</script>

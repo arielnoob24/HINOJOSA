@@ -33,10 +33,10 @@ const poster = '/video/canela-jugando-poster.webp';
 ---
 <Vista id="nosotros" nombre={textos.navegacion[1].texto} cuerpo="nosotros-cuerpo">
   <div class="nos-marco">
-    <h2 id="titulo-nosotros" tabindex="-1" data-titulo-vista class="text-h2">{t.titulo}</h2>
+    <h2 id="titulo-nosotros" tabindex="-1" data-titulo-vista class="text-h2" data-entra style="--orden: 0">{t.titulo}</h2>
 
     <div class="nos-mosaico" data-mosaico>
-      <article class="nos-familia" data-tarjeta-familia data-tilt aria-labelledby="frase-familia">
+      <article class="nos-familia" data-tarjeta-familia data-tilt data-entra style="--orden: 1" aria-labelledby="frase-familia">
         <div class="nos-video" style={`--poster-video: url(${poster})`}>
           <video
             muted
@@ -65,17 +65,17 @@ const poster = '/video/canela-jugando-poster.webp';
         </p>
       </article>
 
-      <article class="nos-tarjeta nos-mision" data-elevar aria-labelledby="eyebrow-mision">
+      <article class="nos-tarjeta nos-mision" data-elevar data-entra style="--orden: 2" aria-labelledby="eyebrow-mision">
         <h3 id="eyebrow-mision" class="nos-eyebrow text-canela-oscuro">{t.tituloMision}</h3>
         <p class="nos-texto text-tinta">{p.mision}</p>
       </article>
 
-      <article class="nos-tarjeta nos-vision" data-elevar aria-labelledby="eyebrow-vision">
+      <article class="nos-tarjeta nos-vision" data-elevar data-entra style="--orden: 2" aria-labelledby="eyebrow-vision">
         <h3 id="eyebrow-vision" class="nos-eyebrow text-maiz">{t.tituloVision}</h3>
         <p class="nos-texto text-blanco">{p.vision}</p>
       </article>
 
-      <section class="nos-valores" data-banda-valores data-tilt aria-labelledby="titulo-valores">
+      <section class="nos-valores" data-banda-valores data-tilt data-entra style="--orden: 2" aria-labelledby="titulo-valores">
         <h3 id="titulo-valores" class="sr-only">{t.tituloValores}</h3>
         <ul class="nos-lista-valores">
           {p.valores.map((v, i) => (

@@ -26,12 +26,12 @@ const iconoAnimal: Record<string, string> = {
 ---
 <Vista id="por-que" nombre={textos.navegacion[3].texto} cuerpo="porque-cuerpo">
   <div class="pq-marco">
-    <div class="pq-cabecera">
+    <div class="pq-cabecera" data-entra style="--orden: 0">
       <h2 id="titulo-por-que" tabindex="-1" data-titulo-vista class="text-h2">{t.titulo}</h2>
       <p class="pq-frase">{t.frase}</p>
     </div>
 
-    <section aria-labelledby="pq-pilares" data-banda="pilares">
+    <section aria-labelledby="pq-pilares" data-banda="pilares" data-entra style="--orden: 1">
       <h3 id="pq-pilares" class="sr-only">{t.tituloPilares}</h3>
       <ul class="pq-pilares">
         {t.pilares.map((p, i) => (
@@ -46,7 +46,7 @@ const iconoAnimal: Record<string, string> = {
       </ul>
     </section>
 
-    <section class="pq-banda tema-oscuro" aria-labelledby="pq-diferenciales" data-banda="diferenciales">
+    <section class="pq-banda tema-oscuro" aria-labelledby="pq-diferenciales" data-banda="diferenciales" data-entra style="--orden: 2">
       <h3 id="pq-diferenciales" class="sr-only">{t.tituloDiferenciales}</h3>
       <ul class="pq-diferenciales">
         {t.diferenciales.map((d, i) => (
@@ -58,7 +58,7 @@ const iconoAnimal: Record<string, string> = {
       </ul>
     </section>
 
-    <section aria-labelledby="pq-animales" data-banda="animales">
+    <section aria-labelledby="pq-animales" data-banda="animales" data-entra style="--orden: 2">
       <h3 id="pq-animales" class="pq-eyebrow">{t.tituloAnimales}</h3>
       <ul class="pq-animales">
         {negocio.animalesAtendidos.map((a) => (

@@ -16,25 +16,50 @@
 //   [data-carrusel-anuncio]           region aria-live (visualmente oculta)
 //   [data-lista-catalogo] #lista-<cat> [data-producto-fila=<id>]
 //   script#datos-catalogo             JSON con categorias y productos
+//   [data-buscador] [data-resultado-busqueda] [data-ver-resultados] (movil)
+//   [data-grupo-conteo] ("N productos" / "N de TOTAL" al filtrar)
+//   [data-sin-resultados] [data-atajo-categoria=<cat>]
+//   [data-entra] + style="--orden: N" (entrada escalonada, la anima
+//   src/lib/animacion: cabecera 0, carrusel 1, buscador y lista 2)
+//   <HojaDetalle> (movil < 48rem, src/lib/hoja-detalle.ts)
+//
+// Orden del DOM (P6): cabecera, buscador, carrusel, lista. En movil el
+// buscador queda ENCIMA del carrusel; en escritorio la rejilla lo coloca
+// arriba de la columna derecha, pegado a la lista (mismo panel).
 import Vista from '../Vista.astro';
 import Icono from '../Icono.astro';
+import HojaDetalle from '../HojaDetalle.astro';
 import { catalogo, textos, formatoPrecio, miniaturaDe, avifDe } from '../../lib/negocio';
 import { altProducto } from '../../lib/seo';
+import { textoBusqueda } from '../../lib/busqueda';
 import { srcsetProducto, medidasImagen, miniaturaLista, SIZES_ANILLO, SIZES_REJILLA } from '../../lib/srcset-producto';
 
 const t = textos.productos;
-// Textos que aun no estan en textos.json (MIGRAR a textos.productos)
-const local = {
-  etiquetaCarrusel: 'Productos de la categoría',
-  posicion: '{i} de {n}',
-  posicionLarga: 'Producto {i} de {n}',
-  borrar: 'Borrar búsqueda',
-  pruebaOtra: 'Prueba con otra palabra.',
-  sinJsVer: 'Ver la lista',
-};
 
 type Producto = (typeof catalogo.productos)[number];
 const conFondo = (p: Producto) => 'conFondo' in p && Boolean((p as { conFondo?: boolean }).conFondo);
+const animalesDe = (p: Producto): string[] => ('animales' in p && Array.isArray(p.animales) ? p.animales : []);
+const textoConteo = (n: number) => (n === 1 ? t.conteoUno : t.conteo.replace('{n}', String(n)));
+const [vacioAntes, vacioDespues] = t.sinResultadosTitulo.split('{termino}');
+
+// Miniatura de la lista (P10): hueco de 40 px en movil y 48 px en >= 48rem.
+// Descriptores w con el lado mayor (object-fit: contain en caja cuadrada):
+// la de 80 px de alto cubre 40 px a 2x; la de 160 px, 48 px a 2x.
+const SIZES_MINI = '(min-width: 48rem) 48px, 40px';
+function miniatura(imagen: string | null) {
+  const grande = miniaturaDe(imagen);
+  const base = miniaturaLista(grande);
+  if (!grande || !base) return null;
+  if (!base.srcset) return { src: base.src, w: base.w, h: base.h };
+  const mG = medidasImagen(grande);
+  const lado = (m: { w: number; h: number }) => Math.max(m.w, m.h);
+  return {
+    src: base.src,
+    srcset: `${base.src} ${lado(base)}w, ${grande} ${lado(mG)}w`,
+    w: base.w,
+    h: base.h,
+  };
+}
 
 const grupos = catalogo.categorias
   .slice()
@@ -48,9 +73,6 @@ const frente = grupos[0]?.productos.find((p) => p.imagen);
 // preload de Layout.astro pide exactamente esta AVIF.
 const frenteAvif = frente?.imagen ? frente.imagen.replace(/\.webp$/, '-400.avif') : '';
 const tabla = catalogo.tablaProteinaTilapia;
-
-const normalizar = (s: string) =>
-  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 const datos = {
   categorias: grupos.map(({ id, nombre, nombreCorto }) => ({ id, nombre, nombreCorto })),
@@ -66,24 +88,62 @@ const datos = {
     miniatura: miniaturaDe(p.imagen),
     srcset: srcsetProducto(p.imagen),
     conFondo: conFondo(p),
+    animales: animalesDe(p),
   })),
   sizesAnillo: SIZES_ANILLO,
   textos: {
-    etiquetaCarrusel: local.etiquetaCarrusel,
-    posicion: local.posicion,
-    posicionLarga: local.posicionLarga,
+    etiquetaCarrusel: t.etiquetaCarrusel,
+    posicion: t.posicion,
+    posicionConFoto: t.posicionConFoto,
+    posicionLarga: t.posicionLarga,
+    posicionLargaConFoto: t.posicionLargaConFoto,
     sinResultados: t.sinResultados,
     conteo: t.conteo,
+    conteoUno: t.conteoUno,
+    conteoFiltrado: t.conteoFiltrado,
+    resultados: t.resultados,
+    resultadosUno: t.resultadosUno,
   },
 };
 const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
 ---
 <Vista id="productos" nombre={textos.navegacion[2].texto} cuerpo="productos-cuerpo">
   <div class="prod-marco">
-    <!-- ================= Izquierda: carrusel ================= -->
-    <div class="prod-izq">
+    <!-- ================= Cabecera ================= -->
+    <header class="prod-cabecera" data-entra style="--orden: 0">
       <h2 id="titulo-productos" tabindex="-1" data-titulo-vista class="text-h2">{t.titulo}</h2>
+    </header>
 
+    <!-- ================= Buscador (movil: encima del carrusel, P6) ================= -->
+    <div class="prod-buscador" data-solo-js data-entra style="--orden: 2">
+      <label for="buscar-producto" class="prod-etiqueta">{t.etiquetaBuscador}</label>
+      <div class="prod-campo">
+        <Icono nombre="buscar" class="prod-lupa size-5" />
+        <input
+          id="buscar-producto"
+          type="search"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder={t.placeholderBuscador}
+          aria-describedby="resultado-busqueda"
+          aria-controls="catalogo-lista"
+          data-buscador
+        />
+        <button type="button" class="prod-borrar" aria-label={t.borrarBusqueda} data-borrar-busqueda hidden>
+          <Icono nombre="cerrar" class="size-5" />
+        </button>
+      </div>
+      <div class="prod-resultado">
+        <p id="resultado-busqueda" class="prod-resultado-texto" aria-live="polite" data-resultado-busqueda></p>
+        <button type="button" class="prod-ver-resultados" data-ver-resultados hidden>
+          {t.verResultados}
+          <Icono nombre="flecha_derecha" class="size-5 prod-ver-icono" />
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= Carrusel ================= -->
+    <div class="prod-carrusel" data-entra style="--orden: 1">
       <div class="prod-pestanas" role="group" aria-label={t.etiquetaPestanas} data-solo-js>
         {grupos.map((g) => (
           <button
@@ -107,7 +167,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
         data-modo="rejilla"
         role="region"
         aria-roledescription="carrusel"
-        aria-label={`${local.etiquetaCarrusel}: ${grupos[0]?.nombre ?? ''}`}
+        aria-label={`${t.etiquetaCarrusel}: ${grupos[0]?.nombre ?? ''}`}
         data-solo-js
       >
         <button type="button" class="prod-flecha prod-flecha-izq" aria-label={t.anterior} data-carrusel-anterior>
@@ -181,7 +241,8 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
         <p class="prod-rotulo-nombre" data-rotulo-nombre></p>
         <p class="prod-rotulo-meta">
           <span data-rotulo-categoria></span>
-          <span aria-hidden="true">·</span>
+          <!-- Sin posicion (producto sin imagen) el separador no se pinta (P5, CSS :has) -->
+          <span class="prod-rotulo-sep" aria-hidden="true">·</span>
           <span data-rotulo-posicion></span>
           <span class="prod-chip cifra" data-rotulo-precio></span>
         </p>
@@ -197,7 +258,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
               <a href={`#lista-${g.id}`} class="prod-sinjs-tarjeta">
                 {rep && <img src={miniaturaDe(rep.imagen)!} alt="" loading="lazy" width={medidasImagen(miniaturaDe(rep.imagen)).w} height={medidasImagen(miniaturaDe(rep.imagen)).h} />}
                 <span class="font-extrabold">{g.nombre}</span>
-                <span class="text-chico">{g.productos.length} productos</span>
+                <span class="text-chico">{textoConteo(g.productos.length)}</span>
               </a>
             </li>
           );
@@ -205,49 +266,29 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       </ul>
     </div>
 
-    <!-- ================= Derecha: lista ================= -->
-    <div class="prod-der">
-      <div class="prod-buscador" data-solo-js>
-        <label for="buscar-producto" class="prod-etiqueta">{t.etiquetaBuscador}</label>
-        <div class="prod-campo">
-          <Icono nombre="buscar" class="prod-lupa size-5" />
-          <input
-            id="buscar-producto"
-            type="search"
-            autocomplete="off"
-            spellcheck="false"
-            placeholder={t.placeholderBuscador}
-            aria-describedby="resultado-busqueda"
-            data-buscador
-          />
-          <button type="button" class="prod-borrar" aria-label={local.borrar} data-borrar-busqueda hidden>
-            <Icono nombre="cerrar" class="size-5" />
-          </button>
-        </div>
-        <p id="resultado-busqueda" class="sr-only" aria-live="polite" data-resultado-busqueda></p>
-      </div>
-
+    <!-- ================= Lista ================= -->
+    <div class="prod-panel" data-entra style="--orden: 2">
       <div id="catalogo-lista" class="prod-lista" data-lista-catalogo data-teclas-propias="pagina">
         {grupos.map((g) => (
           <section id={`lista-${g.id}`} class="prod-grupo" aria-labelledby={`grupo-${g.id}`} data-grupo={g.id}>
-            <h3 id={`grupo-${g.id}`} class="prod-grupo-titulo">
-              {g.nombre} <span aria-hidden="true">·</span><span class="sr-only">,</span> {g.productos.length} productos
+            <h3 id={`grupo-${g.id}`} class="prod-grupo-titulo" tabindex="-1">
+              {g.nombre} <span aria-hidden="true">·</span><span class="sr-only">,</span>{' '}<span data-grupo-conteo>{textoConteo(g.productos.length)}</span>
             </h3>
             <ul>
               {g.productos.map((p) => {
-                const mini = miniaturaLista(miniaturaDe(p.imagen));
+                const mini = miniatura(p.imagen);
                 const detalle = [p.marca, p.presentacion].filter(Boolean).join(' · ');
                 return (
                   <li
                     data-producto-fila={p.id}
-                    data-busqueda={normalizar([p.nombre, p.marca, p.presentacion, g.nombre].filter(Boolean).join(' '))}
+                    data-busqueda={textoBusqueda([p.nombre, p.marca, p.presentacion, g.nombre], animalesDe(p))}
                   >
                     <button type="button" class="prod-fila" data-seleccionar-producto={p.id}>
-                      <span class:list={['prod-mini', p.imagen && conFondo(p) && 'prod-mini-placa']} aria-hidden="true">
+                      <span class:list={['prod-mini', p.imagen && conFondo(p) && 'prod-mini-placa', !p.imagen && 'prod-mini-costal']} aria-hidden="true">
                         {mini ? (
-                          <img src={mini.src} srcset={mini.srcset} alt="" loading="lazy" decoding="async" width={mini.w} height={mini.h} />
+                          <img src={mini.src} srcset={mini.srcset} sizes={mini.srcset ? SIZES_MINI : undefined} alt="" loading="lazy" decoding="async" width={mini.w} height={mini.h} />
                         ) : (
-                          <Icono nombre="costal" class="size-5 text-tinta-suave" />
+                          <Icono nombre="costal" class="size-6" />
                         )}
                       </span>
                       <span class="prod-fila-texto">
@@ -282,8 +323,17 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
           </section>
         ))}
         <div class="prod-vacio" data-sin-resultados hidden>
-          <p>No encontramos «<span data-termino-buscado></span>». {local.pruebaOtra}</p>
-          <button type="button" class="boton prod-boton-secundario" data-borrar-busqueda>{local.borrar}</button>
+          <p class="prod-vacio-titulo">{vacioAntes}<span data-termino-buscado></span>{vacioDespues}</p>
+          <p id="atajos-ayuda">{t.sinResultadosAyuda}</p>
+          <ul class="prod-atajos" aria-labelledby="atajos-ayuda">
+            {grupos.map((g) => (
+              <li>
+                <button type="button" class="prod-atajo" data-atajo-categoria={g.id}>
+                  {g.nombreCorto}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
@@ -295,18 +345,25 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   </div>
 
   <script type="application/json" id="datos-catalogo" set:html={datosJson} />
+  <HojaDetalle />
 </Vista>
 
 <style>
+  /* Movil: una columna en el orden del DOM (cabecera, buscador, carrusel,
+     lista). Escritorio: rejilla 55/45 (al final del bloque). */
   .prod-marco {
     display: grid;
-    gap: var(--spacing-mosaico);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
     width: 100%;
     max-width: var(--container-contenido);
     margin-inline: auto;
     padding: var(--spacing-vista) 1rem;
   }
-  .prod-izq {
+  .prod-cabecera {
+    min-width: 0;
+  }
+  .prod-carrusel {
     display: flex;
     min-width: 0;
     flex-direction: column;
@@ -315,9 +372,10 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
 
   /* ---------- Pestanas ----------
      Rejilla 2x2 cuando la columna es estrecha y fila de 4 cuando cabe
-     (consulta de contenedor sobre .prod-izq). Antes era una fila con scroll
-     horizontal propio y "Granos" quedaba fuera de pantalla en movil (QA M1). */
-  .prod-izq {
+     (consulta de contenedor sobre .prod-carrusel). Antes era una fila con
+     scroll horizontal propio y "Granos" quedaba fuera de pantalla en movil
+     (QA M1). */
+  .prod-carrusel {
     container-type: inline-size;
   }
   .prod-pestanas {
@@ -350,6 +408,10 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     background: var(--color-bosque);
     color: var(--color-blanco);
     font-weight: 800;
+  }
+  /* El recuento pesa menos que el nombre en las inactivas (P10) */
+  .prod-pestana[aria-pressed='false'] .prod-cuenta {
+    opacity: 0.75;
   }
 
   /* ---------- Escenario ---------- */
@@ -534,6 +596,12 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   .prod-chip:empty {
     display: none;
   }
+  /* Producto sin posicion en el anillo (sin imagen): sin "·" colgando (P5).
+     Lo decide el texto que se ve, asi va sincronizado con el rotulo aunque
+     carrusel.ts retrase el cambio al 50 % del giro. */
+  .prod-rotulo-meta:has([data-rotulo-posicion]:empty) .prod-rotulo-sep {
+    display: none;
+  }
 
   /* ---------- Sin JS ---------- */
   .prod-sinjs {
@@ -561,23 +629,23 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     width: auto;
   }
 
-  /* ---------- Panel derecho ---------- */
-  .prod-der {
-    display: flex;
+  /* ---------- Buscador y lista ----------
+     Movil: dos tarjetas (buscador arriba, lista abajo). Escritorio: un solo
+     panel partido en dos elementos de la rejilla; clip-path corta la sombra
+     en la junta para que no se vea la costura. */
+  .prod-panel,
+  .prod-buscador {
     min-width: 0;
-    flex-direction: column;
     border-radius: var(--radius-panel);
     background: var(--color-superficie);
     box-shadow: var(--shadow-tarjeta);
   }
+  .prod-panel {
+    display: flex;
+    flex-direction: column;
+  }
   .prod-buscador {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
-    background: var(--color-superficie);
-    padding: 1rem 1rem 0.75rem;
-    border-bottom: 1px solid var(--color-crema-oscuro);
+    padding: 0.875rem 1rem 0.75rem;
   }
   .prod-etiqueta {
     display: block;
@@ -628,6 +696,44 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     color: var(--color-tinta);
   }
   .prod-borrar[hidden] {
+    display: none;
+  }
+  /* Resultado de la busqueda: visible en movil (la lista queda bajo el
+     carrusel), solo para lectores en escritorio (las cabeceras de grupo ya
+     dicen "N de TOTAL"). */
+  .prod-resultado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0 0.75rem;
+  }
+  .prod-resultado-texto {
+    font-size: var(--text-chico);
+    line-height: var(--text-chico--line-height);
+    color: var(--color-tinta-suave);
+  }
+  .prod-resultado-texto:not(:empty) {
+    margin-top: 0.375rem;
+  }
+  .prod-ver-resultados {
+    display: inline-flex;
+    min-height: var(--spacing-objetivo);
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+    margin-left: auto;
+    border-radius: var(--radius-boton);
+    padding-inline: 0.5rem;
+    font-weight: 800;
+    color: var(--color-bosque);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .prod-ver-resultados :global(.prod-ver-icono) {
+    transform: rotate(90deg);
+  }
+  .prod-ver-resultados[hidden] {
     display: none;
   }
   .prod-lista {
@@ -738,21 +844,42 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     font-weight: 800;
   }
   .prod-vacio {
-    padding: 1.5rem 0.5rem;
+    padding: 1.25rem 0.5rem;
     color: var(--color-tinta);
   }
   .prod-vacio[hidden] {
     display: none;
   }
-  .prod-boton-secundario {
-    margin-top: 0.75rem;
-    border: 2px solid var(--color-bosque);
-    color: var(--color-bosque);
+  .prod-vacio-titulo {
     font-weight: 800;
   }
-  .prod-boton-secundario:hover {
+  /* Sin resultados: las 4 categorias como atajos (botones secundarios) */
+  .prod-atajos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .prod-atajo {
+    width: 100%;
+    min-height: var(--spacing-objetivo);
+    border: 2px solid var(--color-bosque);
+    border-radius: var(--radius-boton);
+    background: var(--color-blanco);
+    padding: 0.375rem 0.75rem;
+    font-weight: 800;
+    color: var(--color-bosque);
+  }
+  .prod-atajo:hover {
     background: var(--color-bosque);
     color: var(--color-blanco);
+  }
+  .prod-grupo-titulo:focus-visible {
+    outline-offset: -3px;
+  }
+  .prod-mini-costal {
+    background: var(--color-kraft);
+    color: var(--color-canela-oscuro);
   }
   .prod-notas {
     border-top: 1px solid var(--color-crema-oscuro);
@@ -770,10 +897,30 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     .prod-grupo-titulo {
       position: static;
     }
-    /* El buscador queda pegado arriba al desplazar la vista: el foco que
-       llega con Tab no puede quedar debajo (WCAG 2.4.11) */
-    :global(html[data-router] .productos-cuerpo) {
-      scroll-padding-top: 8.5rem;
+    /* En movil el buscador va justo despues de la cabecera: entra con el
+       carrusel (orden 1), no despues de el */
+    .prod-buscador[data-entra] {
+      --orden: 1 !important;
+    }
+    /* Que quepa el ejemplo del placeholder a 360 px: sin el hueco del boton
+       de borrar mientras el campo esta vacio */
+    .prod-buscador {
+      padding-inline: 0.75rem;
+    }
+    .prod-campo input:placeholder-shown {
+      padding-right: 0.5rem;
+    }
+    .prod-resultado {
+      flex-wrap: nowrap;
+    }
+    .prod-resultado-texto:not(:empty) {
+      margin-top: 0.25rem;
+    }
+    .prod-ver-resultados {
+      flex: none;
+      margin-top: 0.125rem;
+      padding-inline: 0.25rem;
+      font-size: var(--text-chico);
     }
   }
 
@@ -782,18 +929,75 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     :global(html[data-router] .productos-cuerpo) {
       overflow: hidden;
     }
+    /* Rejilla: cabecera | buscador / carrusel | lista. Sin hueco entre filas
+       para que buscador y lista formen un solo panel. */
     .prod-marco {
       flex: 1 1 auto;
       min-height: 0;
       grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 0 var(--spacing-mosaico);
       padding-inline: var(--spacing-vista);
     }
     :global(html[data-router]) .prod-marco {
       height: 100%;
     }
-    .prod-izq,
-    .prod-der {
+    /* Hasta que llegue el antetitulo (bloque 10) la fila 1 la marca el
+       buscador: el titulo se apoya abajo, junto a las pestanas */
+    .prod-cabecera {
+      grid-area: 1 / 1;
+      align-self: end;
+      padding-bottom: 0.75rem;
+    }
+    .prod-buscador {
+      grid-area: 1 / 2;
+      border-bottom: 1px solid var(--color-crema-oscuro);
+      border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+      padding-top: 1rem;
+      clip-path: inset(-3rem -3rem 0 -3rem);
+    }
+    .prod-carrusel {
+      grid-area: 2 / 1;
       min-height: 0;
+    }
+    .prod-panel {
+      grid-area: 2 / 2;
+      min-height: 0;
+      border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+      clip-path: inset(0 -3rem -3rem -3rem);
+    }
+    /* Sin JS no hay buscador: la lista recupera las esquinas de arriba */
+    :global(html:not(.js)) .prod-panel {
+      grid-row: 1 / 3;
+      border-radius: var(--radius-panel);
+      padding-top: 0.75rem;
+      clip-path: none;
+    }
+    .prod-resultado-texto {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .prod-ver-resultados {
+      display: none;
+    }
+    /* Miniaturas de 48 px y filas de 64 px (P10) */
+    .prod-fila {
+      grid-template-columns: 3rem minmax(0, 1fr) auto;
+      min-height: 4rem;
+    }
+    .prod-mini {
+      width: 3rem;
+      height: 3rem;
+    }
+    .prod-tabla {
+      margin-left: 4.25rem;
+    }
+    .prod-atajos {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
     .prod-escenario {
       flex: 1 1 auto;
@@ -813,8 +1017,15 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       overscroll-behavior: contain;
       scroll-padding-top: 3.25rem; /* cabecera de grupo pegajosa */
     }
-    .prod-buscador {
-      position: static;
+  }
+
+  /* Producto al frente mas grande en escritorio (P7): override local del
+     token, lo heredan el anillo (.anillo-item), la tarjeta provisional de M5
+     (.prod-frente) y carrusel.ts (mide el ancho real del item). 216 px a
+     900 de alto, 180 px (minimo) a 650, tope 240. */
+  @media (min-width: 64rem) {
+    .prod-escenario {
+      --carrusel-ancho: clamp(11.25rem, 24dvh, 15rem);
     }
   }
 </style>

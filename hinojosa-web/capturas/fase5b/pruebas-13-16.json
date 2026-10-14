@@ -1,0 +1,803 @@
+{
+  "escritorio": {
+    "viewport": "1440x900",
+    "inicioANosotros": {
+      "curvaEntrante": {
+        "42ms": "0 / 40px",
+        "92ms": "0.069 / 37.224px",
+        "159ms": "0.581 / 16.7597px",
+        "241ms": "0.88 / 4.81109px",
+        "343ms": "0.986 / 0.578757px",
+        "442ms": "1 / 0.002926px"
+      },
+      "ultimaFrameConAnimacionDeVista": 492,
+      "framesMuestreados": 45,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 202,
+        "entranteOp": 0.736
+      },
+      "coberturaMinima": 0.688,
+      "visiblesAlFinal": [
+        "nosotros"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 68,
+      "pastillaAnchoMax": 143.9,
+      "pastillaXIni": 0,
+      "pastillaXFin": 71.8,
+      "animaHastaMs": 325
+    },
+    "tabFugas": 0,
+    "tabDuranteTransicion": {
+      "salienteId": null,
+      "salienteInert": null,
+      "alcanzablesEnSaliente": 0
+    },
+    "tabFugasTrasVolver": 0,
+    "nosotrosAVisitanos": {
+      "curvaEntrante": {
+        "46ms": "0 / 40px",
+        "90ms": "0.068 / 37.2737px",
+        "174ms": "0.666 / 13.3708px",
+        "258ms": "0.91 / 3.59465px",
+        "364ms": "0.991 / 0.355347px",
+        "449ms": "1 / 0.00293522px"
+      },
+      "ultimaFrameConAnimacionDeVista": 500,
+      "framesMuestreados": 33,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 223,
+        "entranteOp": 0.842
+      },
+      "coberturaMinima": 0.699,
+      "visiblesAlFinal": [
+        "visitanos"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 99,
+      "pastillaAnchoMax": 155.5,
+      "pastillaXIni": 71.8,
+      "pastillaXFin": 493.1,
+      "animaHastaMs": 292
+    },
+    "visitanosAInicio": {
+      "curvaEntrante": {
+        "45ms": "0 / -40px",
+        "94ms": "0.068 / -37.2834px",
+        "177ms": "0.666 / -13.3567px",
+        "254ms": "0.88 / -4.81501px",
+        "346ms": "0.986 / -0.577931px",
+        "444ms": "1 / -0.00290608px"
+      },
+      "ultimaFrameConAnimacionDeVista": 494,
+      "framesMuestreados": 42,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 220,
+        "entranteOp": 0.794
+      },
+      "coberturaMinima": 0.699,
+      "visiblesAlFinal": [
+        "inicio"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 68,
+      "pastillaAnchoMax": 126.9,
+      "pastillaXIni": 493.1,
+      "pastillaXFin": 0,
+      "animaHastaMs": 334
+    },
+    "inicioAPorQue": {
+      "curvaEntrante": {
+        "54ms": "0 / 40px",
+        "99ms": "0.226 / 30.9474px",
+        "157ms": "0.666 / 13.3548px",
+        "252ms": "0.934 / 2.63541px",
+        "348ms": "0.991 / 0.355503px",
+        "452ms": "1 / 0px"
+      },
+      "ultimaFrameConAnimacionDeVista": 502,
+      "framesMuestreados": 53,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 193,
+        "entranteOp": 0.794
+      },
+      "coberturaMinima": 0.687,
+      "visiblesAlFinal": [
+        "por-que"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 68,
+      "pastillaAnchoMax": 174,
+      "pastillaXIni": 0,
+      "pastillaXFin": 327.8,
+      "animaHastaMs": 286
+    },
+    "iconosPorQue": [
+      "400ms",
+      "460ms"
+    ],
+    "clicsRapidos": {
+      "visibles": [
+        "visitanos"
+      ],
+      "hash": "#visitanos",
+      "foco": "titulo-visitanos",
+      "restos": 0,
+      "ariaCurrent": "visitanos",
+      "opacidadActiva": "1",
+      "msEntreClics": 203
+    },
+    "focoEnHashchange": [
+      {
+        "hash": "#nosotros",
+        "foco": "titulo-nosotros",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 3
+      },
+      {
+        "hash": "#inicio",
+        "foco": "titulo-inicio",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 13
+      },
+      {
+        "hash": "#nosotros",
+        "foco": "titulo-nosotros",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 14
+      },
+      {
+        "hash": "#visitanos",
+        "foco": "titulo-visitanos",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#inicio",
+        "foco": "titulo-inicio",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 1
+      },
+      {
+        "hash": "#por-que",
+        "foco": "titulo-por-que",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 3
+      },
+      {
+        "hash": "#nosotros",
+        "foco": "titulo-nosotros",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 55
+      },
+      {
+        "hash": "#productos",
+        "foco": "titulo-productos",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 2
+      },
+      {
+        "hash": "#visitanos",
+        "foco": "titulo-visitanos",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      }
+    ],
+    "rafPorSegundoEnVisitanos": 0,
+    "animacionesVivasEnVisitanos": [],
+    "transicionBarra": {
+      "dur": "0.15s, 0.15s, 0.09s",
+      "delay": "0s, 0s, 0s"
+    },
+    "errores": []
+  },
+  "movil": {
+    "viewport": "360x640",
+    "inicioANosotros": {
+      "curvaEntrante": {
+        "52ms": "0 / 40px",
+        "102ms": "0.363 / 25.4935px",
+        "154ms": "0.666 / 13.3589px",
+        "252ms": "0.934 / 2.63652px",
+        "352ms": "0.995 / 0.202911px",
+        "451ms": "1 / 0px"
+      },
+      "ultimaFrameConAnimacionDeVista": 502,
+      "framesMuestreados": 45,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 169,
+        "entranteOp": 0.737
+      },
+      "coberturaMinima": 0.687,
+      "visiblesAlFinal": [
+        "nosotros"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 48,
+      "pastillaAnchoMax": 54.7,
+      "pastillaXIni": 12,
+      "pastillaXFin": 84,
+      "animaHastaMs": 302
+    },
+    "tabFugas": 0,
+    "tabDuranteTransicion": {
+      "salienteId": null,
+      "salienteInert": null,
+      "alcanzablesEnSaliente": 0
+    },
+    "tabFugasTrasVolver": 0,
+    "nosotrosAVisitanos": {
+      "curvaEntrante": {
+        "45ms": "0 / 40px",
+        "95ms": "0.226 / 30.9756px",
+        "165ms": "0.666 / 13.3697px",
+        "244ms": "0.91 / 3.59426px",
+        "344ms": "0.991 / 0.355281px",
+        "444ms": "1 / 6.50864e-05px"
+      },
+      "ultimaFrameConAnimacionDeVista": 494,
+      "framesMuestreados": 46,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 180,
+        "entranteOp": 0.736
+      },
+      "coberturaMinima": 0.687,
+      "visiblesAlFinal": [
+        "visitanos"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 48,
+      "pastillaAnchoMax": 68.1,
+      "pastillaXIni": 84,
+      "pastillaXFin": 300,
+      "animaHastaMs": 294
+    },
+    "visitanosAInicio": {
+      "curvaEntrante": {
+        "52ms": "0 / -40px",
+        "104ms": "0.363 / -25.4684px",
+        "153ms": "0.666 / -13.3622px",
+        "252ms": "0.934 / -2.63743px",
+        "353ms": "0.995 / -0.203044px",
+        "453ms": "1 / 0px"
+      },
+      "ultimaFrameConAnimacionDeVista": 503,
+      "framesMuestreados": 47,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 169,
+        "entranteOp": 0.736
+      },
+      "coberturaMinima": 0.688,
+      "visiblesAlFinal": [
+        "inicio"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 48,
+      "pastillaAnchoMax": 74.8,
+      "pastillaXIni": 300,
+      "pastillaXFin": 12,
+      "animaHastaMs": 303
+    },
+    "inicioAPorQue": {
+      "curvaEntrante": {
+        "44ms": "0 / 40px",
+        "93ms": "0.225 / 30.9933px",
+        "159ms": "0.666 / 13.3604px",
+        "243ms": "0.91 / 3.59103px",
+        "343ms": "0.991 / 0.355836px",
+        "442ms": "1 / 6.65711e-05px"
+      },
+      "ultimaFrameConAnimacionDeVista": 493,
+      "framesMuestreados": 58,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 177,
+        "entranteOp": 0.737
+      },
+      "coberturaMinima": 0.687,
+      "visiblesAlFinal": [
+        "por-que"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 48,
+      "pastillaAnchoMax": 68.1,
+      "pastillaXIni": 12,
+      "pastillaXFin": 228,
+      "animaHastaMs": 310
+    },
+    "iconosPorQue": [
+      "400ms",
+      "460ms"
+    ],
+    "clicsRapidos": {
+      "visibles": [
+        "visitanos"
+      ],
+      "hash": "#visitanos",
+      "foco": "titulo-visitanos",
+      "restos": 0,
+      "ariaCurrent": "visitanos",
+      "opacidadActiva": "1",
+      "msEntreClics": 214
+    },
+    "focoEnHashchange": [
+      {
+        "hash": "#nosotros",
+        "foco": "titulo-nosotros",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 3
+      },
+      {
+        "hash": "#inicio",
+        "foco": "titulo-inicio",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 13
+      },
+      {
+        "hash": "#nosotros",
+        "foco": "titulo-nosotros",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 14
+      },
+      {
+        "hash": "#visitanos",
+        "foco": "titulo-visitanos",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#inicio",
+        "foco": "titulo-inicio",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 1
+      },
+      {
+        "hash": "#por-que",
+        "foco": "titulo-por-que",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 3
+      },
+      {
+        "hash": "#nosotros",
+        "foco": "titulo-nosotros",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 55
+      },
+      {
+        "hash": "#productos",
+        "foco": "titulo-productos",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 1
+      },
+      {
+        "hash": "#visitanos",
+        "foco": "titulo-visitanos",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 1
+      }
+    ],
+    "rafPorSegundoEnVisitanos": 0,
+    "animacionesVivasEnVisitanos": [],
+    "transicionBarra": {
+      "dur": "0.15s, 0.15s, 0.09s",
+      "delay": "0s, 0s, 0s"
+    },
+    "errores": []
+  },
+  "pausa": {
+    "viewport": "1440x900",
+    "pausaAttr": "pausado",
+    "inicioANosotros": {
+      "curvaEntrante": {
+        "55ms": "1 / none",
+        "105ms": "1 / none",
+        "155ms": "1 / none",
+        "255ms": "1 / none",
+        "355ms": "1 / none",
+        "455ms": "1 / none"
+      },
+      "ultimaFrameConAnimacionDeVista": -1,
+      "framesMuestreados": 46,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 5,
+        "entranteOp": 1
+      },
+      "coberturaMinima": 1,
+      "visiblesAlFinal": [
+        "nosotros"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 68,
+      "pastillaAnchoMax": 143,
+      "pastillaXIni": 0,
+      "pastillaXFin": 71.8,
+      "animaHastaMs": -1
+    },
+    "tabFugas": 0,
+    "tabDuranteTransicion": {
+      "salienteId": null,
+      "salienteInert": null,
+      "alcanzablesEnSaliente": 0
+    },
+    "tabFugasTrasVolver": 0,
+    "nosotrosAVisitanos": {
+      "curvaEntrante": {
+        "45ms": "1 / none",
+        "94ms": "1 / none",
+        "161ms": "1 / none",
+        "244ms": "1 / none",
+        "344ms": "1 / none",
+        "444ms": "1 / none"
+      },
+      "ultimaFrameConAnimacionDeVista": -1,
+      "framesMuestreados": 46,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 12,
+        "entranteOp": 1
+      },
+      "coberturaMinima": 1,
+      "visiblesAlFinal": [
+        "visitanos"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 99,
+      "pastillaAnchoMax": 143,
+      "pastillaXIni": 71.8,
+      "pastillaXFin": 493.1,
+      "animaHastaMs": -1
+    },
+    "visitanosAInicio": {
+      "curvaEntrante": {
+        "46ms": "1 / none",
+        "96ms": "1 / none",
+        "164ms": "1 / none",
+        "245ms": "1 / none",
+        "346ms": "1 / none",
+        "446ms": "1 / none"
+      },
+      "ultimaFrameConAnimacionDeVista": -1,
+      "framesMuestreados": 47,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 13,
+        "entranteOp": 1
+      },
+      "coberturaMinima": 1,
+      "visiblesAlFinal": [
+        "inicio"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 68,
+      "pastillaAnchoMax": 99,
+      "pastillaXIni": 493.1,
+      "pastillaXFin": 0,
+      "animaHastaMs": -1
+    },
+    "inicioAPorQue": {
+      "curvaEntrante": {
+        "57ms": "1 / none",
+        "106ms": "1 / none",
+        "158ms": "1 / none",
+        "257ms": "1 / none",
+        "357ms": "1 / none",
+        "457ms": "1 / none"
+      },
+      "ultimaFrameConAnimacionDeVista": -1,
+      "framesMuestreados": 58,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 7,
+        "entranteOp": 1
+      },
+      "coberturaMinima": 1,
+      "visiblesAlFinal": [
+        "por-que"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 68,
+      "pastillaAnchoMax": 161,
+      "pastillaXIni": 0,
+      "pastillaXFin": 327.8,
+      "animaHastaMs": -1
+    },
+    "iconosPorQue": [
+      "(ya limpio)",
+      "(ya limpio)"
+    ],
+    "clicsRapidos": {
+      "visibles": [
+        "visitanos"
+      ],
+      "hash": "#visitanos",
+      "foco": "titulo-visitanos",
+      "restos": 0,
+      "ariaCurrent": "visitanos",
+      "opacidadActiva": "1",
+      "msEntreClics": 203
+    },
+    "focoEnHashchange": [
+      {
+        "hash": "#nosotros",
+        "foco": "titulo-nosotros",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#inicio",
+        "foco": "titulo-inicio",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#nosotros",
+        "foco": "titulo-nosotros",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#visitanos",
+        "foco": "titulo-visitanos",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#inicio",
+        "foco": "titulo-inicio",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#por-que",
+        "foco": "titulo-por-que",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#nosotros",
+        "foco": "titulo-nosotros",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#productos",
+        "foco": "titulo-productos",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#visitanos",
+        "foco": "titulo-visitanos",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      }
+    ],
+    "rafPorSegundoEnVisitanos": 0,
+    "animacionesVivasEnVisitanos": [],
+    "transicionBarra": {
+      "dur": "1e-05s",
+      "delay": "0s"
+    },
+    "errores": []
+  },
+  "reducido": {
+    "viewport": "360x640",
+    "inicioANosotros": {
+      "curvaEntrante": {
+        "44ms": "1 / none",
+        "93ms": "1 / none",
+        "159ms": "1 / none",
+        "242ms": "1 / none",
+        "343ms": "1 / none",
+        "444ms": "1 / none"
+      },
+      "ultimaFrameConAnimacionDeVista": -1,
+      "framesMuestreados": 46,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 9,
+        "entranteOp": 1
+      },
+      "coberturaMinima": 1,
+      "visiblesAlFinal": [
+        "nosotros"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 48,
+      "pastillaAnchoMax": 48,
+      "pastillaXIni": 12,
+      "pastillaXFin": 84,
+      "animaHastaMs": -1
+    },
+    "tabFugas": 0,
+    "tabDuranteTransicion": {
+      "salienteId": null,
+      "salienteInert": null,
+      "alcanzablesEnSaliente": 0
+    },
+    "tabFugasTrasVolver": 0,
+    "nosotrosAVisitanos": {
+      "curvaEntrante": {
+        "42ms": "1 / none",
+        "92ms": "1 / none",
+        "159ms": "1 / none",
+        "242ms": "1 / none",
+        "343ms": "1 / none",
+        "442ms": "1 / none"
+      },
+      "ultimaFrameConAnimacionDeVista": -1,
+      "framesMuestreados": 47,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 9,
+        "entranteOp": 1
+      },
+      "coberturaMinima": 1,
+      "visiblesAlFinal": [
+        "visitanos"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 48,
+      "pastillaAnchoMax": 48,
+      "pastillaXIni": 84,
+      "pastillaXFin": 300,
+      "animaHastaMs": -1
+    },
+    "visitanosAInicio": {
+      "curvaEntrante": {
+        "46ms": "1 / none",
+        "97ms": "1 / none",
+        "163ms": "1 / none",
+        "247ms": "1 / none",
+        "346ms": "1 / none",
+        "446ms": "1 / none"
+      },
+      "ultimaFrameConAnimacionDeVista": -1,
+      "framesMuestreados": 47,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 13,
+        "entranteOp": 1
+      },
+      "coberturaMinima": 1,
+      "visiblesAlFinal": [
+        "inicio"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 48,
+      "pastillaAnchoMax": 48,
+      "pastillaXIni": 300,
+      "pastillaXFin": 12,
+      "animaHastaMs": -1
+    },
+    "inicioAPorQue": {
+      "curvaEntrante": {
+        "42ms": "1 / none",
+        "107ms": "1 / none",
+        "158ms": "1 / none",
+        "258ms": "1 / none",
+        "358ms": "1 / none",
+        "458ms": "1 / none"
+      },
+      "ultimaFrameConAnimacionDeVista": -1,
+      "framesMuestreados": 59,
+      "framesConDestello": 0,
+      "primerDestello": null,
+      "salienteOcultaEn": {
+        "t": 8,
+        "entranteOp": 1
+      },
+      "coberturaMinima": 1,
+      "visiblesAlFinal": [
+        "por-que"
+      ],
+      "barraDxMaxPx": 0,
+      "pastillaAnchoMin": 48,
+      "pastillaAnchoMax": 48,
+      "pastillaXIni": 12,
+      "pastillaXFin": 228,
+      "animaHastaMs": -1
+    },
+    "iconosPorQue": [
+      "(ya limpio)",
+      "(ya limpio)"
+    ],
+    "clicsRapidos": {
+      "visibles": [
+        "visitanos"
+      ],
+      "hash": "#visitanos",
+      "foco": "titulo-visitanos",
+      "restos": 0,
+      "ariaCurrent": "visitanos",
+      "opacidadActiva": "1",
+      "msEntreClics": 202
+    },
+    "focoEnHashchange": [
+      {
+        "hash": "#nosotros",
+        "foco": "titulo-nosotros",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#inicio",
+        "foco": "titulo-inicio",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#nosotros",
+        "foco": "titulo-nosotros",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#visitanos",
+        "foco": "titulo-visitanos",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#inicio",
+        "foco": "titulo-inicio",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#por-que",
+        "foco": "titulo-por-que",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#nosotros",
+        "foco": "titulo-nosotros",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#productos",
+        "foco": "titulo-productos",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      },
+      {
+        "hash": "#visitanos",
+        "foco": "titulo-visitanos",
+        "focoEsTitulo": true,
+        "animacionesCorriendo": 0
+      }
+    ],
+    "rafPorSegundoEnVisitanos": 0,
+    "animacionesVivasEnVisitanos": [],
+    "transicionBarra": {
+      "dur": "1e-05s",
+      "delay": "0s"
+    },
+    "errores": []
+  }
+}

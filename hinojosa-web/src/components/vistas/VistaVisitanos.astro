@@ -81,7 +81,7 @@ const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURICompon
       data-lng={coords ? String(coords.lng) : ''}
       data-nombre={negocio.nombre}
     >
-      <div class="vis-mapa-vacio" data-mapa-vacio aria-hidden={coords ? 'true' : undefined}>
+      <div class="vis-mapa-vacio" data-mapa-vacio data-entra style="--orden: 1" aria-hidden={coords ? 'true' : undefined}>
         <svg class="vis-pin" viewBox="0 0 64 84" aria-hidden="true">
           <ellipse cx="32" cy="80" rx="14" ry="3.5" fill="#14301d" opacity=".18" />
           <path d="M32 76S6 50 6 30a26 26 0 0 1 52 0c0 20-26 46-26 46z" fill="#1b4d2b" />
@@ -108,7 +108,7 @@ const estiloTextura = `--textura-mapa: url("data:image/svg+xml,${encodeURICompon
       <p class="vis-mapa-error" role="status" data-mapa-estado hidden>{t.mapaNoDisponible}</p>
     </div>
 
-    <article class="vis-tarjeta" aria-labelledby="titulo-visitanos">
+    <article class="vis-tarjeta" aria-labelledby="titulo-visitanos" data-entra style="--orden: 0">
       <p class="vis-eyebrow">{t.titulo}</p>
       <h2 id="titulo-visitanos" tabindex="-1" data-titulo-vista class="vis-nombre">{negocio.nombre}</h2>
 
