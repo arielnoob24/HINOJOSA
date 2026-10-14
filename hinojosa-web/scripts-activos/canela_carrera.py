@@ -17,6 +17,8 @@ Salida en hinojosa-web/public/img/canela/:
     carrera-giro.webp       corre a la izquierda -> frena y gira -> corre a la derecha
     carrera-der.webp        un ciclo de zancada a la derecha (bucle, nativo: sin espejar)
     carrera.json            medidas de los sprites (ver docs/activos.md)
+Con --alto 160 --sufijo -160 se genera el juego pequeno (carrera-*-160.webp y
+carrera-160.json) que la pagina usa cuando altoMostrado x devicePixelRatio <= 160.
 
 Cada sprite es una tira horizontal de cuadros del mismo tamano, recortados con una caja
 comun a todas las piezas (Canela no salta al cambiar de pieza) y a la misma escala.
@@ -269,6 +271,8 @@ def main() -> None:
     ap.add_argument("--alto", type=int, default=ALTO, help=f"alto del cuadro (por defecto {ALTO})")
     ap.add_argument("--q", type=int, default=CALIDAD, help=f"calidad WebP del color (por defecto {CALIDAD})")
     ap.add_argument("--qa", type=int, default=CALIDAD_ALFA, help=f"calidad WebP del alfa (por defecto {CALIDAD_ALFA})")
+    ap.add_argument("--sufijo", default="", help="sufijo de salida para un segundo juego sin pisar el de 320 "
+                    "(p. ej. --alto 160 --sufijo -160 -> carrera-*-160.webp y carrera-160.json)")
     args = ap.parse_args()
     ALTO, CALIDAD, CALIDAD_ALFA = args.alto, args.q, args.qa
     if not VIDEO.exists():
@@ -330,7 +334,7 @@ def main() -> None:
         total = 0
         for nombre, idx in piezas.items():
             hoja = tira([rutas[i] for i in idx], caja, ancho, ALTO)
-            ruta = OUT / f"carrera-{nombre}.webp"
+            ruta = OUT / f"carrera-{nombre}{args.sufijo}.webp"
             hoja.save(ruta, "WEBP", quality=CALIDAD, alpha_quality=CALIDAD_ALFA, method=6, exact=False)
             sprites[nombre] = hoja
             kb = ruta.stat().st_size / 1024
@@ -376,7 +380,7 @@ def main() -> None:
             "derivaHorizontalFuente": round(float(max(cx) - min(cx)), 1),
             "kBTotal": round(total, 1),
         }
-        (OUT / "carrera.json").write_text(json.dumps(datos, ensure_ascii=False, indent=2), encoding="utf-8")
+        (OUT / f"carrera{args.sufijo}.json").write_text(json.dumps(datos, ensure_ascii=False, indent=2), encoding="utf-8")
         print(json.dumps({k: datos[k] for k in ("cuadro", "escala", "cajaComunFuente", "zancada", "empalmes")},
                          ensure_ascii=False))
         print("zancada izq por paso:", z_izq["pxCuadroFuente"], z_izq["sentidoSuelo"])

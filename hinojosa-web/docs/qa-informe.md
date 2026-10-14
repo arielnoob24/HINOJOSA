@@ -1,5 +1,8 @@
 # Informe de QA, accesibilidad y rendimiento: Comercial Hinojosa
 
+
+> **Actualización 2026-10-14 (tras el cierre):** M-1 resuelto (Inicio móvil 99/99/99, peso 340 KiB; `paralaje` y `canela-carrera` se cargan con `import()` tras `load` + primer LCP + hueco libre). M-4 resuelto (juego de sprites de Canela a 160 px, 174,8 KB, elegido según alto × DPR). M-2 y M-3 resueltos (reflujo a 320 px en Por qué y Nosotros: 0 textos fuera de su caja de 320 a 1440 px). Capturas `reflujo-*` y `canela-160-*` en `capturas/fase5b/`.
+
 **Última actualización: 2026-10-14. Cierre de QA de la fase 5-B** (bloques 1–9, 12, 13 y 4-B; rama `Ariel`, commit `6c57db0`). Los bloques 10 y 11 están bloqueados (textos de la dueña y WhatsApp) y **no se evalúan como fallos**.
 Debajo, como anexo, se conserva el informe de la fase 5 (2026-10-13) con las cifras de "antes".
 

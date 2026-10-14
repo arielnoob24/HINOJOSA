@@ -191,6 +191,24 @@ function sello(nombre: string) {
     display: none;
     color: var(--color-crema);
   }
+  /* Reflujo (WCAG 1.4.10, QA M-2): por debajo de 360 px el titulo no cabe
+     a la derecha del circulo ("Sostenibles" se salia 18 px del bloque
+     bosque). Se apila el circulo encima del titulo, centrados, en las mismas
+     2 columnas. A 360 px o mas no cambia nada. min-width: 0 y
+     overflow-wrap son la red para textos mas largos o zoom de texto. */
+  @media (max-width: 22.499rem) {
+    .pq-pilar {
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.375rem;
+      text-align: center;
+    }
+    .pq-pilar-titulo {
+      min-width: 0;
+      max-width: 100%;
+      overflow-wrap: break-word;
+    }
+  }
 
   /* ---------- Diferenciales: banda canela oscuro A SANGRE (.tema-canela) ----------
      El margen negativo la lleva de borde a borde de la vista y el relleno

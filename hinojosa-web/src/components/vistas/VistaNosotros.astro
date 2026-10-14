@@ -248,6 +248,19 @@ const poster = '/video/canela-jugando-poster.webp';
     line-height: 1.15;
     color: var(--color-tinta);
   }
+  /* Reflujo (WCAG 1.4.10, QA M-3): por debajo de 360 px "Responsabilidad"
+     no cabe en media banda (se salia 15 px de la banda hoja-claro). Una sola
+     columna; a 360 px o mas se mantienen las 2 columnas. */
+  @media (max-width: 22.499rem) {
+    .nos-lista-valores {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.5rem;
+    }
+    .nos-valor-palabra {
+      min-width: 0;
+      overflow-wrap: break-word;
+    }
+  }
 
   @media (min-width: 48rem) {
     .nos-mosaico {

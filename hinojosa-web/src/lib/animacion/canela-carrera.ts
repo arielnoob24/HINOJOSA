@@ -8,13 +8,19 @@
 //   giro     18 cuadros (corre a la izq -> frena -> de frente -> mira a la der)
 //   der       6 cuadros, ciclo de carrera nativo hacia la derecha
 // Cada sprite es una tira horizontal (cuadro k en x = k * 388), 12 fps.
+// Hay un segundo juego a 160 px de alto (carrera-160.json, cuadros de 194):
+// se usa cuando altoMostrado x devicePixelRatio <= 160 (movil, 70-88 px a
+// 1x-2x). Los cuadros, piezas y empalmes son los mismos; solo cambia la
+// escala, asi que la velocidad sigue atada a la zancada (velocidad del json
+// elegido x altoMostrado / alto del juego). El juego se elige una vez, al
+// cargar; si luego la franja crece, se sigue con el mismo (solo se reescala).
 //
 // Maquina de estados (una sola vez SENTADA por entrada en Inicio):
 //   sentada (0,6 s) -> arranque -> corre(-1) -> giro(-1) -> corre(+1)
 //                                     ^                        |
 //                                     +------ giro(+1) <-------+
 // - corre(dir): translateX a velocidad constante v = velocidad del json x
-//   (alto mostrado / 320): por cada ciclo de patas avanza exactamente una
+//   (alto mostrado / alto del juego): por cada ciclo de patas avanza exactamente una
 //   zancada, asi las patas apoyadas no patinan.
 // - El giro empieza en un cuadro del ciclo que empalma con el sprite de giro
 //   y en el ultimo momento que permite frenar sin pasar del limite. La
@@ -86,8 +92,12 @@ const SECUENCIA_INVERSA = Array.from({ length: 14 }, (_, i) => 17 - i);
 const ENTRADA_GIRO_DER: Record<number, number> = { 4: 0, 5: 0, 0: 0, 3: 1 };
 /** Posicion en SECUENCIA_INVERSA en la que ya esta parada. */
 const PARADA_GIRO_DER = 4;
-/** Nariz al correr a la derecha: x dentro del cuadro (de 388). */
-const NARIZ_DER = 358;
+/** Nariz al correr a la derecha: x dentro del cuadro, como fraccion del ancho (358 de 388). */
+const NARIZ_DER = 358 / 388;
+/** En el cuadro 0 del arranque la perrita empieza a esta fraccion del ancho (88 de 388). */
+const INICIO_SENTADA = 88 / 388;
+/** Alto del juego pequeno de sprites: se usa si altoMostrado x dpr <= este valor. */
+const ALTO_JUEGO_PEQUENO = 160;
 /** Hueco entre la nariz y el boton de pausa al girar en el borde derecho. */
 const HUECO_BOTON = 8;
 /** Cuadros finales del giro en los que acelera hacia el nuevo sentido. */
@@ -167,7 +177,10 @@ function cargar(): Promise<boolean> {
   if (carga) return carga;
   carga = (async () => {
     await trasLoad();
-    const resp = await fetch('/img/canela/carrera.json');
+    const dpr = window.devicePixelRatio || 1;
+    const altoR = reposo?.offsetHeight ?? 0;
+    const pequeno = altoR > 0 && altoR * dpr <= ALTO_JUEGO_PEQUENO;
+    const resp = await fetch(pequeno ? '/img/canela/carrera-160.json' : '/img/canela/carrera.json');
     if (!resp.ok) throw new Error('carrera.json');
     const d = (await resp.json()) as DatosCarrera;
     const nombres: NombrePieza[] = ['arranque', 'izq', 'giro', 'der'];
@@ -216,7 +229,7 @@ function medir(): boolean {
     const rf = franja.getBoundingClientRect();
     const rb = botonPausa.getBoundingClientRect();
     if (rb.width && rb.bottom > rf.top && rb.top < rf.bottom && rb.left > rf.left) {
-      xMax = limitar(rb.left - rf.left - HUECO_BOTON - NARIZ_DER * escala, 0, xMax);
+      xMax = limitar(rb.left - rf.left - HUECO_BOTON - NARIZ_DER * ancho, 0, xMax);
     }
   }
   if (cambiaAlto) {
@@ -238,7 +251,7 @@ function xSentada(): number {
   if (!reposo || !datos) return xMax;
   // En el cuadro 0 del arranque la perrita empieza 88 px (de 388) dentro del cuadro;
   // en canela-franja empieza en el borde de la caja. Mismo alto y misma base.
-  return limitar(reposo.offsetLeft - 88 * escala, xMin, xMax);
+  return limitar(reposo.offsetLeft - INICIO_SENTADA * ancho, xMin, xMax);
 }
 
 // --- Pintado ---------------------------------------------------------------------

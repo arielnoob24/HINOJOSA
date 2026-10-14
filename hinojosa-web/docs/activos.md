@@ -102,7 +102,9 @@ Fuente: `flow/Puppy_running_in_place_1080p_20261013235908.mp4` (Google Flow, 192
 ```bash
 python hinojosa-web/scripts-activos/canela_carrera.py
 python hinojosa-web/scripts-activos/canela_carrera.py --preview hinojosa-web/capturas/fase5b/canela-sprites-preview.png
-# opciones: --cuadros DIR (conserva y reutiliza los cuadros recortados), --alto 320, --q 58, --qa 60
+# juego pequeno (movil): mismos cuadros a 160 px de alto, sin pisar el de 320
+python hinojosa-web/scripts-activos/canela_carrera.py --alto 160 --sufijo -160 --preview hinojosa-web/capturas/fase5b/canela-sprites-160-preview.png
+# opciones: --cuadros DIR (conserva y reutiliza los cuadros recortados), --alto 320, --q 58, --qa 60, --sufijo -160
 ```
 
 FFmpeg: variable `FFMPEG`, si no `ffmpeg` del PATH y, si tampoco, el binario de `imageio-ffmpeg`. Tarda ~1 min (recorta los 240 cuadros a 1080p en paralelo).
@@ -116,6 +118,21 @@ FFmpeg: variable `FFMPEG`, si no `ffmpeg` del PATH y, si tampoco, el binario de 
 | `/img/canela/carrera.json` | medidas (cuadro, piezas, caja común, suelo, zancada) | | | | 2.1 KB |
 | **Total sprites** | 58 cuadros | | | | **442.1 KB** (presupuesto ≤ 450 KB) |
 
+**Juego de 160 px** (M-4 del QA, 2026-10-14): mismas piezas, cuadros fuente, caja común y empalmes; cuadro 194×160 (escala 0,16097). La página lo elige si `altoMostrado × devicePixelRatio ≤ 160` (móvil a 70–88 px con DPR ≤ 1,8 y escritorio a DPR 1); si no, el de 320. Se elige una vez, al cargar.
+
+| Ruta pública | Cuadros × tamaño | Peso |
+|---|---|---|
+| `/img/canela/carrera-arranque-160.webp` | 27 × 194×160 | 80.3 KB |
+| `/img/canela/carrera-izq-160.webp` | 7 × 194×160 (bucle) | 21.3 KB |
+| `/img/canela/carrera-giro-160.webp` | 18 × 194×160 | 53.6 KB |
+| `/img/canela/carrera-der-160.webp` | 6 × 194×160 (bucle) | 19.6 KB |
+| `/img/canela/carrera-160.json` | medidas del juego de 160 | 2.1 KB |
+| **Total sprites 160** | 58 cuadros | **174.8 KB** (−60 % frente al de 320) |
+
+- Zancada a 160 px: izq 142,0 / der 123,6 px por ciclo → velocidad **243,6 y 247,2 px/s** (la mitad exacta del juego de 320). La página multiplica por `altoMostrado / cuadro.alto` del juego elegido: medido en la página, la misma velocidad (172,0 / 174,6 px/s a 113 px de alto) con los dos juegos.
+- Las constantes de la coreografía en px de cuadro (nariz 358 de 388, inicio de la sentada 88 de 388) se guardan como fracción del ancho del cuadro, así valen para los dos juegos.
+- **Control de halo** (píxeles con alfa > 0 y azul > max(R,G)+8): arranque 17, izq 0, giro 15, der 15 (exceso máximo 20/255), menos que el juego de 320 (154 / 29 / 130 / 42). Hojas de control sobre crema y verde: `capturas/fase5b/canela-sprites-160-preview.png`, `canela-sprites-160-control-1x.png` (1:1) y `canela-sprites-160-control-giro-x3.png` (giro de frente ×3); en la franja: `canela-160-franja-360x640.png`. Sin halo azul visible.
+
 - Tiras horizontales con alfa: el cuadro `k` está en `x = k·388`. Todas las piezas usan **la misma caja de recorte** (x 320–1525, y 50–1044 del video) y la misma escala (0,32193), así que Canela no salta al cambiar de pieza. `suelo` = 318 px: línea de las patas dentro del cuadro (para la sombra propia del sitio).
 - 320 px de alto = franja ×2 (Canela a ~160 px CSS). Calidad WebP 58 / alfa 60, con el alfa casi opaco (> 0,94) llevado a 1 y el casi transparente (< 0,05) a 0: con calidad 78/90 pesaban 938 KB.
 - **Recorte del fondo:** clave por azulidad normalizada `q = (B − max(R,G)) / B` (el fondo vale ~0,32 en todo el cuadro, también en la viñeta y en la sombra del suelo, que solo oscurece). `alpha = clip((0,25 − q) / 0,19)`. Los huecos de fondo entre las patas se recortan; los brillos azulados de los ojos (huecos pequeños no conectados) se fuerzan opacos. Color des-premultiplicado con una placa de fondo cuadrática por cuadro y **despill** (`B ≤ max(R,G)` donde queda tinte azul). Motas sueltas del ruido de compresión, eliminadas. La sombra del video se descarta.
@@ -127,7 +144,7 @@ FFmpeg: variable `FFMPEG`, si no `ffmpeg` del PATH y, si tampoco, el binario de 
   - Giro: empieza en el cuadro 100, el más parecido al inicio del ciclo izquierdo (error 0,022: la página termina un ciclo y sigue con el giro) y termina en el 134, antes del cuadro más parecido al inicio del ciclo derecho (error 0,033, del orden de un cuadro de movimiento).
 - **Zancada** (`carrera.json` → `zancada`): **izq 283,9 px, der 247,2 px por ciclo** a la escala del cuadro (320 px de alto) → velocidad del suelo ≈ **487 y 494 px/s** (multiplicar por alto mostrado / 320). Método: corriendo en el sitio, la pata apoyada se desliza hacia atrás a la velocidad a la que avanzaría el cuerpo. En cada par de cuadros de 24 fps se toma la franja de contacto (22 px de alfa sobre el suelo del ciclo) y se busca el corrimiento horizontal que mejor superpone su perfil de alfa; zancada = mediana de los pasos con apoyo × cuadros del ciclo. Pasos medidos: izq ≈ 59–68 px/cuadro a 1080p, der ≈ 64–66.
 - No se espeja ningún ciclo (el texto de la gorra saldría al revés). **No hay giro derecha → izquierda:** espejar `carrera-giro` (`scaleX(-1)`) o reproducirlo al revés; se decide en la página.
-- Decorativos: `aria-hidden="true"` en el contenedor; cargarlos **después de `load`** (el logo sigue siendo el LCP). Con `prefers-reduced-motion`, solo `canela-franja`.
+- Decorativos: `aria-hidden="true"` en el contenedor; cargarlos **después de `load`** (el logo sigue siendo el LCP). Desde M-1 el propio módulo `canela-carrera` (y `paralaje`) se pide con `import()` tras `load`, tras el primer candidato a LCP y en `requestIdleCallback`. Con `prefers-reduced-motion`, solo `canela-franja`.
 
 ## Marca y favicons
 

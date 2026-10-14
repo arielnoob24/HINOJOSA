@@ -736,9 +736,44 @@ const granos = [
 </style>
 
 <script>
-  import '../../lib/animacion/paralaje';
-  import '../../lib/animacion/canela-carrera';
   import { alCambiarVista, vistaActual } from '../../lib/router';
+
+  // Paralaje y carrera de Canela: modulos aparte, pedidos con import() (M-1
+  // del QA: su trabajo de CPU caia antes del LCP). Se esperan tres cosas:
+  // `load`, el primer candidato a LCP ya pintado (en local `load` llega
+  // ANTES del primer pintado y un idle tras `load` aun caia antes del LCP) y
+  // un hueco libre. Sin PerformanceObserver de LCP (Safari, Firefox) se usa
+  // un margen de 1,2 s tras `load` (y 3 s como tope si no llega el LCP). Hasta entonces se ve la escena quieta y
+  // Canela sentada (<picture>), que es justo su estado inicial: no cambia
+  // nada a la vista. Cada modulo se engancha al router al evaluarse y decide
+  // solo (tactil, reduced motion, pausa, vista activa).
+  const trasLoad = new Promise<void>((r) => {
+    if (document.readyState === 'complete') r();
+    else window.addEventListener('load', () => r(), { once: true });
+  });
+  const trasPintarLcp = new Promise<void>((r) => {
+    const tipos = PerformanceObserver.supportedEntryTypes ?? [];
+    if (!tipos.includes('largest-contentful-paint')) {
+      void trasLoad.then(() => setTimeout(r, 1200));
+      return;
+    }
+    // red de seguridad: pestana en segundo plano (sin pintado, sin LCP)
+    void trasLoad.then(() => setTimeout(r, 3000));
+    const obs = new PerformanceObserver((lista) => {
+      if (!lista.getEntries().length) return;
+      obs.disconnect();
+      r();
+    });
+    obs.observe({ type: 'largest-contentful-paint', buffered: true });
+  });
+  void Promise.all([trasLoad, trasPintarLcp]).then(() => {
+    const pedir = () => {
+      void import('../../lib/animacion/paralaje');
+      void import('../../lib/animacion/canela-carrera');
+    };
+    if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(pedir, { timeout: 1500 });
+    else setTimeout(pedir, 200);
+  });
 
   // Entrada I9 (cascada) solo en carga directa en #inicio. En cuanto se
   // cambia de vista, o al acabar la cascada, se marca y no se repite: al

@@ -1,10 +1,40 @@
 # Handoff: sitio web de Comercial Hinojosa
 
-Última actualización: **2026-10-14**. Rama de trabajo: **`Ariel`** (al día con `main` + la sesión de auditoría; subida a `origin/Ariel`). `main` es la rama de publicación: no se toca sin pull request.
+Última actualización: **2026-10-14**. Rama de trabajo: **`Ariel`** (al día con `main` + auditoría + fase 5-B; subida a `origin/Ariel`). `main` es la rama de publicación: no se toca sin pull request.
 
 ## Estado en una línea
 
-El sitio por vistas está **construido y verificado**, y ya hay una **auditoría de UI/UX/movimiento con todas las decisiones tomadas** (`PLAN.md` §0-B). **Todavía no se ha aplicado ningún cambio de la auditoría al código**: lo siguiente es implementar la **fase 5-B** del plan por bloques.
+**La fase 5-B está implementada y verificada** (2026-10-14): bloques 1–9, 12, 13 y 4-B, con cierre de QA (`docs/qa-informe.md`). Solo quedan los bloques **10** (textos de títulos, pilares y diferenciales: los aprueba el usuario/la dueña) y **11** (botón "Preguntar" con WhatsApp: falta el número), más los bloqueantes de publicación (datos de la dueña y despliegue).
+
+## Resultado de la fase 5-B (2026-10-14)
+
+| Qué | Resultado |
+|---|---|
+| Lighthouse móvil | Inicio **99/99/99** (LCP = logo), `#productos` **96** (LCP = tarjeta provisional, regla M5) |
+| Lighthouse escritorio | 100 en Inicio y Productos; Accesibilidad, Buenas prácticas y SEO 100 en todo |
+| Router | Pruebas 1–18 de `vistas-hinojosa` pasan en 1440×900, 1366×650, 390×844 y 360×640 |
+| axe-core | 0 violaciones en las 5 vistas a 1440 y 360 |
+| Peso de Inicio (móvil) | 340 KiB (sprites de Canela de 160 px tras `load`) |
+| `PENDIENTE_CONFIRMAR` visible | 0 |
+
+**Qué hay nuevo en el código** (commits `e2fab62` → último de la rama):
+- **Visítanos:** sin marcadores; contactos pendientes en una línea; mapa vacío con textura y aviso; tarjeta bosque.
+- **Quiénes somos:** video con `contain`; valores en una banda (una columna < 360 px); Misión en banda canela oscuro.
+- **Productos:** buscador por animal con sinónimos (`src/lib/busqueda.ts`); recuentos "N de TOTAL"; atajos sin resultados; hoja de detalle móvil (`HojaDetalle.astro`, `hoja-detalle.ts`); carrusel C1–C8 con caché, rótulo direccional, fila sincronizada, cambio de categoría con medio giro; costal genérico para productos sin foto; frente más grande y miniaturas de 48 px.
+- **Inicio:** vitrina de 4 costales, acento "Tu mejor aliado para tus animales", "Cómo llegar", accesos por categoría (`data-abrir-categoria`), fila de animales, fondo con trébol; **Canela corriendo de borde a borde** (`src/lib/animacion/canela-carrera.ts`, sprites en `public/img/canela/carrera*`, juegos de 320 y 160 px).
+- **Por qué:** título arriba, sellos de costal, animales como enlaces (`data-abrir-animal`), bandas bosque y canela.
+- **Transversal:** transición entre vistas en dos capas + entrada escalonada; barra con ancho reservado, estiramiento y pop; la pausa anula también transiciones; reparto del color 55/30/15 con kraft (`--color-kraft`), `.tema-canela` y trazo de pincel maíz bajo los h2.
+
+## Decisiones pendientes del usuario (planteadas el 2026-10-14)
+
+1. **Canela en el borde derecho:** hoy se detiene **antes del botón de pausa** (para que no le tape la cara al girar); acorta el recorrido en móvil (~275 → ~212 px). Alternativa: que pase por detrás del botón (se cambia en `medir()` de `canela-carrera.ts`, bloque `botonPausa`).
+2. **Quiénes somos fuera del 55/30/15** (mide 68/21/11): a) video con alfa sobre crema-oscuro (necesita detección de Safari en `video-vista.ts`) o b) más alto a la banda bosque o a la de valores.
+3. **Visítanos y Productos** quedan como excepción al reparto (79/17/4 y 74/26/0) salvo que se apruebe el panel bosque a toda altura en Visítanos (guía §2.2/§15).
+4. **Textos del bloque 10:** títulos ("Calidad, confianza y compromiso", "Lo que tenemos para tus animales", "Siempre a tu lado"), pilares y diferenciales.
+5. **Para la dueña:** casos dudosos del campo `animales` (melaza, sal, maíz, trigo, arrocillo, afrecho, semillas, comedero doble), unidad de "Desde $1.00" en Pro-Can, y todos los datos de contacto.
+
+## Mejoras menores abiertas (de `qa-informe.md`)
+M-5 unidad de precio · M-6 "Mascotas" repetido en Inicio · M-7 rectángulo gris del video en Nosotros a 360 · M-8 con 5 productos los laterales del anillo tapan el frente · M-9 halo verdoso del bebedero · M-11 el carrusel tarda en seguir a la búsqueda. Ninguna bloquea.
 
 ## Dónde está cada cosa
 
@@ -58,27 +88,12 @@ El sitio por vistas está **construido y verificado**, y ya hay una **auditoría
 - En Git Bash, las rutas `/c/...` dentro de código Python entre comillas **no** se convierten: pasar rutas de Windows (`C:\...`) a los scripts.
 - Servidor de desarrollo: `cd hinojosa-web && npm run dev` → http://localhost:4321 (comprobar antes si ya hay uno: `npx astro dev status`).
 
-## Lo siguiente (fase 5-B, orden del plan)
+## Lo siguiente
 
-| Bloque | Qué | ¿Bloqueado? |
-|---|---|---|
-| 1 | Visítanos: quitar `PENDIENTE_CONFIRMAR` de la pantalla, contactos pendientes en una línea, texto y fondo del mapa vacío | No |
-| 2 | Transición entre vistas en dos capas + entrada escalonada | No |
-| 3 | Carrusel C1–C4 | No |
-| 4 | Inicio: vitrina, acento, "Cómo llegar", accesos, animales, fondo, entrada | No |
-| 4-B | Canela corriendo (procesar video → sprites → máquina de estados) | No (video recibido) |
-| 5 | Buscador con campo `animales` y normalización, recuentos | Casos dudosos de `animales` a la dueña |
-| 6 | Barra B1–B4 | No |
-| 7 | Quiénes somos (video sin cortar la gorra, banda de valores) | No |
-| 8 | Productos en móvil: hoja de detalle | No |
-| 9 | Carrusel C5–C8, tamaños, miniaturas (el bebedero ya está resuelto) | No |
-| 10 | Títulos, diferenciales, marcas, pilares | **Sí:** textos por aprobar |
-| 11 | "Preguntar por este producto", contacto en la barra | **Sí:** WhatsApp de la dueña |
-| 12 | Pulidos | No |
-| 13 | Reparto del color | No (aprobado) |
-| Cierre | Lighthouse móvil (Inicio ≥ 99, Productos ≥ 93), router 41/41 + pruebas 13–18, axe 0, capturas después | — |
-
-Al último aviso del 2026-10-14 se le propuso al usuario empezar por los bloques 1 → 2 → 3 y luego Inicio con Canela; **no ha elegido todavía** si empezar por ahí o por Canela.
+1. Decisiones pendientes (arriba).
+2. Bloques 10 y 11 cuando lleguen textos aprobados y WhatsApp.
+3. Despliegue (agente `despliegue`) cuando estén los datos de la dueña.
+4. Pruebas manuales que no se pueden hacer aquí: Safari iOS, Firefox y lector de pantalla real.
 
 ## Pendiente del usuario o de la dueña
 

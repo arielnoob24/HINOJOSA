@@ -638,7 +638,7 @@ En `.claude/skills/` del proyecto:
 | 3. Activos | Derivados de `Nuevos Req/` | ✅ (faltan los de la sección 7) |
 | 4. Animación | Carrusel sincronizado, transiciones, Canela, fallbacks | ✅ versión 1 |
 | 5. SEO y QA | Metadatos, Lighthouse > 90, axe 0, router 41/41 | ✅ |
-| **5-B. Mejoras de la auditoría** | Implementar la sección 0-B por bloques (ver orden abajo) | ⏳ **Siguiente** |
+| **5-B. Mejoras de la auditoría** | Implementar la sección 0-B por bloques (ver orden abajo) | ✅ 2026-10-14: bloques 1–9, 12, 13 y 4-B + cierre de QA (`docs/qa-informe.md`). ⏳ Bloques 10 y 11 bloqueados (textos y WhatsApp de la dueña) |
 | 6. Publicación | Corregir workflow, `site`/`base`, GitHub Pages, enlaces verificados | ⏳ Bloqueada por datos |
 
 ### Orden de implementación de la fase 5-B
@@ -690,5 +690,6 @@ En `.claude/skills/` del proyecto:
 - [x] Bebedero sin damero (2026-10-14)
 - [x] Decidir las propuestas de color (sección 2, "Reparto del color"): aprobadas el 2026-10-14
 - [x] Video de Canela corriendo generado en Flow (`flow/Puppy_running_in_place_1080p_20261013235908.mp4`)
-- [ ] Fase 5-B: bloques 1 a 12 (incluido 4-B) + cierre de QA
+- [x] Fase 5-B: bloques 1–9, 12, 13 y 4-B + cierre de QA (2026-10-14; Lighthouse móvil Inicio 99, Productos 96, escritorio 100; router 18/18; axe 0)
+- [ ] Fase 5-B: bloque 10 (textos de títulos, pilares, diferenciales) y bloque 11 (WhatsApp)
 - [ ] Corregir el workflow de despliegue
