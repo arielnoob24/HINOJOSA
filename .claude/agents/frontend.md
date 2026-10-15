@@ -27,6 +27,7 @@ Las animaciones de estos puntos las integra `animacion-interaccion`; tú dejas e
 - Sin `BotonPausa` en Inicio ni en Quiénes somos (decisión del usuario; riesgo 11 del plan, incumple WCAG 2.2.2: no lo vuelvas a poner).
 - Botones de Inicio con icono a la izquierda: `costal` en "Ver productos", `pin` en "Cómo llegar". Accesos por categoría sin icono.
 - Orden de vistas: Inicio · Productos · Quiénes somos · Por qué elegirnos · Visítanos, en barra, barra móvil, HTML, `VISTAS` y flechas.
+- **Texto no seleccionable:** `user-select: none` global en `global.css`; los `input`/`textarea` vuelven a `user-select: text`. No lo quites ni lo apliques a campos de texto.
 
 ## Reglas no negociables
 - Contrato del router en `vistas-hinojosa`: las 5 vistas en el HTML servido, `inert` + `display: none`, foco al título, hash, flechas fuera de campos y del carrusel, degradación sin JS.

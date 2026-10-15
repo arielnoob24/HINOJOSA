@@ -46,6 +46,17 @@
     line-height: var(--text-cuerpo--line-height);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* Decision del usuario (2026-10-15): el texto de la pagina no se puede
+       seleccionar. Los campos de texto (buscador) siguen siendo editables. */
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input,
+  textarea,
+  [contenteditable='true'] {
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   h1,
