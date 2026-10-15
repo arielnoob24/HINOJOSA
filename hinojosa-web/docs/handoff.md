@@ -1,6 +1,6 @@
 # Handoff: sitio web de Comercial Hinojosa
 
-Última actualización: **2026-10-14**. Rama de trabajo: **`Ariel`** (al día con `main` + auditoría + fase 5-B; subida a `origin/Ariel`). `main` es la rama de publicación: no se toca sin pull request.
+Última actualización: **2026-10-15**. Ramas: **`Ariel`** (de trabajo) y **`main`** apuntan al **mismo commit**: desde el 2026-10-15 el usuario pidió pasar los cambios a `main` para que su compañero los baje con `git pull`. Para seguir trabajando: en `Ariel`, y al terminar `git push origin Ariel` + `git push origin Ariel:main` (avance rápido, sin conflictos mientras nadie suba a `main` por otro lado; si alguien lo hace, primero `git pull origin main` en `Ariel`).
 
 ## Estado en una línea
 
@@ -25,7 +25,14 @@
 - **Por qué:** título arriba, sellos de costal, animales como enlaces (`data-abrir-animal`), bandas bosque y canela.
 - **Transversal:** transición entre vistas en dos capas + entrada escalonada; barra con ancho reservado, estiramiento y pop; la pausa anula también transiciones; reparto del color 55/30/15 con kraft (`--color-kraft`), `.tema-canela` y trazo de pincel maíz bajo los h2.
 
-## Decisiones del 2026-10-15 (bloque 14, implementado y verificado el mismo día)
+## Sesión del 2026-10-15
+
+1. **Bloque 14 implementado y verificado** (commit `e309cb9`), decisiones abajo.
+2. **Arreglo de la franja de Canela** (commit `0e1657f`): al quitar el botón de pausa se perdió el cierre `*/` de un comentario CSS en `VistaInicio.astro` y las reglas de `.canela-cruce` quedaban comentadas (Canela sentada y la franja se veían mal). Corregido y comprobado a 1440 y 360 px. **Ojo al editar CSS con agentes:** revisar que los comentarios queden cerrados.
+3. **Texto no seleccionable: probado y revertido.** Se añadió `user-select: none` global (commit `7f37ec6`) y el usuario pidió volver atrás (commit `1e4de8e`, `git revert`). El texto vuelve a ser seleccionable. Si se retoma, lo recomendado es dar a la selección los colores de la marca con `::selection` y bloquearla solo en controles (botones, barra, pestañas, carrusel), no en el contenido.
+4. **Paso a `main`:** `main` = `Ariel`. La acción de despliegue de GitHub Pages se dispara con cada push a `main` y **falla** (el workflow sigue subiendo `sitio-web/`, que no existe): GitHub Pages sigue mostrando la versión vieja. Arreglarlo es tarea del agente `despliegue`.
+
+### Decisiones del 2026-10-15 (bloque 14)
 
 - **Quitar los botones de pausa** de Canela (Inicio) y del video (Quiénes somos), sin reemplazo. ⚠️ Incumple WCAG 2.2.2: riesgo 11 del plan.
 - **Iconos en los botones de Inicio:** pin de ubicación en "Cómo llegar" y costal en "Ver productos". Los accesos por categoría, sin icono.
