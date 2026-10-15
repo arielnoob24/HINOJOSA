@@ -23,6 +23,11 @@ El sitio por vistas está construido y verificado (router 41/41, axe 0, Lighthou
 9. **Reparto del color (bloque 13):** aplicar la retícula de color que defina `direccion-arte` (superficies `crema-oscuro`/`hoja-claro`, banda `bosque` por vista clara). Kraft, canela oscuro como fondo de banda y trazo dorado bajo los h2 están aprobados (2026-10-14); su ubicación exacta la fija la guía de estilo.
 Las animaciones de estos puntos las integra `animacion-interaccion`; tú dejas el marcado listo (`[data-entra]`, `data-texto` en los rótulos de la barra, etc.).
 
+## Bloque 14 (decidido 2026-10-15)
+- Sin `BotonPausa` en Inicio ni en Quiénes somos (decisión del usuario; riesgo 11 del plan, incumple WCAG 2.2.2: no lo vuelvas a poner).
+- Botones de Inicio con icono a la izquierda: `costal` en "Ver productos", `pin` en "Cómo llegar". Accesos por categoría sin icono.
+- Orden de vistas: Inicio · Productos · Quiénes somos · Por qué elegirnos · Visítanos, en barra, barra móvil, HTML, `VISTAS` y flechas.
+
 ## Reglas no negociables
 - Contrato del router en `vistas-hinojosa`: las 5 vistas en el HTML servido, `inert` + `display: none`, foco al título, hash, flechas fuera de campos y del carrusel, degradación sin JS.
 - **Navegación solo por barra y teclado:** no añadas rueda, deslizamiento ni enlaces "Siguiente".

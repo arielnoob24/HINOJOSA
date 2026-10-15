@@ -16,7 +16,7 @@
 //   - registrarTransicion(fn): anima salida/entrada SIN retrasar el foco.
 //   - window.hinojosaVistas: misma API para scripts sin bundler.
 
-export const VISTAS = ['inicio', 'nosotros', 'productos', 'por-que', 'visitanos'] as const;
+export const VISTAS = ['inicio', 'productos', 'nosotros', 'por-que', 'visitanos'] as const;
 export type Vista = (typeof VISTAS)[number];
 
 export interface DetalleVista {

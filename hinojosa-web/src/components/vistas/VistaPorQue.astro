@@ -47,7 +47,7 @@ function sello(nombre: string) {
   return prod ? miniaturaLista(miniaturaDe(prod.imagen)) : null;
 }
 ---
-<Vista id="por-que" nombre={textos.navegacion[3].texto} cuerpo="porque-cuerpo">
+<Vista id="por-que" nombre={textos.navegacion.find((n) => n.id === 'por-que')!.texto} cuerpo="porque-cuerpo">
   <div class="pq-marco">
     <div class="pq-cabecera" data-entra style="--orden: 0">
       <h2 id="titulo-por-que" tabindex="-1" data-titulo-vista class="text-h2 titulo-vista">{t.titulo}</h2>

@@ -1,8 +1,8 @@
 {
   "navegacion": [
     { "id": "inicio", "hash": "#inicio", "texto": "Inicio" },
-    { "id": "nosotros", "hash": "#nosotros", "texto": "Quiénes somos" },
     { "id": "productos", "hash": "#productos", "texto": "Productos" },
+    { "id": "nosotros", "hash": "#nosotros", "texto": "Quiénes somos" },
     { "id": "por-que", "hash": "#por-que", "texto": "Por qué elegirnos" },
     { "id": "visitanos", "hash": "#visitanos", "texto": "Visítanos" }
   ],

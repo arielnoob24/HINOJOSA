@@ -25,9 +25,16 @@
 - **Por qué:** título arriba, sellos de costal, animales como enlaces (`data-abrir-animal`), bandas bosque y canela.
 - **Transversal:** transición entre vistas en dos capas + entrada escalonada; barra con ancho reservado, estiramiento y pop; la pausa anula también transiciones; reparto del color 55/30/15 con kraft (`--color-kraft`), `.tema-canela` y trazo de pincel maíz bajo los h2.
 
+## Decisiones del 2026-10-15 (bloque 14, implementado y verificado el mismo día)
+
+- **Quitar los botones de pausa** de Canela (Inicio) y del video (Quiénes somos), sin reemplazo. ⚠️ Incumple WCAG 2.2.2: riesgo 11 del plan.
+- **Iconos en los botones de Inicio:** pin de ubicación en "Cómo llegar" y costal en "Ver productos". Los accesos por categoría, sin icono.
+- **Nuevo orden de la barra:** Inicio · Productos · Quiénes somos · Por qué elegirnos · Visítanos (también HTML, router, flechas y transiciones). Las vistas ahora buscan su etiqueta por `id` en `textos.navegacion`, no por posición.
+- **Pausa guardada:** como ya no hay botón, `Layout.astro` borra `localStorage['hinojosa-movimiento']` al arrancar para que nadie quede con la pausa activada para siempre.
+
 ## Decisiones pendientes del usuario (planteadas el 2026-10-14)
 
-1. **Canela en el borde derecho:** hoy se detiene **antes del botón de pausa** (para que no le tape la cara al girar); acorta el recorrido en móvil (~275 → ~212 px). Alternativa: que pase por detrás del botón (se cambia en `medir()` de `canela-carrera.ts`, bloque `botonPausa`).
+1. ~~Canela en el borde derecho~~: deja de aplicar. El 2026-10-15 se decidió **quitar los botones de pausa**, así que el límite derecho vuelve a ser el borde de la franja (bloque 14 del plan).
 2. **Quiénes somos fuera del 55/30/15** (mide 68/21/11): a) video con alfa sobre crema-oscuro (necesita detección de Safari en `video-vista.ts`) o b) más alto a la banda bosque o a la de valores.
 3. **Visítanos y Productos** quedan como excepción al reparto (79/17/4 y 74/26/0) salvo que se apruebe el panel bosque a toda altura en Visítanos (guía §2.2/§15).
 4. **Textos del bloque 10:** títulos ("Calidad, confianza y compromiso", "Lo que tenemos para tus animales", "Siempre a tu lado"), pilares y diferenciales.

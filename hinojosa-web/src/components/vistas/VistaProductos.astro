@@ -107,7 +107,7 @@ const datos = {
 };
 const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
 ---
-<Vista id="productos" nombre={textos.navegacion[2].texto} cuerpo="productos-cuerpo">
+<Vista id="productos" nombre={textos.navegacion.find((n) => n.id === 'productos')!.texto} cuerpo="productos-cuerpo">
   <div class="prod-marco">
     <!-- ================= Cabecera ================= -->
     <header class="prod-cabecera" data-entra style="--orden: 0">

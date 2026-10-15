@@ -25,10 +25,8 @@
 // - El giro empieza en un cuadro del ciclo que empalma con el sprite de giro
 //   y en el ultimo momento que permite frenar sin pasar del limite. La
 //   frenada es lineal y se ajusta para parar EXACTAMENTE en el limite
-//   (x = 0 o x = anchoFranja - anchoCaja): la nariz nunca sale. Si el boton
-//   de pausa ocupa la franja, el limite derecho es su borde izquierdo (menos
-//   8 px de la nariz): sin eso la vuelta, de frente, quedaba tapada por el
-//   boton. Pasa por detras del boton solo si la franja es mas estrecha.
+//   (x = 0 o x = anchoFranja - anchoCaja): la nariz nunca sale. Desde el
+//   bloque 14 no hay boton de pausa: el limite derecho es el borde de la franja.
 // - Giro del borde derecho: el sprite de giro reproducido AL REVES desde el
 //   cuadro 17 (mira a la derecha) hasta el 4 (perfil izquierdo, a media
 //   zancada) y empalme con el ciclo izq en el cuadro 5. No se espeja nada:
@@ -92,14 +90,10 @@ const SECUENCIA_INVERSA = Array.from({ length: 14 }, (_, i) => 17 - i);
 const ENTRADA_GIRO_DER: Record<number, number> = { 4: 0, 5: 0, 0: 0, 3: 1 };
 /** Posicion en SECUENCIA_INVERSA en la que ya esta parada. */
 const PARADA_GIRO_DER = 4;
-/** Nariz al correr a la derecha: x dentro del cuadro, como fraccion del ancho (358 de 388). */
-const NARIZ_DER = 358 / 388;
 /** En el cuadro 0 del arranque la perrita empieza a esta fraccion del ancho (88 de 388). */
 const INICIO_SENTADA = 88 / 388;
 /** Alto del juego pequeno de sprites: se usa si altoMostrado x dpr <= este valor. */
 const ALTO_JUEGO_PEQUENO = 160;
-/** Hueco entre la nariz y el boton de pausa al girar en el borde derecho. */
-const HUECO_BOTON = 8;
 /** Cuadros finales del giro en los que acelera hacia el nuevo sentido. */
 const CUADROS_IMPULSO = 2;
 /** Cuadro del ciclo con el que empalma la salida de cada giro. */
@@ -115,7 +109,6 @@ const reposo = franja?.querySelector<HTMLElement>('[data-perrito]') ?? null;
 const recorrido = franja?.querySelector<HTMLElement>('[data-canela-recorrido]') ?? null;
 const caja = recorrido?.querySelector<HTMLElement>('[data-canela-caja]') ?? null;
 const sombra = recorrido?.querySelector<HTMLElement>('[data-canela-sombra]') ?? null;
-const botonPausa = document.querySelector<HTMLElement>('#inicio [data-boton-pausa]');
 
 // --- Estado ------------------------------------------------------------------
 let datos: DatosCarrera | null = null;
@@ -223,15 +216,6 @@ function medir(): boolean {
   ancho = Math.round((alto * datos.cuadro.ancho) / datos.cuadro.alto);
   xMin = 0;
   xMax = Math.max(0, anchoFranja - ancho);
-  // Borde derecho: si el boton de pausa esta en la franja, gira delante de
-  // el (la nariz a HUECO_BOTON px) en vez de dar la vuelta escondida detras.
-  if (botonPausa && !botonPausa.hidden && botonPausa.offsetParent) {
-    const rf = franja.getBoundingClientRect();
-    const rb = botonPausa.getBoundingClientRect();
-    if (rb.width && rb.bottom > rf.top && rb.top < rf.bottom && rb.left > rf.left) {
-      xMax = limitar(rb.left - rf.left - HUECO_BOTON - NARIZ_DER * ancho, 0, xMax);
-    }
-  }
   if (cambiaAlto) {
     caja.style.width = `${ancho}px`;
     caja.style.height = `${alto}px`;

@@ -38,12 +38,10 @@ const precargaProductos = productoFrente?.imagen ? productoFrente.imagen.replace
 const arranque = `(function () {
   var html = document.documentElement;
   html.classList.add('js');
-  try {
-    if (localStorage.getItem('hinojosa-movimiento') === 'pausado') {
-      html.setAttribute('data-movimiento', 'pausado');
-    }
-  } catch (e) {}
-  var vistas = ['inicio', 'nosotros', 'productos', 'por-que', 'visitanos'];
+  // Bloque 14: sin boton de pausa no se restaura una pausa guardada (no
+  // habria forma de quitarla); se borra la clave de visitas anteriores.
+  try { localStorage.removeItem('hinojosa-movimiento'); } catch (e) {}
+  var vistas = ['inicio', 'productos', 'nosotros', 'por-que', 'visitanos'];
   var h = location.hash.slice(1);
   var inicial = vistas.indexOf(h) > -1 ? h : 'inicio';
   html.setAttribute('data-router', 'arrancando');

@@ -117,7 +117,7 @@
 
 /* ---------------------------------------------------------------------
    Sin movimiento: prefers-reduced-motion O la pausa del usuario
-   (BotonPausa: html[data-movimiento="pausado"], WCAG 2.2.2).
+   (html[data-movimiento="pausado"]; sin boton visible desde el bloque 14).
    `animation: none` y no "duracion 0,01 ms": asi cada elemento queda en su
    estado de reposo natural y no en el ultimo fotograma de una animacion
    (que dejaba a Canela fuera de pantalla). Las transiciones de hover se

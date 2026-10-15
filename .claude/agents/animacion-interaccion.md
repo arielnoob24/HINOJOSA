@@ -26,7 +26,7 @@ Cada punto tiene su especificación exacta (duraciones, curvas, propiedades) en 
 - **El foco va al título antes de cualquier animación.** Ninguna animación retrasa el foco ni bloquea contenido.
 - Toda animación y **toda transición CSS** nueva respeta `prefers-reduced-motion` **y** la pausa del sitio (`html[data-movimiento="pausado"]`). Ojo: hoy la pausa anula `animation` pero no `transition`.
 - Solo `transform` y `opacity`, salvo anchos de elementos pequeños y aislados (pastilla, chip de precio).
-- El carrusel **nunca gira solo**. Ningún bucle nuevo sin control de pausa (WCAG 2.2.2).
+- El carrusel **nunca gira solo**. **Excepción decidida por el usuario (2026-10-15):** Canela y el video de Quiénes somos van en bucle **sin botón de pausa** (riesgo 11 del plan, incumple WCAG 2.2.2); no vuelvas a añadirlo sin que lo pida. Cualquier otro bucle nuevo sí necesita control de pausa.
 - Fuera de `#productos` no quedan tweens ni `requestAnimationFrame`: verifícalo con un contador, no lo supongas.
 
 ## Verificación

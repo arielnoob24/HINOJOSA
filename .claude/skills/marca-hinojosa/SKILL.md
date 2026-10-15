@@ -149,6 +149,7 @@ Los precios de los afiches van siempre acompañados de **"Precios referenciales 
 - **Icono en círculo con aro maíz:** solo para los 4 pilares de "Por qué elegirnos". Valores y animales llevan icono suelto. Repetir el mismo círculo en tres familias hace que el sitio parezca plantilla.
 - **Tamaño mínimo de texto: 13 px**, también en la barra.
 - **No dupliques mensajes:** antes de añadir un texto, comprueba que no esté ya en el logo, en la barra o en la vista vecina (el lema en Inicio, "calidad" entre Quiénes somos y Por qué, el diferencial de especies junto a la fila de animales).
+- **Iconos en botones (2026-10-15):** solo en los botones principales de Inicio, a la izquierda del texto y decorativos (`aria-hidden`; el nombre accesible es el texto): `costal` en "Ver productos", `pin` en "Cómo llegar". Los accesos por categoría y los chips no llevan icono, para no saturar Inicio (la fila de animales ya los tiene).
 - **Tarjetas que no son pulsables** no se inclinan al pasar el ratón: solo se elevan. El tilt (`--tilt-max`, 3°) se reserva a superficies decorativas.
 
 ---

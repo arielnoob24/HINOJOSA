@@ -14,7 +14,7 @@ Carpeta `Nuevos Req/` (originales, **no se modifican**; la versión web se gener
 | Archivo | Qué es | Uso decidido |
 |---|---|---|
 | `Mascota/Canela.png` | Render estilo 3D de Canela sentada, 2752×1536, PNG recortado con alfa | Pose inicial de Canela en Inicio, primer cuadro de los clips de Flow (`flow/canela-inicio-azul.png`) y fallback de `prefers-reduced-motion` |
-| `Mascota/Canela Jugando.mp4` | Video de Canela jugando (3,3 MB), fondo gris de estudio | Recuadro de video en la tarjeta grande de "Quiénes somos" (pausable, silenciado, con `poster`). Existe además una versión con alfa (`canela-jugando-alfa.webm`) |
+| `Mascota/Canela Jugando.mp4` | Video de Canela jugando (3,3 MB), fondo gris de estudio | Recuadro de video en la tarjeta grande de "Quiénes somos" (sin botón de pausa desde 2026-10-15, silenciado, con `poster`). Existe además una versión con alfa (`canela-jugando-alfa.webm`) |
 | `CatalogoF/<categoría>/*.png` | 33 renders de producto, casi todos recortados con alfa (excepto `bebedero.png`, que trae un damero pintado — sustituido por `bebedero_quitado_disque.jpg`, ver P3 —, y `melaza.jpg`, `sal en grano.jpg`, `diferentes tipos de semillas.jpg`, con fondo) | Carrusel de Productos, miniaturas de la lista y vitrina de Inicio |
 
 **Consecuencias sobre el plan:**
@@ -39,11 +39,14 @@ La auditoría completa está en [`auditoria.md`](auditoria.md). Estas son las de
 | **Títulos de vista** | **Sistema único: antetítulo + h2.** Textos propuestos en la sección 3, **pendientes de aprobación** | Títulos heterogéneos actuales |
 | **Quiénes somos** | "Visión" se sustituirá por **"Nuestra historia"** cuando la dueña dé el dato (año de apertura, familia). Hasta entonces sigue Visión | — |
 | **Productos en móvil** | **Hoja de detalle** al tocar un producto de la lista (imagen, precio, "Preguntar") y buscador por encima del carrusel | Desplazar la pantalla hasta el carrusel |
+| **Botones de pausa** (2026-10-15) | **Se quitan sin reemplazo** el botón de pausa de Canela corriendo (Inicio) y el del video de Canela jugando (Quiénes somos). Ambos siguen en bucle. Se mantiene `prefers-reduced-motion` (Canela sentada fija, video sin reproducir). ⚠️ **Incumple WCAG 2.2.2 (nivel A)**: decisión del usuario, registrada como riesgo 11 | Un solo control global "Pausar animaciones"; que el movimiento se detenga solo antes de 5 s |
+| **Iconos en los botones de Inicio** (2026-10-15) | "Cómo llegar" lleva un **icono de ubicación/GPS** (`pin` de `Icono.astro`) y "Ver productos" el **icono de costal** (`costal`), ambos a la izquierda del texto y decorativos (`aria-hidden`). Los **accesos por categoría no llevan icono** (la fila de animales de debajo ya los tiene) | Iconos en los accesos por categoría |
+| **Orden de la barra** (2026-10-15) | **Inicio · Productos · Quiénes somos · Por qué elegirnos · Visítanos** (Productos pasa antes que Quiénes somos). Cambia también el orden de las secciones en el HTML, la lista `VISTAS` del router, las flechas ←/→, la dirección de las transiciones y la barra móvil | Orden anterior (Quiénes somos antes que Productos) |
 
 **Cambios de criterio que se derivan** (aplican aunque contradigan secciones antiguas):
 - **Contacto:** sigue sin botón flotante de WhatsApp, pero ya no vive *solo* en Visítanos. Se permiten dos accesos contextuales: el botón **"Cómo llegar"** de Inicio (ancla a `#visitanos`) y el botón **"Preguntar por este producto"** de Productos (abre `wa.me` con el nombre del producto cuando WhatsApp esté confirmado; mientras tanto, lleva a `#visitanos`).
 - **Marcador `PENDIENTE_CONFIRMAR`:** vive **solo en los datos** (`negocio.json`) y en QA. **Nunca se muestra en pantalla.** En pantalla se usan `textos.comunes.datoPendiente` y `textos.visitanos.contactoPendiente`, y los canales pendientes se agrupan en una sola línea sin forma de botón.
-- **Movimiento:** toda transición nueva respeta `prefers-reduced-motion` **y** la pausa del sitio (`html[data-movimiento="pausado"]`), que hoy anula `animation` pero no `transition`.
+- **Movimiento:** toda transición nueva respeta `prefers-reduced-motion` **y** la pausa del sitio (`html[data-movimiento="pausado"]`; desde el 2026-10-15 ya no hay botón visible que la active, pero el mecanismo se conserva), que hoy anula `animation` pero no `transition`.
 - **Medición obligatoria** tras implementar: Lighthouse móvil en Inicio (hoy 99) y `#productos` (≥ 93), y las 41 comprobaciones del router.
 
 ---
@@ -150,21 +153,22 @@ Cálido, familiar, confiable, cercano. Textos **cortos**, en español, orientado
 2. **No hay scroll de página.** Las vistas inactivas se ocultan con `display: none` + `inert`.
 3. **Se cambia de vista desde la barra superior**, siempre visible, y con `←`/`→`, `AvPág`/`RePág`. **Decisión 0-B: no se añade rueda, deslizamiento ni enlaces "Siguiente".**
 4. **Scroll interno permitido solo** en la lista del catálogo y, en móvil, en la vista que no quepa.
-5. **Cada vista tiene su hash** (`#inicio`, `#nosotros`, `#productos`, `#por-que`, `#visitanos`).
+5. **Cada vista tiene su hash**, en este orden (2026-10-15): `#inicio`, `#productos`, `#nosotros`, `#por-que`, `#visitanos`.
 6. **Transición entre vistas:** ver "Transición" más abajo. Una sola metáfora en todo el sitio.
 
 ### Sistema de títulos (propuesta, pendiente de aprobación)
 | Vista | Antetítulo | h2 (frase) |
 |---|---|---|
 | Inicio | — (el `h1` es el logo con su texto alternativo) | — |
-| Quiénes somos | QUIÉNES SOMOS | "Calidad, confianza y compromiso" |
 | Productos | PRODUCTOS | "Lo que tenemos para tus animales" |
+| Quiénes somos | QUIÉNES SOMOS | "Calidad, confianza y compromiso" |
 | Por qué elegirnos | POR QUÉ ELEGIRNOS | "Siempre a tu lado" |
 | Visítanos | VISÍTANOS | Comercial Hinojosa (ya lo cumple) |
 
 Las frases salen de los eslóganes reales del negocio; "Somos parte de tu familia" sigue siendo la frase de la tarjeta grande de Quiénes somos para no repetirla.
 
 ### Barra superior
+- **Orden (2026-10-15):** Inicio · Productos · Quiénes somos · Por qué elegirnos · Visítanos.
 - Vista activa con `aria-current="page"` **y** pastilla de fondo que se desliza (no solo color, WCAG 1.4.1).
 - En móvil, barra inferior de 5 ítems con icono + palabra; objetivos táctiles de 44×44 px.
 - **Animación (decidida, B1–B4):**
@@ -198,8 +202,8 @@ Hoy la vista saliente se oculta antes del primer pintado y se ve un destello del
 | # | Vista | Qué contiene |
 |---|---|---|
 | 1 | **Inicio** | Logo, acento "Tu mejor aliado para tus animales", subtítulo, 2 botones, accesos por categoría, fila de animales, vitrina de 4 costales (escritorio) y Canela en la franja inferior |
-| 2 | **Quiénes somos** | Tarjeta grande con frase de marca y video de Canela, Misión, Visión (→ Nuestra historia), banda de valores |
-| 3 | **Productos** | Pestañas de 4 categorías, carrusel 3D de productos + catálogo completo con buscador; hoja de detalle en móvil |
+| 2 | **Productos** | Pestañas de 4 categorías, carrusel 3D de productos + catálogo completo con buscador; hoja de detalle en móvil |
+| 3 | **Quiénes somos** | Tarjeta grande con frase de marca y video de Canela, Misión, Visión (→ Nuestra historia), banda de valores |
 | 4 | **Por qué elegirnos** | Pilares, diferenciales, animales que atendemos |
 | 5 | **Visítanos** | Mapa, dirección, horario y formas de contacto |
 
@@ -211,13 +215,13 @@ Hoy la vista saliente se oculta antes del primer pintado y se ve un destello del
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ [logo]  Inicio · Quiénes somos · Productos · ...         │
+│ [logo]  Inicio · Productos · Quiénes somos · ...         │
 │                                                          │
 │  🛍                  [ LOGO ]                   🛍        │
 │     🛍      Tu mejor aliado para tus animales      🛍     │
 │        Venta de balanceados y productos para tus         │
 │                       animales                           │
-│            [ Ver productos ]  [ Cómo llegar ]            │
+│        [ 🛍 Ver productos ]  [ 📍 Cómo llegar ]          │
 │        Granja · Mascotas · Comederos · Granos            │
 │        🐔 Aves · 🐖 Cerdos · 🐕 Mascotas · 🐟 Tilapias     │
 │ ───────────────────────── 🐕 <<<<<<<<<<<<<<<<<<<<<<<<<<< │
@@ -228,7 +232,7 @@ Hoy la vista saliente se oculta antes del primer pintado y se ve un destello del
 - **Logo** centrado (LCP, sin animación).
 - **Acento manuscrito:** "Tu mejor aliado para tus animales" (sustituye al lema repetido, I4). Hay que regenerar el subconjunto de Caveat Brush (comando comentado en `global.css`).
 - **Subtítulo:** "Venta de balanceados y productos para tus animales".
-- **Botones (I3):** "Ver productos" (CTA oro, principal) y **"Cómo llegar"** (secundario, ancla a `#visitanos`).
+- **Botones (I3):** "Ver productos" (CTA oro, principal) y **"Cómo llegar"** (secundario, ancla a `#visitanos`), con iconos a la izquierda del texto (decidido 2026-10-15; `aria-hidden`, el nombre accesible sigue siendo el texto): **costal** en "Ver productos" y **pin de ubicación** en "Cómo llegar". Los accesos por categoría van sin icono.
 - **Accesos por categoría (I3):** 4 enlaces (Granja · Mascotas · Comederos · Granos) que abren `#productos` con esa pestaña ya elegida.
 - **Fila de animales (I5):** iconos de `Icono.astro` + palabra: "Aves · Cerdos · Mascotas · Tilapias". Informativa, no son botones. En móvil ocupa el espacio que hoy queda vacío entre el CTA y la franja.
 
@@ -292,7 +296,7 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 
 *Accesibilidad (obligatorio)*
 - Decorativa: `aria-hidden="true"`, sin `alt`.
-- **WCAG 2.2.2:** el botón de pausa existente congela el cuadro actual y la posición; al reanudar sigue desde ahí.
+- **Sin botón de pausa (decisión 2026-10-15):** se retira `BotonPausa` de Inicio; Canela corre en bucle sin control visible. ⚠️ Incumple WCAG 2.2.2 (riesgo 11). La pausa global del sitio (`data-movimiento="pausado"`) se conserva en el código, sin botón.
 - `prefers-reduced-motion` o pausa global: Canela **sentada y fija** (`Canela.png`), sin carrera.
 
 *Mientras no lleguen los clips:* se mantiene la animación actual. No se fabrica una carrera con la foto fija.
@@ -320,7 +324,7 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 └──────────────────────────────────────────────────────────┘
 ```
 
-- **Tarjeta grande:** frase *"Somos parte de tu familia"* sobre banda opaca + video de Canela (pausable, silenciado, con `poster`).
+- **Tarjeta grande:** frase *"Somos parte de tu familia"* sobre banda opaca + video de Canela (silenciado, en bucle, con `poster`; **sin botón de pausa** desde 2026-10-15, ver riesgo 11).
   - **Encuadre del video (N1, N2):** hoy `object-fit: cover` corta la gorra. Pasar a `object-fit: contain; object-position: 50% 100%` con el fondo de la caja del mismo gris del video. Ideal: `canela-jugando-alfa.webm` sobre `crema-oscuro` con un "suelo" `hoja-claro`, y el póster con alfa en Safari.
   - El `play()` arranca a los 400 ms, cuando termina la transición de vista.
   - Cuando haya foto real del local, puede sustituir o acompañar al video.
@@ -559,7 +563,7 @@ Skills que gobiernan esta parte: `wcag-accessibility`, `wcag-audit-patterns` y `
 | 1.4.1 Uso del color | Vista activa en la barra, fila activa de la lista y estado "Abierto/Cerrado": nunca solo color |
 | 1.4.3 Contraste | 4.5:1 en texto; el dorado solo como fondo con texto oscuro. Tarjeta del mapa opaca |
 | 1.4.11 Contraste no textual | Flechas del carrusel, pestañas y bordes de tarjeta a 3:1 |
-| **2.2.2 Pausar, detener, ocultar** | Canela en bucle **necesita** control de pausa; el carrusel no autorrota |
+| **2.2.2 Pausar, detener, ocultar** | ⚠️ **No se cumple por decisión del usuario (2026-10-15):** Canela y el video de Quiénes somos van en bucle sin botón de pausa (riesgo 11). El carrusel no autorrota. Con `prefers-reduced-motion` no hay movimiento |
 | 2.3.3 Animación por interacción | Toda transición nueva respeta `prefers-reduced-motion` y la pausa del sitio |
 | 2.1.1 Teclado | Carrusel, pestañas, flechas, hoja de detalle, cambio de vista y mapa operables sin mouse |
 | 2.4.3 Orden del foco | Vistas inactivas con `inert`; foco al título al cambiar; hoja de detalle devuelve el foco a la fila |
@@ -658,6 +662,7 @@ En `.claude/skills/` del proyecto:
 | 11 | "Preguntar por este producto", accesos de contacto en la barra (P2, G1) | frontend | **Sí** (WhatsApp) |
 | 12 | Pulidos: G4, G5, V4 | frontend | No |
 | 13 | **Reparto del color:** superficies `crema-oscuro`/`hoja-claro` en lugar de blanco, banda `bosque` en cada vista clara, proporción 55/30/15, trazo de pincel maíz bajo los h2, bandas canela oscuro y tono kraft `#E3CFA6` (todo aprobado) | direccion-arte, frontend | No |
+| 14 | **Ajustes 2026-10-15:** quitar `BotonPausa` de Inicio y de Quiénes somos (y su espacio reservado); iconos en los botones de Inicio (costal en "Ver productos", pin en "Cómo llegar"); nuevo orden Inicio · Productos · Quiénes somos · Por qué · Visítanos (barra, barra móvil, orden de secciones en el HTML, `VISTAS` en `router.ts`, dirección de transiciones) | frontend, animacion-interaccion | ✅ Hecho 2026-10-15 |
 | Cierre | Lighthouse móvil (Inicio ≥ 99, Productos ≥ 93), router 41/41, axe 0, capturas comparativas | qa-rendimiento | — |
 
 ---
@@ -674,6 +679,7 @@ En `.claude/skills/` del proyecto:
 8. **Navegadores sin probar:** Safari iOS (alfa del video, cancelación de transiciones de la barra) y Firefox; lector de pantalla real.
 9. **Precios cambiantes y derechos de imágenes:** JSON editable y confirmación con la dueña.
 10. **Mantenimiento:** definir quién actualiza precios y catálogo.
+11. **Sin botones de pausa (decisión del usuario, 2026-10-15):** Canela corriendo en Inicio y el video de Quiénes somos se mueven en bucle durante más de 5 s sin control para pausarlos. **Incumple WCAG 2.2.2 (nivel A)**: una auditoría de accesibilidad lo marcará como fallo, y puede molestar a personas con déficit de atención o sensibilidad al movimiento. Mitigación parcial: con `prefers-reduced-motion` no hay movimiento. Alternativas descartadas por ahora: un solo control global "Pausar animaciones", o que el movimiento se detenga solo antes de 5 s.
 
 ---
 
@@ -692,4 +698,5 @@ En `.claude/skills/` del proyecto:
 - [x] Video de Canela corriendo generado en Flow (`flow/Puppy_running_in_place_1080p_20261013235908.mp4`)
 - [x] Fase 5-B: bloques 1–9, 12, 13 y 4-B + cierre de QA (2026-10-14; Lighthouse móvil Inicio 99, Productos 96, escritorio 100; router 18/18; axe 0)
 - [ ] Fase 5-B: bloque 10 (textos de títulos, pilares, diferenciales) y bloque 11 (WhatsApp)
+- [x] Bloque 14: quitar botones de pausa, iconos en "Ver productos" y "Cómo llegar", y nuevo orden de la barra (2026-10-15)
 - [ ] Corregir el workflow de despliegue

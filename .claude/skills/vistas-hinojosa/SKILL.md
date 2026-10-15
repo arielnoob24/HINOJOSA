@@ -11,11 +11,13 @@ Esto no es un detalle de estilo: cambia cómo se construye, cómo se anima, cóm
 
 ## Las 5 vistas
 
+Orden vigente desde el 2026-10-15 (Productos antes que Quiénes somos). Este orden manda en la barra, la barra móvil, las secciones del HTML, `VISTAS` del router, las flechas ←/→ y la dirección de las transiciones.
+
 | Orden | Hash | Etiqueta en la barra |
 |---|---|---|
 | 1 | `#inicio` | Inicio |
-| 2 | `#nosotros` | Quiénes somos |
-| 3 | `#productos` | Productos |
+| 2 | `#productos` | Productos |
+| 3 | `#nosotros` | Quiénes somos |
 | 4 | `#por-que` | Por qué elegirnos |
 | 5 | `#visitanos` | Visítanos |
 
@@ -56,8 +58,8 @@ Un oyente en fase de captura en `src/lib/catalogo.ts` (`abrirCategoria()`) prepa
 ```html
 <nav aria-label="Vistas del sitio">
   <a href="#inicio"    aria-current="page">Inicio</a>
-  <a href="#nosotros">Quiénes somos</a>
   <a href="#productos">Productos</a>
+  <a href="#nosotros">Quiénes somos</a>
   <a href="#por-que">Por qué elegirnos</a>
   <a href="#visitanos">Visítanos</a>
 </nav>
@@ -79,7 +81,7 @@ La navegación son **anclas reales** (`<a href="#...">`), no botones con `onclic
 
 ```ts
 // src/lib/router.ts  (esquema, no código final)
-const VISTAS = ['inicio', 'nosotros', 'productos', 'por-que', 'visitanos'] as const;
+const VISTAS = ['inicio', 'productos', 'nosotros', 'por-que', 'visitanos'] as const;
 
 function activar(nombre: string, { animar = true } = {}) {
   const destino = VISTAS.includes(nombre as any) ? nombre : 'inicio';
@@ -143,7 +145,7 @@ Sin scroll **no hay `IntersectionObserver` ni ScrollTrigger**. El evento de camb
 
 - **Una sola metáfora de transición** en todo el sitio: desplazamiento horizontal en la dirección del orden de las vistas, con fundido.
 - Con `prefers-reduced-motion` **o con la pausa del sitio** (`html[data-movimiento="pausado"]`), el cambio de vista es **instantáneo**, Canela queda sentada y fija, no hay paralaje y el giro del carrusel es instantáneo.
-- Canela es movimiento en bucle de más de 5 segundos: **necesita control de pausa visible y alcanzable con teclado** (WCAG 2.2.2). El carrusel, en cambio, **nunca gira solo**, y por eso no necesita control propio.
+- **Sin botones de pausa (decisión del usuario, 2026-10-15):** Canela corriendo y el video de Quiénes somos van en bucle sin control visible. Esto **incumple WCAG 2.2.2** y está registrado como riesgo 11 en `PLAN.md`; no lo "corrijas" añadiendo un botón sin que el usuario lo pida. La pausa global (`html[data-movimiento="pausado"]`) se conserva en el código. El carrusel, en cambio, **nunca gira solo**, y por eso no necesita control propio.
 
 ### Transición entre vistas (decidida 2026-10-13)
 
@@ -190,13 +192,13 @@ Las nueve primeras son los modos de fallo propios de este diseño. Si alguna fal
 9. A 360×640 ninguna vista desborda en horizontal ni corta contenido esencial.
 10. En el HTML de `dist/` (no en el DOM ya ejecutado) están las 5 vistas completas.
 11. Con `prefers-reduced-motion` activado no hay bucles, paralaje ni transiciones animadas.
-12. El control de pausa del perrito existe, se alcanza con teclado y **detiene de verdad** el bucle.
+12. ~~Control de pausa del perrito~~: **retirada el 2026-10-15** por decisión del usuario (riesgo 11 del plan). En su lugar: con `prefers-reduced-motion` Canela queda sentada fija y el video no se reproduce.
 13. **Sin destello entre vistas:** muestreando fotogramas con `requestAnimationFrame` durante un cambio de vista, en ningún fotograma la vista saliente está oculta mientras la entrante tiene opacidad < 0,5. Probar sobre todo al salir de Inicio (fondo oscuro).
 14. **La barra no salta:** al cambiar de vista, la posición `x` de los enlaces no activos no cambia (tolerancia 0,5 px).
 15. **Con la pausa del sitio activada**, ni la pastilla de la barra ni ninguna transición nueva se anima.
 16. **Clics rápidos:** pulsar tres vistas seguidas en menos de 300 ms termina en la última, con una sola vista visible y el foco en su título.
 17. **Hoja de detalle (móvil):** abre como `<dialog>` modal con el foco en su título, se cierra con `Esc` y con "Cerrar", y el foco vuelve a la fila que la abrió. Con la hoja abierta, `←`/`→` no cambian de vista.
-18. **Canela corriendo:** nunca sale de la pantalla; gira en cada borde a 1440, 1366 y 360 px de ancho y tras redimensionar la ventana; la pausa congela cuadro y posición y al reanudar sigue desde ahí; con movimiento reducido o pausa global queda sentada y fija; fuera de Inicio no hay `requestAnimationFrame` suyo.
+18. **Canela corriendo:** nunca sale de la pantalla; gira en cada borde a 1440, 1366 y 360 px de ancho y tras redimensionar la ventana; la pausa global (`data-movimiento="pausado"`, sin botón desde 2026-10-15) congela cuadro y posición; con movimiento reducido queda sentada y fija; al quitar el botón de pausa, el límite derecho vuelve a ser el borde de la franja (ya no se detiene antes del botón); fuera de Inicio no hay `requestAnimationFrame` suyo.
 
 ---
 

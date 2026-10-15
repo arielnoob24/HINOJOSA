@@ -32,7 +32,9 @@
 //   [data-canela-caja]    .canela-caja      un cuadro, overflow hidden; dentro, las
 //                                           4 tiras de sprites que crea el script
 //   [data-canela-sombra]  .canela-sombra    sombra propia (scaleX en el giro)
-//   [data-boton-pausa]                      WCAG 2.2.2 (evento hinojosa:movimiento)
+//   (Sin boton de pausa desde el bloque 14: decision del usuario, riesgo
+//   WCAG 2.2.2 registrado. html[data-movimiento="pausado"] sigue parando
+//   la carrera si se pone por codigo.)
 //
 // La carrera de borde a borde la hace src/lib/animacion/canela-carrera.ts
 // (maquina de estados, sprites tras `load`). Sin JS, sin sprites, con
@@ -43,7 +45,6 @@
 // (guia 7.1, I2), llevan fetchpriority="low" y solo se pintan en >= 64rem
 // (por debajo, display:none y loading="lazy": el navegador no los pide).
 import Vista from '../Vista.astro';
-import BotonPausa from '../BotonPausa.astro';
 import Icono from '../Icono.astro';
 import { textos, altDe } from '../../lib/negocio';
 
@@ -83,7 +84,7 @@ const granos = [
   { x: 6, y: 50, s: 24, g: -35, movil: false },
 ];
 ---
-<Vista id="inicio" nombre={textos.navegacion[0].texto} class="vista-inicio tema-oscuro" cuerpo="inicio-cuerpo">
+<Vista id="inicio" nombre={textos.navegacion.find((n) => n.id === 'inicio')!.texto} class="vista-inicio tema-oscuro" cuerpo="inicio-cuerpo">
   <div class="inicio-escena" data-escena="inicio">
     <!-- Fondo: hojas del trebol (lejos) y granos de maiz (cerca). Decorativo. -->
     <div class="inicio-fondo" aria-hidden="true">
@@ -175,8 +176,8 @@ const granos = [
       <p class="inicio-acento" data-entra data-cascada style="--orden: 0; --paso: 0">{t.acento}</p>
       <p class="inicio-subtitulo" data-entra data-cascada style="--orden: 0; --paso: 1">{t.subtitulo}</p>
       <div class="inicio-botones" data-entra data-cascada style="--orden: 0; --paso: 2">
-        <a href={t.ctaDestino} class="boton boton-oro inicio-boton" data-cta-inicio>{t.cta}</a>
-        <a href={t.ctaSecundarioDestino} class="boton inicio-boton inicio-boton-secundario" data-cta-como-llegar>{t.ctaSecundario}</a>
+        <a href={t.ctaDestino} class="boton boton-oro inicio-boton" data-cta-inicio><Icono nombre="costal" class="inicio-boton-icono" /><span>{t.cta}</span></a>
+        <a href={t.ctaSecundarioDestino} class="boton inicio-boton inicio-boton-secundario" data-cta-como-llegar><Icono nombre="pin" class="inicio-boton-icono" /><span>{t.ctaSecundario}</span></a>
       </div>
       <ul class="inicio-accesos" aria-label={t.etiquetaAccesos} data-entra data-cascada style="--orden: 1; --paso: 3">
         {t.accesos.map((a) => (
@@ -217,7 +218,6 @@ const granos = [
       <div class="canela-caja" data-canela-caja></div>
     </div>
   </div>
-  <BotonPausa slot="fuera" tema="claro" class="inicio-pausa" />
 </Vista>
 
 <style>
@@ -372,6 +372,13 @@ const granos = [
   .inicio-boton {
     padding-inline: 0.75rem;
     font-weight: 800;
+  }
+  /* Iconos decorativos a la izquierda del texto (bloque 14): currentColor,
+     1.25em, centrados por el inline-flex + gap de .boton */
+  :global(.inicio-boton-icono) {
+    width: 1.25em;
+    height: 1.25em;
+    flex-shrink: 0;
   }
   .inicio-boton-secundario {
     border: 2px solid var(--color-crema); /* 8.69-12.76 sobre el degradado */
@@ -623,12 +630,11 @@ const granos = [
     background: linear-gradient(180deg, transparent 0%, var(--color-velo-franja) 100%);
     border-top: 1px solid var(--color-horizonte);
   }
-  /* Reposo (sin JS, reduced motion, pausa): sentada a la derecha,
-     a la izquierda del boton de pausa */
+  /* Reposo (sin JS, reduced motion, pausa): sentada a la derecha
   .canela-cruce {
     position: absolute;
     bottom: 10px;
-    right: calc(var(--spacing-vista) + var(--spacing-objetivo) + 1rem);
+    right: var(--spacing-vista);
     z-index: var(--z-canela);
     width: calc(var(--canela-alto) * var(--canela-proporcion));
     height: var(--canela-alto);
@@ -697,40 +703,14 @@ const granos = [
     transform-origin: 50% 50%;
   }
 
-  /* Boton de pausa: abajo a la derecha, por encima de Canela */
-  :global(.inicio-pausa) {
-    position: absolute;
-    right: var(--spacing-vista);
-    bottom: calc(var(--franja-canela) / 2 - var(--spacing-objetivo) / 2);
-    z-index: var(--z-control);
-    border-color: var(--color-bosque) !important;
-    background: var(--color-crema) !important;
-    color: var(--color-bosque) !important;
-  }
-  :global(html[data-router] .inicio-pausa) {
-    /* la vista reserva abajo la barra movil: el cuerpo termina antes */
-    bottom: calc(var(--franja-canela) / 2 - var(--spacing-objetivo) / 2);
-  }
-  @media (max-width: 47.999rem) {
-    :global(html[data-router] .inicio-pausa) {
-      bottom: calc(var(--spacing-barra-movil) + env(safe-area-inset-bottom, 0px) + var(--franja-canela) / 2 - var(--spacing-objetivo) / 2);
-    }
-  }
-
-  /* Reduced motion: no hay nada que pausar; Canela sentada mas a la derecha
-     (el script tampoco descarga los sprites) */
+  /* Reduced motion: Canela sentada fija (el script tampoco descarga los
+     sprites) */
   @media (prefers-reduced-motion: reduce) {
-    .canela-cruce {
-      right: var(--spacing-vista);
-    }
     .canela-recorrido {
       display: none;
     }
     .franja-canela .canela-cruce {
       visibility: visible !important;
-    }
-    :global(.inicio-pausa) {
-      display: none !important;
     }
   }
 </style>

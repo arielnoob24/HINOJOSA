@@ -14,12 +14,12 @@
 //
 // Video: muted loop playsinline, preload="none", poster. Solo se reproduce
 // con la vista activa, sin reduced motion y sin la pausa del usuario
-// (src/lib/video-vista.ts). Boton de pausa visible (WCAG 2.2.2).
+// (src/lib/video-vista.ts). Sin boton de pausa desde el bloque 14 (decision
+// del usuario; riesgo WCAG 2.2.2 registrado).
 // Ganchos: [data-mosaico], [data-tarjeta-familia], video[data-video-vista],
 //          [data-tilt] (tilt al pasar el raton), [data-elevar] (solo
 //          elevacion), [data-banda-valores], [data-icono-animado].
 import Vista from '../Vista.astro';
-import BotonPausa from '../BotonPausa.astro';
 import Icono from '../Icono.astro';
 import { negocio, textos } from '../../lib/negocio';
 
@@ -32,7 +32,7 @@ const [antes, despues] = t.frase.includes('familia') ? t.frase.split('familia') 
 // (video-vista.ts). Sin JS se pinta como fondo del contenedor.
 const poster = '/video/canela-jugando-poster.webp';
 ---
-<Vista id="nosotros" nombre={textos.navegacion[1].texto} cuerpo="nosotros-cuerpo">
+<Vista id="nosotros" nombre={textos.navegacion.find((n) => n.id === 'nosotros')!.texto} cuerpo="nosotros-cuerpo">
   <div class="nos-marco">
     <h2 id="titulo-nosotros" tabindex="-1" data-titulo-vista class="text-h2 titulo-vista" data-entra style="--orden: 0">{t.titulo}</h2>
 
@@ -55,7 +55,6 @@ const poster = '/video/canela-jugando-poster.webp';
             <source src="/video/canela-jugando.webm" type="video/webm" />
             <source src="/video/canela-jugando.mp4" type="video/mp4" />
           </video>
-          <BotonPausa tema="claro" class="nos-pausa" />
         </div>
         <p id="frase-familia" class="nos-frase">
           {despues !== null ? (
@@ -142,20 +141,6 @@ const poster = '/video/canela-jugando-poster.webp';
     height: 100%;
     object-fit: contain;
     object-position: 50% 100%;
-  }
-  :global(.nos-pausa) {
-    position: absolute;
-    right: 0.75rem;
-    bottom: 0.75rem;
-    z-index: var(--z-control);
-    border-color: var(--color-bosque) !important;
-    background: var(--color-crema) !important;
-    color: var(--color-bosque) !important;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    :global(.nos-pausa) {
-      display: none !important;
-    }
   }
   .nos-frase {
     --color-foco: var(--color-foco-oscuro);
