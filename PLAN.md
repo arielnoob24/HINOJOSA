@@ -42,7 +42,6 @@ La auditoría completa está en [`auditoria.md`](auditoria.md). Estas son las de
 | **Botones de pausa** (2026-10-15) | **Se quitan sin reemplazo** el botón de pausa de Canela corriendo (Inicio) y el del video de Canela jugando (Quiénes somos). Ambos siguen en bucle. Se mantiene `prefers-reduced-motion` (Canela sentada fija, video sin reproducir). ⚠️ **Incumple WCAG 2.2.2 (nivel A)**: decisión del usuario, registrada como riesgo 11 | Un solo control global "Pausar animaciones"; que el movimiento se detenga solo antes de 5 s |
 | **Iconos en los botones de Inicio** (2026-10-15) | "Cómo llegar" lleva un **icono de ubicación/GPS** (`pin` de `Icono.astro`) y "Ver productos" el **icono de costal** (`costal`), ambos a la izquierda del texto y decorativos (`aria-hidden`). Los **accesos por categoría no llevan icono** (la fila de animales de debajo ya los tiene) | Iconos en los accesos por categoría |
 | **Orden de la barra** (2026-10-15) | **Inicio · Productos · Quiénes somos · Por qué elegirnos · Visítanos** (Productos pasa antes que Quiénes somos). Cambia también el orden de las secciones en el HTML, la lista `VISTAS` del router, las flechas ←/→, la dirección de las transiciones y la barra móvil | Orden anterior (Quiénes somos antes que Productos) |
-| **Texto no seleccionable** (2026-10-15) | Ningún texto de la página se puede seleccionar para copiar (`user-select: none` en todo el documento). **Excepción:** los campos de texto (el buscador de Productos) siguen permitiendo escribir y seleccionar | Texto seleccionable |
 
 **Cambios de criterio que se derivan** (aplican aunque contradigan secciones antiguas):
 - **Contacto:** sigue sin botón flotante de WhatsApp, pero ya no vive *solo* en Visítanos. Se permiten dos accesos contextuales: el botón **"Cómo llegar"** de Inicio (ancla a `#visitanos`) y el botón **"Preguntar por este producto"** de Productos (abre `wa.me` con el nombre del producto cuando WhatsApp esté confirmado; mientras tanto, lleva a `#visitanos`).
@@ -700,5 +699,4 @@ En `.claude/skills/` del proyecto:
 - [x] Fase 5-B: bloques 1–9, 12, 13 y 4-B + cierre de QA (2026-10-14; Lighthouse móvil Inicio 99, Productos 96, escritorio 100; router 18/18; axe 0)
 - [ ] Fase 5-B: bloque 10 (textos de títulos, pilares, diferenciales) y bloque 11 (WhatsApp)
 - [x] Bloque 14: quitar botones de pausa, iconos en "Ver productos" y "Cómo llegar", y nuevo orden de la barra (2026-10-15)
-- [x] Texto no seleccionable en todo el sitio, salvo campos de texto (2026-10-15)
 - [ ] Corregir el workflow de despliegue

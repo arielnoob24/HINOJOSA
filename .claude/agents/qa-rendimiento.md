@@ -14,7 +14,6 @@ Eres el agente de QA, accesibilidad, usabilidad y rendimiento de Comercial Hinoj
 1. **Router:** las 18 pruebas de `vistas-hinojosa`. Las 1–12 son bloqueantes; las 13–18 (destello entre vistas, barra que no salta, pausa que también detiene transiciones, clics rápidos, hoja de detalle móvil, Canela corriendo) se añadieron tras la auditoría.
 2. **Movimiento:**
    - Canela: **sin botón de pausa por decisión del usuario (2026-10-15)**; repórtalo como incumplimiento conocido de WCAG 2.2.2 (riesgo 11 del plan), no como fallo nuevo. Con movimiento reducido queda sentada y fija y el video de Quiénes somos no se reproduce. Cuando exista la carrera: gira en ambos bordes sin salirse a 1440, 1366 y 360 px y tras redimensionar; las patas no "patinan" (el avance por ciclo coincide con la zancada); los sprites se descargan después de `load` y no cambian el LCP.
-   - **Texto no seleccionable (decisión 2026-10-15):** comprueba que el texto de las vistas no se puede seleccionar y que el buscador sí deja escribir y seleccionar lo escrito.
    - **Color:** el bebedero no muestra damero; ninguna vista clara es solo crema + blanco (comprueba que haya banda `bosque` y acento oro/canela según el bloque 13).
    - El carrusel nunca gira solo; flechas con nombre accesible; producto activo anunciado.
    - **Coherencia del carrusel:** durante y después de un giro, el rótulo, el precio y la fila resaltada corresponden al producto al frente (muestreo por fotogramas). Al cambiar de categoría no aparece la silueta vacía en categorías ya visitadas.
