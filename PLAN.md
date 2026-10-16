@@ -45,6 +45,8 @@ La auditoría completa está en [`auditoria.md`](auditoria.md). Estas son las de
 | **Vista Nosotros** (2026-10-16) | **Quiénes somos y Por qué elegirnos pasan a ser UNA vista, "Nosotros"**, con lo mejor de cada una (opción A "Canela presenta", ver vista 3). Barra: **Inicio · Productos · Nosotros · Visítanos** (4 vistas). `#por-que` deja de ser vista: es el bloque de razones dentro de `#nosotros` y los enlaces viejos siguen funcionando. **Fuera de pantalla:** Visión, los 6 valores, los 4 pilares y los 4 diferenciales (Visión y valores siguen en `negocio.json` para metadatos y JSON-LD) | Pegar las dos vistas tal cual; mosaico de tarjetas con video gris (primera prueba); "Historia en dos pisos"; "Los animales mandan" |
 | **Video de Canela en Nosotros** (2026-10-16) | Versión con alfa sobre un círculo crema-oscuro, **solo el tramo sentada (cuadros 1–69) en ida y vuelta**: en el salto del original la gorra se sale del cuadro, y girar a mitad de bajar la pata se veía raro. Safari/iOS muestra el póster (no reproduce alfa VP9) | Usar el salto; girar en el cuadro 80 |
 | **Productos: ficha del producto** (2026-10-16) | El panel derecho deja de ser la lista completa: **ficha del producto al frente** (precio, marca, presentación, categoría, "Para:" animales, tabla de la tilapia, "¿Dónde comprarlo?") + **buscador con sugerencias** + **"Ver todos los productos (37)"** que abre la lista en un `<dialog>`. Carrusel al 60 % (ver vista 2) | Escaparate a todo el ancho que filtra el anillo; lista aligerada a la derecha |
+| **Barra: hover con trazo de pincel** (2026-10-16, bloque 18) | Al pasar el ratón sobre una opción **no activa** de la barra (escritorio), aparece debajo del rótulo el **mismo trazo de pincel maíz** que llevan los h2 (p. ej. bajo "Comercial Hinojosa" en Visítanos), dibujándose de izquierda a derecha. **Sustituye** al fondo `hoja-claro` del hover | Fondo hoja-claro (B4 original); subrayado recto |
+| **Ficha de Productos en verde bosque** (2026-10-16, bloque 18) | La ficha del producto pasa de kraft a **verde bosque** (`.tema-oscuro`), con el mismo lenguaje que la tarjeta de Visítanos. Da a Productos su bloque verde (antes 74/26/0, sin banda bosque) | Kraft (primera versión de la ficha); verde claro `hoja-claro` |
 | **Datos de contacto** (2026-10-16) | Confirmados por el usuario: dirección **Av. del Chofer y Rubén Larson**, teléfonos **099 708 5015** y **098 928 1882**, correo **rubenhinojosa4@yahoo.es**, Facebook **@Comercial Hinojosa** (falta el enlace). Ver sección 1 | — |
 
 **Cambios de criterio que se derivan** (aplican aunque contradigan secciones antiguas):
@@ -182,7 +184,7 @@ Las frases salen de los eslóganes reales del negocio. "Calidad, confianza y com
   - `.anima` no se retira hasta el `transitionend` de la pastilla.
   - **Estiramiento direccional** de la pastilla: el borde que va delante tarda 240 ms y el de atrás 300 ms.
   - **Texto bajo la pastilla:** versión básica, el color cambia con 150 ms de retraso; versión pulida, inversión exacta con `clip-path` (copia `aria-hidden` del menú).
-  - Hover en escritorio: fondo `hoja-claro` en 150 ms. Pulsación: `scale(0.96)` en 90 ms. Móvil: fondo `hoja-claro` al tocar y "pop" del icono activo (`scale(0.92)` → 1, 220 ms, `--ease-rebote`).
+  - **Hover en escritorio (2026-10-16, bloque 18):** en los rótulos **no activos**, el **trazo de pincel maíz** de los h2 (`--trazo-pincel`, color `maiz`, alto `round(clamp(0.375rem, 0.9dvh, 0.5rem), 1px)`, girado −1°) aparece bajo el texto, ~60 % de su ancho y alineado a la izquierda del texto. Se **dibuja de izquierda a derecha** con `clip-path: inset(0 100% 0 0)` → `inset(0 0 0 0)` en 220 ms (`--ease-vista`) y se recoge en 150 ms (`--ease-salida`) al salir. Solo con `(hover: hover) and (pointer: fine)`; el ítem activo (pastilla bosque) no lo lleva. Con `prefers-reduced-motion` o la pausa del sitio aparece y desaparece sin animación. Es decorativo (feedback de hover, no estado): no necesita 3:1 contra el crema de la barra. **Sustituye** al fondo `hoja-claro`. Se mantienen la pulsación (`scale(0.96)` en 90 ms) y, en móvil, el fondo `hoja-claro` al tocar y el "pop" del icono activo (`scale(0.92)` → 1, 220 ms, `--ease-rebote`).
   - Con movimiento reducido o pausa: la pastilla salta, sin pop.
 - En móvil, la barra superior baja a 44 px y el isotipo a 32 px (G5).
 
@@ -320,7 +322,7 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 │  Nuestros productos               Buscar producto        │
 │  [Granja][Mascotas][Com.][Granos] [🔍 perro…         ✕]  │
 │                                   ┌ sugerencias (≤ 6) ┐  │
-│     [img]   [IMG]   [img]         │ FICHA (kraft)      │  │
+│     [img]   [IMG]   [img]         │ FICHA (bosque)     │  │
 │  ◀     (anillo CSS 3D)    ▶       │ Camperito pollos   │  │
 │          [ tarima ]               │ [$28.00]           │  │
 │                                   │ Marca · Present. · │  │
@@ -348,8 +350,9 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 - Busca en nombre, marca, presentación, categoría **y en el campo `animales`** (perro, gato, ave/pollo/gallina, cerdo, vaca, cuy, conejo, tilapia/pez), ignorando tildes, guiones y espacios ("procan" = "pro-can") y tolerando singular/plural (`src/lib/busqueda.ts`).
 
 **Ficha del producto al frente (derecha, solo ≥ 48rem)**
-- Fondo kraft. Nombre en Cormorant grande, chip de precio oro, y filas **Marca · Presentación · Categoría · Para** (animales con su icono, del campo `animales`). Para el tilapero, la **tabla de proteína por etapa**.
-- Botón **"¿Dónde comprarlo? Visítanos"** (oro), siempre visible: si la ficha no cabe (1366×650), solo se desplaza su cuerpo.
+- **Fondo verde bosque** (`.tema-oscuro`, decidido 2026-10-16; antes kraft), como la tarjeta de Visítanos. Nombre en Cormorant grande **blanco** (9.80), chip de precio oro con tinta (7.93), y filas **Marca · Presentación · Categoría · Para** con la etiqueta en **maíz** (5.44) y el valor en **crema** (8.69), separadas por filetes crema al 20 % (decorativos). Animales en pastillas `hoja-claro` con icono y texto bosque (8.63). Para el tilapero, la **tabla de proteína por etapa** (título maíz, celdas crema). Foco maíz.
+- Botón **"¿Dónde comprarlo? Visítanos"** (oro, sin borde dentro del bloque bosque), siempre visible: si la ficha no cabe (1366×650), solo se desplaza su cuerpo.
+- Con la ficha en bosque, el kraft de la vista queda en la tarima del carrusel y en las cabeceras de grupo de la lista completa.
 - Cambia con un fundido corto en el sentido del giro (sin movimiento con reduced motion o pausa).
 - **P2:** cuando WhatsApp esté confirmado, el botón pasa a "Preguntar por este producto" (`wa.me` con el nombre del producto).
 
@@ -440,6 +443,7 @@ Mapa a pantalla completa con una tarjeta flotante opaca encima.
 
 - **Mapa** (Leaflet + OpenStreetMap), carga diferida al entrar en la vista, solo con coordenadas confirmadas.
 - **Tarjeta flotante opaca:** nombre, dirección, ciudad, estado "Abierto ahora / Cerrado" (con palabra, no solo color), horario, **"Referencias"** para llegar (V4: el CTA se llama "Cómo llegar" y el dato "Referencias") y botones **Cómo llegar · WhatsApp · Llamar**, correo y Facebook.
+- **"Referencias" (qué va ahí):** indicaciones para llegar con puntos conocidos de la zona, en lenguaje de calle, como se da una dirección en Ecuador: 1–3 frases cortas, p. ej. "Frente a la gasolinera …", "A dos cuadras del mercado …", "Junto a la escuela …". Las da la dueña; no se inventan. En `negocio.json` van en `contacto.referenciasLlegar.valor` como lista de frases.
 - **Publicado desde 2026-10-16:** dirección "Av. del Chofer y Rubén Larson", **un botón "Llamar" por teléfono** (099 708 5015 y 098 928 1882, cada uno a lo ancho, `tel:+593…`) y el **correo** (`mailto:`). Siguen en la línea agrupada de pendientes: Cómo llegar (Maps), WhatsApp y Facebook (falta su enlace).
 - **Mientras falten datos (V1, V2):**
   - Nunca se muestra `PENDIENTE_CONFIRMAR`. Cada dato pendiente muestra `textos.comunes.datoPendiente`.
@@ -670,6 +674,7 @@ En `.claude/skills/` del proyecto:
 | 15 | **Vista Nosotros (2026-10-16):** une Quiénes somos y Por qué elegirnos (opción A), 4 vistas, `#por-que` como bloque, video con alfa regenerado (cuadros 1–69 en ida y vuelta) | frontend, activos-3d-video | ✅ Hecho 2026-10-16 (commit `120eeae`) |
 | 16 | **Productos: ficha del producto (2026-10-16):** carrusel 60 %, buscador con sugerencias, ficha, lista completa en `<dialog>`, "Ver detalle" en móvil | frontend, animacion-interaccion | ✅ Hecho 2026-10-16 (commit `39b18ad`) |
 | 17 | **Datos de contacto (2026-10-16):** dirección, 2 teléfonos y correo en `negocio.json`, Visítanos y JSON-LD | contenido-estrategia, frontend, seo-negocio-local | ✅ Hecho 2026-10-16. Falta: ciudad, WhatsApp, horario, enlace de Facebook, coordenadas |
+| 18 | **Ajustes 2026-10-16 (2):** hover de la barra con el trazo de pincel maíz que se dibuja (sustituye al fondo hoja-claro) y ficha de Productos en verde bosque | direccion-arte (guía), frontend, animacion-interaccion | ✅ Hecho 2026-10-16 (la guía de estilo aún no lo recoge) |
 | Cierre | Lighthouse móvil (Inicio ≥ 99, Productos ≥ 93), pruebas del router de `vistas-hinojosa`, axe 0, capturas comparativas. Tras los bloques 15–17 hay que repetir el cierre completo | qa-rendimiento | ⏳ |
 
 ---

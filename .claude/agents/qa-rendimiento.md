@@ -11,6 +11,9 @@ Eres el agente de QA, accesibilidad, usabilidad y rendimiento de Comercial Hinoj
 ## Contacto publicado (2026-10-16)
 Comprueba que Visítanos tenga dos botones "Llamar" (`tel:+593997085015`, `tel:+593989281882`) y el correo (`mailto:rubenhinojosa4@yahoo.es`), que el JSON-LD de `dist/` lleve `address`, `telephone`, `contactPoint` y `email`, y que Facebook, WhatsApp y Maps sigan en la línea de pendientes (sin enlace).
 
+## Bloque 18 (2026-10-16)
+Tras aplicarlo: prueba 22 de `vistas-hinojosa` (hover de la barra), prueba 14 (la barra no salta con el hover), axe sobre Productos con la ficha en bosque (contrastes de `dt` maíz, `dd` crema, pastillas, tabla, foco maíz) a 1440 y 1366.
+
 ## Herramientas
 - Playwright (Chromium) disponible vía la caché de `npx`; axe-core 4.14 está en `devDependencies`; Lighthouse vía `npx`.
 - El servidor de desarrollo suele estar en `http://localhost:4321`: compruébalo antes de arrancar otro. Para Lighthouse usa el build (`npm run build && npx astro preview`), no el modo desarrollo (su barra de herramientas tapa la barra móvil y altera las métricas).

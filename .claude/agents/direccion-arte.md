@@ -10,6 +10,7 @@ La guía de estilo (`docs/guia-estilo.md`), los tokens (`src/styles/tokens.css`)
 - **Nosotros** (2026-10-16, opción A): video con alfa sobre un círculo `crema-oscuro`, columna de texto y banda `bosque` de animales a sangre. Sustituye a Quiénes somos (68/21/11) y Por qué. **Falta medir su reparto real sobre captura** y documentar la vista en la guía (§7).
 - **Visítanos y Productos** quedan como excepción al reparto (79/17/4 y 74/26/0) salvo que se apruebe el panel bosque a toda altura en Visítanos.
 - **Productos** (2026-10-16): ficha kraft a la derecha, buscador sin tarjeta, lista completa en `<dialog>` con cabecera bosque. Hay que medir el reparto y llevarlo a la guía (§7.3).
+- **Bloque 18 (2026-10-16):** la ficha de Productos pasa a **bosque** (`.tema-oscuro`) y el hover de la barra es el trazo de pincel maíz. Llévalo a la guía (§3 mapa de color, barra y §7.3) y mide de nuevo el reparto de Productos tras el cambio.
 - Bloque 10: sistema de títulos con los textos propuestos y las 3 razones de Nosotros (requiere aprobación).
 - Al recibir el logo vectorial: afinar los hex y recalcular la tabla de contrastes de `marca-hinojosa`.
 

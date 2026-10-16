@@ -26,6 +26,10 @@ Las animaciones las integra `animacion-interaccion`; tú dejas el marcado listo 
 - Botones de Inicio con icono a la izquierda: `costal` en "Ver productos", `pin` en "Cómo llegar". Accesos por categoría sin icono.
 - Orden de vistas (2026-10-16): Inicio · Productos · Nosotros · Visítanos, en barra, barra móvil, HTML, `VISTAS`, `Layout.astro` (script de arranque) y flechas.
 
+## Bloque 18 (aplicado 2026-10-16)
+- **Ficha de Productos en verde bosque** (`VistaProductos.astro`, `.prod-ficha`): fondo `bosque` con la clase `.tema-oscuro` (foco maíz); nombre blanco; `dt` maíz; `dd` crema; filetes crema al 20 %; pastillas de animales `hoja-claro` con texto e icono bosque; tabla de la tilapia con título maíz y celdas crema; CTA `boton-oro` **sin** el borde bosque (dentro de bosque no hace falta); `.prod-ficha-cta-destino` sigue subrayado. El scroll del cuerpo (`tabindex="0"`) con foco maíz. Contrastes en `marca-hinojosa`.
+- **Hover de la barra:** lo integra `animacion-interaccion` (especificación en `vistas-hinojosa`, sección Barra); tú solo quitas el fondo `hoja-claro` del hover de escritorio en `Barra.astro` si él no lo hace.
+
 ## Bloques 15–17 (2026-10-16)
 - **Nosotros** (`VistaNosotros.astro`): opción A; el bloque de razones lleva `id="por-que"` (enlaces viejos). `VistaPorQue.astro` ya no existe.
 - **Productos**: carrusel 60 %, buscador combobox (`catalogo.ts`: `pintarSugerencias`, `elegirSugerencia`), ficha (`pintarFicha`), lista completa en `<dialog data-dialogo-lista>` (`abrirLista`, `cerrarLista`), "Ver detalle" en móvil (`hoja-detalle.ts`).

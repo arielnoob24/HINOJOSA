@@ -134,12 +134,52 @@ const extra: Record<string, { corto: string; icono: string }> = {
     text-decoration-thickness: 2px;
     text-underline-offset: 5px;
   }
-  /* B4: hover de escritorio (fondo hoja-claro; bosque encima 8.63) y
-     pulsacion. Nunca sobre el activo: el enlace va por encima de la
-     pastilla y la taparia. */
-  @media (hover: hover) {
+  /* B4 escritorio (bloque 18, 2026-10-16): al pasar el raton por un rotulo
+     no activo se dibuja debajo el trazo de pincel maiz de los h2 (sustituye
+     al fondo hoja-claro y al subrayado). Va en el ::before de .barra-texto,
+     en position absolute: no cambia el ancho ni el alto del enlace (B1 sigue
+     en el ::after). Decorativo: no necesita 3:1. Nunca en el activo; en
+     tactil y en la barra inferior (< 48rem) no aparece. Las transiciones,
+     mas abajo, solo sin movimiento reducido y sin la pausa. */
+  @media (hover: hover) and (pointer: fine) and (min-width: 48rem) {
+    .barra-texto {
+      position: relative;
+    }
+    .barra-texto::before {
+      content: '';
+      content: '' / '';
+      position: absolute;
+      /* El rotulo normal va centrado en la caja reservada en 800: su
+         primera letra empieza ~0,13em mas a la derecha (medido: 1,9-2,4 px
+         a 16 px). Asi el trazo arranca alineado con el texto. */
+      left: 0.13em;
+      /* Justo bajo la linea base: el borde inferior de la caja de linea
+         queda por debajo de los descendentes; se sube 0,15em */
+      top: calc(100% - 0.15em);
+      width: 60%;
+      height: round(clamp(0.375rem, 0.9dvh, 0.5rem), 1px);
+      background: var(--color-maiz);
+      -webkit-mask: var(--trazo-pincel) no-repeat 0 0 / 100% 100%;
+      mask: var(--trazo-pincel) no-repeat 0 0 / 100% 100%;
+      transform: rotate(-1deg);
+      transform-origin: left center;
+      clip-path: inset(0 100% 0 0);
+      pointer-events: none;
+    }
     .barra-enlace:not([aria-current='page']):hover {
-      background: var(--color-hoja-claro);
+      text-decoration: none;
+    }
+    .barra-enlace:not([aria-current='page']):hover .barra-texto::before {
+      clip-path: inset(0);
+    }
+  }
+  @media (hover: hover) and (pointer: fine) and (min-width: 48rem) and (forced-colors: active) {
+    /* Con colores forzados la mascara no se ve: vuelve el subrayado */
+    .barra-texto::before {
+      display: none;
+    }
+    .barra-enlace:not([aria-current='page']):hover {
+      text-decoration: underline;
     }
   }
   .barra-enlace:active {
@@ -243,6 +283,17 @@ const extra: Record<string, { corto: string; icono: string }> = {
         background-color var(--duracion-hover-barra) ease,
         color 0s linear var(--retraso-texto-activo),
         transform var(--duracion-presion) ease-out;
+    }
+  }
+  /* Trazo del hover (bloque 18): se dibuja de izquierda a derecha en
+     220 ms (--ease-vista) y se recoge en 150 ms (--ease-salida). Sin esta
+     regla (reduced motion o pausa) aparece y desaparece sin transicion. */
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) and (min-width: 48rem) {
+    :global(html:not([data-movimiento='pausado'])) .barra-texto::before {
+      transition: clip-path 150ms var(--ease-salida);
+    }
+    :global(html:not([data-movimiento='pausado'])) .barra-enlace:not([aria-current='page']):hover .barra-texto::before {
+      transition: clip-path 220ms var(--ease-vista);
     }
   }
 

@@ -172,7 +172,8 @@ Sin scroll **no hay `IntersectionObserver` ni ScrollTrigger**. El evento de camb
 - Cada rótulo **reserva el ancho de su versión en negrita** (pseudo-elemento invisible con `content: attr(data-texto)`), para que activar un enlace no desplace a los vecinos.
 - La clase `.anima` no se retira hasta el `transitionend` de la pastilla: quitar `transition-property` a mitad cancela la transición en Safari y Firefox.
 - El texto del ítem activo se vuelve blanco cuando la pastilla ya está debajo (retraso de 150 ms, o inversión exacta con `clip-path` sobre una copia `aria-hidden`).
-- Hover (escritorio): fondo `hoja-claro` 150 ms. Pulsación: `scale(0.96)` 90 ms. Móvil: "pop" del icono activo `scale(0.92)` → 1 en 220 ms con `--ease-rebote`.
+- **Hover de la barra (escritorio, bloque 18, 2026-10-16):** en los rótulos no activos aparece bajo el texto el **trazo de pincel maíz** de los h2 (`--trazo-pincel` de `global.css`, color `maiz`, alto `round(clamp(0.375rem, 0.9dvh, 0.5rem), 1px)`, −1°, ~60 % del ancho del texto, alineado a su izquierda). Se dibuja de izquierda a derecha con `clip-path: inset(0 100% 0 0)` → `inset(0)` en 220 ms (`--ease-vista`) y se recoge en 150 ms (`--ease-salida`). Solo `(hover: hover) and (pointer: fine)`; nunca en el activo (pastilla). Con reduced motion o la pausa, sin animación. Sustituye al fondo `hoja-claro`. Debe convivir con el ancho reservado en negrita (B1): el trazo va en un pseudo-elemento que no cambie el ancho del enlace (no usar el `::after` de `data-texto`).
+- Pulsación: `scale(0.96)` 90 ms. Móvil: fondo `hoja-claro` al tocar y "pop" del icono activo `scale(0.92)` → 1 en 220 ms con `--ease-rebote`.
 
 ### Regla de las transiciones CSS
 
@@ -205,6 +206,7 @@ Las nueve primeras son los modos de fallo propios de este diseño. Si alguna fal
 19. **Buscador con sugerencias (2026-10-16):** al escribir "perro" se abre el `listbox` (≤ 6 opciones + "Ver los N"), `aria-expanded="true"`; `↓`/`↑` mueven `aria-activedescendant`; Enter pone ese producto al frente del carrusel y en la ficha; Esc cierra y un segundo Esc borra. Escribir **no** gira el carrusel.
 20. **Lista completa (2026-10-16):** "Ver todos los productos" abre el `<dialog>` con el foco en su título; con búsqueda muestra "Filtrado por «…» · Quitar filtro"; `←`/`→` no cambian de vista; elegir una fila pone el producto al frente y cierra; Esc devuelve el foco al botón que la abrió.
 21. **`#por-que` (2026-10-16):** abre `#nosotros` con el foco en el bloque de razones.
+22. **Hover de la barra (2026-10-16):** con el ratón sobre un rótulo no activo, el trazo de pincel maíz se dibuja bajo el texto y la posición `x` de los demás enlaces no cambia (prueba 14); sobre el activo no aparece; con `prefers-reduced-motion` o la pausa aparece sin transición; en táctil no aparece.
 
 ---
 

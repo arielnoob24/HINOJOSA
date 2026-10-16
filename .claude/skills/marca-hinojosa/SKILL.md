@@ -33,9 +33,10 @@ Proporción base de la marca: 60 % blanco/crema · 30 % verde · 10 % oro. **En 
 - Al terminar una vista, estima a ojo la proporción real de cada color; si el oro y el canela no llegan juntos a ~10 %, falta acento.
 - **Aprobado el 2026-10-14:**
   - Proporción objetivo en las vistas claras: **55 % crema · 30 % verde · 15 % oro + canela** (sustituye al 60/30/10 en esas vistas; Inicio sigue siendo mayoritariamente verde oscuro).
-  - **Trazo de pincel maíz bajo los h2** en lugar del subrayado verde (decorativo, no necesita 3:1; el subrayado verde se confundía con un enlace).
+  - **Trazo de pincel maíz bajo los h2** en lugar del subrayado verde (decorativo, no necesita 3:1; el subrayado verde se confundía con un enlace). **Desde 2026-10-16 es también el hover de la barra** (se dibuja bajo el rótulo no activo, sobre el crema de la barra). Es el único subrayado decorativo del sitio: no inventes otro.
   - **Canela oscuro `#8A5A1F` como fondo de banda**, con texto blanco (5.88) o crema (5.22).
-  - **Tono kraft / costal `#E3CFA6`** (`--color-kraft`) para bandas, sellos y la tarima del carrusel. Ver la tabla de la sección 2.
+  - **Tono kraft / costal `#E3CFA6`** (`--color-kraft`) para bandas, sellos, la tarima del carrusel y las cabeceras de grupo de la lista completa. Ver la tabla de la sección 2. (La ficha de Productos fue kraft hasta el 2026-10-16; ahora es **bosque**.)
+  - **Tarjetas de información en bosque (`.tema-oscuro`):** la tarjeta de Visítanos y la ficha de Productos usan el mismo lenguaje: título blanco (9.80), etiquetas maíz en mayúsculas (5.44), valores crema (8.69), CTA oro sin borde, foco maíz.
   - Más oro como **detalle** (aros de las razones de Nosotros, trazo bajo los h2, pin, marca de agua), nunca como texto sobre claro.
 
 > Los hex son aproximados, tomados de los afiches. Al obtener el logo vectorial hay que afinarlos **y volver a calcular la tabla de la sección 2**.
