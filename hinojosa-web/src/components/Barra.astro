@@ -63,14 +63,14 @@ const extra: Record<string, { corto: string; icono: string }> = {
                 {distinto ? (
                   <>
                     {e.texto.startsWith(x.corto) ? (
-                      <span class="barra-texto rotulo-corto" data-texto={x.corto}>{x.corto}<span class="sr-only">{e.texto.slice(x.corto.length)}</span></span>
+                      <span class="barra-texto rotulo-corto" data-texto={x.corto}><span class="barra-letras">{x.corto}</span><span class="sr-only">{e.texto.slice(x.corto.length)}</span></span>
                     ) : (
-                      <span class="barra-texto rotulo-corto" data-texto={x.corto}>{x.corto}</span>
+                      <span class="barra-texto rotulo-corto" data-texto={x.corto}><span class="barra-letras">{x.corto}</span></span>
                     )}
-                    <span class="barra-texto rotulo-largo" data-texto={e.texto}>{e.texto}</span>
+                    <span class="barra-texto rotulo-largo" data-texto={e.texto}><span class="barra-letras">{e.texto}</span></span>
                   </>
                 ) : (
-                  <span class="barra-texto" data-texto={e.texto}>{e.texto}</span>
+                  <span class="barra-texto" data-texto={e.texto}><span class="barra-letras">{e.texto}</span></span>
                 )}
               </a>
             </li>
@@ -134,29 +134,34 @@ const extra: Record<string, { corto: string; icono: string }> = {
     text-decoration-thickness: 2px;
     text-underline-offset: 5px;
   }
-  /* B4 escritorio (bloque 18, 2026-10-16): al pasar el raton por un rotulo
-     no activo se dibuja debajo el trazo de pincel maiz de los h2 (sustituye
-     al fondo hoja-claro y al subrayado). Va en el ::before de .barra-texto,
-     en position absolute: no cambia el ancho ni el alto del enlace (B1 sigue
-     en el ::after). Decorativo: no necesita 3:1. Nunca en el activo; en
-     tactil y en la barra inferior (< 48rem) no aparece. Las transiciones,
-     mas abajo, solo sin movimiento reducido y sin la pausa. */
+  /* B4 escritorio (bloques 18-19, 2026-10-16): al pasar el raton por un
+     rotulo no activo se dibuja debajo el trazo de pincel maiz de los h2
+     (sustituye al fondo hoja-claro y al subrayado). Bloque 19: cubre toda
+     la palabra. El texto visible va en .barra-letras, un item flex que
+     mide exactamente el rotulo en su peso normal y queda centrado en la
+     caja que reserva el ancho en 800 (B1, ::after de .barra-texto); el
+     trazo es el ::before de .barra-letras en position absolute, de 0 a
+     100 %: coincide con la primera y la ultima letra sea cual sea el
+     desfase de cada palabra, y no cambia el ancho ni el alto del enlace.
+     Decorativo: no necesita 3:1. Nunca en el activo; en tactil y en la
+     barra inferior (< 48rem) no aparece. Las transiciones, mas abajo, solo
+     sin movimiento reducido y sin la pausa. */
+  .barra-letras {
+    display: block;
+  }
   @media (hover: hover) and (pointer: fine) and (min-width: 48rem) {
-    .barra-texto {
+    .barra-letras {
       position: relative;
     }
-    .barra-texto::before {
+    .barra-letras::before {
       content: '';
       content: '' / '';
       position: absolute;
-      /* El rotulo normal va centrado en la caja reservada en 800: su
-         primera letra empieza ~0,13em mas a la derecha (medido: 1,9-2,4 px
-         a 16 px). Asi el trazo arranca alineado con el texto. */
-      left: 0.13em;
+      left: 0;
       /* Justo bajo la linea base: el borde inferior de la caja de linea
          queda por debajo de los descendentes; se sube 0,15em */
       top: calc(100% - 0.15em);
-      width: 60%;
+      width: 100%;
       height: round(clamp(0.375rem, 0.9dvh, 0.5rem), 1px);
       background: var(--color-maiz);
       -webkit-mask: var(--trazo-pincel) no-repeat 0 0 / 100% 100%;
@@ -169,13 +174,13 @@ const extra: Record<string, { corto: string; icono: string }> = {
     .barra-enlace:not([aria-current='page']):hover {
       text-decoration: none;
     }
-    .barra-enlace:not([aria-current='page']):hover .barra-texto::before {
+    .barra-enlace:not([aria-current='page']):hover .barra-letras::before {
       clip-path: inset(0);
     }
   }
   @media (hover: hover) and (pointer: fine) and (min-width: 48rem) and (forced-colors: active) {
     /* Con colores forzados la mascara no se ve: vuelve el subrayado */
-    .barra-texto::before {
+    .barra-letras::before {
       display: none;
     }
     .barra-enlace:not([aria-current='page']):hover {
@@ -285,15 +290,15 @@ const extra: Record<string, { corto: string; icono: string }> = {
         transform var(--duracion-presion) ease-out;
     }
   }
-  /* Trazo del hover (bloque 18): se dibuja de izquierda a derecha en
-     220 ms (--ease-vista) y se recoge en 150 ms (--ease-salida). Sin esta
+  /* Trazo del hover (bloque 19): se dibuja de izquierda a derecha en
+     400 ms (--ease-vista) y se recoge en 250 ms (--ease-salida). Sin esta
      regla (reduced motion o pausa) aparece y desaparece sin transicion. */
   @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) and (min-width: 48rem) {
-    :global(html:not([data-movimiento='pausado'])) .barra-texto::before {
-      transition: clip-path 150ms var(--ease-salida);
+    :global(html:not([data-movimiento='pausado'])) .barra-letras::before {
+      transition: clip-path 250ms var(--ease-salida);
     }
-    :global(html:not([data-movimiento='pausado'])) .barra-enlace:not([aria-current='page']):hover .barra-texto::before {
-      transition: clip-path 220ms var(--ease-vista);
+    :global(html:not([data-movimiento='pausado'])) .barra-enlace:not([aria-current='page']):hover .barra-letras::before {
+      transition: clip-path 400ms var(--ease-vista);
     }
   }
 

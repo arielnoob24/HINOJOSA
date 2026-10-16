@@ -21,12 +21,21 @@
 //     generico). El carrusel decide como ponerlo al frente.
 //   - Buscador (P1, P4; rediseno 2026-10-16): src/lib/busqueda.ts compara;
 //     aqui se pinta. Combobox con hasta 6 sugerencias (elegir una gira el
-//     carrusel, origen 'busqueda') y, por debajo, la lista completa filtrada
-//     ("N de TOTAL" por grupo, atajos sin resultados) dentro del <dialog>
-//     [data-dialogo-lista]. Escribir ya no gira el carrusel solo: solo al
-//     elegir (o al llegar desde un animal de Nosotros, abrirAnimal()).
+//     carrusel, origen 'busqueda') y "Ver los N", que abre la pestana Lista
+//     con los resultados de todas las categorias ("N de TOTAL" por grupo,
+//     "Resultados para «...» · Quitar filtro", atajos sin resultados).
+//     Escribir no gira el carrusel solo: solo al elegir (o al llegar desde
+//     un animal de Nosotros, abrirAnimal()).
 //   - Ficha del producto al frente (>= 48rem): pintarFicha(), con cada
 //     seleccion.
+//   - Pestanas Detalle / Lista (bloque 19, 2A): elegirPestana(). La Lista
+//     ([data-lista-catalogo], tabpanel con scroll propio) muestra solo el
+//     grupo de la categoria activa (modoLista 'categoria') o los resultados
+//     de la busqueda (modoLista 'busqueda'); lo pinta pintarLista(). Elegir
+//     una fila pone el producto al frente y vuelve a Detalle con el foco
+//     en esa pestana. En movil no hay pestanas: la lista de la categoria va
+//     bajo el carrusel. mostrarEnLista() y resaltarFila() (C4, carrusel.ts)
+//     siguen igual: si la Lista no se ve, mostrarEnLista no hace nada.
 //
 // RECUENTOS (P4, decidido 2026-10-14): la pestana y la cabecera de grupo
 // cuentan TODOS los productos de la categoria (lo mismo que la lista). El
@@ -102,6 +111,8 @@ let frenteAnillo = 0;
 let temporizadorAnuncio = 0;
 
 const mqReducido = window.matchMedia('(prefers-reduced-motion: reduce)');
+/** Con pestanas Detalle / Lista y ficha (en movil no hay ni una ni otra). */
+const mqEscritorio = window.matchMedia('(min-width: 48rem)');
 
 function q<T extends Element = HTMLElement>(sel: string, base: ParentNode | null = raiz): T | null {
   return base ? base.querySelector<T>(sel) : null;
@@ -302,6 +313,12 @@ export function seleccionar(id: string, { origen = 'api' as Origen, anunciarCamb
   if (nuevo >= 0) frenteAnillo = nuevo;
   else if (cambioCategoria) frenteAnillo = 0; // la tarjeta generica tapa el primero
   if (cambioCategoria) pintarPestanas();
+  // Una pestana de categoria devuelve la Lista a la categoria (2A); con
+  // otro origen, la Lista sigue en su modo y, si es 'categoria', cambia de
+  // grupo con el producto
+  const volverACategoria = origen === 'pestana' && modoLista === 'busqueda';
+  if (volverACategoria) modoLista = 'categoria';
+  if (cambioCategoria || volverACategoria) pintarLista();
   pintarSeleccion();
   // Con el anillo 3D montado, un giro (flechas, teclado, arrastre, celda)
   // desplaza la lista al ASENTARSE, no al empezar (storyboard-carrusel 6.4):
@@ -374,43 +391,67 @@ function textoResultados(n: number) {
 
 /** Ids de los resultados de la ultima busqueda, en el orden de la lista. */
 let resultados: string[] = [];
+let enResultados = new Set<string>();
+let hayConsulta = false;
+let terminoBuscado = '';
+/**
+ * Que muestra la Lista (2A): 'categoria' = solo el grupo de la categoria
+ * activa, sin filtrar; 'busqueda' = los resultados de todas las categorias
+ * (al pulsar "Ver los N"). Vuelve a 'categoria' al quitar el filtro, al
+ * vaciar el buscador o al pulsar una pestana de categoria.
+ */
+let modoLista: 'categoria' | 'busqueda' = 'categoria';
+let pestanaPanel: 'detalle' | 'lista' = 'detalle';
+
+/** Pinta la Lista segun modoLista: filas, grupos, recuentos y filtro. */
+function pintarLista() {
+  const buscando = modoLista === 'busqueda' && hayConsulta;
+  for (const f of filas) f.fila.hidden = buscando && !enResultados.has(f.id);
+  // Grupos: solo el activo o, buscando, los que tienen resultados ("N de TOTAL")
+  for (const g of qa('[data-grupo]')) {
+    const enGrupo = qa('[data-producto-fila]', g);
+    const total = enGrupo.length;
+    const n = enGrupo.filter((f) => !f.hidden).length;
+    g.hidden = buscando ? n === 0 : g.dataset.grupo !== categoria;
+    const conteo = q('[data-grupo-conteo]', g);
+    if (conteo) {
+      conteo.textContent =
+        buscando && n < total ? plantilla(datos?.textos.conteoFiltrado ?? '{n} de {total}', { n, total }) : textoConteo(total);
+    }
+  }
+  const vacio = q('[data-sin-resultados]');
+  const termino = q('[data-termino-buscado]');
+  if (vacio) vacio.hidden = !(buscando && enResultados.size === 0);
+  if (termino) termino.textContent = terminoBuscado;
+  // "Resultados para «perro» · Quitar filtro"
+  const filtro = q('[data-filtro-lista]');
+  if (filtro) filtro.hidden = !buscando;
+  const filtroTermino = q('[data-filtro-termino]');
+  if (filtroTermino) filtroTermino.textContent = plantilla(datos?.textos.filtradoPor ?? '«{termino}»', { termino: terminoBuscado });
+  // "Lista (N)": N = total de la categoria activa
+  const textoPestana = q('[data-pestana-lista-texto]');
+  if (textoPestana) {
+    textoPestana.textContent = plantilla(datos?.textos.pestanaLista ?? 'Lista ({n})', { n: totalPorCategoria.get(categoria) ?? 0 });
+  }
+}
 
 function filtrar(texto: string) {
   const consulta = prepararConsulta(texto);
   const ok = buscar(consulta, filas);
   resultados = [];
   filas.forEach((f, i) => {
-    const ve = ok.has(i);
-    f.fila.hidden = !ve;
-    if (ve) resultados.push(f.id);
+    if (ok.has(i)) resultados.push(f.id);
   });
+  enResultados = new Set(resultados);
+  hayConsulta = Boolean(consulta);
+  terminoBuscado = texto.trim();
+  if (!hayConsulta) modoLista = 'categoria';
+  pintarLista();
   const visibles = resultados.length;
-  // Grupos: se ocultan si quedan vacios; la cabecera dice "N de TOTAL" al filtrar
-  for (const g of qa('[data-grupo]')) {
-    const enGrupo = qa('[data-producto-fila]', g);
-    const n = enGrupo.filter((f) => !f.hidden).length;
-    const total = enGrupo.length;
-    g.hidden = n === 0;
-    const conteo = q('[data-grupo-conteo]', g);
-    if (conteo) {
-      conteo.textContent =
-        consulta && n < total ? plantilla(datos?.textos.conteoFiltrado ?? '{n} de {total}', { n, total }) : textoConteo(total);
-    }
-  }
-  const vacio = q('[data-sin-resultados]');
-  const termino = q('[data-termino-buscado]');
-  if (vacio) vacio.hidden = visibles > 0;
-  if (termino) termino.textContent = texto.trim();
   const borrar = q<HTMLButtonElement>('[data-borrar-busqueda]');
   if (borrar) borrar.hidden = texto.length === 0;
 
-  // Cabecera de la lista completa: "Filtrado por «perro»" + Quitar filtro
-  const filtro = q('[data-filtro-lista]');
-  if (filtro) filtro.hidden = !consulta;
-  const filtroTermino = q('[data-filtro-termino]');
-  if (filtroTermino) filtroTermino.textContent = plantilla(datos?.textos.filtradoPor ?? '«{termino}»', { termino: texto.trim() });
-
-  // "Ver los N" (o "Ver categorias" sin resultados): abre la lista filtrada
+  // "Ver los N" (o "Ver categorias" sin resultados): abre la Lista filtrada
   const ver = q<HTMLButtonElement>('[data-ver-resultados]');
   if (ver) {
     ver.hidden = !consulta;
@@ -497,7 +538,7 @@ function pintarSugerencias(ids: string[], total: number) {
     li.append(mini, nombre, precio);
     return li;
   });
-  // Si hay mas de los que caben, ultima opcion: la lista completa filtrada
+  // Si hay mas de los que caben, ultima opcion: "Ver los N" (la Lista filtrada)
   if (total > ids.length && ids.length) {
     const li = document.createElement('li');
     li.id = 'sug-todos';
@@ -516,39 +557,55 @@ function pintarSugerencias(ids: string[], total: number) {
 function elegirSugerencia(op: HTMLElement) {
   const input = q<HTMLInputElement>('[data-buscador]');
   abrirSugerencias(false);
-  if (op.dataset.sugTodos !== undefined) return abrirLista(input);
+  if (op.dataset.sugTodos !== undefined) return abrirResultados();
   const id = op.dataset.sugId;
   if (id) seleccionar(id, { origen: 'busqueda' });
   input?.focus();
 }
 
 // ---------------------------------------------------------------------
-// Lista completa en un <dialog> (data-dialogo-lista)
+// Pestanas Detalle / Lista (bloque 19, 2A)
 // ---------------------------------------------------------------------
-let origenLista: HTMLElement | null = null;
-
-export function abrirLista(desde: HTMLElement | null = null) {
-  const d = q<HTMLDialogElement>('[data-dialogo-lista]');
-  if (!d || d.open) return;
-  origenLista = desde;
-  d.showModal();
-  q<HTMLElement>('#titulo-lista')?.focus();
-  // Al abrir, la fila del producto al frente (o el primer resultado) a la vista
-  requestAnimationFrame(() => {
+/** Cambia de pestana (patron ARIA de pestanas, activacion automatica). */
+export function elegirPestana(cual: 'detalle' | 'lista', { foco = false } = {}) {
+  pestanaPanel = cual;
+  const panel = q('[data-panel]');
+  if (panel) panel.dataset.pestana = cual;
+  for (const b of qa<HTMLButtonElement>('[data-pestana-boton]')) {
+    const sel = b.dataset.pestanaBoton === cual;
+    b.setAttribute('aria-selected', String(sel));
+    b.tabIndex = sel ? 0 : -1;
+  }
+  if (foco) q<HTMLElement>(`[data-pestana-boton="${cual}"]`)?.focus();
+  if (cual === 'lista') {
     const lista = q('[data-lista-catalogo]');
     if (lista) lista.scrollTop = 0;
-    mostrarEnLista(actualId);
-  });
+    // La fila del producto al frente a la vista (no con resultados: arriba
+    // queda la linea "Resultados para...")
+    if (modoLista === 'categoria') mostrarEnLista(actualId);
+  }
 }
 
-function cerrarLista(devolverFoco = true) {
-  const d = q<HTMLDialogElement>('[data-dialogo-lista]');
-  if (!d?.open) return;
-  if (!devolverFoco) origenLista = null;
-  d.close();
+/** "Ver los N" del buscador: la Lista con los resultados de todas las categorias. */
+export function abrirResultados() {
+  if (!hayConsulta) return;
+  modoLista = 'busqueda';
+  pintarLista();
+  if (mqEscritorio.matches) elegirPestana('lista');
+  const lista = q('[data-lista-catalogo]');
+  if (lista) lista.scrollTop = 0;
+  // Foco en "Resultados para «...»" (tabindex -1): el lector lo anuncia y
+  // Tab sigue por "Quitar filtro" y las filas. En movil lo desplaza a la vista.
+  q<HTMLElement>('[data-filtro-lista]')?.focus();
 }
 
-/** Vacia el buscador y muestra la lista completa. */
+/** "Quitar filtro": vacia el buscador y la Lista vuelve a la categoria activa. */
+function quitarFiltro() {
+  limpiarBusqueda();
+  q<HTMLElement>(`#grupo-${categoria}`)?.focus();
+}
+
+/** Vacia el buscador; la Lista vuelve a la categoria activa. */
 export function limpiarBusqueda() {
   const input = q<HTMLInputElement>('[data-buscador]');
   if (input) input.value = '';
@@ -577,27 +634,33 @@ function arrancar() {
     if (pestana) {
       const cat = pestana.dataset.categoriaBoton!;
       if (cat !== categoria) seleccionarCategoria(cat, { origen: 'pestana' });
-      else mostrarEnLista(actualId, true);
+      else {
+        if (modoLista === 'busqueda') {
+          modoLista = 'categoria';
+          pintarLista();
+        }
+        mostrarEnLista(actualId, true);
+      }
       return;
     }
+    const tab = el.closest<HTMLElement>('[data-pestana-boton]');
+    if (tab) return elegirPestana(tab.dataset.pestanaBoton === 'lista' ? 'lista' : 'detalle');
     if (el.closest('[data-carrusel-anterior]')) return anterior('flechas');
     if (el.closest('[data-carrusel-siguiente]')) return siguiente('flechas');
     const celda = el.closest<HTMLElement>('[data-rejilla-producto]');
     if (celda) return seleccionar(celda.dataset.rejillaProducto!, { origen: 'rejilla' });
     const fila = el.closest<HTMLElement>('[data-seleccionar-producto]');
     if (fila) {
-      // Desde la lista completa: el producto pasa al frente y se cierra
+      // Desde la Lista: el producto pasa al frente y se vuelve a Detalle
+      // con el foco en esa pestana. En movil (sin pestanas), el foco va a
+      // "Ver detalle", junto al carrusel que acaba de girar.
       seleccionar(fila.dataset.seleccionarProducto!, { origen: 'lista' });
-      return cerrarLista();
-    }
-    const abrir = el.closest<HTMLElement>('[data-abrir-lista], [data-ver-resultados]');
-    if (abrir) return abrirLista(abrir);
-    if (el.closest('[data-cerrar-lista]')) return cerrarLista();
-    if (el.closest('[data-quitar-filtro]')) {
-      limpiarBusqueda();
-      q<HTMLElement>('#titulo-lista')?.focus();
+      if (mqEscritorio.matches) elegirPestana('detalle', { foco: true });
+      else q<HTMLElement>('[data-ver-detalle]')?.focus();
       return;
     }
+    if (el.closest('[data-ver-resultados]')) return abrirResultados();
+    if (el.closest('[data-quitar-filtro]')) return quitarFiltro();
     const sug = el.closest<HTMLElement>('[data-sugerencias] [role="option"]');
     if (sug) return elegirSugerencia(sug);
     if (el.closest('[data-borrar-busqueda]')) {
@@ -633,6 +696,28 @@ function arrancar() {
       q<HTMLElement>(`[data-rejilla-producto="${actualId}"]`)?.focus();
     }
   });
+
+  // Pestanas Detalle / Lista: ←/→ alternan, Inicio/Fin van a la primera y
+  // la ultima. El tablist lleva data-captura-flechas (el router no cambia
+  // de vista).
+  q('[data-pestanas-panel]')?.addEventListener('keydown', (ev) => {
+    if (ev.altKey || ev.ctrlKey || ev.metaKey) return;
+    let cual: 'detalle' | 'lista';
+    if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') cual = pestanaPanel === 'detalle' ? 'lista' : 'detalle';
+    else if (ev.key === 'Home') cual = 'detalle';
+    else if (ev.key === 'End') cual = 'lista';
+    else return;
+    ev.preventDefault();
+    elegirPestana(cual, { foco: true });
+  });
+  // La lista es el tabpanel de "Lista" y su contenedor con scroll (enfocable).
+  // Sin JS no hay pestanas, asi que estos atributos solo los pone el JS.
+  const panelLista = q('[data-panel-lista]');
+  if (panelLista) {
+    panelLista.setAttribute('role', 'tabpanel');
+    panelLista.setAttribute('aria-labelledby', 'tab-lista');
+    panelLista.tabIndex = 0;
+  }
 
   // Buscador
   indexarFilas();
@@ -674,20 +759,6 @@ function arrancar() {
   // Pulsar una sugerencia no debe quitar el foco del campo antes del clic
   q('[data-sugerencias]')?.addEventListener('pointerdown', (ev) => ev.preventDefault());
 
-  // Lista completa: al cerrarse (Esc, "Cerrar", fila elegida) el foco vuelve
-  // a quien la abrio; el dialogo lleva data-captura-flechas
-  const dialogo = q<HTMLDialogElement>('[data-dialogo-lista]');
-  dialogo?.addEventListener('close', () => {
-    if (origenLista?.isConnected) origenLista.focus();
-    origenLista = null;
-  });
-  dialogo?.addEventListener('click', (ev) => {
-    if (ev.target === dialogo) cerrarLista(); // telon
-  });
-  // Si se sale de Productos con la lista abierta (atras del navegador)
-  window.addEventListener('hashchange', () => {
-    if (dialogo?.open && location.hash !== '#productos') cerrarLista(false);
-  });
   if (input?.value) filtrar(input.value); // valor restaurado por el navegador
 
   // Seleccion inicial: primer producto de la primera categoria
@@ -697,7 +768,7 @@ function arrancar() {
     if (p) seleccionar(p.id, { origen: 'inicial' });
   }
 
-  window.hinojosaCatalogo = { seleccionar, seleccionarCategoria, siguiente, anterior, estado, producto, abrirLista };
+  window.hinojosaCatalogo = { seleccionar, seleccionarCategoria, siguiente, anterior, estado, producto, elegirPestana, abrirResultados };
 }
 
 declare global {
@@ -709,7 +780,8 @@ declare global {
       anterior: typeof anterior;
       estado: typeof estado;
       producto: typeof producto;
-      abrirLista: typeof abrirLista;
+      elegirPestana: typeof elegirPestana;
+      abrirResultados: typeof abrirResultados;
     };
   }
   interface WindowEventMap {

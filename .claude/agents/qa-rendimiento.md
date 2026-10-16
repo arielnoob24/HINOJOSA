@@ -14,6 +14,9 @@ Comprueba que Visítanos tenga dos botones "Llamar" (`tel:+593997085015`, `tel:+
 ## Bloque 18 (2026-10-16)
 Tras aplicarlo: prueba 22 de `vistas-hinojosa` (hover de la barra), prueba 14 (la barra no salta con el hover), axe sobre Productos con la ficha en bosque (contrastes de `dt` maíz, `dd` crema, pastillas, tabla, foco maíz) a 1440 y 1366.
 
+## Bloque 19 (2026-10-16)
+Tras aplicarlo: pruebas 14, 20 y 22 de `vistas-hinojosa` (pestañas Detalle / Lista, hover de la barra a todo el ancho y 400/250 ms), axe en Productos con cada pestaña abierta, Lighthouse móvil `#productos` ≥ 93.
+
 ## Herramientas
 - Playwright (Chromium) disponible vía la caché de `npx`; axe-core 4.14 está en `devDependencies`; Lighthouse vía `npx`.
 - El servidor de desarrollo suele estar en `http://localhost:4321`: compruébalo antes de arrancar otro. Para Lighthouse usa el build (`npm run build && npx astro preview`), no el modo desarrollo (su barra de herramientas tapa la barra móvil y altera las métricas).
@@ -26,7 +29,7 @@ Tras aplicarlo: prueba 22 de `vistas-hinojosa` (hover de la barra), prueba 14 (l
    - **Color:** el bebedero no muestra damero; ninguna vista clara es solo crema + blanco (comprueba que haya banda `bosque` y acento oro/canela según el bloque 13). Excepciones conocidas al 55/30/15, pendientes de decisión del usuario: Quiénes somos (68/21/11), Visítanos y Productos.
    - El carrusel nunca gira solo; flechas con nombre accesible; producto activo anunciado.
    - **Coherencia del carrusel:** durante y después de un giro, el rótulo, el precio y la fila resaltada corresponden al producto al frente (muestreo por fotogramas). Al cambiar de categoría no aparece la silueta vacía en categorías ya visitadas.
-   - Sin GSAP/JS: rejilla de imágenes y lista completas (la lista, fuera del `<dialog>`).
+   - Sin GSAP/JS: rejilla de imágenes y la lista de los 4 grupos en la página.
    - **Video de Nosotros:** Safari/iOS no reproduce el alfa; debe verse el póster (no un fondo negro). Márcalo como no probado si no hay Safari.
    - Fuera de `#productos`: 0 `requestAnimationFrame` por segundo del carrusel.
 3. **Contenido y UX:**

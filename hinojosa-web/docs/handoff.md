@@ -17,6 +17,10 @@ Commits en `Ariel` (sin subir): `0e86d50` (agentes, skills y plan alineados), `1
 5. **Datos de contacto** (dados por el usuario): dirección **Av. del Chofer y Rubén Larson**, teléfonos **099 708 5015** y **098 928 1882**, correo **rubenhinojosa4@yahoo.es**, Facebook **@Comercial Hinojosa** (sin enlace). En `negocio.json` (`telefonos` es ahora una lista, `correo` es nuevo), Visítanos (un botón "Llamar" por número, correo con `mailto:`, icono `correo` nuevo) y JSON-LD (`telephone`, `contactPoint`, `email`, `addressCountry: EC`).
 6. **Medido:** Lighthouse móvil Productos 97, Inicio 99, Nosotros 98 (100 en accesibilidad, buenas prácticas y SEO); axe 0 en Nosotros, Productos (y su lista) y Visítanos a 1440, 1366 y 360 px. **No** se repitió el cierre de QA completo.
 
+7. **Bloque 18:** hover de la barra con el trazo de pincel maíz (sustituye al fondo hoja-claro) y ficha de Productos en verde bosque (`.tema-oscuro`).
+8. **Bloque 19:** Productos sin botón de compra en la ficha (línea "Todos estos productos los encuentras en nuestro local · Cómo llegar ›" en el pie) y con pestañas **Detalle / Lista (N)** en lugar de la ventana "Ver todos" (ya no hay `<dialog>` de lista: `abrirLista`/`cerrarLista` se borraron; ahora `elegirPestana`, `abrirResultados`, `quitarFiltro`, `pintarLista` en `catalogo.ts`). En móvil no hay pestañas: la lista de la categoría va bajo el carrusel. Barra: trazo a toda la palabra (`.barra-letras`), 400/250 ms.
+9. **Flujo de trabajo pedido por el usuario:** cambios → `PLAN.md` → agentes y skills → aplicar con los agentes del proyecto → commit y push a `origin Ariel`.
+
 ### Decisiones del 2026-10-16
 - Trabajar solo en `Ariel`; no tocar `main`.
 - Unir Quiénes somos y Por qué en **Nosotros** (opción A de 3) con el nombre "Nosotros" en la barra.

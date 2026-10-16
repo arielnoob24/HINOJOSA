@@ -47,6 +47,8 @@ La auditoría completa está en [`auditoria.md`](auditoria.md). Estas son las de
 | **Productos: ficha del producto** (2026-10-16) | El panel derecho deja de ser la lista completa: **ficha del producto al frente** (precio, marca, presentación, categoría, "Para:" animales, tabla de la tilapia, "¿Dónde comprarlo?") + **buscador con sugerencias** + **"Ver todos los productos (37)"** que abre la lista en un `<dialog>`. Carrusel al 60 % (ver vista 2) | Escaparate a todo el ancho que filtra el anillo; lista aligerada a la derecha |
 | **Barra: hover con trazo de pincel** (2026-10-16, bloque 18) | Al pasar el ratón sobre una opción **no activa** de la barra (escritorio), aparece debajo del rótulo el **mismo trazo de pincel maíz** que llevan los h2 (p. ej. bajo "Comercial Hinojosa" en Visítanos), dibujándose de izquierda a derecha. **Sustituye** al fondo `hoja-claro` del hover | Fondo hoja-claro (B4 original); subrayado recto |
 | **Ficha de Productos en verde bosque** (2026-10-16, bloque 18) | La ficha del producto pasa de kraft a **verde bosque** (`.tema-oscuro`), con el mismo lenguaje que la tarjeta de Visítanos. Da a Productos su bloque verde (antes 74/26/0, sin banda bosque) | Kraft (primera versión de la ficha); verde claro `hoja-claro` |
+| **Productos: compra en el pie y pestañas Detalle / Lista** (2026-10-16, bloque 19) | **1A:** el botón "¿Dónde comprarlo? Visítanos" sale de la ficha; queda una **línea de texto en el pie**: "Todos estos productos los encuentras en nuestro local · Cómo llegar →". La hoja de detalle móvil conserva su botón. Con WhatsApp, botón pequeño "Preguntar" junto al precio. **2A:** el botón "Ver todos los productos" y su ventana desaparecen; el panel derecho tiene **pestañas "Detalle" / "Lista (N)"**, y la lista muestra solo la categoría activa en el mismo sitio de la ficha | Enlace junto al precio; quitar la compra; quitar la lista; tira de miniaturas bajo el carrusel; ventana con los 37 (versión anterior) |
+| **Barra: trazo de toda la palabra y más lento** (2026-10-16, bloque 19) | El trazo del hover cubre **todo el ancho del rótulo** (antes ~60 %) y se dibuja en **400 ms** (antes 220) y se recoge en **250 ms** (antes 150) | — |
 | **Datos de contacto** (2026-10-16) | Confirmados por el usuario: dirección **Av. del Chofer y Rubén Larson**, teléfonos **099 708 5015** y **098 928 1882**, correo **rubenhinojosa4@yahoo.es**, Facebook **@Comercial Hinojosa** (falta el enlace). Ver sección 1 | — |
 
 **Cambios de criterio que se derivan** (aplican aunque contradigan secciones antiguas):
@@ -161,7 +163,7 @@ Cálido, familiar, confiable, cercano. Textos **cortos**, en español, orientado
 1. **Una sola página** (`index.astro`) con **4 vistas** (5 hasta el 2026-10-16). Cada vista ocupa `100dvh` y solo una está visible a la vez.
 2. **No hay scroll de página.** Las vistas inactivas se ocultan con `display: none` + `inert`.
 3. **Se cambia de vista desde la barra superior**, siempre visible, y con `←`/`→`, `AvPág`/`RePág`. **Decisión 0-B: no se añade rueda, deslizamiento ni enlaces "Siguiente".**
-4. **Scroll interno permitido solo** en la lista completa del catálogo (dentro de su `<dialog>`), en el cuerpo de la ficha de producto cuando no cabe y, en móvil, en la vista que no quepa.
+4. **Scroll interno permitido solo** en la pestaña Lista del panel de Productos, en el cuerpo de la ficha de producto cuando no cabe y, en móvil, en la vista que no quepa.
 5. **Cada vista tiene su hash**, en este orden (2026-10-16): `#inicio`, `#productos`, `#nosotros`, `#visitanos`. `#por-que` abre el bloque de razones dentro de `#nosotros` (es un `id` de ese bloque, no una vista).
 6. **Transición entre vistas:** ver "Transición" más abajo. Una sola metáfora en todo el sitio.
 
@@ -184,7 +186,7 @@ Las frases salen de los eslóganes reales del negocio. "Calidad, confianza y com
   - `.anima` no se retira hasta el `transitionend` de la pastilla.
   - **Estiramiento direccional** de la pastilla: el borde que va delante tarda 240 ms y el de atrás 300 ms.
   - **Texto bajo la pastilla:** versión básica, el color cambia con 150 ms de retraso; versión pulida, inversión exacta con `clip-path` (copia `aria-hidden` del menú).
-  - **Hover en escritorio (2026-10-16, bloque 18):** en los rótulos **no activos**, el **trazo de pincel maíz** de los h2 (`--trazo-pincel`, color `maiz`, alto `round(clamp(0.375rem, 0.9dvh, 0.5rem), 1px)`, girado −1°) aparece bajo el texto, ~60 % de su ancho y alineado a la izquierda del texto. Se **dibuja de izquierda a derecha** con `clip-path: inset(0 100% 0 0)` → `inset(0 0 0 0)` en 220 ms (`--ease-vista`) y se recoge en 150 ms (`--ease-salida`) al salir. Solo con `(hover: hover) and (pointer: fine)`; el ítem activo (pastilla bosque) no lo lleva. Con `prefers-reduced-motion` o la pausa del sitio aparece y desaparece sin animación. Es decorativo (feedback de hover, no estado): no necesita 3:1 contra el crema de la barra. **Sustituye** al fondo `hoja-claro`. Se mantienen la pulsación (`scale(0.96)` en 90 ms) y, en móvil, el fondo `hoja-claro` al tocar y el "pop" del icono activo (`scale(0.92)` → 1, 220 ms, `--ease-rebote`).
+  - **Hover en escritorio (2026-10-16, bloque 18):** en los rótulos **no activos**, el **trazo de pincel maíz** de los h2 (`--trazo-pincel`, color `maiz`, alto `round(clamp(0.375rem, 0.9dvh, 0.5rem), 1px)`, girado −1°) aparece bajo el texto, **a todo su ancho** (desde la primera hasta la última letra; bloque 19). Se **dibuja de izquierda a derecha** con `clip-path: inset(0 100% 0 0)` → `inset(0 0 0 0)` en **400 ms** (`--ease-vista`) y se recoge en **250 ms** (`--ease-salida`) al salir. Solo con `(hover: hover) and (pointer: fine)`; el ítem activo (pastilla bosque) no lo lleva. Con `prefers-reduced-motion` o la pausa del sitio aparece y desaparece sin animación. Es decorativo (feedback de hover, no estado): no necesita 3:1 contra el crema de la barra. **Sustituye** al fondo `hoja-claro`. Se mantienen la pulsación (`scale(0.96)` en 90 ms) y, en móvil, el fondo `hoja-claro` al tocar y el "pop" del icono activo (`scale(0.92)` → 1, 220 ms, `--ease-rebote`).
   - Con movimiento reducido o pausa: la pastilla salta, sin pop.
 - En móvil, la barra superior baja a 44 px y el isotipo a 32 px (G5).
 
@@ -210,7 +212,7 @@ Hoy la vista saliente se oculta antes del primer pintado y se ve un destello del
 | # | Vista | Qué contiene |
 |---|---|---|
 | 1 | **Inicio** | Logo, acento "Tu mejor aliado para tus animales", subtítulo, 2 botones, accesos por categoría, fila de animales, vitrina de 4 costales (escritorio) y Canela en la franja inferior |
-| 2 | **Productos** | Pestañas de 4 categorías y carrusel 3D (60 %); buscador con sugerencias, ficha del producto al frente y "Ver todos los productos" (40 %); lista completa en un `<dialog>`; hoja de detalle en móvil |
+| 2 | **Productos** | Pestañas de 4 categorías y carrusel 3D (60 %); buscador con sugerencias, pestañas Detalle / Lista con la ficha del producto al frente o la lista de la categoría (40 %); línea "Cómo llegar" en el pie; hoja de detalle en móvil |
 | 3 | **Nosotros** | Canela jugando sobre un círculo, "Somos parte de tu familia", misión, 3 razones ("Por qué elegirnos") y banda de animales que enlaza a Productos |
 | 4 | **Visítanos** | Dirección, teléfonos, correo, horario y mapa (cuando haya coordenadas) |
 
@@ -321,15 +323,15 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 │ [barra]                                                  │
 │  Nuestros productos               Buscar producto        │
 │  [Granja][Mascotas][Com.][Granos] [🔍 perro…         ✕]  │
-│                                   ┌ sugerencias (≤ 6) ┐  │
-│     [img]   [IMG]   [img]         │ FICHA (bosque)     │  │
-│  ◀     (anillo CSS 3D)    ▶       │ Camperito pollos   │  │
-│          [ tarima ]               │ [$28.00]           │  │
-│                                   │ Marca · Present. · │  │
-│                                   │ Categoría · Para:  │  │
-│  Alimento Animales de Granja·1 de 9│ [¿Dónde comprarlo?]│  │
-│                                   [Ver todos (37) →]     │
-│                                   Precios referenciales… │
+│                                   [ Detalle ][ Lista (9) ]│
+│     [img]   [IMG]   [img]         ┌ FICHA (bosque) ────┐ │
+│  ◀     (anillo CSS 3D)    ▶       │ Camperito pollos   │ │
+│          [ tarima ]               │ [$28.00]           │ │
+│                                   │ Marca · Present. · │ │
+│                                   │ Categoría · Para   │ │
+│  Alimento Animales de Granja·1 de 9└────────────────────┘ │
+│                    Los encuentras en nuestro local ·      │
+│                    Cómo llegar →  · Precios referenciales │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -344,26 +346,32 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 - Transiciones C1–C8 (tabla de abajo), sin cambios.
 
 **Buscador (derecha arriba, a la altura de las pestañas)**
-- Etiqueta visible "Buscar producto"; campo con lupa. **Combobox (patrón ARIA 1.2)** con hasta **6 sugerencias** (miniatura, nombre, marca · categoría, precio) y, si hay más, la opción "Ver los N" que abre la lista completa filtrada.
+- Etiqueta visible "Buscar producto"; campo con lupa. **Combobox (patrón ARIA 1.2)** con hasta **6 sugerencias** (miniatura, nombre, marca · categoría, precio) y, si hay más, la opción "Ver los N", que abre la pestaña **Lista** filtrada por la búsqueda (bloque 19).
 - Flechas ↑/↓ para moverse, Enter elige, Esc cierra y un segundo Esc borra. **Elegir una sugerencia gira el carrusel** hasta ese producto (cambia de pestaña si hace falta). **Escribir no gira el carrusel solo.**
 - Bajo el campo: "14 productos encontrados · Ver los 14" (o "Ver categorías" sin resultados).
 - Busca en nombre, marca, presentación, categoría **y en el campo `animales`** (perro, gato, ave/pollo/gallina, cerdo, vaca, cuy, conejo, tilapia/pez), ignorando tildes, guiones y espacios ("procan" = "pro-can") y tolerando singular/plural (`src/lib/busqueda.ts`).
 
 **Ficha del producto al frente (derecha, solo ≥ 48rem)**
 - **Fondo verde bosque** (`.tema-oscuro`, decidido 2026-10-16; antes kraft), como la tarjeta de Visítanos. Nombre en Cormorant grande **blanco** (9.80), chip de precio oro con tinta (7.93), y filas **Marca · Presentación · Categoría · Para** con la etiqueta en **maíz** (5.44) y el valor en **crema** (8.69), separadas por filetes crema al 20 % (decorativos). Animales en pastillas `hoja-claro` con icono y texto bosque (8.63). Para el tilapero, la **tabla de proteína por etapa** (título maíz, celdas crema). Foco maíz.
-- Botón **"¿Dónde comprarlo? Visítanos"** (oro, sin borde dentro del bloque bosque), siempre visible: si la ficha no cabe (1366×650), solo se desplaza su cuerpo.
+- **Sin botón de compra dentro de la ficha (bloque 19, 1A):** la ficha es solo información. Si no cabe (1366×650, tilapia), se desplaza su cuerpo.
+- **Línea de compra en el pie**, bajo la ficha y encima de las notas: texto crema-tinta normal "Todos estos productos los encuentras en nuestro local · " + enlace **"Cómo llegar →"** (`marca-fuerte` subrayado, 4.77 sobre crema) a `#visitanos`. No es un botón.
 - Con la ficha en bosque, el kraft de la vista queda en la tarima del carrusel y en las cabeceras de grupo de la lista completa.
 - Cambia con un fundido corto en el sentido del giro (sin movimiento con reduced motion o pausa).
-- **P2:** cuando WhatsApp esté confirmado, el botón pasa a "Preguntar por este producto" (`wa.me` con el nombre del producto).
+- **P2:** cuando WhatsApp esté confirmado, junto al chip del precio aparece un botón pequeño (≈ 36 px de alto, objetivo ≥ 24 px) con el icono de WhatsApp y "Preguntar" (`wa.me` con "Hola, quiero preguntar por {producto}").
 
-**Lista completa ("Ver todos los productos (37)")**
-- `<dialog>` modal: foco al título, Esc y "Cerrar", foco de vuelta al botón que la abrió, `data-captura-flechas` (las flechas no cambian de vista). Cabecera bosque con "Filtrado por «perro» · Quitar filtro" si hay búsqueda.
-- Lista agrupada por categoría, con miniatura de 48 px y precio; "3 de 7" al filtrar; sin resultados, las 4 categorías como atajos. Elegir una fila pone ese producto al frente y cierra la ventana.
-- **Sin JS** la lista se pinta en la página (columna derecha), como antes. Siempre está en el HTML servido (SEO) y es la alternativa textual del carrusel.
-- Notas fijas bajo el botón: *"Precios referenciales — consulta disponibilidad"* y *"Marcas registradas de sus respectivos propietarios."*
+**Pestañas "Detalle" / "Lista (N)" (bloque 19, 2A; sustituyen a "Ver todos los productos" y su ventana)**
+- Arriba del panel derecho, bajo el buscador, dos pestañas con el estilo de las de categoría: **"Detalle"** (por defecto) y **"Lista (N)"**, donde N es el total de la categoría activa (Granja 9, Mascotas 16, Comederos 5, Granos 7). Patrón ARIA de pestañas (`role="tablist"`, `tab` con `aria-selected` y `aria-controls`, `tabpanel`), con ←/→ entre pestañas (el contenedor lleva `data-captura-flechas`: no cambian de vista) e Inicio/Fin.
+- **Detalle:** la ficha verde.
+- **Lista:** en el mismo espacio de la ficha, sin ventana, **solo los productos de la categoría activa**, en filas de una línea: miniatura de 40 px, nombre (con "…" si no cabe) y precio a la derecha. Fondo crema-oscuro o hoja-claro (el que mida mejor `direccion-arte`), cabecera de grupo kraft. El producto al frente se marca con la barra bosque de 4 px a la izquierda (C4). Si no cabe, la lista se desplaza dentro del panel. La tabla de la tilapia no va en la lista (está en la ficha).
+- **Tocar una fila:** ese producto gira al frente del carrusel y el panel vuelve a **Detalle** (foco a la pestaña Detalle).
+- **Cambiar de categoría con la Lista abierta:** la lista pasa a la nueva categoría.
+- **Búsqueda:** "Ver los N" del buscador abre la pestaña Lista con los resultados de todas las categorías ("Resultados para «perro» · Quitar filtro" arriba de la lista); al quitar el filtro vuelve a la categoría activa.
+- **Desaparecen:** el botón "Ver todos los productos (37)" y el `<dialog>` de la lista.
+- **Sin JS:** sin pestañas; la ficha no existe y se ven las listas de las 4 categorías en la columna derecha, como antes. **Siempre en el HTML servido** (SEO) y alternativa textual del carrusel.
+- Notas fijas en el pie, bajo la línea de compra: *"Precios referenciales — consulta disponibilidad"* y *"Marcas registradas de sus respectivos propietarios."*
 
 **Móvil (P6)**
-- Orden: título, buscador, pestañas en una fila, carrusel, rótulo + **"Ver detalle"**, "Ver todos" y notas. La lista completa se abre a pantalla completa.
+- Orden: título, buscador, pestañas de categoría en una fila, carrusel, rótulo + **"Ver detalle"**, pestañas Detalle / Lista (en móvil "Detalle" muestra solo un aviso corto o se omite y la Lista se ve directamente bajo el carrusel, dentro del scroll de la vista; decide `frontend` lo más simple que pase las pruebas), línea de compra y notas.
 - "Ver detalle" abre la **hoja de detalle** desde abajo: imagen, nombre, presentación, precio y "¿Dónde comprarlo?". `<dialog>` modal: foco al título al abrir, `Esc` y "Cerrar", foco de vuelta al botón, fondo inerte. Entra con `translateY(100%)` → 0 en 300 ms; con movimiento reducido, sin desplazamiento.
 
 **Transiciones del carrusel (decididas, C1–C8)** — que nada cambie de golpe:
@@ -382,7 +390,7 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 Con movimiento reducido o pausa: cambios instantáneos.
 
 **Accesibilidad**
-- La lista completa **es** la alternativa textual del carrusel. Producto activo anunciado con `aria-live="polite"`. El cuerpo de la ficha, si se desplaza, es enfocable (`tabindex="0"`).
+- La lista (pestaña Lista; sin JS, en la página) **es** la alternativa textual del carrusel. Producto activo anunciado con `aria-live="polite"`. El cuerpo de la ficha y la lista, si se desplazan, son enfocables (`tabindex="0"`).
 - Sin JavaScript o sin GSAP: rejilla de imágenes y lista intactas.
 
 ---
@@ -578,7 +586,7 @@ Skills que gobiernan esta parte: `wcag-accessibility`, `wcag-audit-patterns` y `
 | 2.4.11 Foco no oculto | La barra, la tarjeta del mapa y la hoja de detalle no tapan el elemento enfocado |
 | 2.5.8 Tamaño del objetivo | Mínimo 24×24 px; objetivo real 44×44 px en móvil |
 | 3.3.2 Etiquetas | Buscador con etiqueta visible |
-| 4.1.2 Nombre, rol, valor | Barra con `aria-current`; producto activo anunciado con `aria-live`; buscador como `combobox` con `listbox`; lista completa y hoja de detalle como `<dialog>` con nombre |
+| 4.1.2 Nombre, rol, valor | Barra con `aria-current`; producto activo anunciado con `aria-live`; buscador como `combobox` con `listbox`; Detalle / Lista como `tablist`; hoja de detalle como `<dialog>` con nombre |
 
 ### Heurísticas de Nielsen — cómo se aplican
 1. **Visibilidad del estado:** pastilla de vista activa; el rótulo, la ficha y la fila resaltada siempre coinciden con el producto al frente (C4, C7).
@@ -586,7 +594,7 @@ Skills que gobiernan esta parte: `wcag-accessibility`, `wcag-audit-patterns` y `
 3. **Control y libertad:** hash por vista, botón "atrás", la hoja de detalle se cierra con `Esc`.
 4. **Consistencia:** una sola metáfora de transición, un solo sistema de títulos (G3), recuentos coherentes (P4).
 5. **Prevención de errores:** precios referenciales; nada de contacto inventado; los botones pendientes no parecen botones.
-6. **Reconocer antes que recordar:** las 4 vistas en la barra; sugerencias con foto y precio al buscar; "Ver todos" a un clic; accesos por categoría en Inicio.
+6. **Reconocer antes que recordar:** las 4 vistas en la barra; sugerencias con foto y precio al buscar; la lista de la categoría a un clic (pestaña Lista); accesos por categoría en Inicio.
 7. **Flexibilidad:** carrusel para explorar, buscador para quien sabe qué quiere, accesos directos desde Inicio.
 8. **Diseño minimalista:** sin lema repetido; Nosotros con 3 razones en lugar de 4 pilares + 4 diferenciales + 6 valores; la lista completa no compite con el carrusel.
 9. **Errores:** búsqueda sin resultados ofrece las categorías; si el mapa falla, dirección en texto.
@@ -675,6 +683,7 @@ En `.claude/skills/` del proyecto:
 | 16 | **Productos: ficha del producto (2026-10-16):** carrusel 60 %, buscador con sugerencias, ficha, lista completa en `<dialog>`, "Ver detalle" en móvil | frontend, animacion-interaccion | ✅ Hecho 2026-10-16 (commit `39b18ad`) |
 | 17 | **Datos de contacto (2026-10-16):** dirección, 2 teléfonos y correo en `negocio.json`, Visítanos y JSON-LD | contenido-estrategia, frontend, seo-negocio-local | ✅ Hecho 2026-10-16. Falta: ciudad, WhatsApp, horario, enlace de Facebook, coordenadas |
 | 18 | **Ajustes 2026-10-16 (2):** hover de la barra con el trazo de pincel maíz que se dibuja (sustituye al fondo hoja-claro) y ficha de Productos en verde bosque | direccion-arte (guía), frontend, animacion-interaccion | ✅ Hecho 2026-10-16 (la guía de estilo aún no lo recoge) |
+| 19 | **Ajustes 2026-10-16 (3):** Productos: compra como línea en el pie (1A) y pestañas Detalle / Lista por categoría en lugar de la ventana (2A); barra: trazo a todo el ancho del rótulo, 400 / 250 ms | frontend, animacion-interaccion | ✅ Hecho 2026-10-16 (Lighthouse móvil Productos 96–97, axe 0) |
 | Cierre | Lighthouse móvil (Inicio ≥ 99, Productos ≥ 93), pruebas del router de `vistas-hinojosa`, axe 0, capturas comparativas. Tras los bloques 15–17 hay que repetir el cierre completo | qa-rendimiento | ⏳ |
 
 ---
@@ -686,7 +695,7 @@ En `.claude/skills/` del proyecto:
 3. **LCP de Inicio con la vitrina:** si los costales superan al logo en área, cambia el LCP. Límite de 24dvh o inyección tras `load`.
 4. **Clips de Canela generados con IA:** riesgo de que la gorra, el collar o la cara cambien durante el giro, o de que Canela avance por el cuadro. Se generan varias variantes y se revisa con la lista de `flow/PROMPTS.md`. Si el giro no sale bien, alternativa: frenar → sprite del ciclo espejado con un fundido muy corto. Peso de los sprites: si superan 450 kB, se reduce la altura o los cuadros por segundo (12 fps es suficiente).
 5. **Regla M5 del carrusel:** la tarjeta provisional del primer montaje no se toca al añadir fundidos (C1). Lighthouse móvil baja a 86 si se rompe.
-6. **SEO con una sola pantalla visible:** las 4 vistas completas en el HTML servido, incluida la lista completa de productos (dentro de un `<dialog>` cerrado: está en el HTML pero Google puede darle menos peso).
+6. **SEO con una sola pantalla visible:** las 4 vistas completas en el HTML servido, incluidas las listas de productos de las 4 categorías (en el panel Lista; las ocultas están en el HTML aunque Google puede darles menos peso).
 7. **Pausa global y transiciones:** hoy `data-movimiento="pausado"` no anula `transition`; todo lo nuevo debe condicionarse.
 8. **Navegadores sin probar:** Safari iOS (alfa del video, cancelación de transiciones de la barra) y Firefox; lector de pantalla real.
 9. **Precios cambiantes y derechos de imágenes:** JSON editable y confirmación con la dueña.

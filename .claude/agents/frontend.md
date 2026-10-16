@@ -26,6 +26,13 @@ Las animaciones las integra `animacion-interaccion`; tú dejas el marcado listo 
 - Botones de Inicio con icono a la izquierda: `costal` en "Ver productos", `pin` en "Cómo llegar". Accesos por categoría sin icono.
 - Orden de vistas (2026-10-16): Inicio · Productos · Nosotros · Visítanos, en barra, barra móvil, HTML, `VISTAS`, `Layout.astro` (script de arranque) y flechas.
 
+## Bloque 19 (aplicado 2026-10-16; en móvil, sin pestañas: la lista de la categoría va bajo el carrusel) — especificación en `PLAN.md` §0-B y §4 Vista 2
+- **1A, compra fuera de la ficha:** quitar `.prod-ficha-cta` de la ficha. En `.prod-pie`, encima de las notas, una línea de texto (no botón): "Todos estos productos los encuentras en nuestro local · " + enlace **"Cómo llegar →"** a `#visitanos` (`marca-fuerte` subrayado, 4.77 sobre crema). Textos en `textos.productos`. La **hoja de detalle móvil conserva** su botón "¿Dónde comprarlo? Visítanos".
+- **2A, pestañas Detalle / Lista:** quitar el botón "Ver todos los productos" y el `<dialog data-dialogo-lista>`. En la columna derecha, bajo el buscador, `tablist` con "Detalle" (por defecto, la ficha) y "Lista (N)" (N = total de la categoría activa). La lista vive en el mismo hueco que la ficha y muestra **solo la categoría activa** (filas de una línea: miniatura 40 px, nombre con elipsis, precio), con el producto al frente marcado (barra bosque de 4 px, C4) y scroll interno enfocable. Elegir una fila: `seleccionar(id, {origen: 'lista'})` y volver a Detalle con el foco en esa pestaña. Al cambiar de categoría con Lista abierta, la lista cambia. "Ver los N" del buscador abre Lista con los resultados de todas las categorías y una línea "Resultados para «…» · Quitar filtro". Reutiliza el marcado de la lista actual (`[data-lista-catalogo]`, grupos por categoría, `[data-producto-fila]`, `data-busqueda`) mostrando solo el grupo activo, para no perder el buscador, los recuentos ni la indexación.
+- **Sin JS:** sin pestañas ni ficha; se ven los 4 grupos de la lista en la columna derecha.
+- **Móvil:** lo más simple que pase las pruebas: p. ej. sin pestañas, y la lista de la categoría bajo el carrusel dentro del scroll de la vista (la ficha no existe en móvil; "Ver detalle" sigue abriendo la hoja).
+- Pruebas: 4, 17, 19, 20 y 21 de `vistas-hinojosa`; axe 0 a 1440, 1366 y 360; Lighthouse móvil `#productos` ≥ 93 (regla M5).
+
 ## Bloque 18 (aplicado 2026-10-16)
 - **Ficha de Productos en verde bosque** (`VistaProductos.astro`, `.prod-ficha`): fondo `bosque` con la clase `.tema-oscuro` (foco maíz); nombre blanco; `dt` maíz; `dd` crema; filetes crema al 20 %; pastillas de animales `hoja-claro` con texto e icono bosque; tabla de la tilapia con título maíz y celdas crema; CTA `boton-oro` **sin** el borde bosque (dentro de bosque no hace falta); `.prod-ficha-cta-destino` sigue subrayado. El scroll del cuerpo (`tabindex="0"`) con foco maíz. Contrastes en `marca-hinojosa`.
 - **Hover de la barra:** lo integra `animacion-interaccion` (especificación en `vistas-hinojosa`, sección Barra); tú solo quitas el fondo `hoja-claro` del hover de escritorio en `Barra.astro` si él no lo hace.
@@ -49,7 +56,7 @@ Las animaciones las integra `animacion-interaccion`; tú dejas el marcado listo 
 - Mobile-first, 360×640 sin desborde horizontal, objetivos de 44×44 px en móvil, foco nunca oculto.
 - Sin carrito, pagos ni envíos. Ningún dato no confirmado genera enlace.
 - No metas contenido esencial detrás de un clic en Nosotros.
-- Sin JS, la lista completa de productos debe verse en la página (el `<dialog>` se pinta estático con `html:not(.js)`).
+- Sin JS, la lista de productos (4 grupos) debe verse en la página.
 
 ## Servidor de desarrollo
 Normalmente ya corre en `http://localhost:4321`. Compruébalo antes de arrancar otro (`astro dev status`); si hace falta, `astro dev --background`.
