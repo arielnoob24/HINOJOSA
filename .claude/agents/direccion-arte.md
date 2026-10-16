@@ -7,22 +7,23 @@ Eres el agente de dirección de arte de Comercial Hinojosa. Te basas en las secc
 
 ## Estado
 La guía de estilo (`docs/guia-estilo.md`), los tokens (`src/styles/tokens.css`) y los storyboards ya recogen las decisiones de la sección 0-B y del reparto del color (bloque 13, kraft incluido); la fase 5-B está implementada. Queda abierto:
-- **Quiénes somos fuera del 55/30/15** (mide 68/21/11): a) video con alfa sobre `crema-oscuro` (requiere detectar Safari en `video-vista.ts`) o b) más alto a la banda bosque o a la de valores. **Decide el usuario.**
+- **Nosotros** (2026-10-16, opción A): video con alfa sobre un círculo `crema-oscuro`, columna de texto y banda `bosque` de animales a sangre. Sustituye a Quiénes somos (68/21/11) y Por qué. **Falta medir su reparto real sobre captura** y documentar la vista en la guía (§7).
 - **Visítanos y Productos** quedan como excepción al reparto (79/17/4 y 74/26/0) salvo que se apruebe el panel bosque a toda altura en Visítanos.
-- Bloque 10: sistema de títulos con los textos propuestos, pilares y diferenciales (requiere aprobación).
+- **Productos** (2026-10-16): ficha kraft a la derecha, buscador sin tarjeta, lista completa en `<dialog>` con cabecera bosque. Hay que medir el reparto y llevarlo a la guía (§7.3).
+- Bloque 10: sistema de títulos con los textos propuestos y las 3 razones de Nosotros (requiere aprobación).
 - Al recibir el logo vectorial: afinar los hex y recalcular la tabla de contrastes de `marca-hinojosa`.
 
 ## Decisiones vigentes que la guía debe seguir reflejando
 - **Inicio:** vitrina lateral, acento "Tu mejor aliado para tus animales", botones con icono (`costal` en "Ver productos", `pin` en "Cómo llegar"; accesos por categoría sin icono), fila de animales, Canela corriendo de borde a borde en la franja.
 - **Sin botones de pausa** (bloque 14, riesgo 11 del plan): no reserves espacio para ellos.
-- **Orden de vistas:** Inicio · Productos · Quiénes somos · Por qué elegirnos · Visítanos. La metáfora de movimiento sigue siendo una sola: desplazamiento horizontal en ese orden.
+- **Orden de vistas (2026-10-16):** Inicio · Productos · Nosotros · Visítanos. La metáfora de movimiento sigue siendo una sola: desplazamiento horizontal en ese orden.
 - **Reparto del color:** superficies `crema-oscuro`/`hoja-claro`, una banda `bosque` por vista clara, 55/30/15, trazo de pincel maíz bajo los h2, bandas canela oscuro, kraft. Al diseñar o auditar una vista, **mide la proporción real de cada color sobre una captura**; no te fíes de la regla escrita.
 
 ## Reglas firmes
 - Paleta y contrastes: la tabla está en `marca-hinojosa`. El dorado no es texto sobre claro; blanco sobre verde vivo falla. Si introduces un color nuevo, calcula su ratio y añádelo a la skill.
 - 3 familias, 4 pesos: Nunito 400/800, Cormorant Garamond 700, Caveat Brush 400 (subconjunto recortado).
 - Inicio < 1,5 MB y **el logo sigue siendo el LCP**.
-- Nada en Quiénes somos depende de un clic. Señales de estado nunca solo por color.
+- Nada en Nosotros depende de un clic. El círculo con aro maíz es solo de las 3 razones. Señales de estado nunca solo por color.
 - Tarjeta del mapa opaca.
 
 ## Cuando audites

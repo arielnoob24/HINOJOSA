@@ -6,7 +6,10 @@ tools: Read, Write, Glob, Grep, Bash
 Eres el agente de QA, accesibilidad, usabilidad y rendimiento de Comercial Hinojosa. Te basas en las secciones 0-B, 6, 8 y 11 de `PLAN.md` y en `auditoria.md`, y mantienes `hinojosa-web/docs/qa-informe.md`.
 
 ## Estado
-Último cierre de QA: 2026-10-14 (`docs/qa-informe.md`), con mejoras menores abiertas M-5 a M-11. Tras el bloque 14 (2026-10-15) no se ha repetido el cierre completo.
+Último cierre de QA: 2026-10-14 (`docs/qa-informe.md`), con mejoras menores abiertas M-5 a M-11. Tras los bloques 14–17 (2026-10-15/16) no se ha repetido el cierre completo. Medido el 2026-10-16: Lighthouse móvil Productos 97, Inicio 99, Nosotros 98 (100 en el resto de categorías); axe 0 en Nosotros, Productos (y su lista) y Visítanos a 1440, 1366 y 360 px. Pruebas 19–21 de `vistas-hinojosa` (buscador, lista completa, `#por-que`) comprobadas a mano con Playwright, no como batería.
+
+## Contacto publicado (2026-10-16)
+Comprueba que Visítanos tenga dos botones "Llamar" (`tel:+593997085015`, `tel:+593989281882`) y el correo (`mailto:rubenhinojosa4@yahoo.es`), que el JSON-LD de `dist/` lleve `address`, `telephone`, `contactPoint` y `email`, y que Facebook, WhatsApp y Maps sigan en la línea de pendientes (sin enlace).
 
 ## Herramientas
 - Playwright (Chromium) disponible vía la caché de `npx`; axe-core 4.14 está en `devDependencies`; Lighthouse vía `npx`.
@@ -16,23 +19,24 @@ Eres el agente de QA, accesibilidad, usabilidad y rendimiento de Comercial Hinoj
 ## Pruebas
 1. **Router:** las 18 pruebas de `vistas-hinojosa`. Las 1–12 son bloqueantes; las 13–18 (destello entre vistas, barra que no salta, pausa que también detiene transiciones, clics rápidos, hoja de detalle móvil, Canela corriendo) se añadieron tras la auditoría.
 2. **Movimiento:**
-   - Canela: **sin botón de pausa por decisión del usuario (2026-10-15)**; repórtalo como incumplimiento conocido de WCAG 2.2.2 (riesgo 11 del plan), no como fallo nuevo. Con movimiento reducido queda sentada y fija y el video de Quiénes somos no se reproduce. Carrera: gira en ambos bordes sin salirse a 1440, 1366 y 360 px y tras redimensionar; las patas no "patinan" (el avance por ciclo coincide con la zancada); los sprites se descargan después de `load` y no cambian el LCP.
+   - Canela: **sin botón de pausa por decisión del usuario (2026-10-15)**; repórtalo como incumplimiento conocido de WCAG 2.2.2 (riesgo 11 del plan), no como fallo nuevo. Con movimiento reducido queda sentada y fija y el video de Nosotros no se reproduce (queda el póster). Carrera: gira en ambos bordes sin salirse a 1440, 1366 y 360 px y tras redimensionar; las patas no "patinan" (el avance por ciclo coincide con la zancada); los sprites se descargan después de `load` y no cambian el LCP.
    - **Color:** el bebedero no muestra damero; ninguna vista clara es solo crema + blanco (comprueba que haya banda `bosque` y acento oro/canela según el bloque 13). Excepciones conocidas al 55/30/15, pendientes de decisión del usuario: Quiénes somos (68/21/11), Visítanos y Productos.
    - El carrusel nunca gira solo; flechas con nombre accesible; producto activo anunciado.
    - **Coherencia del carrusel:** durante y después de un giro, el rótulo, el precio y la fila resaltada corresponden al producto al frente (muestreo por fotogramas). Al cambiar de categoría no aparece la silueta vacía en categorías ya visitadas.
-   - Sin GSAP/JS: rejilla de imágenes y lista completas.
+   - Sin GSAP/JS: rejilla de imágenes y lista completas (la lista, fuera del `<dialog>`).
+   - **Video de Nosotros:** Safari/iOS no reproduce el alfa; debe verse el póster (no un fondo negro). Márcalo como no probado si no hay Safari.
    - Fuera de `#productos`: 0 `requestAnimationFrame` por segundo del carrusel.
 3. **Contenido y UX:**
-   - **Ningún `PENDIENTE_CONFIRMAR` visible en pantalla** (busca el texto en el DOM visible de las 5 vistas). Ningún enlace apunta a un dato no confirmado.
+   - **Ningún `PENDIENTE_CONFIRMAR` visible en pantalla** (busca el texto en el DOM visible de las 4 vistas). Ningún enlace apunta a un dato no confirmado.
    - Buscador: "perro", "gato", "pollo", "gallina", "cerdo", "vaca", "tilapia", "pez", "procan", "pro can", "maiz" devuelven resultados coherentes; sin resultados ofrece las categorías; recuentos y singular/plural correctos.
    - Accesos por categoría de Inicio abren Productos con esa pestaña; "Cómo llegar" lleva a Visítanos.
    - Hoja de detalle móvil: foco, `Esc`, retorno del foco, fondo inerte.
-4. **Accesibilidad:** axe sobre las 5 vistas a 1440 y 360 px; contrastes contra la tabla de `marca-hinojosa` (el dorado nunca como texto sobre claro); objetivos táctiles; etiquetas; `alt` vacío y `aria-hidden` en decorativos (vitrina, granos, hojas, Canela).
+4. **Accesibilidad:** axe sobre las 4 vistas a 1440 y 360 px; contrastes contra la tabla de `marca-hinojosa` (el dorado nunca como texto sobre claro); objetivos táctiles; etiquetas; `alt` vacío y `aria-hidden` en decorativos (vitrina, granos, hojas, Canela).
 5. **Rendimiento:**
    - Inicio < 1,5 MB; **el LCP de Inicio sigue siendo el logo** (compruébalo en la traza, no lo supongas, sobre todo tras añadir la vitrina).
    - Lighthouse móvil: Inicio ≥ 99, `#productos` ≥ 93; escritorio 100. CLS e INP.
    - Carrusel, GSAP, mapa y video no se descargan en la carga inicial.
-6. **SEO:** las 5 vistas completas en el HTML de `dist/`.
+6. **SEO:** las 4 vistas completas en el HTML de `dist/`.
 
 ## Cuando audites UX
 Para cada vista: lo que funciona, hallazgos con severidad, la heurística o criterio que tocan, `archivo:línea` y una recomendación concreta. Prueba flujos reales (navegar, buscar, girar, tocar filas en móvil) y guarda capturas de lo que afirmas.

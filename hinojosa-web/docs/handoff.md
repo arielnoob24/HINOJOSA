@@ -1,10 +1,26 @@
 # Handoff: sitio web de Comercial Hinojosa
 
-Última actualización: **2026-10-15**. Ramas: **`Ariel`** (de trabajo) y **`main`** apuntan al **mismo commit**: desde el 2026-10-15 el usuario pidió pasar los cambios a `main` para que su compañero los baje con `git pull`. Para seguir trabajando: en `Ariel`, y al terminar `git push origin Ariel` + `git push origin Ariel:main` (avance rápido, sin conflictos mientras nadie suba a `main` por otro lado; si alguien lo hace, primero `git pull origin main` en `Ariel`).
+Última actualización: **2026-10-16**. Rama de trabajo: **`Ariel`**. **Desde el 2026-10-16 el usuario quiere trabajar solo en `Ariel` y no tocar `main`** (ni push, ni merge): `main` se quedó en el commit del 2026-10-15 (`35976cb`). Cada push a `main` dispara el workflow de GitHub Pages. Los commits de esta sesión están en `Ariel` local; **no se han subido** (`git push origin Ariel` cuando el usuario lo pida).
 
 ## Estado en una línea
 
-**La fase 5-B está implementada y verificada** (2026-10-14): bloques 1–9, 12, 13 y 4-B, con cierre de QA (`docs/qa-informe.md`). Solo quedan los bloques **10** (textos de títulos, pilares y diferenciales: los aprueba el usuario/la dueña) y **11** (botón "Preguntar" con WhatsApp: falta el número), más los bloqueantes de publicación (datos de la dueña y despliegue).
+**El sitio tiene 4 vistas** (Inicio · Productos · Nosotros · Visítanos) desde el 2026-10-16: Quiénes somos y Por qué elegirnos se unieron en **Nosotros**, Productos cambió el panel de la lista por una **ficha del producto** con buscador de sugerencias, y Visítanos ya publica **dirección, dos teléfonos y correo**. Quedan los textos del bloque 10, WhatsApp (bloque 11), los datos que faltan (ciudad, horario, enlace de Facebook, coordenadas) y el despliegue.
+
+## Sesión del 2026-10-16
+
+Commits en `Ariel` (sin subir): `0e86d50` (agentes, skills y plan alineados), `120eeae` (vista Nosotros), `39b18ad` (ficha de Productos) y el de los datos de contacto + documentación.
+
+1. **Agentes, skills y plan alineados** con el estado real (listaban como pendiente trabajo ya hecho).
+2. **Vista Nosotros** (`VistaNosotros.astro`, opción A "Canela presenta"): Canela jugando con alfa sobre un círculo crema-oscuro, antetítulo NOSOTROS + "Somos parte de tu familia", misión, **3 razones en propuesta** (`textos.nosotros.razones`, pendientes de aprobación) y banda bosque de animales que enlazan a Productos. Fuera de pantalla: Visión, valores, pilares, diferenciales. `VistaPorQue.astro` se borró; `#por-que` es el `id` del bloque de razones (los enlaces viejos funcionan). Barra con "Nosotros".
+3. **Video con alfa regenerado** (`python nuevos_req.py video-alfa`): solo el tramo sentada, cuadros 1–69 en ida y vuelta (640 KB). En el salto del original la gorra se sale del cuadro; girar en el cuadro 80 hacía que la pata bajara y subiera de golpe. Safari/iOS muestra el póster (`data-alfa` en `video-vista.ts`). `--centro-canela: 65 %` centra a Canela en el círculo.
+4. **Productos, ficha del producto** (opción 1 de 3): carrusel al 60 %; a la derecha buscador combobox con hasta 6 sugerencias (elegir gira el carrusel; **escribir ya no**), ficha kraft (precio, marca, presentación, categoría, "Para:", tabla de la tilapia, "¿Dónde comprarlo?") y "Ver todos los productos (37)", que abre la lista en un `<dialog>`. Móvil: pestañas en una fila sin recuento y "Ver detalle" abre la hoja de detalle. Sin JS la lista se ve en la página.
+5. **Datos de contacto** (dados por el usuario): dirección **Av. del Chofer y Rubén Larson**, teléfonos **099 708 5015** y **098 928 1882**, correo **rubenhinojosa4@yahoo.es**, Facebook **@Comercial Hinojosa** (sin enlace). En `negocio.json` (`telefonos` es ahora una lista, `correo` es nuevo), Visítanos (un botón "Llamar" por número, correo con `mailto:`, icono `correo` nuevo) y JSON-LD (`telephone`, `contactPoint`, `email`, `addressCountry: EC`).
+6. **Medido:** Lighthouse móvil Productos 97, Inicio 99, Nosotros 98 (100 en accesibilidad, buenas prácticas y SEO); axe 0 en Nosotros, Productos (y su lista) y Visítanos a 1440, 1366 y 360 px. **No** se repitió el cierre de QA completo.
+
+### Decisiones del 2026-10-16
+- Trabajar solo en `Ariel`; no tocar `main`.
+- Unir Quiénes somos y Por qué en **Nosotros** (opción A de 3) con el nombre "Nosotros" en la barra.
+- Productos: **opción 1, ficha del producto** (descartadas: escaparate a todo el ancho, lista aligerada).
 
 ## Resultado de la fase 5-B (2026-10-14)
 
@@ -39,16 +55,15 @@
 - **Nuevo orden de la barra:** Inicio · Productos · Quiénes somos · Por qué elegirnos · Visítanos (también HTML, router, flechas y transiciones). Las vistas ahora buscan su etiqueta por `id` en `textos.navegacion`, no por posición.
 - **Pausa guardada:** como ya no hay botón, `Layout.astro` borra `localStorage['hinojosa-movimiento']` al arrancar para que nadie quede con la pausa activada para siempre.
 
-## Decisiones pendientes del usuario (planteadas el 2026-10-14)
+## Decisiones pendientes del usuario
 
-1. ~~Canela en el borde derecho~~: deja de aplicar. El 2026-10-15 se decidió **quitar los botones de pausa**, así que el límite derecho vuelve a ser el borde de la franja (bloque 14 del plan).
-2. **Quiénes somos fuera del 55/30/15** (mide 68/21/11): a) video con alfa sobre crema-oscuro (necesita detección de Safari en `video-vista.ts`) o b) más alto a la banda bosque o a la de valores.
-3. **Visítanos y Productos** quedan como excepción al reparto (79/17/4 y 74/26/0) salvo que se apruebe el panel bosque a toda altura en Visítanos (guía §2.2/§15).
-4. **Textos del bloque 10:** títulos ("Calidad, confianza y compromiso", "Lo que tenemos para tus animales", "Siempre a tu lado"), pilares y diferenciales.
-5. **Para la dueña:** casos dudosos del campo `animales` (melaza, sal, maíz, trigo, arrocillo, afrecho, semillas, comedero doble), unidad de "Desde $1.00" en Pro-Can, y todos los datos de contacto.
+1. **Textos de las 3 razones de Nosotros** (en propuesta) y los títulos de Productos ("Lo que tenemos para tus animales") y del bloque 10.
+2. **Datos que faltan:** ciudad, **cuál de los dos teléfonos tiene WhatsApp** (si alguno), horario, **enlace de Facebook** (la URL de "@Comercial Hinojosa"), Google Maps y coordenadas, referencias para llegar, año de apertura o una línea de historia.
+3. **Visítanos y Productos** fuera del reparto 55/30/15: falta medir de nuevo Productos (cambió) y Nosotros.
+4. **Para la dueña:** casos dudosos del campo `animales` (melaza, sal, maíz, trigo, arrocillo, afrecho, semillas, comedero doble), unidad de "Desde $1.00" en Pro-Can.
 
 ## Mejoras menores abiertas (de `qa-informe.md`)
-M-5 unidad de precio · M-6 "Mascotas" repetido en Inicio · M-7 rectángulo gris del video en Nosotros a 360 · M-8 con 5 productos los laterales del anillo tapan el frente · M-9 halo verdoso del bebedero · M-11 el carrusel tarda en seguir a la búsqueda. Ninguna bloquea.
+M-5 unidad de precio · M-6 "Mascotas" repetido en Inicio · M-8 con 5 productos los laterales del anillo tapan el frente · M-9 halo verdoso del bebedero. Ninguna bloquea. (M-7 y M-11 dejan de aplicar: Nosotros ya no tiene caja gris y escribir ya no gira el carrusel.)
 
 ## Dónde está cada cosa
 
@@ -104,15 +119,17 @@ M-5 unidad de precio · M-6 "Mascotas" repetido en Inicio · M-7 rectángulo gri
 
 ## Lo siguiente
 
-1. Decisiones pendientes (arriba).
-2. Bloques 10 y 11 cuando lleguen textos aprobados y WhatsApp.
-3. Despliegue (agente `despliegue`) cuando estén los datos de la dueña.
-4. Pruebas manuales que no se pueden hacer aquí: Safari iOS, Firefox y lector de pantalla real.
+1. Que el usuario apruebe (o cambie) las 3 razones de Nosotros y dé los datos que faltan (sobre todo WhatsApp, enlace de Facebook, ciudad y horario).
+2. Repetir el cierre de QA completo (`qa-rendimiento`) tras los bloques 14–17.
+3. Medir el reparto de color de Nosotros y Productos y llevar las dos vistas nuevas a `docs/guia-estilo.md` (`direccion-arte`).
+4. Bloques 10 y 11 cuando lleguen textos aprobados y WhatsApp.
+5. Despliegue (agente `despliegue`) cuando estén los datos; antes, decidir cómo publicar sin tocar `main` o con permiso del usuario.
+6. Pruebas manuales que no se pueden hacer aquí: Safari iOS (sobre todo el video de Nosotros), Firefox y lector de pantalla real.
 
 ## Pendiente del usuario o de la dueña
 
-- **Usuario:** aprobar los textos de títulos y los de Por qué marcados 🔒. Decidir por dónde empezar la fase 5-B.
-- **Dueña:** dirección, ciudad, coordenadas, referencias, teléfono/WhatsApp, horario, Facebook; año de apertura o una línea de historia; foto del local, la fachada o el equipo; logo vectorial; 21 precios sin dato; derechos de uso de los renders.
+- **Usuario:** aprobar los textos de títulos y las 3 razones de Nosotros.
+- **Dueña:** ciudad, cuál número tiene WhatsApp, horario, enlace de Facebook, Google Maps/coordenadas, referencias; año de apertura o una línea de historia; foto del local, la fachada o el equipo; logo vectorial; 21 precios sin dato; derechos de uso de los renders. (Ya dados el 2026-10-16: dirección, teléfonos, correo y el nombre de Facebook.)
 
 ## Cuidado al implementar (no romper lo que ya funciona)
 
@@ -121,13 +138,16 @@ M-5 unidad de precio · M-6 "Mascotas" repetido en Inicio · M-7 rectángulo gri
 - **La pausa del sitio** (`html[data-movimiento="pausado"]`) hoy anula `animation` pero **no** `transition`: toda transición nueva debe condicionarse.
 - **`vistas.ts` debe devolver una `Promise`**: hoy no lo hace y por eso se ve el fondo crema entre vistas.
 - **Nunca mostrar `PENDIENTE_CONFIRMAR` en pantalla**; vive solo en `negocio.json`.
+- **El video de Nosotros depende de su encuadre:** si se regenera con otro tramo, recalcular `--centro-canela` (centro de Canela en el video) en `VistaNosotros.astro`.
+- **Productos:** el texto del buscador ya no gira el carrusel; solo elegir una sugerencia o llegar desde un animal de Nosotros (`abrirAnimal`). La lista completa vive en un `<dialog>` que sin JS se pinta en la página: no lo conviertas en algo que se genere por JS.
+- **Heredocs en Bash:** en esta máquina algunos `<<'EOF'` con comillas o caracteres especiales fallan ("unexpected EOF"); escribir el script en un archivo del scratchpad y ejecutarlo.
 - **Imágenes con IA:** nunca pedir "fondo transparente" (pintan un damero); pedir un color plano. Al quitar fondos a mano, guardar en PNG (en JPG la transparencia pasa a blanco).
 - **Productos blancos sobre blanco:** recortar con `quitar_fondo_blanco`, no con `quitar_fondo_liso` (este vacía el sombreado neutro creyendo que es sombra).
 - Para regenerar un solo producto sin recodificar todo, ver cómo se hizo con el bebedero: `nr.maestros(tmp)`, filtrar los trabajos por nombre y `nr.codificar(seleccion, tmp)`.
 
 ## Bloqueantes para publicar (sin cambios)
 
-1. Datos de la dueña (contacto, ubicación, horario) en `negocio.json` con `confirmado: true`.
+1. Datos que faltan en `negocio.json` con `confirmado: true`: ciudad, horario, WhatsApp, enlace de Facebook, coordenadas (dirección, teléfonos y correo ya están).
 2. **Despliegue roto:** `.github/workflows/deploy-pages.yml` sube `sitio-web/`, que ya no existe. Hay que compilar `hinojosa-web/` y subir `hinojosa-web/dist`, definir `site` (y `base` si no hay dominio propio) y descomentar `Sitemap:` en `public/robots.txt`. Le corresponde al agente `despliegue`.
 
 ## Cómo arrancar

@@ -70,26 +70,33 @@
   "marcadorPendiente": "PENDIENTE_CONFIRMAR",
   "contacto": {
     "direccion": {
-      "valor": "Av. del Chofer y Rubén Lerson",
-      "confirmado": false,
-      "nota": "Tomada de los afiches; la ortografía varía entre afiches. Confirmar con la dueña."
+      "valor": "Av. del Chofer y Rubén Larson",
+      "confirmado": true,
+      "nota": "Confirmada por el usuario el 2026-10-16 (en los afiches aparecía \"Lerson\")."
     },
     "ciudad": {
       "valor": null,
       "confirmado": false
     },
     "pais": {
-      "valor": null,
-      "confirmado": false
+      "valor": "Ecuador",
+      "confirmado": true,
+      "nota": "Teléfonos celulares de Ecuador (09…), dados el 2026-10-16."
     },
     "referenciasLlegar": {
       "valor": null,
       "confirmado": false,
       "nota": "Lista de frases cortas en lenguaje natural, p. ej. [\"Frente a …\", \"A dos cuadras de …\"]. Solo con datos de la dueña."
     },
-    "telefono": {
-      "valor": null,
-      "confirmado": false
+    "telefonos": {
+      "valor": ["099 708 5015", "098 928 1882"],
+      "confirmado": true,
+      "nota": "Confirmados por el usuario el 2026-10-16. Se muestran tal cual; el enlace tel: usa el formato internacional (+593, sin el 0 inicial). No se sabe cuál tiene WhatsApp."
+    },
+    "correo": {
+      "valor": "rubenhinojosa4@yahoo.es",
+      "confirmado": true,
+      "nota": "Confirmado por el usuario el 2026-10-16."
     },
     "whatsapp": {
       "valor": null,
@@ -109,7 +116,9 @@
     },
     "facebook": {
       "valor": null,
-      "confirmado": false
+      "usuario": "@Comercial Hinojosa",
+      "confirmado": false,
+      "nota": "El usuario dio el nombre de la página (2026-10-16), no su enlace. Falta la URL (https://www.facebook.com/…) para publicar el botón."
     },
     "googleMaps": {
       "valor": null,
@@ -122,14 +131,11 @@
     }
   },
   "pendientes": [
-    "Dirección exacta y su ortografía (en los afiches: \"Av. del Chofer y Rubén Lerson\")",
     "Ciudad",
-    "País",
     "Referencias para llegar (\"frente a…\", \"a dos cuadras de…\")",
-    "Teléfono",
-    "WhatsApp",
+    "WhatsApp (cuál de los dos teléfonos, si alguno, lo tiene)",
     "Horario de atención (días y horas)",
-    "Enlace de Facebook",
+    "Enlace (URL) de la página de Facebook \"@Comercial Hinojosa\"",
     "Enlace de Google Maps y coordenadas para el mapa"
   ]
 }

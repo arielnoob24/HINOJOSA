@@ -7,7 +7,7 @@ Eres el agente de animación e interacción de Comercial Hinojosa. Te basas en l
 
 ## Base técnica
 - **Sin Three.js, sin Lenis, sin Lottie.** GSAP 3.15 se carga en diferido al entrar en Productos (`carrusel-carga.ts`). Leaflet solo en Visítanos.
-- Código: `src/lib/animacion/` (`vistas.ts`, `carrusel.ts`, `carrusel-carga.ts`, `canela-carrera.ts`, `entradas.ts`, `paralaje.ts`, `movimiento.ts`), hoja de detalle en `src/lib/hoja-detalle.ts`, video de Quiénes somos en `src/lib/video-vista.ts`, router en `src/lib/router.ts`, estado del catálogo en `src/lib/catalogo.ts` (evento `hinojosa:producto`), tokens de tiempo y curvas en `src/styles/tokens.css`.
+- Código: `src/lib/animacion/` (`vistas.ts`, `carrusel.ts`, `carrusel-carga.ts`, `canela-carrera.ts`, `entradas.ts`, `paralaje.ts`, `movimiento.ts`), hoja de detalle en `src/lib/hoja-detalle.ts`, video de Nosotros en `src/lib/video-vista.ts`, router en `src/lib/router.ts`, estado del catálogo en `src/lib/catalogo.ts` (evento `hinojosa:producto`), tokens de tiempo y curvas en `src/styles/tokens.css`.
 - No hay scroll de página: el disparador de todo es el **cambio de vista**, nunca `IntersectionObserver` ni ScrollTrigger.
 
 ## Lo que ya está integrado (fase 5-B, 2026-10-14)
@@ -17,16 +17,18 @@ Todo con la especificación exacta del plan y de `vistas-hinojosa`. **Se mantien
 3. **Barra (B1–B4):** ancho reservado, estiramiento direccional, hover, pulsación, pop móvil.
 4. **Inicio (I9):** entrada en cascada tras el LCP, costales que suben, paralaje.
 5. **Canela corriendo (4-B):** `canela-carrera.ts`, máquina de estados `sentada → arranque → corre(dir) → giro → corre(−dir)…`, velocidad sincronizada con la zancada, `ResizeObserver`, sprites tras `load`. Corre hasta el borde de la franja (sin botón de pausa desde el bloque 14). Prueba 18 de `vistas-hinojosa`.
-6. **Hoja de detalle móvil (P6)** y video de Quiénes somos que arranca a los 400 ms.
+6. **Hoja de detalle móvil (P6)**, que desde 2026-10-16 abre el botón "Ver detalle", y video de Nosotros que arranca a los 400 ms.
+7. **2026-10-16:** cuatro vistas (Inicio · Productos · Nosotros · Visítanos); entrada de iconos de razones y animales al entrar en `#nosotros` (`entradas.ts`); fundido de la ficha de Productos en el sentido del giro (`pintarFicha()` en `catalogo.ts`, WAAPI, 220 ms) y entrada de 220 ms de la lista completa en `<dialog>`, todo condicionado a `movimientoPermitido()` / `prefers-reduced-motion` y la pausa.
 
-**Pendiente:** nada propio. Si se reestructuran vistas (p. ej. fusionar dos), revisa `VISTAS`, `dir`, los bloques `[data-entra]` y los disparadores de carga por vista (`#por-que` arranca la entrada de iconos; `#nosotros`, el video).
+**Pendiente:** nada propio. Si se vuelven a reestructurar vistas, revisa `VISTAS`, `dir`, los bloques `[data-entra]` y los disparadores de carga por vista (desde 2026-10-16 `#por-que` ya no es vista; antes arranca la entrada de iconos; `#nosotros`, el video).
 
 ## Reglas no negociables
+- **Escribir en el buscador no gira el carrusel** (2026-10-16): solo elegir una sugerencia o llegar desde un animal de Nosotros.
 - **Regla M5 del handoff:** en `#productos`, la tarjeta provisional del primer montaje se queda invisible bajo el anillo hasta la primera interacción o 1,5 s. Los fundidos de C1 **no** se aplican al primer montaje. Si lo rompes, Lighthouse móvil baja de 96 a 86.
 - **El foco va al título antes de cualquier animación.** Ninguna animación retrasa el foco ni bloquea contenido.
 - Toda animación y **toda transición CSS** nueva respeta `prefers-reduced-motion` **y** la pausa del sitio (`html[data-movimiento="pausado"]`). Ojo: hoy la pausa anula `animation` pero no `transition`.
 - Solo `transform` y `opacity`, salvo anchos de elementos pequeños y aislados (pastilla, chip de precio).
-- El carrusel **nunca gira solo**. **Excepción decidida por el usuario (2026-10-15):** Canela y el video de Quiénes somos van en bucle **sin botón de pausa** (riesgo 11 del plan, incumple WCAG 2.2.2); no vuelvas a añadirlo sin que lo pida. Cualquier otro bucle nuevo sí necesita control de pausa.
+- El carrusel **nunca gira solo**. **Excepción decidida por el usuario (2026-10-15):** Canela y el video de Nosotros van en bucle **sin botón de pausa** (riesgo 11 del plan, incumple WCAG 2.2.2); no vuelvas a añadirlo sin que lo pida. Cualquier otro bucle nuevo sí necesita control de pausa.
 - Fuera de `#productos` no quedan tweens ni `requestAnimationFrame`: verifícalo con un contador, no lo supongas.
 
 ## Verificación

@@ -66,9 +66,29 @@ export function enlaceWhatsapp(mensaje: string = textos.visitanos.mensajeWhatsap
   return `https://wa.me/${limpio}?text=${encodeURIComponent(mensaje)}`;
 }
 
-export function enlaceTelefono(): string | null {
-  const tel = datoConfirmado('telefono');
-  return tel ? `tel:${tel.replace(/[^\d+]/g, '')}` : null;
+/** Telefono en formato internacional de Ecuador: "099 708 5015" -> "+593997085015". */
+export function telefonoInternacional(tel: string): string {
+  const digitos = tel.replace(/[^\d+]/g, '');
+  if (digitos.startsWith('+')) return digitos;
+  return digitos.startsWith('0') ? `+593${digitos.slice(1)}` : digitos;
+}
+
+/** Telefonos confirmados: texto tal como se muestra y enlace tel:. */
+export function telefonosConfirmados(): { texto: string; href: string; internacional: string }[] {
+  const d = negocio.contacto.telefonos as { valor: unknown; confirmado: boolean };
+  if (!d.confirmado || !Array.isArray(d.valor)) return [];
+  return d.valor
+    .filter((x): x is string => typeof x === 'string' && x.trim() !== '')
+    .map((texto) => {
+      const internacional = telefonoInternacional(texto);
+      return { texto, href: `tel:${internacional}`, internacional };
+    });
+}
+
+/** Enlace mailto: del correo, o null si no esta confirmado. */
+export function enlaceCorreo(): string | null {
+  const correo = datoConfirmado('correo');
+  return correo ? `mailto:${correo}` : null;
 }
 
 /** Precio en USD con dos decimales, como en los afiches ("$28.00"). */

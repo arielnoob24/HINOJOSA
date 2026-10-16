@@ -15,7 +15,7 @@ Eres el agente de activos de Comercial Hinojosa. Te basas en las secciones 0, 0-
 
 Hecho y verificado; no lo rehagas sin que se pida:
 - **Canela corriendo (4-B):** sprites en `public/img/canela/carrera-{arranque,izq,giro,der}.webp` + `carrera.json` (320 px, 442 KB) y juego de 160 px (`*-160.*`, 175 KB) para móvil. Detalle, zancada y tramos del video en `docs/activos.md`. Fuente: `flow/Puppy_running_in_place_1080p_20261013235908.mp4`.
-- Costales de la vitrina de Inicio, trébol del isotipo en SVG (inline en Inicio y Visítanos), tarjeta genérica de costal (P5), sellos de especie (`-thumb-80`), Canela con alfa para Quiénes somos.
+- Costales de la vitrina de Inicio, trébol del isotipo en SVG (inline en Inicio y Visítanos), tarjeta genérica de costal (P5), sellos de especie (`-thumb-80`), Canela con alfa para Nosotros (regenerada el 2026-10-16: solo cuadros 1–69 en ida y vuelta, 640 KB, `python nuevos_req.py video-alfa`; `--centro-canela: 65 %` en `VistaNosotros.astro` depende de este encuadre: si cambias el recorte, recalcúlalo). Antes, para Quiénes somos.
 - **Bebedero (P3):** el usuario quitó el fondo en Paint y lo guardó en JPG sobre blanco (`Nuevos Req/CatalogoF/Comederos y Bebederos/bebedero_quitado_disque.jpg`). `nuevos_req.py` lo usa en lugar de `bebedero.png` (tabla `REEMPLAZOS`) y lo recorta con `quitar_fondo_blanco`. **No uses `quitar_fondo_liso` para productos blancos sobre blanco**: toma su sombreado neutro por sombra y los vacía. Para regenerar un solo producto: `nr.maestros(tmp)`, filtrar los trabajos por nombre y `nr.codificar(seleccion, tmp)`.
 
 ## Pendiente (todo depende de la dueña)
@@ -23,7 +23,7 @@ Hecho y verificado; no lo rehagas sin que se pida:
 | Activo | Para qué | Notas |
 |---|---|---|
 | Fachada | Visítanos | WebM VP9 + MP4 H.264 + `poster`, 288×200 visibles |
-| Foto del local o del equipo | Quiénes somos ("Nuestra historia") | Derivados AVIF/WebP con `srcset` |
+| Foto del local o del equipo | Nosotros ("Nuestra historia") | Derivados AVIF/WebP con `srcset` |
 | Logo vectorial | Nitidez y afinar la paleta | Al recibirlo, avisar a `direccion-arte` para recalcular contrastes |
 | Fotos de los productos sin imagen | Carrusel | Mientras tanto, tarjeta genérica de costal |
 

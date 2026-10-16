@@ -9,7 +9,7 @@ Fuente única de verdad para color, tipografía, tono y logo. Si algo aquí cont
 
 **Negocio:** venta de balanceados, alimentos y productos para animales.
 **Lema:** "Nutrición que da vida". Ya va **dentro del logo**: no se repite como texto al lado del logo. En Inicio, el acento manuscrito bajo el logo es **"Tu mejor aliado para tus animales"** (decisión 2026-10-13, `PLAN.md` §0-B).
-**Mascota:** Canela, perrita con gorra verde y pañuelo con la "H". Es parte de la marca (logo, insignia, gráficos), **no** una sección del sitio ni un personaje 3D. Aparece **solo en Inicio y Quiénes somos**.
+**Mascota:** Canela, perrita con gorra verde y pañuelo con la "H". Es parte de la marca (logo, insignia, gráficos), **no** una sección del sitio ni un personaje 3D. Aparece **solo en Inicio y Nosotros**.
 
 ---
 
@@ -36,7 +36,7 @@ Proporción base de la marca: 60 % blanco/crema · 30 % verde · 10 % oro. **En 
   - **Trazo de pincel maíz bajo los h2** en lugar del subrayado verde (decorativo, no necesita 3:1; el subrayado verde se confundía con un enlace).
   - **Canela oscuro `#8A5A1F` como fondo de banda**, con texto blanco (5.88) o crema (5.22).
   - **Tono kraft / costal `#E3CFA6`** (`--color-kraft`) para bandas, sellos y la tarima del carrusel. Ver la tabla de la sección 2.
-  - Más oro como **detalle** (separadores, aros de pilares, pin, marca de agua), nunca como texto sobre claro.
+  - Más oro como **detalle** (aros de las razones de Nosotros, trazo bajo los h2, pin, marca de agua), nunca como texto sobre claro.
 
 > Los hex son aproximados, tomados de los afiches. Al obtener el logo vectorial hay que afinarlos **y volver a calcular la tabla de la sección 2**.
 
@@ -103,7 +103,7 @@ Ratios adicionales del mapa de color (2026-10-14): ver `hinojosa-web/docs/guia-e
 2. **Botón primario:** fondo `#1B4D2B`, texto blanco.
 3. **Botón de CTA:** fondo `#F2B823`, texto `#14301D`.
 4. `#2E8B2E`, `#7BBF3A` y `#C98A3A` son **colores de fondo, borde o ilustración**, nunca de texto sobre claro. Como borde de componente, `#2E8B2E` sobre blanco cumple el 3:1 (4.33).
-5. Al poner texto sobre una **foto** (tarjeta grande de Quiénes somos, tarjeta del mapa), el contraste no se puede garantizar: usa un fondo sólido u opaco detrás del texto, no una capa translúcida.
+5. Al poner texto sobre una **foto** (tarjeta del mapa, futuras fotos del local), el contraste no se puede garantizar: usa un fondo sólido u opaco detrás del texto, no una capa translúcida.
 6. Un color **nunca** es el único portador de información (WCAG 1.4.1): la vista activa de la barra y el estado "Abierto / Cerrado" llevan además forma o palabra.
 
 ---
@@ -135,7 +135,7 @@ Cálido, familiar, confiable, cercano. El cliente es un ganadero, avicultor o du
 - Frases de marca disponibles: "Nutrición que da vida" (principal) · "Somos parte de tu familia" · "Tu mejor aliado para tus animales" · "Comercial Hinojosa siempre a tu lado" · "Calidad, Confianza, Compromiso".
 
 ### Datos que nunca se inventan
-Teléfono, WhatsApp, dirección, ciudad, horario, referencias para llegar, enlaces de redes, precios, año de apertura e historia. Si falta uno, en **los datos** (`negocio.json`) se escribe `PENDIENTE_CONFIRMAR` y se reporta. Un dato falso de contacto o de precio hace daño real al negocio.
+Teléfono, WhatsApp, dirección, ciudad, horario, referencias para llegar, enlaces de redes, precios, año de apertura e historia. (Confirmados el 2026-10-16: dirección "Av. del Chofer y Rubén Larson", teléfonos 099 708 5015 y 098 928 1882, correo rubenhinojosa4@yahoo.es; Facebook "@Comercial Hinojosa" sin enlace aún.) Si falta uno, en **los datos** (`negocio.json`) se escribe `PENDIENTE_CONFIRMAR` y se reporta. Un dato falso de contacto o de precio hace daño real al negocio.
 
 **El marcador nunca llega a la pantalla.** `PENDIENTE_CONFIRMAR` es para los datos y para QA. Al visitante se le muestra texto humano: `textos.comunes.datoPendiente` ("Muy pronto publicaremos este dato.") o `textos.visitanos.contactoPendiente`. Los canales de contacto pendientes se agrupan en una sola línea, sin forma de botón: un botón que no hace nada parece un sitio roto.
 
@@ -145,10 +145,10 @@ Los precios de los afiches van siempre acompañados de **"Precios referenciales 
 
 ## 5. Sistema visual entre vistas (auditoría 2026-10-13)
 
-- **Títulos de vista:** antetítulo (Nunito 800, mayúsculas, `text-etiqueta`, `canela-oscuro`: 5.88 sobre blanco, 5.22 sobre crema) + `h2` con una frase corta sacada de los eslóganes reales. Textos propuestos en `PLAN.md` §3, **pendientes de aprobación**; no los cambies sin ella.
-- **Icono en círculo con aro maíz:** solo para los 4 pilares de "Por qué elegirnos". Valores y animales llevan icono suelto. Repetir el mismo círculo en tres familias hace que el sitio parezca plantilla.
+- **Títulos de vista:** antetítulo (Nunito 800, mayúsculas, `text-etiqueta`, `canela-oscuro`: 5.88 sobre blanco, 5.22 sobre crema) + `h2` con una frase corta sacada de los eslóganes reales. Primera vista que lo usa (2026-10-16): **Nosotros**, antetítulo NOSOTROS + "Somos parte de tu familia" con "familia" en Caveat canela oscuro (5.22, siempre ≥ 24 px). Textos propuestos en `PLAN.md` §3, **pendientes de aprobación**; no los cambies sin ella.
+- **Icono en círculo con aro maíz:** solo para las 3 razones de "Por qué elegirnos" dentro de Nosotros (2026-10-16; antes, los 4 pilares). Animales y demás iconos van sueltos. Repetir el mismo círculo en tres familias hace que el sitio parezca plantilla.
 - **Tamaño mínimo de texto: 13 px**, también en la barra.
-- **No dupliques mensajes:** antes de añadir un texto, comprueba que no esté ya en el logo, en la barra o en la vista vecina (el lema en Inicio, "calidad" entre Quiénes somos y Por qué, el diferencial de especies junto a la fila de animales).
+- **No dupliques mensajes:** antes de añadir un texto, comprueba que no esté ya en el logo, en la barra o en la vista vecina (el lema en Inicio, "calidad" dentro de Nosotros, que antes se repetía entre Quiénes somos y Por qué, el diferencial de especies junto a la fila de animales).
 - **Iconos en botones (2026-10-15):** solo en los botones principales de Inicio, a la izquierda del texto y decorativos (`aria-hidden`; el nombre accesible es el texto): `costal` en "Ver productos", `pin` en "Cómo llegar". Los accesos por categoría y los chips no llevan icono, para no saturar Inicio (la fila de animales ya los tiene).
 - **Tarjetas que no son pulsables** no se inclinan al pasar el ratón: solo se elevan. El tilt (`--tilt-max`, 3°) se reserva a superficies decorativas.
 

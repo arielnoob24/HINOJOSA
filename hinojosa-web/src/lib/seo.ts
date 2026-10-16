@@ -15,6 +15,7 @@ import {
   negocio,
   catalogo,
   datoConfirmado,
+  telefonosConfirmados,
   horarioConfirmado,
   coordenadasConfirmadas,
   formatoPrecio,
@@ -152,7 +153,8 @@ function catalogoSchema(site: URL | undefined): Record<string, unknown> {
 
 /** Objeto JSON-LD (@graph): el negocio (PetStore) y, con dominio, el WebSite. */
 export function datosEstructurados(site: URL | undefined): Record<string, unknown> {
-  const telefono = datoConfirmado('telefono');
+  const telefonos = telefonosConfirmados();
+  const correo = datoConfirmado('correo');
   const facebook = datoConfirmado('facebook');
   const mapa = datoConfirmado('googleMaps');
   const direccion = direccionSchema();
@@ -177,7 +179,19 @@ export function datosEstructurados(site: URL | undefined): Record<string, unknow
     ...(direccion ? { address: direccion } : {}),
     ...(geo ? { geo: { '@type': 'GeoCoordinates', latitude: geo.lat, longitude: geo.lng } } : {}),
     ...(mapa ? { hasMap: mapa } : {}),
-    ...(telefono ? { telephone: telefono } : {}),
+    ...(telefonos.length ? { telephone: telefonos[0].internacional } : {}),
+    ...(telefonos.length > 1
+      ? {
+          contactPoint: telefonos.map((tel) => ({
+            '@type': 'ContactPoint',
+            telephone: tel.internacional,
+            contactType: 'customer service',
+            areaServed: 'EC',
+            availableLanguage: 'es',
+          })),
+        }
+      : {}),
+    ...(correo ? { email: correo } : {}),
     ...(horario ? { openingHoursSpecification: horario } : {}),
     ...(facebook ? { sameAs: [facebook] } : {}),
     hasOfferCatalog: catalogoSchema(site),

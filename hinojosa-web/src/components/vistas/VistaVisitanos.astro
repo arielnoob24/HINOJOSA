@@ -31,7 +31,8 @@ import {
   horarioConfirmado,
   coordenadasConfirmadas,
   enlaceWhatsapp,
-  enlaceTelefono,
+  telefonosConfirmados,
+  enlaceCorreo,
 } from '../../lib/negocio';
 
 const t = textos.visitanos;
@@ -43,7 +44,8 @@ const horario = horarioConfirmado();
 const coords = coordenadasConfirmadas();
 const maps = datoConfirmado('googleMaps');
 const whatsapp = enlaceWhatsapp();
-const telefono = enlaceTelefono();
+const telefonos = telefonosConfirmados();
+const correo = datoConfirmado('correo');
 const facebook = datoConfirmado('facebook');
 
 // Canales en el orden de la tarjeta. Los confirmados son enlaces reales;
@@ -51,7 +53,19 @@ const facebook = datoConfirmado('facebook');
 const canales = [
   { href: maps, texto: t.ctaMaps, nombre: t.nombreAccesibleMaps, icono: 'mapa', variante: 'cta' as const, ancho: true, pestana: true },
   { href: whatsapp, texto: t.ctaWhatsapp, nombre: t.nombreAccesibleWhatsapp, icono: 'whatsapp', variante: 'invertido' as const, ancho: false, pestana: true },
-  { href: telefono, texto: t.ctaLlamar, nombre: t.nombreAccesibleLlamar, icono: 'telefono', variante: 'invertido' as const, ancho: false, pestana: false },
+  // Un boton por telefono, con el numero a la vista (2026-10-16: dos)
+  ...(telefonos.length
+    ? telefonos.map((tel) => ({
+        href: tel.href,
+        texto: tel.texto,
+        nombre: t.nombreAccesibleLlamar.replace('{numero}', tel.texto),
+        icono: 'telefono',
+        variante: 'invertido' as const,
+        ancho: true, // el numero entero en una linea
+        pestana: false,
+      }))
+    : [{ href: null, texto: t.ctaLlamar, nombre: t.nombreAccesibleLlamar, icono: 'telefono', variante: 'invertido' as const, ancho: false, pestana: false }]),
+  { href: enlaceCorreo(), texto: correo ?? t.ctaCorreo, nombre: t.nombreAccesibleCorreo.replace('{correo}', correo ?? ''), icono: 'correo', variante: 'enlace' as const, ancho: true, pestana: false },
   { href: facebook, texto: t.ctaFacebook, nombre: t.nombreAccesibleFacebook, icono: 'facebook', variante: 'enlace' as const, ancho: true, pestana: true },
 ];
 const confirmados = canales.filter((c) => c.href);

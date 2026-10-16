@@ -12,15 +12,21 @@ El sitio se maneja **por vistas**: 5 pantallas sin scroll de página. **El texto
 - `hinojosa-web/src/data/negocio.json` — datos de contacto, horario, redes, referencias, historia.
 - `hinojosa-web/src/data/productos.json` — catálogo: **4 categorías** (`granja`, `mascotas`, `comederos`, `granos`), 37 productos.
 
-## Textos por vista (implementados en la fase 5-B; orden de la barra: Inicio · Productos · Quiénes somos · Por qué · Visítanos)
+## Textos por vista (orden de la barra desde 2026-10-16: Inicio · Productos · Nosotros · Visítanos)
 - **Inicio:** acento manuscrito **"Tu mejor aliado para tus animales"** (el lema ya está en el logo; no se repite), subtítulo de una línea, botones "Ver productos" y "Cómo llegar", accesos por categoría con `nombreCorto`, fila "Aves · Cerdos · Mascotas · Tilapias". Si cambia una frase manuscrita, avisa: hay que regenerar la fuente recortada.
-- **Quiénes somos:** "Somos parte de tu familia" en la tarjeta grande; Misión y Visión recortadas a dos líneas. **Visión pasará a "Nuestra historia"** cuando la dueña dé el año de apertura o una línea de historia: prepara el campo en `negocio.json` (`historia`, con `confirmado: false`) y el texto en `textos.json`, sin inventar nada. Valores: 6 palabras.
-- **Productos:** nombre, presentación y precio; sin descripciones de venta. Textos nuevos: botón "Preguntar por este producto", "¿Dónde comprarlo? → Visítanos", recuentos "3 de 7", singular/plural ("1 producto"), estado sin resultados con las 4 categorías como atajo, textos de la hoja de detalle móvil ("Cerrar").
-- **Por qué elegirnos:** 4 pilares y 4 diferenciales de 3–6 palabras. Hay propuestas 🔒 en el plan (diferencial sin redundancia, franja de marcas, pilares concretos): redáctalas como **propuesta** para la dueña, no las publiques.
-- **Visítanos:** dirección, horario, estado, **"Referencias"** (el CTA se llama "Cómo llegar"), texto del mapa sin coordenadas: "El mapa aparecerá cuando confirmemos la ubicación".
+- **Productos:** nombre, presentación y precio; sin descripciones de venta. Textos de la ficha (Marca, Presentación, Categoría, Para), del buscador con sugerencias ("Ver los {n}", "Ver categorías"), de la lista completa ("Ver todos los productos ({n})", "Filtrado por «{termino}»", "Quitar filtro") y "Ver detalle" en `textos.productos`. Recuentos "3 de 7", singular/plural.
+- **Nosotros** (2026-10-16, une Quiénes somos y Por qué): antetítulo "Nosotros" + h2 "Somos parte de tu familia", la misión (`negocio.pantalla.mision`), **3 razones en propuesta** (`textos.nosotros.razones`, ver `_estadoRazones`: salen de los pilares y diferenciales anteriores, sin datos nuevos; las aprueba el usuario o la dueña) y "Animales que atendemos". **Ya no se muestran** Visión, valores, pilares ni diferenciales (Visión y valores siguen en `negocio.json`). **"Nuestra historia"** entrará cuando la dueña dé el año de apertura o una línea de historia: prepara `historia` en `negocio.json` con `confirmado: false`, sin inventar nada.
+- **Visítanos:** dirección, horario, estado, **"Referencias"** (el CTA se llama "Cómo llegar"), un botón "Llamar" por teléfono, el correo y, cuando haya enlace, Facebook. Texto del mapa sin coordenadas: "El mapa aparecerá cuando confirmemos la ubicación".
+
+## Datos del negocio confirmados (2026-10-16, en `negocio.json`)
+- Dirección: **Av. del Chofer y Rubén Larson** (los afiches decían "Lerson"). País: Ecuador.
+- Teléfonos: **099 708 5015** y **098 928 1882** (`contacto.telefonos`, lista). Enlace `tel:+593…` con `telefonosConfirmados()` de `src/lib/negocio.ts`.
+- Correo: **rubenhinojosa4@yahoo.es** (`contacto.correo`, `enlaceCorreo()`).
+- Facebook: nombre de la página **@Comercial Hinojosa** (`contacto.facebook.usuario`); **falta la URL**, así que `confirmado: false` y no hay botón.
+- **Siguen pendientes:** ciudad, cuál número tiene WhatsApp, horario, enlace de Facebook, Google Maps y coordenadas, referencias para llegar, historia, precios que faltan.
 
 ## Sistema de títulos
-Antetítulo con el nombre de la vista + `h2` con una frase. Propuesta en `PLAN.md` §3 (sale de eslóganes reales). **Pendiente de aprobación del usuario** (bloque 10 del plan): no la apliques sin ella.
+Antetítulo con el nombre de la vista + `h2` con una frase. Propuesta en `PLAN.md` §3 (sale de eslóganes reales). **Pendiente de aprobación del usuario** (bloque 10 del plan): no la apliques sin ella. Excepción ya aplicada: Nosotros (2026-10-16).
 
 ## Campo `animales` en `productos.json` (P1, ya relleno)
 - **Pendiente de la dueña:** casos dudosos (melaza, sal, maíz, trigo, arrocillo, afrecho, semillas, comedero doble) y la unidad de "Desde $1.00" en Pro-Can (M-5).
@@ -30,7 +36,7 @@ Antetítulo con el nombre de la vista + `h2` con una frase. Propuesta en `PLAN.m
 
 ## Reglas
 - **Datos que nunca se inventan:** precios, teléfono, WhatsApp, dirección, ciudad, horario, referencias, redes, año de apertura, historia. En **los datos** se marca `PENDIENTE_CONFIRMAR`; **en pantalla nunca**: se usan `comunes.datoPendiente` y `visitanos.contactoPendiente`.
-- Contacto: sin botón flotante de WhatsApp. Se permiten **solo** dos accesos fuera de Visítanos: "Cómo llegar" en Inicio y "Preguntar por este producto" en Productos.
+- Contacto: sin botón flotante de WhatsApp. Se permiten **solo** estos accesos fuera de Visítanos: "Cómo llegar" en Inicio, "Ver cómo llegar" en las razones de Nosotros y "¿Dónde comprarlo?" / "Preguntar por este producto" en la ficha y la hoja de detalle de Productos.
 - No repitas un mensaje que ya está en el logo, la barra o la vista vecina.
 - Textos oficiales completos de misión y visión en `negocio.json` (metadatos y JSON-LD), versiones recortadas aparte.
 - Notas fijas: "Precios referenciales — consulta disponibilidad" y "Marcas registradas de sus respectivos propietarios."

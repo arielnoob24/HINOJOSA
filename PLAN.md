@@ -1,6 +1,6 @@
 # Plan del proyecto: Sitio web de Comercial Hinojosa
 
-> Página publicitaria estática **manejada por vistas** (sin scroll de página), con carrusel 3D de productos, imágenes animadas y video.
+> Página publicitaria estática **manejada por vistas** (4 pantallas sin scroll de página desde 2026-10-16), con carrusel 3D de productos, imágenes animadas y video.
 > Negocio: **Comercial Hinojosa** · Lema: **"Nutrición que da vida"** · Giro: venta de balanceados, alimentos y productos para animales.
 
 **Orden de precedencia:** sección 0-B (decisiones de la auditoría, 2026-10-13) → sección 0 (activos del cliente, 2026-10-12) → resto del plan. Detalle de cada hallazgo en [`auditoria.md`](auditoria.md); los códigos (I1, N1, P1, C1…) remiten a ese archivo.
@@ -14,7 +14,7 @@ Carpeta `Nuevos Req/` (originales, **no se modifican**; la versión web se gener
 | Archivo | Qué es | Uso decidido |
 |---|---|---|
 | `Mascota/Canela.png` | Render estilo 3D de Canela sentada, 2752×1536, PNG recortado con alfa | Pose inicial de Canela en Inicio, primer cuadro de los clips de Flow (`flow/canela-inicio-azul.png`) y fallback de `prefers-reduced-motion` |
-| `Mascota/Canela Jugando.mp4` | Video de Canela jugando (3,3 MB), fondo gris de estudio | Recuadro de video en la tarjeta grande de "Quiénes somos" (sin botón de pausa desde 2026-10-15, silenciado, con `poster`). Existe además una versión con alfa (`canela-jugando-alfa.webm`) |
+| `Mascota/Canela Jugando.mp4` | Video de Canela jugando (3,3 MB), fondo gris de estudio | Vista Nosotros: la versión con alfa (`canela-jugando-alfa.webm`, solo el tramo sentada en ida y vuelta) sobre un círculo crema-oscuro, silenciada, sin botón de pausa, con póster |
 | `CatalogoF/<categoría>/*.png` | 33 renders de producto, casi todos recortados con alfa (excepto `bebedero.png`, que trae un damero pintado — sustituido por `bebedero_quitado_disque.jpg`, ver P3 —, y `melaza.jpg`, `sal en grano.jpg`, `diferentes tipos de semillas.jpg`, con fondo) | Carrusel de Productos, miniaturas de la lista y vitrina de Inicio |
 
 **Consecuencias sobre el plan:**
@@ -37,17 +37,21 @@ La auditoría completa está en [`auditoria.md`](auditoria.md). Estas son las de
 | **Transición entre vistas** | **Fundido cruzado direccional en dos capas + entrada escalonada** de 2–3 bloques por vista (sección 3) | Fundido + escala sin dirección; cortina de color; View Transitions API (queda como mejora futura) |
 | **Navegación** | **Solo la barra** (más `←`/`→`, `AvPág`/`RePág`). **No** se añaden enlaces "Siguiente →" ni cambio de vista con rueda o deslizamiento | Enlaces "Siguiente"; rueda/deslizar |
 | **Títulos de vista** | **Sistema único: antetítulo + h2.** Textos propuestos en la sección 3, **pendientes de aprobación** | Títulos heterogéneos actuales |
-| **Quiénes somos** | "Visión" se sustituirá por **"Nuestra historia"** cuando la dueña dé el dato (año de apertura, familia). Hasta entonces sigue Visión | — |
+| **Quiénes somos** | "Visión" se sustituirá por **"Nuestra historia"** cuando la dueña dé el dato (año de apertura, familia). Desde 2026-10-16 la Visión ya no se muestra en Nosotros; "Nuestra historia" entrará en la columna de texto cuando exista | — |
 | **Productos en móvil** | **Hoja de detalle** al tocar un producto de la lista (imagen, precio, "Preguntar") y buscador por encima del carrusel | Desplazar la pantalla hasta el carrusel |
 | **Botones de pausa** (2026-10-15) | **Se quitan sin reemplazo** el botón de pausa de Canela corriendo (Inicio) y el del video de Canela jugando (Quiénes somos). Ambos siguen en bucle. Se mantiene `prefers-reduced-motion` (Canela sentada fija, video sin reproducir). ⚠️ **Incumple WCAG 2.2.2 (nivel A)**: decisión del usuario, registrada como riesgo 11 | Un solo control global "Pausar animaciones"; que el movimiento se detenga solo antes de 5 s |
 | **Iconos en los botones de Inicio** (2026-10-15) | "Cómo llegar" lleva un **icono de ubicación/GPS** (`pin` de `Icono.astro`) y "Ver productos" el **icono de costal** (`costal`), ambos a la izquierda del texto y decorativos (`aria-hidden`). Los **accesos por categoría no llevan icono** (la fila de animales de debajo ya los tiene) | Iconos en los accesos por categoría |
 | **Orden de la barra** (2026-10-15) | **Inicio · Productos · Quiénes somos · Por qué elegirnos · Visítanos** (Productos pasa antes que Quiénes somos). Cambia también el orden de las secciones en el HTML, la lista `VISTAS` del router, las flechas ←/→, la dirección de las transiciones y la barra móvil | Orden anterior (Quiénes somos antes que Productos) |
+| **Vista Nosotros** (2026-10-16) | **Quiénes somos y Por qué elegirnos pasan a ser UNA vista, "Nosotros"**, con lo mejor de cada una (opción A "Canela presenta", ver vista 3). Barra: **Inicio · Productos · Nosotros · Visítanos** (4 vistas). `#por-que` deja de ser vista: es el bloque de razones dentro de `#nosotros` y los enlaces viejos siguen funcionando. **Fuera de pantalla:** Visión, los 6 valores, los 4 pilares y los 4 diferenciales (Visión y valores siguen en `negocio.json` para metadatos y JSON-LD) | Pegar las dos vistas tal cual; mosaico de tarjetas con video gris (primera prueba); "Historia en dos pisos"; "Los animales mandan" |
+| **Video de Canela en Nosotros** (2026-10-16) | Versión con alfa sobre un círculo crema-oscuro, **solo el tramo sentada (cuadros 1–69) en ida y vuelta**: en el salto del original la gorra se sale del cuadro, y girar a mitad de bajar la pata se veía raro. Safari/iOS muestra el póster (no reproduce alfa VP9) | Usar el salto; girar en el cuadro 80 |
+| **Productos: ficha del producto** (2026-10-16) | El panel derecho deja de ser la lista completa: **ficha del producto al frente** (precio, marca, presentación, categoría, "Para:" animales, tabla de la tilapia, "¿Dónde comprarlo?") + **buscador con sugerencias** + **"Ver todos los productos (37)"** que abre la lista en un `<dialog>`. Carrusel al 60 % (ver vista 2) | Escaparate a todo el ancho que filtra el anillo; lista aligerada a la derecha |
+| **Datos de contacto** (2026-10-16) | Confirmados por el usuario: dirección **Av. del Chofer y Rubén Larson**, teléfonos **099 708 5015** y **098 928 1882**, correo **rubenhinojosa4@yahoo.es**, Facebook **@Comercial Hinojosa** (falta el enlace). Ver sección 1 | — |
 
 **Cambios de criterio que se derivan** (aplican aunque contradigan secciones antiguas):
 - **Contacto:** sigue sin botón flotante de WhatsApp, pero ya no vive *solo* en Visítanos. Se permiten dos accesos contextuales: el botón **"Cómo llegar"** de Inicio (ancla a `#visitanos`) y el botón **"Preguntar por este producto"** de Productos (abre `wa.me` con el nombre del producto cuando WhatsApp esté confirmado; mientras tanto, lleva a `#visitanos`).
 - **Marcador `PENDIENTE_CONFIRMAR`:** vive **solo en los datos** (`negocio.json`) y en QA. **Nunca se muestra en pantalla.** En pantalla se usan `textos.comunes.datoPendiente` y `textos.visitanos.contactoPendiente`, y los canales pendientes se agrupan en una sola línea sin forma de botón.
 - **Movimiento:** toda transición nueva respeta `prefers-reduced-motion` **y** la pausa del sitio (`html[data-movimiento="pausado"]`; desde el 2026-10-15 ya no hay botón visible que la active, pero el mecanismo se conserva), que hoy anula `animation` pero no `transition`.
-- **Medición obligatoria** tras implementar: Lighthouse móvil en Inicio (hoy 99) y `#productos` (≥ 93), y las 18 pruebas del router (`vistas-hinojosa`).
+- **Medición obligatoria** tras implementar: Lighthouse móvil en Inicio (hoy 99), `#productos` (≥ 93; hoy 97) y `#nosotros` (hoy 98), y las pruebas del router (`vistas-hinojosa`).
 
 ---
 
@@ -60,12 +64,15 @@ La auditoría completa está en [`auditoria.md`](auditoria.md). Estas son las de
 | Eslóganes secundarios | "Calidad que alimenta, amor que se siente" · "Comercial Hinojosa siempre a tu lado" · "Tu mejor aliado para tus animales" · "Somos parte de tu familia" · "Calidad, Confianza, Compromiso" |
 | Subtítulo | Venta de balanceados · Alimentos y productos para animales |
 | Mascota | **Canela**, perrita alegre y cariñosa con gorra verde y pañuelo con la "H" |
-| Ubicación (en los afiches) | Calle Av. del Chofer y Rubén Lerson *(la ortografía varía entre afiches; **confirmar con la dueña**, junto con ciudad)* |
-| Red social | Facebook (enlace por confirmar) |
+| Dirección | **Av. del Chofer y Rubén Larson** ✅ confirmada 2026-10-16 (los afiches decían "Lerson"). Falta la **ciudad** |
+| País | Ecuador (teléfonos 09…) |
+| Teléfonos | **099 708 5015** · **098 928 1882** ✅ 2026-10-16. En el sitio, un botón "Llamar" por número (`tel:+593…`). **Falta saber cuál tiene WhatsApp** |
+| Correo | **rubenhinojosa4@yahoo.es** ✅ 2026-10-16 (enlace `mailto:` en Visítanos y `email` en el JSON-LD) |
+| Red social | Facebook **@Comercial Hinojosa** ✅ nombre de la página. **Falta el enlace** (`https://www.facebook.com/…`): sin él no se publica el botón |
 | Animales atendidos | Aves, cerdos, conejos, cuyes, vacas, perros, gatos, tilapias |
 | Moneda de precios | USD ($) |
 
-> **Pendiente de confirmar:** ciudad, teléfono/WhatsApp, horario, enlace de Facebook, enlace de Google Maps, coordenadas y referencias para llegar. Nuevo tras la auditoría: **año de apertura / una línea de historia** y **foto del local, la fachada o el equipo**. No se inventan; se dejan como variables editables en `negocio.json`.
+> **Pendiente de confirmar:** ciudad, cuál número tiene WhatsApp, horario, enlace de Facebook, enlace de Google Maps, coordenadas y referencias para llegar; **año de apertura / una línea de historia** y **foto del local, la fachada o el equipo**. No se inventan; se dejan como variables editables en `negocio.json`.
 
 ### Misión
 Brindar alimentos y productos de calidad para animales, ofreciendo una atención amable, responsable y cercana que satisfaga las necesidades de nuestros clientes.
@@ -111,8 +118,8 @@ Tabla completa con contrastes verificados en la skill `marca-hinojosa` y en `hin
 
 ### Reglas de sistema añadidas por la auditoría
 - **Títulos de vista:** antetítulo (Nunito 800, mayúsculas, `text-etiqueta`, `canela-oscuro`) + h2 con una frase corta (G3).
-- **Icono en círculo con aro maíz:** reservado a una sola familia (los pilares de "Por qué elegirnos"). Valores y animales van sin círculo, para no repetir el mismo patrón 18 veces (G2, N5).
-- **Canela** aparece en Inicio y Quiénes somos; no en otras vistas.
+- **Icono en círculo con aro maíz:** reservado a una sola familia: las 3 razones de "Por qué elegirnos" en la vista Nosotros (antes, los pilares). Animales y demás iconos van sin círculo (G2).
+- **Canela** aparece en Inicio y Nosotros; no en otras vistas.
 - **Tamaño mínimo de texto:** 13 px, también en la barra ("COMERCIAL" sube de 11 a 12 px con más interletrado, G4).
 
 ### Reparto del color (revisión de paleta, 2026-10-14)
@@ -122,9 +129,9 @@ Tabla completa con contrastes verificados en la skill `marca-hinojosa` y en `hin
 | Vista | Verde | Blanco/crema | Oro | Canela |
 |---|---|---|---|---|
 | Inicio | ~85 % | ~8 % | ~5 % | ~1 % |
-| Quiénes somos | ~22 % | ~72 % | ~3 % | ~3 % |
+| Quiénes somos (antes de Nosotros) | ~22 % | ~72 % | ~3 % | ~3 % |
 | Productos | ~6 % | ~70 % | ~1 % | 0 % (los costales aportan el color) |
-| Por qué | ~13 % | ~85 % | ~1 % | 0 % |
+| Por qué (antes de Nosotros) | ~13 % | ~85 % | ~1 % | 0 % |
 | Visítanos | ~4 % | ~90 % | 0 % | 0 % |
 
 **Decidido (cabe en la guía actual, sin colores nuevos):**
@@ -149,28 +156,27 @@ Cálido, familiar, confiable, cercano. Textos **cortos**, en español, orientado
 ## 3. Arquitectura: navegación por vistas (sin scroll)
 
 ### Reglas
-1. **Una sola página** (`index.astro`) con **5 vistas**. Cada vista ocupa `100dvh` y solo una está visible a la vez.
+1. **Una sola página** (`index.astro`) con **4 vistas** (5 hasta el 2026-10-16). Cada vista ocupa `100dvh` y solo una está visible a la vez.
 2. **No hay scroll de página.** Las vistas inactivas se ocultan con `display: none` + `inert`.
 3. **Se cambia de vista desde la barra superior**, siempre visible, y con `←`/`→`, `AvPág`/`RePág`. **Decisión 0-B: no se añade rueda, deslizamiento ni enlaces "Siguiente".**
-4. **Scroll interno permitido solo** en la lista del catálogo y, en móvil, en la vista que no quepa.
-5. **Cada vista tiene su hash**, en este orden (2026-10-15): `#inicio`, `#productos`, `#nosotros`, `#por-que`, `#visitanos`.
+4. **Scroll interno permitido solo** en la lista completa del catálogo (dentro de su `<dialog>`), en el cuerpo de la ficha de producto cuando no cabe y, en móvil, en la vista que no quepa.
+5. **Cada vista tiene su hash**, en este orden (2026-10-16): `#inicio`, `#productos`, `#nosotros`, `#visitanos`. `#por-que` abre el bloque de razones dentro de `#nosotros` (es un `id` de ese bloque, no una vista).
 6. **Transición entre vistas:** ver "Transición" más abajo. Una sola metáfora en todo el sitio.
 
 ### Sistema de títulos (propuesta, pendiente de aprobación)
 | Vista | Antetítulo | h2 (frase) |
 |---|---|---|
 | Inicio | — (el `h1` es el logo con su texto alternativo) | — |
-| Productos | PRODUCTOS | "Lo que tenemos para tus animales" |
-| Quiénes somos | QUIÉNES SOMOS | "Calidad, confianza y compromiso" |
-| Por qué elegirnos | POR QUÉ ELEGIRNOS | "Siempre a tu lado" |
+| Productos | PRODUCTOS | "Lo que tenemos para tus animales" (hoy sigue "Nuestros productos") |
+| Nosotros | NOSOTROS | **"Somos parte de tu familia"** ✅ aplicado 2026-10-16 ("familia" en Caveat canela oscuro) |
 | Visítanos | VISÍTANOS | Comercial Hinojosa (ya lo cumple) |
 
-Las frases salen de los eslóganes reales del negocio; "Somos parte de tu familia" sigue siendo la frase de la tarjeta grande de Quiénes somos para no repetirla.
+Las frases salen de los eslóganes reales del negocio. "Calidad, confianza y compromiso" y "Siempre a tu lado" quedan libres (eran de Quiénes somos y Por qué).
 
 ### Barra superior
-- **Orden (2026-10-15):** Inicio · Productos · Quiénes somos · Por qué elegirnos · Visítanos.
+- **Orden (2026-10-16):** Inicio · Productos · Nosotros · Visítanos. En móvil, 4 ítems con icono + palabra.
 - Vista activa con `aria-current="page"` **y** pastilla de fondo que se desliza (no solo color, WCAG 1.4.1).
-- En móvil, barra inferior de 5 ítems con icono + palabra; objetivos táctiles de 44×44 px.
+- En móvil, barra inferior de 4 ítems con icono + palabra; objetivos táctiles de 44×44 px.
 - **Animación (decidida, B1–B4):**
   - **Ancho reservado en negrita:** cada rótulo reserva el ancho de su versión en 800 (pseudo-elemento invisible con `content: attr(data-texto)`) para que los vecinos no salten al activarse.
   - `.anima` no se retira hasta el `transitionend` de la pastilla.
@@ -178,7 +184,7 @@ Las frases salen de los eslóganes reales del negocio; "Somos parte de tu famili
   - **Texto bajo la pastilla:** versión básica, el color cambia con 150 ms de retraso; versión pulida, inversión exacta con `clip-path` (copia `aria-hidden` del menú).
   - Hover en escritorio: fondo `hoja-claro` en 150 ms. Pulsación: `scale(0.96)` en 90 ms. Móvil: fondo `hoja-claro` al tocar y "pop" del icono activo (`scale(0.92)` → 1, 220 ms, `--ease-rebote`).
   - Con movimiento reducido o pausa: la pastilla salta, sin pop.
-- En móvil, la barra superior baja a 44 px y el isotipo a 32 px (G5). La etiqueta corta "Por qué" lleva nombre accesible completo.
+- En móvil, la barra superior baja a 44 px y el isotipo a 32 px (G5).
 
 ### Transición entre vistas (decidida, T1–T2)
 Hoy la vista saliente se oculta antes del primer pintado y se ve un destello del fondo crema; además la curva llega al 87 % en 156 ms y se percibe como un corte.
@@ -187,7 +193,7 @@ Hoy la vista saliente se oculta antes del primer pintado y se ve un destello del
   - Saliente: opacidad 1 → 0 y `translateX(-dir · 1rem)`, **160 ms**, `--ease-salida`, `pointer-events: none`, por debajo de la entrante.
   - Entrante: `translateX(dir · 2.5rem)` → 0 y opacidad 0 → 1, **380 ms** con **60 ms** de retraso, `cubic-bezier(0.25, 1, 0.5, 1)`. Total ≈ 440 ms.
   - `src/lib/animacion/vistas.ts` devuelve una `Promise` que se resuelve con el `animationend` de la saliente (tope 200 ms); el router ya la espera y ya gestiona los clics rápidos.
-- **Entrada escalonada (A+):** dentro de la vista entrante, 2–3 bloques marcados con `[data-entra]` (título, bloque principal, bloque secundario) entran desde `dir · 1.5rem` con opacidad, 300 ms, 50 ms entre bloques. En Productos el anillo cuenta como un bloque sin animación propia. Los iconos de la vista 4 siguen empezando a los 400 ms.
+- **Entrada escalonada (A+):** dentro de la vista entrante, 2–3 bloques marcados con `[data-entra]` (título, bloque principal, bloque secundario) entran desde `dir · 1.5rem` con opacidad, 300 ms, 50 ms entre bloques. En Productos el anillo cuenta como un bloque sin animación propia. Los iconos de las razones y los animales de Nosotros empiezan a los 400 ms.
 - El **foco** va al título **antes** de cualquier animación.
 - Con `prefers-reduced-motion` o pausa: cambio instantáneo.
 - **Mejora futura:** View Transitions API como implementación de lo mismo, con respaldo.
@@ -198,14 +204,13 @@ Hoy la vista saliente se oculta antes del primer pintado y se ve un destello del
 - Al cambiar de vista, el foco va al título (`tabindex="-1"`).
 - El foco nunca queda oculto tras la barra ni tras paneles flotantes (WCAG 2.4.11).
 
-### Las 5 vistas
+### Las 4 vistas
 | # | Vista | Qué contiene |
 |---|---|---|
 | 1 | **Inicio** | Logo, acento "Tu mejor aliado para tus animales", subtítulo, 2 botones, accesos por categoría, fila de animales, vitrina de 4 costales (escritorio) y Canela en la franja inferior |
-| 2 | **Productos** | Pestañas de 4 categorías, carrusel 3D de productos + catálogo completo con buscador; hoja de detalle en móvil |
-| 3 | **Quiénes somos** | Tarjeta grande con frase de marca y video de Canela, Misión, Visión (→ Nuestra historia), banda de valores |
-| 4 | **Por qué elegirnos** | Pilares, diferenciales, animales que atendemos |
-| 5 | **Visítanos** | Mapa, dirección, horario y formas de contacto |
+| 2 | **Productos** | Pestañas de 4 categorías y carrusel 3D (60 %); buscador con sugerencias, ficha del producto al frente y "Ver todos los productos" (40 %); lista completa en un `<dialog>`; hoja de detalle en móvil |
+| 3 | **Nosotros** | Canela jugando sobre un círculo, "Somos parte de tu familia", misión, 3 razones ("Por qué elegirnos") y banda de animales que enlaza a Productos |
+| 4 | **Visítanos** | Dirección, teléfonos, correo, horario y mapa (cuando haya coordenadas) |
 
 ---
 
@@ -215,7 +220,7 @@ Hoy la vista saliente se oculta antes del primer pintado y se ve un destello del
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ [logo]  Inicio · Productos · Quiénes somos · ...         │
+│ [logo]  Inicio · Productos · Nosotros · Visítanos        │
 │                                                          │
 │  🛍                  [ LOGO ]                   🛍        │
 │     🛍      Tu mejor aliado para tus animales      🛍     │
@@ -305,117 +310,115 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 
 ---
 
-### Vista 2 — Productos
+### Vista 2 — Productos (rediseño 2026-10-16: ficha del producto)
 
-**Pantalla partida: carrusel 3D a la izquierda, catálogo completo a la derecha.** Nada queda oculto.
+**Pantalla partida: carrusel 3D a la izquierda (60 %), buscador + ficha del producto al frente a la derecha (40 %).** La lista completa sigue existiendo, en una ventana.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
 │ [barra]                                                  │
-│  PRODUCTOS                   │ [🔍 buscar producto...]   │
-│  Lo que tenemos para tus     │                           │
-│  animales                    │ ▸ GRANJA (9)              │
-│  [Granja][Mascotas][Com.][Gr]│   Camperito pollos  $28.00│
-│     [img]   [img]   [img]    │   Nutri Pollos      $31.00│
-│  ◀     (anillo CSS 3D)    ▶  │ ▸ MASCOTAS (16)           │
-│          [ tarima ]          │   Pro-Can adultos   $2.25 │
-│  Camperito pollos · $28.00   │   ...               ↕     │
-│  Granja · 1 de 9             │                           │
-│  [ Preguntar por este producto ]                         │
+│  Nuestros productos               Buscar producto        │
+│  [Granja][Mascotas][Com.][Granos] [🔍 perro…         ✕]  │
+│                                   ┌ sugerencias (≤ 6) ┐  │
+│     [img]   [IMG]   [img]         │ FICHA (kraft)      │  │
+│  ◀     (anillo CSS 3D)    ▶       │ Camperito pollos   │  │
+│          [ tarima ]               │ [$28.00]           │  │
+│                                   │ Marca · Present. · │  │
+│                                   │ Categoría · Para:  │  │
+│  Alimento Animales de Granja·1 de 9│ [¿Dónde comprarlo?]│  │
+│                                   [Ver todos (37) →]     │
+│                                   Precios referenciales… │
 └──────────────────────────────────────────────────────────┘
 ```
 
-**Carrusel (izquierda, ~55 %)**
-- **4 pestañas de categoría** arriba; el anillo muestra los productos con imagen de la categoría activa (máx. 12 en escena), los de atrás más pequeños, oscuros y transparentes.
+**Carrusel (izquierda, 60 %)**
+- **4 pestañas de categoría** arriba; el anillo muestra los productos con imagen de la categoría activa (máx. 12 en escena), los de atrás más pequeños, oscuros y transparentes. En móvil van en **una fila sin el recuento**.
 - Flechas ◀ ▶ (`<button>` con nombre accesible), arrastre y deslizamiento; giro de un paso 400–500 ms con rebote mínimo. **Nunca gira sola.**
-- Bajo el anillo, el **rótulo**: nombre del producto al frente (Cormorant), categoría, posición y chip de precio.
-- **Nuevo (P2):** botón **"Preguntar por este producto"** junto al rótulo: `wa.me` con el nombre del producto cuando WhatsApp esté confirmado; mientras tanto "¿Dónde comprarlo? → Visítanos".
+- Bajo el anillo, el **rótulo**: en escritorio solo categoría y posición ("1 de 9"), porque nombre y precio están en la ficha; en móvil, nombre, categoría, posición, chip de precio y el botón **"Ver detalle"** (abre la hoja de detalle).
 - Producto al frente más grande en escritorio: `--carrusel-ancho: clamp(11.25rem, 24dvh, 15rem)` en ≥ 64rem (P7).
-- **Bebedero (P3): ✅ resuelto el 2026-10-14.** El render original traía un damero pintado que no se podía quitar por código. El usuario le quitó el fondo en Paint (`Nuevos Req/CatalogoF/Comederos y Bebederos/bebedero_quitado_disque.jpg`); como lo guardó en JPG llegó sobre blanco puro, y `nuevos_req.py` lo recorta con `quitar_fondo_blanco` (tabla `REEMPLAZOS`: se publica con el slug `bebedero` y el JPG no crea un producto aparte). Las versiones web ya son transparentes y se quitó `conFondo` del producto en `productos.json`. Comprobado en `#productos` a 1440×900.
-- **Productos sin imagen (P5):** tarjeta genérica (costal con el nombre) al frente al elegirlos en la lista; sin "·" colgando cuando no hay posición.
-- **Inercia (P9):** un deslizamiento mueve 1–2 posiciones como máximo. En móvil, las flechas fuera del escenario o junto al rótulo.
+- **Bebedero (P3): ✅ resuelto el 2026-10-14** (fondo quitado en Paint por el usuario + `quitar_fondo_blanco` en `nuevos_req.py`).
+- **Productos sin imagen (P5):** costal genérico con el nombre al frente.
+- **Inercia (P9):** un deslizamiento mueve 1–2 posiciones como máximo. En móvil, las flechas a los lados del rótulo.
+- Transiciones C1–C8 (tabla de abajo), sin cambios.
+
+**Buscador (derecha arriba, a la altura de las pestañas)**
+- Etiqueta visible "Buscar producto"; campo con lupa. **Combobox (patrón ARIA 1.2)** con hasta **6 sugerencias** (miniatura, nombre, marca · categoría, precio) y, si hay más, la opción "Ver los N" que abre la lista completa filtrada.
+- Flechas ↑/↓ para moverse, Enter elige, Esc cierra y un segundo Esc borra. **Elegir una sugerencia gira el carrusel** hasta ese producto (cambia de pestaña si hace falta). **Escribir no gira el carrusel solo.**
+- Bajo el campo: "14 productos encontrados · Ver los 14" (o "Ver categorías" sin resultados).
+- Busca en nombre, marca, presentación, categoría **y en el campo `animales`** (perro, gato, ave/pollo/gallina, cerdo, vaca, cuy, conejo, tilapia/pez), ignorando tildes, guiones y espacios ("procan" = "pro-can") y tolerando singular/plural (`src/lib/busqueda.ts`).
+
+**Ficha del producto al frente (derecha, solo ≥ 48rem)**
+- Fondo kraft. Nombre en Cormorant grande, chip de precio oro, y filas **Marca · Presentación · Categoría · Para** (animales con su icono, del campo `animales`). Para el tilapero, la **tabla de proteína por etapa**.
+- Botón **"¿Dónde comprarlo? Visítanos"** (oro), siempre visible: si la ficha no cabe (1366×650), solo se desplaza su cuerpo.
+- Cambia con un fundido corto en el sentido del giro (sin movimiento con reduced motion o pausa).
+- **P2:** cuando WhatsApp esté confirmado, el botón pasa a "Preguntar por este producto" (`wa.me` con el nombre del producto).
+
+**Lista completa ("Ver todos los productos (37)")**
+- `<dialog>` modal: foco al título, Esc y "Cerrar", foco de vuelta al botón que la abrió, `data-captura-flechas` (las flechas no cambian de vista). Cabecera bosque con "Filtrado por «perro» · Quitar filtro" si hay búsqueda.
+- Lista agrupada por categoría, con miniatura de 48 px y precio; "3 de 7" al filtrar; sin resultados, las 4 categorías como atajos. Elegir una fila pone ese producto al frente y cierra la ventana.
+- **Sin JS** la lista se pinta en la página (columna derecha), como antes. Siempre está en el HTML servido (SEO) y es la alternativa textual del carrusel.
+- Notas fijas bajo el botón: *"Precios referenciales — consulta disponibilidad"* y *"Marcas registradas de sus respectivos propietarios."*
+
+**Móvil (P6)**
+- Orden: título, buscador, pestañas en una fila, carrusel, rótulo + **"Ver detalle"**, "Ver todos" y notas. La lista completa se abre a pantalla completa.
+- "Ver detalle" abre la **hoja de detalle** desde abajo: imagen, nombre, presentación, precio y "¿Dónde comprarlo?". `<dialog>` modal: foco al título al abrir, `Esc` y "Cerrar", foco de vuelta al botón, fondo inerte. Entra con `translateY(100%)` → 0 en 300 ms; con movimiento reducido, sin desplazamiento.
 
 **Transiciones del carrusel (decididas, C1–C8)** — que nada cambie de golpe:
 
 | # | Elemento | Comportamiento |
 |---|---|---|
 | C1 | Imágenes al cambiar de categoría | **Caché de ítems por categoría** (se desmontan, no se destruyen; nunca más de 12 en escena). **Precarga** de la categoría nueva durante la salida, esperando `img.decode()` con tope de 250 ms. **Fundido de 200 ms** al aparecer cada imagen. ⚠️ No aplicar al primer montaje: la tarjeta provisional debe quedarse igual bajo el anillo hasta la primera interacción o 1,5 s (si no, Lighthouse móvil baja a 86) |
-| C2 | Rótulo (nombre, categoría, posición) | Sale en el sentido del giro (opacidad 0, −12 px, 110 ms, `--ease-salida`), cambia el texto a mitad del giro, entra (+12 px → 0, 200 ms, `--ease-vista`); la meta 40 ms después del nombre. Sustituye al parpadeo 1 → 0,15 → 1 actual |
-| C3 | Chip de precio | Ancho animado 200 ms + el mismo fundido. `min-height: 2lh` en el nombre en móvil |
-| C4 | Fila resaltada de la lista | `aria-current` inmediato (accesibilidad), pero el **resaltado visual** se aplica al asentarse el anillo: fondo/borde en 200 ms y barra de 4 px que crece con `scaleY` en 250 ms. Si el clic viene de la propia lista, inmediato |
-| C5 | Cambio de categoría | El anillo sale girando medio paso en el sentido del orden de las pestañas (160 ms) y el nuevo entra desde el lado opuesto (320 ms, `--ease-giro`). La tarima se funde con los productos y el radio se interpola |
-| C6 | Pestañas | Color en 180 ms + pulsación `scale(0.97)`. Opcional: pastilla deslizante cuando están en 4 columnas |
-| C7 | Arrastre | El rótulo se atenúa a 0,5 mientras cambia el frente; al soltar, el cambio normal de C2 |
+| C2 | Rótulo (categoría, posición; en móvil también nombre) | Sale en el sentido del giro (opacidad 0, −12 px, 110 ms), cambia el texto a mitad del giro, entra (+12 px → 0, 200 ms) |
+| C3 | Chip de precio (móvil) | Ancho animado 200 ms + el mismo fundido. `min-height: 2lh` en el nombre en móvil |
+| C4 | Fila resaltada de la lista completa | `aria-current` inmediato, resaltado visual al asentarse el anillo |
+| C5 | Cambio de categoría | El anillo sale girando medio paso en el sentido del orden de las pestañas (160 ms) y el nuevo entra desde el lado opuesto (320 ms) |
+| C6 | Pestañas | Color en 180 ms + pulsación `scale(0.97)` |
+| C7 | Arrastre | El rótulo se atenúa a 0,5 mientras cambia el frente |
 | C8 | Llegada | El frente sube 4 px y su sombra se intensifica al asentarse (180 ms). El chevron de la flecha se mueve 3 px al pulsar |
 
 Con movimiento reducido o pausa: cambios instantáneos.
 
-**Catálogo (derecha, ~45 %)**
-- Lista agrupada por categoría, con precio y miniatura de 48 px en ≥ 48rem (P10). **Único panel con scroll interno.**
-- **Buscador (P1):** etiqueta visible; filtra mientras se escribe. Busca en nombre, marca, presentación, categoría **y en el nuevo campo `animales`** de cada producto (perro, gato, ave/pollo/gallina, cerdo, vaca, cuy, conejo, tilapia/pez). Compara ignorando tildes, guiones y espacios ("procan" = "pro-can") y tolera singular/plural. Sin resultados: ofrece las 4 categorías como atajos.
-- **Recuentos coherentes (P4):** "3 de 7" en el grupo al filtrar; el rótulo aclara cuántos tienen foto o la pestaña cuenta lo mismo que el carrusel; singular/plural correcto ("1 producto").
-- **El carrusel sigue a la búsqueda (P8):** el primer resultado pasa al frente.
-- Sincronización en los dos sentidos con el carrusel (ver C4).
-- Notas fijas: *"Precios referenciales — consulta disponibilidad"* y *"Marcas registradas de sus respectivos propietarios."*
-
-**Móvil (decisión 0-B, P6)**
-- El **buscador sube por encima del carrusel** (o un acceso "Buscar en la lista" bajo las pestañas).
-- Tocar una fila abre una **hoja de detalle** desde abajo: imagen, nombre, presentación, precio, botón "Preguntar". Es un `<dialog>` modal: foco al título al abrir, `Esc` y botón "Cerrar" para salir, foco de vuelta a la fila al cerrar, fondo inerte. Entra con `translateY(100%)` → 0 en 300 ms; con movimiento reducido, aparece sin desplazamiento.
-
 **Accesibilidad**
-- La lista **es** la alternativa textual completa del carrusel.
-- Producto activo anunciado con `aria-live="polite"`.
+- La lista completa **es** la alternativa textual del carrusel. Producto activo anunciado con `aria-live="polite"`. El cuerpo de la ficha, si se desplaza, es enfocable (`tabindex="0"`).
 - Sin JavaScript o sin GSAP: rejilla de imágenes y lista intactas.
 
 ---
 
-### Vista 3 — Quiénes somos
+### Vista 3 — Nosotros (2026-10-16: une Quiénes somos y Por qué elegirnos)
 
-**Mosaico de tarjetas, todo visible a la vez, sin clics.**
+**Opción A "Canela presenta":** menos tarjetas, más jerarquía. Todo visible a la vez, sin clics.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ [barra]                                                  │
-│  QUIÉNES SOMOS                                           │
-│  Calidad, confianza y compromiso                         │
-│  ┌────────────────────────┐  ┌────────────────────────┐  │
-│  │ "Somos parte de        │  │ MISIÓN                 │  │
-│  │  tu familia"           │  │ 2 líneas               │  │
-│  │  [video de Canela]     │  ├────────────────────────┤  │
-│  │                        │  │ VISIÓN → NUESTRA HIST. │  │
-│  └────────────────────────┘  └────────────────────────┘  │
-│  [ 🤝 Buen trato · 💚 Calidez · 🙂 Amabilidad · ... ]     │
+│ [barra]  Inicio · Productos · Nosotros · Visítanos       │
+│                          NOSOTROS                        │
+│      ( círculo )         Somos parte de tu familia       │
+│        🐕 Canela         ~~~~~~~~~~~~~~                  │
+│      (video alfa)        Alimentos y productos de…       │
+│                          POR QUÉ ELEGIRNOS               │
+│                          (◎) Naturales y de calidad      │
+│                          (◎) Atención cercana            │
+│                          (◎) Ubicación estratégica →     │
+│████ ANIMALES QUE ATENDEMOS  Aves · Cerdos · Cuyes … █████│
 └──────────────────────────────────────────────────────────┘
 ```
 
-- **Tarjeta grande:** frase *"Somos parte de tu familia"* sobre banda opaca + video de Canela (silenciado, en bucle, con `poster`; **sin botón de pausa** desde 2026-10-15, ver riesgo 11).
-  - **Encuadre del video (N1, N2):** hoy `object-fit: cover` corta la gorra. Pasar a `object-fit: contain; object-position: 50% 100%` con el fondo de la caja del mismo gris del video. Ideal: `canela-jugando-alfa.webm` sobre `crema-oscuro` con un "suelo" `hoja-claro`, y el póster con alfa en Safari.
-  - El `play()` arranca a los 400 ms, cuando termina la transición de vista.
-  - Cuando haya foto real del local, puede sustituir o acompañar al video.
-- **Misión** y **Visión** recortadas a dos líneas; texto en Nunito 400 a `text-lead`, antetítulo en 800 (N6).
-  - **Decisión 0-B:** "Visión" pasa a **"Nuestra historia"** (año de apertura, familia) cuando la dueña dé el dato. La visión completa sigue en `negocio.json` para metadatos y JSON-LD.
-- **Valores (N5):** **una sola banda** `crema-oscuro` con los 6 como "icono 28 px + palabra" en línea, separados por un punto maíz de 6 px (no 6 tarjetas iguales). El espacio recuperado (~60 px) va al video.
-- **Hover (N7):** tilt de hasta 3° (`--tilt-max`) solo en la tarjeta grande y la banda de valores; Misión/Visión solo se elevan. Nunca revela contenido.
-- **Reparto de discurso con la vista 4:** Quiénes somos = identidad (historia, valores); Por qué = pruebas concretas. Evitar repetir "calidad".
-- Móvil: el video sube a `aspect-ratio: 16/8` con el espacio liberado (N8).
+- **Canela jugando** (`canela-jugando-alfa.webm`, VP9 con alfa, 640 KB) **grande y sin tarjeta**, sobre un círculo `crema-oscuro`, centrada en él (`--centro-canela: 65 %`, su centro en el video). Solo el tramo sentada (cuadros 1–69) en ida y vuelta: no salta (en el salto del original la gorra se corta) y el giro cae con la pata arriba y casi quieta. `preload="none"`, póster con alfa diferido; arranca con la vista activa; **Safari/iOS muestra el póster** (`data-alfa` en `video-vista.ts`). Sin botón de pausa (riesgo 11). Con reduced motion, el póster.
+- **Cabecera:** antetítulo **NOSOTROS** (canela oscuro) + h2 **"Somos parte de tu familia"** ("familia" en Caveat canela oscuro, 5.22, ≥ 24 px) + trazo de pincel maíz.
+- **Misión** como párrafo (`negocio.pantalla.mision`), sin tarjeta.
+- **"Por qué elegirnos"**: 3 razones con icono en círculo con aro maíz (única familia con círculo). **Textos en propuesta, pendientes de aprobación** (bloque 10), sacados de los pilares y diferenciales sin datos nuevos:
+  1. "Naturales y de calidad" — "Alimento natural para tus animales"
+  2. "Atención cercana" — "Personalizada, como en familia"
+  3. "Ubicación estratégica" — enlace "Ver cómo llegar →" a `#visitanos`
+  El bloque lleva `id="por-que"`: los enlaces viejos a `#por-que` abren Nosotros con el foco ahí.
+- **Banda bosque a sangre** al pie: "Animales que atendemos", cada animal es un enlace a `#productos` con el buscador lleno con ese animal (`data-abrir-animal`), con el sello de su costal real en Aves, Cerdos, Vacas y Cuyes.
+- **Fuera de pantalla:** Visión ("Nuestra historia" la sustituirá cuando la dueña dé el dato), los 6 valores, los 4 pilares, los 4 diferenciales y la frase "Calidad que alimenta, amor que se siente". Visión y valores siguen en `negocio.json` (metadatos y JSON-LD).
+- **Móvil:** cabecera, Canela, misión, razones y banda, en columna, con scroll interno.
+- **Medido 2026-10-16:** cabe sin scroll a 1440×900 y 1366×650; axe 0; Lighthouse móvil 98.
 
 ---
 
-### Vista 4 — Por qué elegirnos
-
-- **4 pilares de esencia** (Naturales · Confiables · De calidad · Sostenibles), con icono en círculo con aro maíz (única familia que conserva ese patrón) y entrada única al entrar en la vista.
-  - 🔒 Sus descripciones son relleno ("Productos en los que confías") y se ocultan en móvil (Q7): proponer frases concretas a la dueña y mostrarlas también en móvil, o quitarlas y subir el icono a 72 px.
-- **4 diferenciales.**
-  - 🔒 Sustituir "Para aves, cerdos, mascotas y tilapias" (repite la fila de animales) por "Granja, mascotas, comederos y granos" (Q3).
-  - 🔒 Cambiar 1–2 por pruebas concretas: una **franja de marcas que distribuye** el local (Pro-Can, Nutritivos, Bio Alimentar, Mascan…, ya en el catálogo; con la nota de marcas registradas) y "Ubicación" enlazada a `#visitanos` (Q2).
-- **Animales que atendemos:** icono suelto (sin círculo) + palabra. Junto a Aves, Cerdos, Vacas y Cuyes, el costal real de esa especie (`-thumb-80`, ~4 kB) como sello de 40 px (Q1).
-  - Cuando exista el campo `animales` del catálogo, cada animal pasa a ser un **enlace** a `#productos` filtrado por ese animal (Q4).
-- Título siempre arriba, como en las demás vistas; solo el grupo de bandas se centra con `margin-block: auto` (Q6).
-- Sin contadores inventados.
-
----
-
-### Vista 5 — Visítanos
+### Vista 4 — Visítanos
 
 Mapa a pantalla completa con una tarjeta flotante opaca encima.
 
@@ -436,7 +439,8 @@ Mapa a pantalla completa con una tarjeta flotante opaca encima.
 ```
 
 - **Mapa** (Leaflet + OpenStreetMap), carga diferida al entrar en la vista, solo con coordenadas confirmadas.
-- **Tarjeta flotante opaca:** nombre, dirección, ciudad, estado "Abierto ahora / Cerrado" (con palabra, no solo color), horario, **"Referencias"** para llegar (V4: el CTA se llama "Cómo llegar" y el dato "Referencias") y botones **Cómo llegar · WhatsApp · Llamar**, más Facebook.
+- **Tarjeta flotante opaca:** nombre, dirección, ciudad, estado "Abierto ahora / Cerrado" (con palabra, no solo color), horario, **"Referencias"** para llegar (V4: el CTA se llama "Cómo llegar" y el dato "Referencias") y botones **Cómo llegar · WhatsApp · Llamar**, correo y Facebook.
+- **Publicado desde 2026-10-16:** dirección "Av. del Chofer y Rubén Larson", **un botón "Llamar" por teléfono** (099 708 5015 y 098 928 1882, cada uno a lo ancho, `tel:+593…`) y el **correo** (`mailto:`). Siguen en la línea agrupada de pendientes: Cómo llegar (Maps), WhatsApp y Facebook (falta su enlace).
 - **Mientras falten datos (V1, V2):**
   - Nunca se muestra `PENDIENTE_CONFIRMAR`. Cada dato pendiente muestra `textos.comunes.datoPendiente`.
   - Los 4 canales pendientes se agrupan en **una sola línea** con sus iconos en gris ("Muy pronto publicaremos nuestros datos de contacto."), sin forma de botón.
@@ -500,7 +504,7 @@ Contenido de referencia de los afiches (agrupado por categoría del cliente):
 | Mapa | **Leaflet 1.9.4 + OpenStreetMap** | Gratis, sin API key, carga diferida |
 | Video | **FFmpeg** → WebM (VP9) + MP4 (H.264), con `poster` | Canela jugando; fachada cuando exista |
 | Imágenes | Script Python (`scripts-activos/`) → AVIF/WebP con `srcset` | Peso mínimo |
-| Contacto | `wa.me`, `tel:` y Facebook | Sin backend ni formulario |
+| Contacto | `tel:` (2 números), `mailto:`, `wa.me` y Facebook cuando estén | Sin backend ni formulario |
 | SEO local | JSON-LD `LocalBusiness` / `PetStore`, Open Graph, sitemap | Aparecer en Google |
 | Calidad | **Lighthouse**, **Playwright**, **axe-core** | Rendimiento, pruebas, accesibilidad |
 | Hosting | **GitHub Pages** (workflow por corregir) | Gratis, HTTPS |
@@ -509,7 +513,7 @@ Retirado respecto al plan original: Three.js, `.glb`/Blender/gltf-transform, Lot
 
 ### Reglas de rendimiento
 - Presupuesto: **vista Inicio < 1,5 MB** (hoy 340 KiB en móvil, con los sprites de Canela tras `load`), LCP < 2,5 s en 4G. **El logo debe seguir siendo el LCP de Inicio.**
-- **Carga por vista:** solo Inicio se descarga completa de entrada. Carrusel, GSAP, mapa y video se cargan en el evento de cambio de vista.
+- **Carga por vista:** solo Inicio se descarga completa de entrada. Carrusel, GSAP, mapa y video de Nosotros se cargan en el evento de cambio de vista.
 - Fuera de `#productos` no hay tweens ni `requestAnimationFrame` del carrusel.
 - Fallbacks obligatorios: sin JS/GSAP → rejilla de imágenes; `prefers-reduced-motion` y pausa → sin bucles, paralaje ni transiciones; falla el mapa → dirección en texto y enlace.
 
@@ -521,10 +525,10 @@ hinojosa-web/
 │  └─ video/        # canela-jugando*, fachada (pendiente)
 ├─ scripts-activos/ # generación de derivados desde Nuevos Req/
 ├─ src/
-│  ├─ components/   # Barra, BotonContacto, HojaDetalle, Icono, Vista, vistas/
+│  ├─ components/   # Barra, BotonContacto, HojaDetalle, Icono, Vista, vistas/ (Inicio, Productos, Nosotros, Visitanos)
 │  ├─ data/         # productos.json, negocio.json, textos.json
 │  ├─ layouts/
-│  ├─ lib/          # router.ts, catalogo.ts, mapa.ts, horario.ts, seo.ts, animacion/
+│  ├─ lib/          # router.ts, catalogo.ts, busqueda.ts, hoja-detalle.ts, video-vista.ts, mapa.ts, horario.ts, seo.ts, animacion/
 │  ├─ pages/        # index.astro, [mapa].xml.ts
 │  └─ styles/       # tokens.css, global.css
 ├─ docs/            # guia-estilo, storyboards, activos, seo, qa-informe, handoff
@@ -541,13 +545,13 @@ hinojosa-web/
 | Primer cuadro para Flow (`flow/canela-inicio-azul.png`, 1920×1080, fondo `#0047BB`) | ✅ Generado | Clip 1 de Flow |
 | Video de Canela corriendo, MP4 1080p en `flow/` | ✅ Recibido y revisado el 2026-10-14 (`flow/Puppy_running_in_place_1080p_20261013235908.mp4`) | Fuente de los sprites: de él se recortan las piezas arranque, ciclo de carrera y giro |
 | Sprite sheets de Canela (arranque, carrera izq./der., giro) | ✅ 2026-10-14, 442 KB (320 px) y 175 KB (160 px) | Inicio, franja inferior |
-| Canela jugando (video, con y sin alfa) | ✅ Generado | Quiénes somos |
-| 33 renders de producto (`-400`, `-thumb`, `-thumb-80`) | ✅ Generado | Carrusel, lista, vitrina de Inicio, sellos de la vista 4 |
+| Canela jugando (video, con y sin alfa) | ✅ Generado; alfa regenerado 2026-10-16 (cuadros 1–69 en ida y vuelta, 640 KB, `nuevos_req.py video-alfa`) | Nosotros (versión con alfa) |
+| 33 renders de producto (`-400`, `-thumb`, `-thumb-80`) | ✅ Generado | Carrusel, lista, sugerencias del buscador, vitrina de Inicio, sellos de Nosotros |
 | Trébol del isotipo en SVG (hojas y marca de agua) | ✅ Inline en Inicio y Visítanos | Fondo de Inicio y de Visítanos sin mapa |
 | Tarjeta genérica de costal para productos sin imagen | ✅ | Carrusel (P5) |
 | Bebedero sin damero | ✅ 2026-10-14: fondo quitado en Paint por el usuario + recorte del blanco en `nuevos_req.py` | Carrusel y lista (P3) |
 | Foto / video de la fachada | ❌ Pedir a la dueña | Visítanos |
-| Foto del local o del equipo | ❌ Pedir a la dueña | Quiénes somos ("Nuestra historia") |
+| Foto del local o del equipo | ❌ Pedir a la dueña | Nosotros ("Nuestra historia") |
 | Logo vectorial | ❌ Pedir a la dueña | Afinar paleta y nitidez |
 | Fotos reales de producto | ❌ Opcional | Lista del catálogo |
 
@@ -560,27 +564,27 @@ Skills que gobiernan esta parte: `wcag-accessibility`, `wcag-audit-patterns` y `
 ### WCAG 2.2 AA — puntos críticos de este diseño
 | Criterio | Qué exige aquí |
 |---|---|
-| 1.4.1 Uso del color | Vista activa en la barra, fila activa de la lista y estado "Abierto/Cerrado": nunca solo color |
+| 1.4.1 Uso del color | Vista activa en la barra, fila activa de la lista, sugerencia activa del buscador (barra de 4 px) y estado "Abierto/Cerrado": nunca solo color |
 | 1.4.3 Contraste | 4.5:1 en texto; el dorado solo como fondo con texto oscuro. Tarjeta del mapa opaca |
 | 1.4.11 Contraste no textual | Flechas del carrusel, pestañas y bordes de tarjeta a 3:1 |
-| **2.2.2 Pausar, detener, ocultar** | ⚠️ **No se cumple por decisión del usuario (2026-10-15):** Canela y el video de Quiénes somos van en bucle sin botón de pausa (riesgo 11). El carrusel no autorrota. Con `prefers-reduced-motion` no hay movimiento |
+| **2.2.2 Pausar, detener, ocultar** | ⚠️ **No se cumple por decisión del usuario (2026-10-15):** Canela (Inicio) y el video de Nosotros van en bucle sin botón de pausa (riesgo 11). El carrusel no autorrota. Con `prefers-reduced-motion` no hay movimiento |
 | 2.3.3 Animación por interacción | Toda transición nueva respeta `prefers-reduced-motion` y la pausa del sitio |
-| 2.1.1 Teclado | Carrusel, pestañas, flechas, hoja de detalle, cambio de vista y mapa operables sin mouse |
-| 2.4.3 Orden del foco | Vistas inactivas con `inert`; foco al título al cambiar; hoja de detalle devuelve el foco a la fila |
+| 2.1.1 Teclado | Carrusel, pestañas, flechas, buscador con sugerencias (↑/↓, Enter, Esc), lista completa, hoja de detalle, cambio de vista y mapa operables sin mouse |
+| 2.4.3 Orden del foco | Vistas inactivas con `inert`; foco al título al cambiar; lista completa y hoja de detalle devuelven el foco al botón que las abrió |
 | 2.4.11 Foco no oculto | La barra, la tarjeta del mapa y la hoja de detalle no tapan el elemento enfocado |
 | 2.5.8 Tamaño del objetivo | Mínimo 24×24 px; objetivo real 44×44 px en móvil |
 | 3.3.2 Etiquetas | Buscador con etiqueta visible |
-| 4.1.2 Nombre, rol, valor | Barra con `aria-current`; producto activo anunciado con `aria-live`; hoja de detalle como `<dialog>` con nombre |
+| 4.1.2 Nombre, rol, valor | Barra con `aria-current`; producto activo anunciado con `aria-live`; buscador como `combobox` con `listbox`; lista completa y hoja de detalle como `<dialog>` con nombre |
 
 ### Heurísticas de Nielsen — cómo se aplican
-1. **Visibilidad del estado:** pastilla de vista activa; el rótulo del carrusel y la fila resaltada siempre coinciden (C4, C7).
+1. **Visibilidad del estado:** pastilla de vista activa; el rótulo, la ficha y la fila resaltada siempre coinciden con el producto al frente (C4, C7).
 2. **Correspondencia con el mundo real:** el buscador entiende "perro", "pollo", "tilapia" (P1); en pantalla nunca hay marcadores técnicos (V1).
 3. **Control y libertad:** hash por vista, botón "atrás", la hoja de detalle se cierra con `Esc`.
 4. **Consistencia:** una sola metáfora de transición, un solo sistema de títulos (G3), recuentos coherentes (P4).
 5. **Prevención de errores:** precios referenciales; nada de contacto inventado; los botones pendientes no parecen botones.
-6. **Reconocer antes que recordar:** las 5 vistas en la barra; lista completa junto al carrusel; accesos por categoría en Inicio.
+6. **Reconocer antes que recordar:** las 4 vistas en la barra; sugerencias con foto y precio al buscar; "Ver todos" a un clic; accesos por categoría en Inicio.
 7. **Flexibilidad:** carrusel para explorar, buscador para quien sabe qué quiere, accesos directos desde Inicio.
-8. **Diseño minimalista:** sin lema repetido, valores en una banda, sin diferenciales redundantes.
+8. **Diseño minimalista:** sin lema repetido; Nosotros con 3 razones en lugar de 4 pilares + 4 diferenciales + 6 valores; la lista completa no compite con el carrusel.
 9. **Errores:** búsqueda sin resultados ofrece las categorías; si el mapa falla, dirección en texto.
 10. **Ayuda:** referencias para llegar en lenguaje natural.
 
@@ -623,10 +627,10 @@ En `.claude/skills/` del proyecto:
 |---|---|---|---|
 | 1 | **contenido-estrategia** | Textos por vista, sistema de títulos, campo `animales`, `productos.json`, `negocio.json`, `textos.json` | Copy y datos |
 | 2 | **direccion-arte** | Guía de estilo, retícula de cada vista, storyboards de transiciones, barra y carrusel | Guía + tokens + storyboards |
-| 3 | **frontend** | Router, 5 vistas, buscador, hoja de detalle, accesibilidad | Sitio navegable |
+| 3 | **frontend** | Router, 4 vistas, buscador con sugerencias, ficha, lista completa, hoja de detalle, accesibilidad | Sitio navegable |
 | 4 | **activos-3d-video** | Derivados de `Nuevos Req/`, imágenes, video, SVG decorativos, optimización | `public/` listo |
 | 5 | **animacion-interaccion** | Carrusel CSS 3D, transiciones entre vistas, barra, Canela, fallbacks | Movimiento integrado |
-| 6 | **seo-negocio-local** | Metadatos, JSON-LD, Open Graph, `alt` | Checklist SEO aplicada |
+| 6 | **seo-negocio-local** | Metadatos, JSON-LD (dirección, teléfonos, correo ya confirmados), Open Graph, `alt` | Checklist SEO aplicada |
 | 7 | **qa-rendimiento** | Lighthouse, Playwright, axe, teclado, móvil, regresión de movimiento | `docs/qa-informe.md` |
 | 8 | **despliegue** | GitHub Pages, dominio, HTTPS | Sitio publicado |
 
@@ -636,7 +640,7 @@ En `.claude/skills/` del proyecto:
 
 | Fase | Trabajo | Estado |
 |---|---|---|
-| 0. Datos | Confirmar dirección, ciudad, teléfono/WhatsApp, horario, Facebook, coordenadas, referencias, precios, historia; logo vectorial y fotos | ⏳ Pendiente de la dueña |
+| 0. Datos | ✅ 2026-10-16: dirección, 2 teléfonos, correo, nombre de Facebook. ⏳ Faltan: ciudad, WhatsApp, horario, enlace de Facebook, coordenadas/Maps, referencias, precios, historia; logo vectorial y fotos | ⏳ Parcial |
 | 1. Diseño | Guía de estilo con contrastes, retícula de las 5 vistas, storyboards | ✅ |
 | 2. Base | Astro, router con foco e `inert`, 5 vistas, catálogo desde JSON | ✅ |
 | 3. Activos | Derivados de `Nuevos Req/` | ✅ (faltan los de la sección 7) |
@@ -658,37 +662,43 @@ En `.claude/skills/` del proyecto:
 | 7 | Quiénes somos: encuadre del video, banda de valores, tipografía de Misión/Visión, hover (N1, N2, N5–N8) | frontend, direccion-arte | No |
 | 8 | Productos en móvil: buscador arriba y hoja de detalle; inercia; flechas (P6, P9) | frontend, animacion-interaccion | No |
 | 9 | Carrusel: cambio de categoría direccional, pestañas, arrastre, llegada (C5–C8); producto al frente más grande; miniaturas (P7, P10). Bebedero (P3) ya resuelto | animacion-interaccion, frontend | No |
-| 10 | Sistema de títulos, diferenciales, marcas, pilares, sellos y enlaces de animales (G3, Q1–Q7) | contenido-estrategia, direccion-arte, frontend | **Sí** (textos) |
-| 11 | "Preguntar por este producto", accesos de contacto en la barra (P2, G1) | frontend | **Sí** (WhatsApp) |
+| 10 | Sistema de títulos y textos de las 3 razones de Nosotros (en propuesta); franja de marcas (G3, Q2–Q7). Sellos y enlaces de animales ✅ | contenido-estrategia, direccion-arte, frontend | **Sí** (textos) |
+| 11 | "Preguntar por este producto" en la ficha y la hoja de detalle, botón WhatsApp en Visítanos (P2, G1) | frontend | **Sí** (cuál número tiene WhatsApp) |
 | 12 | Pulidos: G4, G5, V4 | frontend | No |
 | 13 | **Reparto del color:** superficies `crema-oscuro`/`hoja-claro` en lugar de blanco, banda `bosque` en cada vista clara, proporción 55/30/15, trazo de pincel maíz bajo los h2, bandas canela oscuro y tono kraft `#E3CFA6` (todo aprobado) | direccion-arte, frontend | No |
 | 14 | **Ajustes 2026-10-15:** quitar `BotonPausa` de Inicio y de Quiénes somos (y su espacio reservado); iconos en los botones de Inicio (costal en "Ver productos", pin en "Cómo llegar"); nuevo orden Inicio · Productos · Quiénes somos · Por qué · Visítanos (barra, barra móvil, orden de secciones en el HTML, `VISTAS` en `router.ts`, dirección de transiciones) | frontend, animacion-interaccion | ✅ Hecho 2026-10-15 |
-| Cierre | Lighthouse móvil (Inicio ≥ 99, Productos ≥ 93), router 41/41, axe 0, capturas comparativas | qa-rendimiento | — |
+| 15 | **Vista Nosotros (2026-10-16):** une Quiénes somos y Por qué elegirnos (opción A), 4 vistas, `#por-que` como bloque, video con alfa regenerado (cuadros 1–69 en ida y vuelta) | frontend, activos-3d-video | ✅ Hecho 2026-10-16 (commit `120eeae`) |
+| 16 | **Productos: ficha del producto (2026-10-16):** carrusel 60 %, buscador con sugerencias, ficha, lista completa en `<dialog>`, "Ver detalle" en móvil | frontend, animacion-interaccion | ✅ Hecho 2026-10-16 (commit `39b18ad`) |
+| 17 | **Datos de contacto (2026-10-16):** dirección, 2 teléfonos y correo en `negocio.json`, Visítanos y JSON-LD | contenido-estrategia, frontend, seo-negocio-local | ✅ Hecho 2026-10-16. Falta: ciudad, WhatsApp, horario, enlace de Facebook, coordenadas |
+| Cierre | Lighthouse móvil (Inicio ≥ 99, Productos ≥ 93), pruebas del router de `vistas-hinojosa`, axe 0, capturas comparativas. Tras los bloques 15–17 hay que repetir el cierre completo | qa-rendimiento | ⏳ |
 
 ---
 
 ## 12. Riesgos y decisiones abiertas
 
-1. **Datos faltantes:** contacto, ubicación, horario, historia. No se publica hasta confirmarlos.
+1. **Datos faltantes:** ya hay dirección, teléfonos y correo (2026-10-16). Faltan ciudad, WhatsApp, horario, enlace de Facebook, coordenadas e historia. No se publica hasta confirmar al menos ciudad y horario.
 2. **Navegación solo por barra:** decidido no añadir rueda ni deslizamiento. Riesgo: usuarios que intenten bajar con la rueda. Vigilar en las pruebas con usuarios; si aparece el problema, reconsiderar los enlaces "Siguiente →".
 3. **LCP de Inicio con la vitrina:** si los costales superan al logo en área, cambia el LCP. Límite de 24dvh o inyección tras `load`.
 4. **Clips de Canela generados con IA:** riesgo de que la gorra, el collar o la cara cambien durante el giro, o de que Canela avance por el cuadro. Se generan varias variantes y se revisa con la lista de `flow/PROMPTS.md`. Si el giro no sale bien, alternativa: frenar → sprite del ciclo espejado con un fundido muy corto. Peso de los sprites: si superan 450 kB, se reduce la altura o los cuadros por segundo (12 fps es suficiente).
 5. **Regla M5 del carrusel:** la tarjeta provisional del primer montaje no se toca al añadir fundidos (C1). Lighthouse móvil baja a 86 si se rompe.
-6. **SEO con una sola pantalla visible:** las 5 vistas completas en el HTML servido.
+6. **SEO con una sola pantalla visible:** las 4 vistas completas en el HTML servido, incluida la lista completa de productos (dentro de un `<dialog>` cerrado: está en el HTML pero Google puede darle menos peso).
 7. **Pausa global y transiciones:** hoy `data-movimiento="pausado"` no anula `transition`; todo lo nuevo debe condicionarse.
 8. **Navegadores sin probar:** Safari iOS (alfa del video, cancelación de transiciones de la barra) y Firefox; lector de pantalla real.
 9. **Precios cambiantes y derechos de imágenes:** JSON editable y confirmación con la dueña.
 10. **Mantenimiento:** definir quién actualiza precios y catálogo.
-11. **Sin botones de pausa (decisión del usuario, 2026-10-15):** Canela corriendo en Inicio y el video de Quiénes somos se mueven en bucle durante más de 5 s sin control para pausarlos. **Incumple WCAG 2.2.2 (nivel A)**: una auditoría de accesibilidad lo marcará como fallo, y puede molestar a personas con déficit de atención o sensibilidad al movimiento. Mitigación parcial: con `prefers-reduced-motion` no hay movimiento. Alternativas descartadas por ahora: un solo control global "Pausar animaciones", o que el movimiento se detenga solo antes de 5 s.
+11. **Sin botones de pausa (decisión del usuario, 2026-10-15):** Canela corriendo en Inicio y el video de Nosotros se mueven en bucle durante más de 5 s sin control para pausarlos. **Incumple WCAG 2.2.2 (nivel A)**: una auditoría de accesibilidad lo marcará como fallo, y puede molestar a personas con déficit de atención o sensibilidad al movimiento. Mitigación parcial: con `prefers-reduced-motion` no hay movimiento. Alternativas descartadas por ahora: un solo control global "Pausar animaciones", o que el movimiento se detenga solo antes de 5 s.
+12. **Video con alfa en Safari/iOS:** no se reproduce; se ve el póster de Canela sentada. No probado en un Safari real.
+13. **Ramas:** se trabaja solo en `Ariel`; `main` no se toca (decisión del usuario, 2026-10-16). Cada push a `main` dispara el workflow de Pages.
 
 ---
 
 ## 13. Checklist
 
-- [ ] Confirmar datos del negocio (sección 1), incluida una línea de historia
+- [x] Dirección, teléfonos y correo (2026-10-16)
+- [ ] Confirmar el resto de datos del negocio (sección 1): ciudad, WhatsApp, horario, enlace de Facebook, coordenadas, referencias, una línea de historia
 - [ ] Obtener logo en vectorial
 - [ ] Fotos del local, la fachada y (opcional) el equipo
-- [ ] Aprobar los textos del sistema de títulos (sección 3) y los de la vista 4 marcados con 🔒
+- [ ] Aprobar los textos del sistema de títulos (sección 3) y las 3 razones de Nosotros (en propuesta)
 - [x] Recibir los archivos del perrito y las imágenes de producto (2026-10-12)
 - [x] Router de vistas probado con teclado
 - [x] Auditoría de UI/UX/movimiento (2026-10-13, `auditoria.md`)
@@ -699,4 +709,6 @@ En `.claude/skills/` del proyecto:
 - [x] Fase 5-B: bloques 1–9, 12, 13 y 4-B + cierre de QA (2026-10-14; Lighthouse móvil Inicio 99, Productos 96, escritorio 100; router 18/18; axe 0)
 - [ ] Fase 5-B: bloque 10 (textos de títulos, pilares, diferenciales) y bloque 11 (WhatsApp)
 - [x] Bloque 14: quitar botones de pausa, iconos en "Ver productos" y "Cómo llegar", y nuevo orden de la barra (2026-10-15)
-- [ ] Corregir el workflow de despliegue
+- [x] Vista Nosotros (bloque 15) y ficha de Productos (bloque 16), 2026-10-16
+- [ ] Repetir el cierre de QA tras los bloques 15–17
+- [ ] Corregir el workflow de despliegue (sin publicar desde `main` por ahora)

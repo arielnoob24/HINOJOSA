@@ -1,53 +1,56 @@
 ---
 name: vistas-hinojosa
-description: Contrato del router de vistas del sitio de Comercial Hinojosa (5 pantallas sin scroll, inert, foco, hash, teclado, fallbacks) con la especificación de la transición entre vistas y de la animación de la barra. Úsala al construir, animar, auditar o modificar la navegación entre vistas, la barra, el buscador del catálogo, la hoja de detalle móvil o cualquier carga diferida por vista.
+description: Contrato del router de vistas del sitio de Comercial Hinojosa (4 pantallas sin scroll, inert, foco, hash, teclado, fallbacks) con la especificación de la transición entre vistas y de la animación de la barra. Úsala al construir, animar, auditar o modificar la navegación entre vistas, la barra, el buscador con sugerencias, la lista completa en <dialog>, la hoja de detalle móvil o cualquier carga diferida por vista.
 ---
 
 # Router de vistas — Comercial Hinojosa
 
-El sitio es **una sola página con 5 vistas**. Cada vista ocupa una pantalla completa y solo una está visible. **No hay scroll de página.** Se cambia de vista desde la barra superior.
+El sitio es **una sola página con 4 vistas** (5 hasta el 2026-10-16). Cada vista ocupa una pantalla completa y solo una está visible. **No hay scroll de página.** Se cambia de vista desde la barra superior.
 
 Esto no es un detalle de estilo: cambia cómo se construye, cómo se anima, cómo se audita y cómo se indexa el sitio. Tres agentes dependen de este contrato (`frontend`, `animacion-interaccion`, `qa-rendimiento`), así que vive aquí y no duplicado en cada uno.
 
-## Las 5 vistas
+## Las 4 vistas
 
-Orden vigente desde el 2026-10-15 (Productos antes que Quiénes somos). Este orden manda en la barra, la barra móvil, las secciones del HTML, `VISTAS` del router, las flechas ←/→ y la dirección de las transiciones.
+Orden vigente desde el 2026-10-16 (Quiénes somos y Por qué elegirnos se unieron en **Nosotros**). Este orden manda en la barra, la barra móvil, las secciones del HTML, `VISTAS` del router, las flechas ←/→ y la dirección de las transiciones.
 
 | Orden | Hash | Etiqueta en la barra |
 |---|---|---|
 | 1 | `#inicio` | Inicio |
 | 2 | `#productos` | Productos |
-| 3 | `#nosotros` | Quiénes somos |
-| 4 | `#por-que` | Por qué elegirnos |
-| 5 | `#visitanos` | Visítanos |
+| 3 | `#nosotros` | Nosotros |
+| 4 | `#visitanos` | Visítanos |
+
+**`#por-que` ya no es una vista:** es el `id` del bloque de razones ("Por qué elegirnos") dentro de `#nosotros`. `resolver()` de `router.ts` abre la vista que contiene un `id` que no es de vista y le da el foco, así que los enlaces viejos siguen funcionando; el script de arranque de `Layout.astro` traduce `#por-que` a `nosotros` para la primera pintura.
 
 ---
 
 ## Las 8 reglas no negociables
 
-1. **Las 5 vistas están en el HTML servido**, cada una de `100dvh`. Solo una visible. Nunca se generan por JavaScript: si no están en el HTML, Google no las indexa.
+1. **Las 4 vistas están en el HTML servido**, cada una de `100dvh`. Solo una visible. Nunca se generan por JavaScript: si no están en el HTML, Google no las indexa.
 2. `body { overflow: hidden }`. **Sin scroll de página.**
 3. Las vistas inactivas se ocultan con `display: none` **y** el atributo `inert`. Las dos cosas: `display: none` las saca del foco en navegadores modernos, pero `inert` es la garantía explícita y además cubre el caso de una vista que se anime con opacidad durante la transición.
 4. **Un hash por vista.** El router escucha `hashchange`, así funciona el botón "atrás" del navegador y se puede compartir un enlace directo a una vista.
 5. **Al cambiar de vista, el foco va al título de la vista nueva** (`tabindex="-1"` en el `<h1>`/`<h2>`), para que el lector de pantalla anuncie dónde está. La animación de transición no puede retrasar esto: la accesibilidad va primero y el movimiento acompaña.
 6. La barra marca la vista activa con `aria-current="page"` **y** con una señal visual que no sea solo color — subrayado o pastilla de fondo (WCAG 1.4.1).
-7. `←` / `→` y `AvPág` / `RePág` cambian de vista, **pero solo cuando el foco no está dentro de un campo de texto.** Si te olvidas de esto, las flechas dejan de mover el cursor en el buscador del catálogo y lo rompes. **Segunda excepción:** con el foco dentro del carrusel de Productos (contenedor con `data-captura-flechas`), `←`/`→` giran el carrusel y no cambian de vista. El router ignora el evento si `e.target.closest('input, textarea, select, [contenteditable], [data-captura-flechas]')`.
-8. **Sin JavaScript, las 5 vistas quedan visibles una debajo de otra.** Degradación honesta, nunca una pantalla en blanco. Esto implica que el `overflow: hidden` y el `display: none` los aplica el router al arrancar, no el CSS base.
+7. `←` / `→` y `AvPág` / `RePág` cambian de vista, **pero solo cuando el foco no está dentro de un campo de texto.** Si te olvidas de esto, las flechas dejan de mover el cursor en el buscador del catálogo y lo rompes. **Segunda excepción:** con el foco dentro de un contenedor con `data-captura-flechas` (carrusel de Productos, lista completa en `<dialog>`, hoja de detalle) las flechas no cambian de vista; en el carrusel, `←`/`→` lo giran. En el buscador, `↑`/`↓` mueven la sugerencia activa. El router ignora el evento si `e.target.closest('input, textarea, select, [contenteditable], [data-captura-flechas]')`.
+8. **Sin JavaScript, las 4 vistas quedan visibles una debajo de otra** (la lista completa de productos se pinta en la página, fuera del `<dialog>`). Degradación honesta, nunca una pantalla en blanco. Esto implica que el `overflow: hidden` y el `display: none` los aplica el router al arrancar, no el CSS base.
 
 **Mecanismos de navegación (decisión 2026-10-13, `PLAN.md` §0-B):** solo la barra y el teclado (`←`/`→`, `AvPág`/`RePág`). **No** se añade cambio de vista con rueda del ratón ni con deslizamiento, ni enlaces "Siguiente →" al pie de las vistas. Sí se permiten anclas contextuales dentro del contenido (botón "Cómo llegar" y accesos por categoría de Inicio, animales enlazados a Productos): son anclas reales a un hash y pasan por el router como cualquier otra.
 
 **Esquema de anclas con categoría o animal (implementado 2026-10-14):** el hash es solo el de la vista; el dato va en un atributo.
 ```html
 <a href="#productos" data-abrir-categoria="granja">Granja</a>
-<a href="#productos" data-abrir-animal="perro">Perros</a>   <!-- para los animales de Por qué -->
+<a href="#productos" data-abrir-animal="perro">Perros</a>   <!-- banda de animales de Nosotros -->
 ```
-Un oyente en fase de captura en `src/lib/catalogo.ts` (`abrirCategoria()`) prepara el catálogo antes del `hashchange`: elige el primer producto de la categoría (origen `'pestana'`), vacía el buscador y, si Productos ya está visible, lleva la lista al grupo. Para animales, el oyente equivalente rellena el buscador con el animal. Clics con modificadores o con el botón central navegan normal. Sin JS, el enlace lleva a `#productos`. **Nunca** `#productos?cat=…`: rompe el hash de la vista.
+Un oyente en fase de captura en `src/lib/catalogo.ts` (`abrirCategoria()`) prepara el catálogo antes del `hashchange`: elige el primer producto de la categoría (origen `'pestana'`), vacía el buscador y, si Productos ya está visible, lleva la lista al grupo. Para animales, el oyente equivalente (`abrirAnimal()`) rellena el buscador con el animal y pone al frente el primer resultado (es el único caso en que el carrusel gira sin que se elija una sugerencia). Clics con modificadores o con el botón central navegan normal. Sin JS, el enlace lleva a `#productos`. **Nunca** `#productos?cat=…`: rompe el hash de la vista.
 
 ---
 
 ## Excepciones de scroll (las únicas)
 
-- **La lista del catálogo** de la vista Productos tiene scroll interno. Es el único panel con scroll por diseño. (Lenis se retiró del proyecto.)
+- **La lista completa de productos**, dentro de su `<dialog>` ("Ver todos los productos"), tiene scroll interno. (Lenis se retiró del proyecto.)
+- **El cuerpo de la ficha de producto** (escritorio) se desplaza si no cabe (1366×650 con la tabla de la tilapia); es enfocable (`tabindex="0"`) y el botón de compra queda fuera del desplazamiento.
+- **Las sugerencias del buscador** (`listbox`) se desplazan si no caben.
 - **La hoja de detalle de producto en móvil** (`<dialog>` modal) puede tener scroll propio si su contenido no cabe.
 - **En móvil**, si una vista no cabe en la pantalla, se permite scroll interno en esa vista. Es preferible a recortar contenido esencial. Probar a 360×640.
 
@@ -59,8 +62,7 @@ Un oyente en fase de captura en `src/lib/catalogo.ts` (`abrirCategoria()`) prepa
 <nav aria-label="Vistas del sitio">
   <a href="#inicio"    aria-current="page">Inicio</a>
   <a href="#productos">Productos</a>
-  <a href="#nosotros">Quiénes somos</a>
-  <a href="#por-que">Por qué elegirnos</a>
+  <a href="#nosotros">Nosotros</a>
   <a href="#visitanos">Visítanos</a>
 </nav>
 
@@ -81,7 +83,7 @@ La navegación son **anclas reales** (`<a href="#...">`), no botones con `onclic
 
 ```ts
 // src/lib/router.ts  (esquema, no código final)
-const VISTAS = ['inicio', 'productos', 'nosotros', 'por-que', 'visitanos'] as const;
+const VISTAS = ['inicio', 'productos', 'nosotros', 'visitanos'] as const;
 
 function activar(nombre: string, { animar = true } = {}) {
   const destino = VISTAS.includes(nombre as any) ? nombre : 'inicio';
@@ -129,7 +131,8 @@ Sin scroll **no hay `IntersectionObserver` ni ScrollTrigger**. El evento de camb
 |---|---|
 | Carrusel CSS 3D (`src/lib/animacion/carrusel.ts` + GSAP core, import dinámico desde `carrusel-carga.ts`) e imágenes de la categoría activa | `#productos` |
 | Mapa (Leaflet) | `#visitanos` |
-| Entrada única de iconos de pilares y animales (CSS sobre los SVG; sin Lottie) | `#por-que` |
+| Entrada única de iconos de las razones y de los animales (CSS sobre los SVG; sin Lottie) | `#nosotros` |
+| Video de Canela jugando con alfa (`video-vista.ts`; en Safari/iOS no se reproduce, queda el póster) | `#nosotros` |
 | Video de la fachada | `#visitanos` |
 | Sprites de Canela corriendo (arranque, carrera, giro) | `#inicio`, pero **después del evento `load`** (el logo sigue siendo el LCP; mientras tanto se ve `canela-franja` sentada) |
 | Costales de la vitrina de Inicio | `#inicio`, con `fetchpriority="low"` o tras `load` |
@@ -159,7 +162,7 @@ Sin scroll **no hay `IntersectionObserver` ni ScrollTrigger**. El evento de camb
 
 - `src/lib/animacion/vistas.ts` **devuelve una `Promise`** que se resuelve con el `animationend` de la saliente (tope de 200 ms). El router oculta la saliente cuando se resuelve; nunca antes del primer pintado, o se ve el fondo del `body` entre las dos vistas.
 - En Productos, el anillo del carrusel es un bloque sin animación propia de entrada.
-- Los iconos de "Por qué elegirnos" siguen empezando a los 400 ms.
+- Los iconos de las razones y los animales de Nosotros empiezan a los 400 ms.
 - El **foco** se mueve al título antes de que empiece cualquier animación.
 - Solo `transform` y `opacity`.
 
@@ -179,26 +182,29 @@ La pausa del sitio hoy anula `animation` pero **no** `transition` (`global.css`)
 
 ## Pruebas obligatorias
 
-Las nueve primeras son los modos de fallo propios de este diseño. Si alguna falla, es **bloqueante**. De la 13 a la 18 se añadieron tras la auditoría de 2026-10-13.
+Las nueve primeras son los modos de fallo propios de este diseño. Si alguna falla, es **bloqueante**. De la 13 a la 18 se añadieron tras la auditoría de 2026-10-13; de la 19 a la 21, con la vista Nosotros y la ficha de Productos (2026-10-16).
 
-1. Se llega a las 5 vistas y se recorren solo con teclado (`Tab`, `Enter`, `←`, `→`).
-2. **Con una vista activa, `Tab` no alcanza ningún elemento de las otras cuatro.** Es el fallo más probable.
+1. Se llega a las 4 vistas y se recorren solo con teclado (`Tab`, `Enter`, `←`, `→`).
+2. **Con una vista activa, `Tab` no alcanza ningún elemento de las otras tres.** Es el fallo más probable.
 3. El foco aterriza en el título de la vista nueva al cambiar.
 4. Con el foco dentro del buscador del catálogo, `←` y `→` mueven el cursor y **no** cambian de vista.
 5. Entrar por `#productos` abre esa vista; el botón "atrás" vuelve a la anterior.
-6. Sin JavaScript, las 5 vistas se ven una debajo de otra.
+6. Sin JavaScript, las 4 vistas se ven una debajo de otra, con la lista completa de productos en la página.
 7. El elemento enfocado nunca queda tapado por la barra fija ni por la tarjeta flotante del mapa (WCAG 2.4.11).
-8. `body` no desborda en ninguna vista; el único scroll interno es la lista del catálogo.
+8. `body` no desborda en ninguna vista; en escritorio los únicos scrolls internos son los de "Excepciones de scroll".
 9. A 360×640 ninguna vista desborda en horizontal ni corta contenido esencial.
-10. En el HTML de `dist/` (no en el DOM ya ejecutado) están las 5 vistas completas.
+10. En el HTML de `dist/` (no en el DOM ya ejecutado) están las 4 vistas completas, con la lista completa de productos.
 11. Con `prefers-reduced-motion` activado no hay bucles, paralaje ni transiciones animadas.
 12. ~~Control de pausa del perrito~~: **retirada el 2026-10-15** por decisión del usuario (riesgo 11 del plan). En su lugar: con `prefers-reduced-motion` Canela queda sentada fija y el video no se reproduce.
 13. **Sin destello entre vistas:** muestreando fotogramas con `requestAnimationFrame` durante un cambio de vista, en ningún fotograma la vista saliente está oculta mientras la entrante tiene opacidad < 0,5. Probar sobre todo al salir de Inicio (fondo oscuro).
 14. **La barra no salta:** al cambiar de vista, la posición `x` de los enlaces no activos no cambia (tolerancia 0,5 px).
 15. **Con la pausa del sitio activada**, ni la pastilla de la barra ni ninguna transición nueva se anima.
 16. **Clics rápidos:** pulsar tres vistas seguidas en menos de 300 ms termina en la última, con una sola vista visible y el foco en su título.
-17. **Hoja de detalle (móvil):** abre como `<dialog>` modal con el foco en su título, se cierra con `Esc` y con "Cerrar", y el foco vuelve a la fila que la abrió. Con la hoja abierta, `←`/`→` no cambian de vista.
+17. **Hoja de detalle (móvil):** "Ver detalle" la abre como `<dialog>` modal con el foco en su título, se cierra con `Esc` y con "Cerrar", y el foco vuelve al botón. Con la hoja abierta, `←`/`→` no cambian de vista.
 18. **Canela corriendo:** nunca sale de la pantalla; gira en cada borde a 1440, 1366 y 360 px de ancho y tras redimensionar la ventana; la pausa global (`data-movimiento="pausado"`, sin botón desde 2026-10-15) congela cuadro y posición; con movimiento reducido queda sentada y fija; al quitar el botón de pausa, el límite derecho vuelve a ser el borde de la franja (ya no se detiene antes del botón); fuera de Inicio no hay `requestAnimationFrame` suyo.
+19. **Buscador con sugerencias (2026-10-16):** al escribir "perro" se abre el `listbox` (≤ 6 opciones + "Ver los N"), `aria-expanded="true"`; `↓`/`↑` mueven `aria-activedescendant`; Enter pone ese producto al frente del carrusel y en la ficha; Esc cierra y un segundo Esc borra. Escribir **no** gira el carrusel.
+20. **Lista completa (2026-10-16):** "Ver todos los productos" abre el `<dialog>` con el foco en su título; con búsqueda muestra "Filtrado por «…» · Quitar filtro"; `←`/`→` no cambian de vista; elegir una fila pone el producto al frente y cierra; Esc devuelve el foco al botón que la abrió.
+21. **`#por-que` (2026-10-16):** abre `#nosotros` con el foco en el bloque de razones.
 
 ---
 
