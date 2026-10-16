@@ -66,11 +66,11 @@ Un oyente en fase de captura en `src/lib/catalogo.ts` (`abrirCategoria()`) prepa
 
 <main>
   <section id="inicio"    class="vista" data-vista="inicio">
-    <h1 tabindex="-1">Nutrición que da vida</h1>
+    <h1 tabindex="-1">…</h1>          <!-- el logo con su texto alternativo -->
     ...
   </section>
-  <section id="nosotros"  class="vista" data-vista="nosotros" inert hidden>
-    <h2 tabindex="-1">Quiénes somos</h2>
+  <section id="productos" class="vista" data-vista="productos" inert hidden>
+    <h2 tabindex="-1">Productos</h2>
     ...
   </section>
   ...
@@ -112,7 +112,7 @@ window.addEventListener('hashchange', () => activar(location.hash.slice(1)));
 
 // teclado: ojo con los campos de texto
 window.addEventListener('keydown', (e) => {
-  const dentroDeCampo = (e.target as HTMLElement)?.closest('input, textarea, [contenteditable]');
+  const dentroDeCampo = (e.target as HTMLElement)?.closest('input, textarea, select, [contenteditable], [data-captura-flechas]');
   if (dentroDeCampo) return;
   if (e.key === 'ArrowRight' || e.key === 'PageDown') irA(+1);
   if (e.key === 'ArrowLeft'  || e.key === 'PageUp')   irA(-1);

@@ -25,7 +25,7 @@ Fuente única de verdad para color, tipografía, tono y logo. Si algo aquí cont
 | Calidez, mascota | canela | `#C98A3A` |
 | Texto | verde casi negro | `#14301D` |
 
-Proporción aproximada: **60 % blanco/crema · 30 % verde · 10 % oro**.
+Proporción base de la marca: 60 % blanco/crema · 30 % verde · 10 % oro. **En las vistas claras manda el 55/30/15 aprobado el 2026-10-14** (abajo).
 
 **Reparto real (revisión 2026-10-14, `PLAN.md` §2 "Reparto del color"):** el sitio usaba en la práctica dos colores (crema + bosque) y el oro y el canela casi no aparecían, por eso las vistas claras parecían plantilla. Reglas vigentes:
 - **No pongas tarjetas blancas con sombra sobre crema** como recurso por defecto (blanco/crema ≈ 1,1:1, se distinguen solo por la sombra). Alterna superficies `crema-oscuro` `#EDE4CC` y `hoja-claro` `#EAF4DC`.
@@ -112,10 +112,10 @@ Ratios adicionales del mapa de color (2026-10-14): ver `hinojosa-web/docs/guia-e
 
 | Rol | Familia | Nota |
 |---|---|---|
-| Títulos de marca | **Baloo 2** (o Nunito ExtraBold) | Sans redondeada y gruesa, como el logo |
-| Títulos de producto | **Cormorant Garamond** | Serif que ya usan los afiches de producto |
-| Acento manuscrito | **Caveat Brush** (o Pacifico) | Máximo una o dos frases por vista. **Nunca** texto corrido ni nada que haya que leer con detalle |
-| Cuerpo | **Nunito** (o Inter) | |
+| Títulos de marca | **Nunito 800** | Sans redondeada y gruesa, como el logo (Baloo 2 se retiró) |
+| Títulos de producto | **Cormorant Garamond 700** | Serif que ya usan los afiches de producto |
+| Acento manuscrito | **Caveat Brush 400** (subconjunto recortado) | Máximo una o dos frases por vista. **Nunca** texto corrido ni nada que haya que leer con detalle |
+| Cuerpo | **Nunito 400** | |
 
 - Ya están instaladas como paquetes `@fontsource` en `hinojosa-web/`: úsalas desde ahí, no desde un `<link>` a Google Fonts.
 - `font-display: swap` siempre.

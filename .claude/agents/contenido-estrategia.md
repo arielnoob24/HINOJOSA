@@ -12,7 +12,7 @@ El sitio se maneja **por vistas**: 5 pantallas sin scroll de página. **El texto
 - `hinojosa-web/src/data/negocio.json` — datos de contacto, horario, redes, referencias, historia.
 - `hinojosa-web/src/data/productos.json` — catálogo: **4 categorías** (`granja`, `mascotas`, `comederos`, `granos`), 37 productos.
 
-## Textos por vista (estado tras la auditoría)
+## Textos por vista (implementados en la fase 5-B; orden de la barra: Inicio · Productos · Quiénes somos · Por qué · Visítanos)
 - **Inicio:** acento manuscrito **"Tu mejor aliado para tus animales"** (el lema ya está en el logo; no se repite), subtítulo de una línea, botones "Ver productos" y "Cómo llegar", accesos por categoría con `nombreCorto`, fila "Aves · Cerdos · Mascotas · Tilapias". Si cambia una frase manuscrita, avisa: hay que regenerar la fuente recortada.
 - **Quiénes somos:** "Somos parte de tu familia" en la tarjeta grande; Misión y Visión recortadas a dos líneas. **Visión pasará a "Nuestra historia"** cuando la dueña dé el año de apertura o una línea de historia: prepara el campo en `negocio.json` (`historia`, con `confirmado: false`) y el texto en `textos.json`, sin inventar nada. Valores: 6 palabras.
 - **Productos:** nombre, presentación y precio; sin descripciones de venta. Textos nuevos: botón "Preguntar por este producto", "¿Dónde comprarlo? → Visítanos", recuentos "3 de 7", singular/plural ("1 producto"), estado sin resultados con las 4 categorías como atajo, textos de la hoja de detalle móvil ("Cerrar").
@@ -20,9 +20,10 @@ El sitio se maneja **por vistas**: 5 pantallas sin scroll de página. **El texto
 - **Visítanos:** dirección, horario, estado, **"Referencias"** (el CTA se llama "Cómo llegar"), texto del mapa sin coordenadas: "El mapa aparecerá cuando confirmemos la ubicación".
 
 ## Sistema de títulos
-Antetítulo con el nombre de la vista + `h2` con una frase. Propuesta en `PLAN.md` §3 (sale de eslóganes reales). **Pendiente de aprobación del usuario:** no la apliques sin ella.
+Antetítulo con el nombre de la vista + `h2` con una frase. Propuesta en `PLAN.md` §3 (sale de eslóganes reales). **Pendiente de aprobación del usuario** (bloque 10 del plan): no la apliques sin ella.
 
-## Campo `animales` en `productos.json` (P1)
+## Campo `animales` en `productos.json` (P1, ya relleno)
+- **Pendiente de la dueña:** casos dudosos (melaza, sal, maíz, trigo, arrocillo, afrecho, semillas, comedero doble) y la unidad de "Desde $1.00" en Pro-Can (M-5).
 - Cada producto lleva `animales`: lista de `perro`, `gato`, `ave`, `cerdo`, `vaca`, `cuy`, `conejo`, `tilapia`. Comederos y granos llevan las especies a las que sirven.
 - Infiérelo solo del nombre, la marca, la categoría y los afiches. **Lista los casos dudosos** para la dueña en vez de adivinar.
 - Los sinónimos (pollo/gallina → ave, pez → tilapia, perrito → perro) los normaliza el buscador; no los metas como especies.

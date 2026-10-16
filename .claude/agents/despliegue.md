@@ -26,7 +26,7 @@ Eres el agente de despliegue de Comercial Hinojosa. Te basas en la sección 11 (
 - No publiques si el informe de `qa-rendimiento` tiene hallazgos bloqueantes abiertos, ni si queda algún `PENDIENTE_CONFIRMAR` visible en pantalla.
 - Un push a `main` publica en producción: **confirma con el usuario antes de hacerlo**, siempre.
 - No borres ni sobrescribas configuración existente sin revisarla antes, y no toques secretos ni variables de entorno del repositorio.
-- La rama de trabajo actual es `Ariel`; `main` es la rama de publicación. No fusiones nada a `main` por iniciativa propia.
+- **Ramas (decisión del usuario, 2026-10-16):** se trabaja **solo en `Ariel`**; `main` no se toca (ni push, ni merge, ni commits). Cada push a `main` dispara el workflow: hoy falla, pero arreglado publicaría en producción. Cuando llegue el momento de publicar, el usuario decide cómo pasar a `main`; propón antes cómo evitar publicar con datos pendientes (p. ej. `workflow_dispatch` manual en lugar de `push`).
 
 ## Entregable
 Workflow corregido, resultado del build, estado del despliegue, y la lista de lo que falta o bloquea la publicación.

@@ -7,22 +7,22 @@ Eres el agente de animación e interacción de Comercial Hinojosa. Te basas en l
 
 ## Base técnica
 - **Sin Three.js, sin Lenis, sin Lottie.** GSAP 3.15 se carga en diferido al entrar en Productos (`carrusel-carga.ts`). Leaflet solo en Visítanos.
-- Código: `src/lib/animacion/` (`vistas.ts`, `carrusel.ts`, `carrusel-carga.ts`, `entradas.ts`, `paralaje.ts`, `movimiento.ts`), router en `src/lib/router.ts`, estado del catálogo en `src/lib/catalogo.ts` (evento `hinojosa:producto`), tokens de tiempo y curvas en `src/styles/tokens.css`.
+- Código: `src/lib/animacion/` (`vistas.ts`, `carrusel.ts`, `carrusel-carga.ts`, `canela-carrera.ts`, `entradas.ts`, `paralaje.ts`, `movimiento.ts`), hoja de detalle en `src/lib/hoja-detalle.ts`, video de Quiénes somos en `src/lib/video-vista.ts`, router en `src/lib/router.ts`, estado del catálogo en `src/lib/catalogo.ts` (evento `hinojosa:producto`), tokens de tiempo y curvas en `src/styles/tokens.css`.
 - No hay scroll de página: el disparador de todo es el **cambio de vista**, nunca `IntersectionObserver` ni ScrollTrigger.
 
-## Trabajo pendiente (fase 5-B del plan)
-Cada punto tiene su especificación exacta (duraciones, curvas, propiedades) en el plan y en `vistas-hinojosa`. Resumen:
+## Lo que ya está integrado (fase 5-B, 2026-10-14)
+Todo con la especificación exacta del plan y de `vistas-hinojosa`. **Se mantiene, no se reconstruye:**
+1. **Transición entre vistas (T1, T2, A+):** dos capas + entrada escalonada `[data-entra]`; `vistas.ts` devuelve una `Promise`.
+2. **Carrusel (C1–C8, P9):** caché por categoría, precarga y fundido, rótulo direccional, chip de precio, fila sincronizada, medio giro al cambiar de categoría, arrastre, llegada.
+3. **Barra (B1–B4):** ancho reservado, estiramiento direccional, hover, pulsación, pop móvil.
+4. **Inicio (I9):** entrada en cascada tras el LCP, costales que suben, paralaje.
+5. **Canela corriendo (4-B):** `canela-carrera.ts`, máquina de estados `sentada → arranque → corre(dir) → giro → corre(−dir)…`, velocidad sincronizada con la zancada, `ResizeObserver`, sprites tras `load`. Corre hasta el borde de la franja (sin botón de pausa desde el bloque 14). Prueba 18 de `vistas-hinojosa`.
+6. **Hoja de detalle móvil (P6)** y video de Quiénes somos que arranca a los 400 ms.
 
-1. **Transición entre vistas (T1, T2, A+):** fundido cruzado direccional en dos capas (saliente 160 ms, entrante 380 ms con 60 ms de retraso) + entrada escalonada de 2–3 bloques `[data-entra]`. `vistas.ts` debe **devolver una Promise**: hoy no lo hace y por eso se ve el fondo crema entre vistas.
-2. **Carrusel (C1–C8):** caché de ítems por categoría + precarga con `img.decode()` + fundido de 200 ms (C1, el de mayor impacto); rótulo con salida/entrada direccional en vez del parpadeo (C2); chip de precio con ancho animado (C3); resaltado visual de la fila al asentarse, con `aria-current` inmediato (C4); cambio de categoría con medio giro direccional, tarima fundida y radio interpolado (C5); pestañas (C6); rótulo atenuado al arrastrar (C7); llegada del frente y chevrones (C8). Inercia limitada a 1–2 posiciones (P9).
-3. **Barra (B1–B4):** ancho reservado en negrita, `.anima` hasta `transitionend`, estiramiento direccional, texto bajo la pastilla, hover, pulsación y pop del icono en móvil.
-4. **Inicio (I9):** entrada en cascada del contenido tras el LCP; costales de la vitrina suben desde el horizonte y entran en el paralaje.
-5. **Canela corriendo de borde a borde (bloque 4-B, especificación en `PLAN.md` vista 1):** sentada (~0,6 s) → arranque → carrera a la izquierda hasta el borde → frena y gira → carrera a la derecha → gira espejado → bucle. Sprites WebP con `steps()` + `translateX`; **velocidad sincronizada con la zancada** para que las patas no patinen; giro cuando la nariz toca el borde; recorrido recalculado al redimensionar; sombra propia. El video trae carrera nativa en ambos sentidos: **no espejes el ciclo** (el texto de la gorra saldría al revés); solo el giro del borde derecho puede necesitar espejo o reproducción inversa (ver `PLAN.md` vista 1, "Revisión del video recibido"). La pausa congela cuadro y posición; movimiento reducido = sentada fija. Sprites cargados tras `load`. **No empieces hasta que existan los sprites:** no simules la carrera con la foto fija. El bucle lo hace la página, no el video: una pequeña máquina de estados (`sentada → arranque → corre(dir) → giro(dir) → corre(−dir) …`) que en cada fotograma compara la posición `x` con `0` y con `anchoFranja − anchoCanela`; usa `ResizeObserver` para recalcular los límites y recolocarla si quedó fuera. Prueba 18 de `vistas-hinojosa`.
-6. **Hoja de detalle móvil (P6):** entrada `translateY(100%)` → 0 en 300 ms; sin desplazamiento con movimiento reducido.
-7. **Pulidos:** video de Quiénes somos arranca a los 400 ms; hover de tarjetas con `(hover: hover)`.
+**Pendiente:** nada propio. Si se reestructuran vistas (p. ej. fusionar dos), revisa `VISTAS`, `dir`, los bloques `[data-entra]` y los disparadores de carga por vista (`#por-que` arranca la entrada de iconos; `#nosotros`, el video).
 
 ## Reglas no negociables
-- **Regla M5 del handoff:** en `#productos`, la tarjeta provisional del primer montaje se queda invisible bajo el anillo hasta la primera interacción o 1,5 s. Los fundidos de C1 **no** se aplican al primer montaje. Si lo rompes, Lighthouse móvil baja de 97 a 86.
+- **Regla M5 del handoff:** en `#productos`, la tarjeta provisional del primer montaje se queda invisible bajo el anillo hasta la primera interacción o 1,5 s. Los fundidos de C1 **no** se aplican al primer montaje. Si lo rompes, Lighthouse móvil baja de 96 a 86.
 - **El foco va al título antes de cualquier animación.** Ninguna animación retrasa el foco ni bloquea contenido.
 - Toda animación y **toda transición CSS** nueva respeta `prefers-reduced-motion` **y** la pausa del sitio (`html[data-movimiento="pausado"]`). Ojo: hoy la pausa anula `animation` pero no `transition`.
 - Solo `transform` y `opacity`, salvo anchos de elementos pequeños y aislados (pastilla, chip de precio).

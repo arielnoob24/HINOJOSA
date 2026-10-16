@@ -6,22 +6,20 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 Eres el agente de frontend de Comercial Hinojosa. Te basas en las secciones 0-B, 3, 4, 6 y 8 de `PLAN.md` y en `auditoria.md`.
 
 ## Estado
-El sitio por vistas está construido y verificado (router 41/41, axe 0, Lighthouse móvil 99/93–97). **No se reconstruye:** se mejora por bloques según la fase 5-B del plan.
+El sitio por vistas está construido y verificado: fase 5-B cerrada el 2026-10-14 y bloque 14 el 2026-10-15 (router 18/18, axe 0, Lighthouse móvil Inicio 99 y Productos 96). **No se reconstruye:** se mejora por bloques según el plan.
 - Proyecto: `hinojosa-web/` (Astro 7, Tailwind 4 con `@theme` en CSS, GSAP en diferido, Leaflet).
-- Vistas: `src/pages/index.astro`, `src/components/vistas/Vista*.astro`; componentes `Barra`, `BotonContacto`, `BotonPausa`, `Icono`, `Vista`.
-- Lógica: `src/lib/router.ts`, `catalogo.ts` (estado único del catálogo), `mapa.ts`, `horario.ts`, `negocio.ts`, `seo.ts`.
+- Vistas: `src/pages/index.astro`, `src/components/vistas/Vista*.astro`; componentes `Barra`, `BotonContacto`, `HojaDetalle`, `Icono`, `Vista` (`BotonPausa.astro` sigue en el repositorio pero no se usa desde el bloque 14).
+- Lógica: `src/lib/router.ts`, `catalogo.ts` (estado único del catálogo), `busqueda.ts` (normalización y sinónimos), `hoja-detalle.ts`, `video-vista.ts`, `mapa.ts`, `horario.ts`, `negocio.ts`, `seo.ts`.
 
-## Trabajo pendiente (fase 5-B)
-1. **Visítanos (V1–V3):** nunca mostrar `PENDIENTE_CONFIRMAR`; datos pendientes con `textos.comunes.datoPendiente`; canales pendientes agrupados en una línea sin forma de botón (`BotonContacto.astro`); texto del mapa sin coordenadas; fondo con textura de marca; "Referencias" como etiqueta del dato.
-2. **Inicio (I1–I7):** vitrina de 4 costales en ≥ 64rem (≤ 24dvh, `fetchpriority="low"`, `aria-hidden`), acento nuevo, botón "Cómo llegar", accesos por categoría que abren `#productos` con la pestaña elegida, fila de animales, aro triple, fondo nuevo. **El logo debe seguir siendo el LCP.**
-3. **Buscador (P1, P4, P8):** incluir el campo `animales` en `data-busqueda`; normalizar tildes, guiones y espacios ("procan" = "pro-can"); singular/plural; sin resultados → 4 categorías como atajos; recuentos "3 de 7"; el carrusel lleva al frente el primer resultado.
-4. **Productos (P2, P3, P5, P7, P10):** botón "Preguntar por este producto" (`wa.me` con el nombre del producto solo si WhatsApp está confirmado; si no, ancla a `#visitanos`); tarjeta genérica para productos sin imagen y sin "·" colgando; producto al frente más grande en escritorio; miniaturas de 48 px.
-5. **Hoja de detalle móvil (P6):** en < 48rem, buscador encima del carrusel y, al tocar una fila, `<dialog>` modal con imagen, nombre, presentación, precio y "Preguntar". Foco al título al abrir, `Esc` y "Cerrar" para salir, foco de vuelta a la fila, `←`/`→` no cambian de vista mientras está abierta.
-6. **Quiénes somos (N1, N5–N8):** video con `contain`, valores en una banda, tipografía de Misión/Visión, hover sin tilt en tarjetas no pulsables.
-7. **Por qué (Q4, Q6):** título arriba; animales como enlaces a `#productos` filtrado cuando exista el campo `animales`.
-8. **Sistema (G3–G5):** antetítulo + h2 (solo con los textos aprobados), "COMERCIAL" a 12 px, barra móvil de 44 px.
-9. **Reparto del color (bloque 13):** aplicar la retícula de color que defina `direccion-arte` (superficies `crema-oscuro`/`hoja-claro`, banda `bosque` por vista clara). Kraft, canela oscuro como fondo de banda y trazo dorado bajo los h2 están aprobados (2026-10-14); su ubicación exacta la fija la guía de estilo.
-Las animaciones de estos puntos las integra `animacion-interaccion`; tú dejas el marcado listo (`[data-entra]`, `data-texto` en los rótulos de la barra, etc.).
+## Hecho en la fase 5-B (no rehacer)
+Visítanos sin marcadores (V1–V3), Inicio con vitrina, acento, "Cómo llegar", accesos y fila de animales (I1–I7), buscador con `animales` y recuentos (P1, P4, P5, P8), hoja de detalle móvil (P6), Quiénes somos con video `contain` y banda de valores (N1, N5–N8), Por qué con título arriba y animales enlazados (Q4, Q6), pulidos G4, G5 y V4, y reparto del color (bloque 13).
+
+## Pendiente
+1. **Bloque 10** (requiere textos aprobados): antetítulo + h2 con las frases de `PLAN.md` §3, pilares y diferenciales 🔒, franja de marcas.
+2. **Bloque 11** (requiere WhatsApp confirmado): "Preguntar por este producto" con `wa.me` y el nombre del producto; hasta entonces, ancla a `#visitanos`.
+3. Mejoras menores de `docs/qa-informe.md` (M-5 a M-11).
+
+Las animaciones las integra `animacion-interaccion`; tú dejas el marcado listo (`[data-entra]`, `data-texto` en los rótulos de la barra, etc.).
 
 ## Bloque 14 (decidido 2026-10-15)
 - Sin `BotonPausa` en Inicio ni en Quiénes somos (decisión del usuario; riesgo 11 del plan, incumple WCAG 2.2.2: no lo vuelvas a poner).
@@ -31,7 +29,7 @@ Las animaciones de estos puntos las integra `animacion-interaccion`; tú dejas e
 ## Reglas no negociables
 - Contrato del router en `vistas-hinojosa`: las 5 vistas en el HTML servido, `inert` + `display: none`, foco al título, hash, flechas fuera de campos y del carrusel, degradación sin JS.
 - **Navegación solo por barra y teclado:** no añadas rueda, deslizamiento ni enlaces "Siguiente".
-- Los parámetros de categoría o animal en las anclas no deben romper el hash de la vista (p. ej. `#productos` + estado en `catalogo.ts`, o `#productos?cat=granja` leído por el router; elige uno y documéntalo en la skill).
+- Las anclas con categoría o animal usan atributos (`data-abrir-categoria`, `data-abrir-animal`) y el hash es solo el de la vista; **nunca** `#productos?cat=…` (esquema en `vistas-hinojosa`).
 - Mobile-first, 360×640 sin desborde horizontal, objetivos de 44×44 px en móvil, foco nunca oculto.
 - Sin carrito, pagos ni envíos. Ningún dato no confirmado genera enlace.
 - No metas contenido esencial detrás de un clic en Quiénes somos.
@@ -40,7 +38,7 @@ Las animaciones de estos puntos las integra `animacion-interaccion`; tú dejas e
 Normalmente ya corre en `http://localhost:4321`. Compruébalo antes de arrancar otro (`astro dev status`); si hace falta, `astro dev --background`.
 
 ## Verificación
-`npm run build` y `npx astro check` sin errores; pruebas 1–17 de `vistas-hinojosa` que afecten a lo que tocaste; capturas a 1440×900 y 360×640.
+`npm run build` y `npx astro check` sin errores; pruebas 1–18 de `vistas-hinojosa` que afecten a lo que tocaste; capturas a 1440×900 y 360×640.
 
 ## Skills
 - `vistas-hinojosa` (léela primero), `marca-hinojosa`, `frontend-design`, `tailwind-design-system`, `wcag-accessibility`.

@@ -47,7 +47,7 @@ La auditoría completa está en [`auditoria.md`](auditoria.md). Estas son las de
 - **Contacto:** sigue sin botón flotante de WhatsApp, pero ya no vive *solo* en Visítanos. Se permiten dos accesos contextuales: el botón **"Cómo llegar"** de Inicio (ancla a `#visitanos`) y el botón **"Preguntar por este producto"** de Productos (abre `wa.me` con el nombre del producto cuando WhatsApp esté confirmado; mientras tanto, lleva a `#visitanos`).
 - **Marcador `PENDIENTE_CONFIRMAR`:** vive **solo en los datos** (`negocio.json`) y en QA. **Nunca se muestra en pantalla.** En pantalla se usan `textos.comunes.datoPendiente` y `textos.visitanos.contactoPendiente`, y los canales pendientes se agrupan en una sola línea sin forma de botón.
 - **Movimiento:** toda transición nueva respeta `prefers-reduced-motion` **y** la pausa del sitio (`html[data-movimiento="pausado"]`; desde el 2026-10-15 ya no hay botón visible que la active, pero el mecanismo se conserva), que hoy anula `animation` pero no `transition`.
-- **Medición obligatoria** tras implementar: Lighthouse móvil en Inicio (hoy 99) y `#productos` (≥ 93), y las 41 comprobaciones del router.
+- **Medición obligatoria** tras implementar: Lighthouse móvil en Inicio (hoy 99) y `#productos` (≥ 93), y las 18 pruebas del router (`vistas-hinojosa`).
 
 ---
 
@@ -299,45 +299,13 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 - **Sin botón de pausa (decisión 2026-10-15):** se retira `BotonPausa` de Inicio; Canela corre en bucle sin control visible. ⚠️ Incumple WCAG 2.2.2 (riesgo 11). La pausa global del sitio (`data-movimiento="pausado"`) se conserva en el código, sin botón.
 - `prefers-reduced-motion` o pausa global: Canela **sentada y fija** (`Canela.png`), sin carrera.
 
-*Mientras no lleguen los clips:* se mantiene la animación actual. No se fabrica una carrera con la foto fija.
+*Estado:* ✅ implementada el 2026-10-14 (`src/lib/animacion/canela-carrera.ts`, sprites en `public/img/canela/carrera*`, juegos de 320 y 160 px).
 
 **Entrada (I9):** tras el LCP, acento, subtítulo y botones en cascada (`opacity` + `translateY(12px)`, 80 ms entre cada uno, 400 ms); los costales suben desde el horizonte en 600 ms. El logo no se anima.
 
 ---
 
-### Vista 2 — Quiénes somos
-
-**Mosaico de tarjetas, todo visible a la vez, sin clics.**
-
-```
-┌──────────────────────────────────────────────────────────┐
-│ [barra]                                                  │
-│  QUIÉNES SOMOS                                           │
-│  Calidad, confianza y compromiso                         │
-│  ┌────────────────────────┐  ┌────────────────────────┐  │
-│  │ "Somos parte de        │  │ MISIÓN                 │  │
-│  │  tu familia"           │  │ 2 líneas               │  │
-│  │  [video de Canela]     │  ├────────────────────────┤  │
-│  │                        │  │ VISIÓN → NUESTRA HIST. │  │
-│  └────────────────────────┘  └────────────────────────┘  │
-│  [ 🤝 Buen trato · 💚 Calidez · 🙂 Amabilidad · ... ]     │
-└──────────────────────────────────────────────────────────┘
-```
-
-- **Tarjeta grande:** frase *"Somos parte de tu familia"* sobre banda opaca + video de Canela (silenciado, en bucle, con `poster`; **sin botón de pausa** desde 2026-10-15, ver riesgo 11).
-  - **Encuadre del video (N1, N2):** hoy `object-fit: cover` corta la gorra. Pasar a `object-fit: contain; object-position: 50% 100%` con el fondo de la caja del mismo gris del video. Ideal: `canela-jugando-alfa.webm` sobre `crema-oscuro` con un "suelo" `hoja-claro`, y el póster con alfa en Safari.
-  - El `play()` arranca a los 400 ms, cuando termina la transición de vista.
-  - Cuando haya foto real del local, puede sustituir o acompañar al video.
-- **Misión** y **Visión** recortadas a dos líneas; texto en Nunito 400 a `text-lead`, antetítulo en 800 (N6).
-  - **Decisión 0-B:** "Visión" pasa a **"Nuestra historia"** (año de apertura, familia) cuando la dueña dé el dato. La visión completa sigue en `negocio.json` para metadatos y JSON-LD.
-- **Valores (N5):** **una sola banda** `crema-oscuro` con los 6 como "icono 28 px + palabra" en línea, separados por un punto maíz de 6 px (no 6 tarjetas iguales). El espacio recuperado (~60 px) va al video.
-- **Hover (N7):** tilt de hasta 3° (`--tilt-max`) solo en la tarjeta grande y la banda de valores; Misión/Visión solo se elevan. Nunca revela contenido.
-- **Reparto de discurso con la vista 4:** Quiénes somos = identidad (historia, valores); Por qué = pruebas concretas. Evitar repetir "calidad".
-- Móvil: el video sube a `aspect-ratio: 16/8` con el espacio liberado (N8).
-
----
-
-### Vista 3 — Productos
+### Vista 2 — Productos
 
 **Pantalla partida: carrusel 3D a la izquierda, catálogo completo a la derecha.** Nada queda oculto.
 
@@ -398,6 +366,38 @@ Con movimiento reducido o pausa: cambios instantáneos.
 - La lista **es** la alternativa textual completa del carrusel.
 - Producto activo anunciado con `aria-live="polite"`.
 - Sin JavaScript o sin GSAP: rejilla de imágenes y lista intactas.
+
+---
+
+### Vista 3 — Quiénes somos
+
+**Mosaico de tarjetas, todo visible a la vez, sin clics.**
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ [barra]                                                  │
+│  QUIÉNES SOMOS                                           │
+│  Calidad, confianza y compromiso                         │
+│  ┌────────────────────────┐  ┌────────────────────────┐  │
+│  │ "Somos parte de        │  │ MISIÓN                 │  │
+│  │  tu familia"           │  │ 2 líneas               │  │
+│  │  [video de Canela]     │  ├────────────────────────┤  │
+│  │                        │  │ VISIÓN → NUESTRA HIST. │  │
+│  └────────────────────────┘  └────────────────────────┘  │
+│  [ 🤝 Buen trato · 💚 Calidez · 🙂 Amabilidad · ... ]     │
+└──────────────────────────────────────────────────────────┘
+```
+
+- **Tarjeta grande:** frase *"Somos parte de tu familia"* sobre banda opaca + video de Canela (silenciado, en bucle, con `poster`; **sin botón de pausa** desde 2026-10-15, ver riesgo 11).
+  - **Encuadre del video (N1, N2):** hoy `object-fit: cover` corta la gorra. Pasar a `object-fit: contain; object-position: 50% 100%` con el fondo de la caja del mismo gris del video. Ideal: `canela-jugando-alfa.webm` sobre `crema-oscuro` con un "suelo" `hoja-claro`, y el póster con alfa en Safari.
+  - El `play()` arranca a los 400 ms, cuando termina la transición de vista.
+  - Cuando haya foto real del local, puede sustituir o acompañar al video.
+- **Misión** y **Visión** recortadas a dos líneas; texto en Nunito 400 a `text-lead`, antetítulo en 800 (N6).
+  - **Decisión 0-B:** "Visión" pasa a **"Nuestra historia"** (año de apertura, familia) cuando la dueña dé el dato. La visión completa sigue en `negocio.json` para metadatos y JSON-LD.
+- **Valores (N5):** **una sola banda** `crema-oscuro` con los 6 como "icono 28 px + palabra" en línea, separados por un punto maíz de 6 px (no 6 tarjetas iguales). El espacio recuperado (~60 px) va al video.
+- **Hover (N7):** tilt de hasta 3° (`--tilt-max`) solo en la tarjeta grande y la banda de valores; Misión/Visión solo se elevan. Nunca revela contenido.
+- **Reparto de discurso con la vista 4:** Quiénes somos = identidad (historia, valores); Por qué = pruebas concretas. Evitar repetir "calidad".
+- Móvil: el video sube a `aspect-ratio: 16/8` con el espacio liberado (N8).
 
 ---
 
@@ -495,7 +495,7 @@ Contenido de referencia de los afiches (agrupado por categoría del cliente):
 | Router de vistas | JS propio (`src/lib/router.ts`) sobre `hashchange` | Control total del foco y de `inert` |
 | Carrusel | **CSS 3D + GSAP 3.15** (import dinámico al entrar en Productos) | Sin Three.js: ligero en gama media |
 | Animación | CSS (`@keyframes`, transiciones) + GSAP donde haga falta | Transiciones entre vistas, barra, entradas |
-| Perrito | Clips generados en **Google Flow** → sprite sheets WebP (`steps()`) + `translateX` | Carrera real, pausable en cualquier cuadro, funciona en Safari |
+| Perrito | Video de **Google Flow** → sprite sheets WebP + `translateX` (`canela-carrera.ts`) | Carrera real, se congela en cualquier cuadro, funciona en Safari |
 | Iconos | SVG inline (`Icono.astro`) con entrada CSS única | Sin Lottie |
 | Mapa | **Leaflet 1.9.4 + OpenStreetMap** | Gratis, sin API key, carga diferida |
 | Video | **FFmpeg** → WebM (VP9) + MP4 (H.264), con `poster` | Canela jugando; fachada cuando exista |
@@ -508,7 +508,7 @@ Contenido de referencia de los afiches (agrupado por categoría del cliente):
 Retirado respecto al plan original: Three.js, `.glb`/Blender/gltf-transform, Lottie, Lenis y Spline.
 
 ### Reglas de rendimiento
-- Presupuesto: **vista Inicio < 1,5 MB** (hoy 142 kB; con la vitrina ≈ 210 kB), LCP < 2,5 s en 4G. **El logo debe seguir siendo el LCP de Inicio.**
+- Presupuesto: **vista Inicio < 1,5 MB** (hoy 340 KiB en móvil, con los sprites de Canela tras `load`), LCP < 2,5 s en 4G. **El logo debe seguir siendo el LCP de Inicio.**
 - **Carga por vista:** solo Inicio se descarga completa de entrada. Carrusel, GSAP, mapa y video se cargan en el evento de cambio de vista.
 - Fuera de `#productos` no hay tweens ni `requestAnimationFrame` del carrusel.
 - Fallbacks obligatorios: sin JS/GSAP → rejilla de imágenes; `prefers-reduced-motion` y pausa → sin bucles, paralaje ni transiciones; falla el mapa → dirección en texto y enlace.
@@ -521,7 +521,7 @@ hinojosa-web/
 │  └─ video/        # canela-jugando*, fachada (pendiente)
 ├─ scripts-activos/ # generación de derivados desde Nuevos Req/
 ├─ src/
-│  ├─ components/   # Barra, BotonContacto, BotonPausa, Icono, Vista, vistas/
+│  ├─ components/   # Barra, BotonContacto, HojaDetalle, Icono, Vista, vistas/
 │  ├─ data/         # productos.json, negocio.json, textos.json
 │  ├─ layouts/
 │  ├─ lib/          # router.ts, catalogo.ts, mapa.ts, horario.ts, seo.ts, animacion/
@@ -539,12 +539,12 @@ hinojosa-web/
 |---|---|---|
 | Canela sentada (`canela.*`, `canela-franja.*`) | ✅ Generado | Pose inicial, reposo y espera mientras cargan los sprites |
 | Primer cuadro para Flow (`flow/canela-inicio-azul.png`, 1920×1080, fondo `#0047BB`) | ✅ Generado | Clip 1 de Flow |
-| Video de Canela corriendo (un solo video con arranque, carrera, giro y carrera de vuelta, o los 3 clips por separado), MP4 1080p en `flow/` | ✅ Recibido el 2026-10-14 (`flow/Puppy_running_in_place_1080p_20261013235908.mp4`), pendiente de revisión | Fuente de los sprites: de él se recortan las piezas arranque, ciclo de carrera y giro |
-| Sprite sheets de Canela (arranque, carrera, giro) | ⏳ Tras recibir los clips | Inicio, franja inferior |
+| Video de Canela corriendo, MP4 1080p en `flow/` | ✅ Recibido y revisado el 2026-10-14 (`flow/Puppy_running_in_place_1080p_20261013235908.mp4`) | Fuente de los sprites: de él se recortan las piezas arranque, ciclo de carrera y giro |
+| Sprite sheets de Canela (arranque, carrera izq./der., giro) | ✅ 2026-10-14, 442 KB (320 px) y 175 KB (160 px) | Inicio, franja inferior |
 | Canela jugando (video, con y sin alfa) | ✅ Generado | Quiénes somos |
 | 33 renders de producto (`-400`, `-thumb`, `-thumb-80`) | ✅ Generado | Carrusel, lista, vitrina de Inicio, sellos de la vista 4 |
-| Trébol del isotipo en SVG (hojas y marca de agua) | ⏳ Por crear (< 3 kB) | Fondo de Inicio y de Visítanos sin mapa |
-| Tarjeta genérica de costal para productos sin imagen | ⏳ Por crear | Carrusel (P5) |
+| Trébol del isotipo en SVG (hojas y marca de agua) | ✅ Inline en Inicio y Visítanos | Fondo de Inicio y de Visítanos sin mapa |
+| Tarjeta genérica de costal para productos sin imagen | ✅ | Carrusel (P5) |
 | Bebedero sin damero | ✅ 2026-10-14: fondo quitado en Paint por el usuario + recorte del blanco en `nuevos_req.py` | Carrusel y lista (P3) |
 | Foto / video de la fachada | ❌ Pedir a la dueña | Visítanos |
 | Foto del local o del equipo | ❌ Pedir a la dueña | Quiénes somos ("Nuestra historia") |
