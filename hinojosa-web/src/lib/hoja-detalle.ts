@@ -1,21 +1,21 @@
 // Hoja de detalle de producto en movil (P6). Ver HojaDetalle.astro.
 //
-// - Solo por debajo de 48rem: tocar una fila de la lista abre la hoja. La
-//   seleccion la sigue haciendo catalogo.ts (origen 'lista'), asi que el
-//   anillo se sincroniza por detras.
+// - Solo por debajo de 48rem: el boton "Ver detalle" del rotulo
+//   ([data-ver-detalle], rediseno 2026-10-16) abre la hoja del producto al
+//   frente del carrusel. En escritorio ese papel lo hace la ficha.
 // - showModal(): fondo inerte y foco atrapado de forma nativa. El foco va al
-//   titulo; `Esc`, "Cerrar" o tocar el telon la cierran y el foco vuelve a la
-//   fila. El dialogo lleva data-captura-flechas: el router no cambia de
+//   titulo; `Esc`, "Cerrar" o tocar el telon la cierran y el foco vuelve al
+//   boton. El dialogo lleva data-captura-flechas: el router no cambia de
 //   vista con ←/→ mientras esta abierto.
 // - El enlace "¿Donde comprarlo? Visitanos" cierra la hoja sin devolver el
 //   foco (el router lo lleva al titulo de Visitanos).
 // - Entrada 300 ms / salida 200 ms solo con movimiento permitido (CSS del
 //   componente); si no, se abre y se cierra en el acto.
-import { producto, nombreCategoria, IMAGEN_GENERICA, type ProductoDatos } from './catalogo';
+import { producto, estado, nombreCategoria, IMAGEN_GENERICA, type ProductoDatos } from './catalogo';
 import { movimientoPermitido } from './animacion/movimiento';
 
 const hoja = document.querySelector<HTMLDialogElement>('[data-hoja-detalle]');
-const lista = document.querySelector<HTMLElement>('#productos [data-lista-catalogo]');
+const botonDetalle = document.querySelector<HTMLElement>('#productos [data-ver-detalle]');
 const mqMovil = window.matchMedia('(max-width: 47.999rem)');
 
 let filaOrigen: HTMLElement | null = null;
@@ -109,25 +109,15 @@ function cerrar(conAnimacion = true) {
 }
 
 function arrancar() {
-  if (!hoja || !lista) return;
+  if (!hoja || !botonDetalle) return;
 
-  // Las filas avisan de que abren un dialogo solo en movil
-  const marcarFilas = () => {
-    for (const b of lista.querySelectorAll<HTMLElement>('[data-seleccionar-producto]')) {
-      if (mqMovil.matches) b.setAttribute('aria-haspopup', 'dialog');
-      else b.removeAttribute('aria-haspopup');
-    }
-  };
-  marcarFilas();
   mqMovil.addEventListener('change', () => {
-    marcarFilas();
     if (!mqMovil.matches) cerrar(false); // al pasar a escritorio no queda abierta
   });
 
-  lista.addEventListener('click', (ev) => {
-    if (!mqMovil.matches) return;
-    const fila = (ev.target as Element).closest<HTMLElement>('[data-seleccionar-producto]');
-    if (fila) abrir(fila.dataset.seleccionarProducto!, fila);
+  botonDetalle.addEventListener('click', () => {
+    const id = estado().id;
+    if (id) abrir(id, botonDetalle);
   });
 
   // Esc: el navegador dispara `cancel`; se cierra con la salida animada

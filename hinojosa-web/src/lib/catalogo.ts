@@ -19,10 +19,14 @@
 //     no este en el anillo (estado().producto, estado().sinImagen) y el
 //     evento trae `imagenFrente` (su imagen o IMAGEN_GENERICA, el costal
 //     generico). El carrusel decide como ponerlo al frente.
-//   - Buscador (P1, P4, P8): src/lib/busqueda.ts compara; aqui se pinta
-//     (filas, "N de TOTAL" por grupo, atajos sin resultados) y, si el
-//     producto activo queda oculto por la busqueda, el primer resultado
-//     pasa al frente (origen 'busqueda').
+//   - Buscador (P1, P4; rediseno 2026-10-16): src/lib/busqueda.ts compara;
+//     aqui se pinta. Combobox con hasta 6 sugerencias (elegir una gira el
+//     carrusel, origen 'busqueda') y, por debajo, la lista completa filtrada
+//     ("N de TOTAL" por grupo, atajos sin resultados) dentro del <dialog>
+//     [data-dialogo-lista]. Escribir ya no gira el carrusel solo: solo al
+//     elegir (o al llegar desde un animal de Nosotros, abrirAnimal()).
+//   - Ficha del producto al frente (>= 48rem): pintarFicha(), con cada
+//     seleccion.
 //
 // RECUENTOS (P4, decidido 2026-10-14): la pestana y la cabecera de grupo
 // cuentan TODOS los productos de la categoria (lo mismo que la lista). El
@@ -31,6 +35,7 @@
 // pestana, 12 en el anillo). Si todos tienen foto: "4 de 9".
 import { alCambiarVista, alEntrarEnVista } from './router';
 import { indexar, prepararConsulta, buscar, type Indexado } from './busqueda';
+import { movimientoPermitido } from './animacion/movimiento';
 
 export interface ProductoDatos {
   id: string;
@@ -83,6 +88,7 @@ const datos = datosEl
       productos: ProductoDatos[];
       sizesAnillo?: string;
       textos: Record<string, string>;
+      tablaTilapia?: string;
     })
   : null;
 
@@ -192,6 +198,44 @@ function pintarSeleccion() {
   if (precio) precio.textContent = p.precioTexto;
 }
 
+/** Ficha del producto al frente (>= 48rem). `dir` orienta el fundido. */
+function pintarFicha(p: ProductoDatos, dir: number, animar: boolean) {
+  const ficha = q('[data-ficha]');
+  if (!ficha) return;
+  const poner = (sel: string, texto: string) => {
+    const el = q(sel, ficha);
+    if (el) el.textContent = texto;
+  };
+  poner('[data-ficha-nombre]', p.nombre);
+  poner('[data-ficha-precio]', p.precioTexto);
+  poner('[data-ficha-marca]', p.marca ?? '');
+  poner('[data-ficha-presentacion]', p.presentacion ?? '');
+  poner('[data-ficha-categoria]', nombreCategoria(p.categoria));
+  for (const fila of qa('[data-ficha-fila="marca"], [data-ficha-fila="presentacion"]', ficha)) {
+    fila.hidden = !q('dd', fila)?.textContent;
+  }
+  for (const li of qa('[data-ficha-animal]', ficha)) li.hidden = !p.animales.includes(li.dataset.fichaAnimal!);
+  const para = q('[data-ficha-para]', ficha);
+  if (para) para.hidden = p.animales.length === 0;
+  const tabla = q('[data-ficha-tabla]', ficha);
+  if (tabla) tabla.hidden = p.id !== datos?.tablaTilapia;
+  const cuerpo = q('[data-ficha-cuerpo]', ficha);
+  if (cuerpo) cuerpo.scrollTop = 0;
+  // Mismo gesto que el rotulo (C2), mas corto: entra desde el sentido del giro
+  if (animar && movimientoPermitido() && ficha.offsetParent !== null) {
+    const contenido = Array.from(ficha.children) as HTMLElement[];
+    contenido.forEach((el, i) =>
+      el.animate(
+        [
+          { opacity: 0, transform: `translateX(${dir * 12}px)` },
+          { opacity: 1, transform: 'none' },
+        ],
+        { duration: 220, delay: Math.min(i, 4) * 25, easing: 'cubic-bezier(0.25, 1, 0.5, 1)', fill: 'backwards' },
+      ),
+    );
+  }
+}
+
 function anunciar(p: ProductoDatos) {
   const region = q('[data-carrusel-anuncio]');
   if (!region) return;
@@ -268,6 +312,7 @@ export function seleccionar(id: string, { origen = 'api' as Origen, anunciarCamb
   // (carrusel.ts); desde la lista o sin anillo, inmediato.
   if (window.hinojosaCarrusel?.modo !== '3d' || origen === 'lista' || origen === 'inicial') resaltarFila(id);
   if (anunciarCambio && origen !== 'inicial') anunciar(p);
+  pintarFicha(p, pasos < 0 ? -1 : 1, origen !== 'inicial');
 
   const detalle: DetalleProducto = {
     id,
@@ -310,7 +355,6 @@ interface FilaIndexada extends Indexado {
 }
 let filas: FilaIndexada[] = [];
 let temporizadorBusqueda = 0;
-let ultimaConsulta = '';
 
 function indexarFilas() {
   filas = qa('[data-producto-fila]').map((fila) => {
@@ -328,19 +372,19 @@ function textoResultados(n: number) {
     : plantilla(datos?.textos.resultados ?? '{n} productos encontrados', { n });
 }
 
+/** Ids de los resultados de la ultima busqueda, en el orden de la lista. */
+let resultados: string[] = [];
+
 function filtrar(texto: string) {
   const consulta = prepararConsulta(texto);
   const ok = buscar(consulta, filas);
-  let visibles = 0;
-  let primero: string | null = null;
+  resultados = [];
   filas.forEach((f, i) => {
     const ve = ok.has(i);
     f.fila.hidden = !ve;
-    if (ve) {
-      visibles++;
-      primero ??= f.id;
-    }
+    if (ve) resultados.push(f.id);
   });
+  const visibles = resultados.length;
   // Grupos: se ocultan si quedan vacios; la cabecera dice "N de TOTAL" al filtrar
   for (const g of qa('[data-grupo]')) {
     const enGrupo = qa('[data-producto-fila]', g);
@@ -359,27 +403,149 @@ function filtrar(texto: string) {
   if (termino) termino.textContent = texto.trim();
   const borrar = q<HTMLButtonElement>('[data-borrar-busqueda]');
   if (borrar) borrar.hidden = texto.length === 0;
-  const ver = q<HTMLButtonElement>('[data-ver-resultados]');
-  if (ver) ver.hidden = !consulta; // sin resultados lleva a los atajos de categoria
 
-  // Aviso del resultado (y el carrusel sigue a la busqueda), con retardo
-  // para no hablar ni girar en cada tecla
+  // Cabecera de la lista completa: "Filtrado por «perro»" + Quitar filtro
+  const filtro = q('[data-filtro-lista]');
+  if (filtro) filtro.hidden = !consulta;
+  const filtroTermino = q('[data-filtro-termino]');
+  if (filtroTermino) filtroTermino.textContent = plantilla(datos?.textos.filtradoPor ?? '«{termino}»', { termino: texto.trim() });
+
+  // "Ver los N" (o "Ver categorias" sin resultados): abre la lista filtrada
+  const ver = q<HTMLButtonElement>('[data-ver-resultados]');
+  if (ver) {
+    ver.hidden = !consulta;
+    ver.textContent =
+      visibles === 0
+        ? (datos?.textos.verCategorias ?? 'Ver categorías')
+        : plantilla(datos?.textos.verResultados ?? 'Ver los {n}', { n: visibles });
+  }
+
+  pintarSugerencias(consulta ? resultados.slice(0, MAX_SUGERENCIAS) : [], visibles);
+
+  // Aviso del resultado, con retardo para no hablar en cada tecla
   window.clearTimeout(temporizadorBusqueda);
-  const clave = consulta ? texto.trim() : '';
-  const elegido = primero;
   temporizadorBusqueda = window.setTimeout(() => {
     const region = q('[data-resultado-busqueda]');
     if (region) {
       region.textContent = !consulta ? '' : visibles === 0 ? (datos?.textos.sinResultados ?? '') : textoResultados(visibles);
     }
-    // P8: si el producto activo quedo oculto, el primer resultado pasa al
-    // frente. Si sigue a la vista, no se mueve nada (menos giros inutiles).
-    const activa = filas.find((f) => f.id === actualId);
-    if (consulta && elegido && clave !== ultimaConsulta && (!activa || activa.fila.hidden)) {
-      seleccionar(elegido, { origen: 'busqueda', anunciarCambio: false });
-    }
-    ultimaConsulta = clave;
   }, 450);
+}
+
+// ---------------------------------------------------------------------
+// Sugerencias (combobox, patron ARIA 1.2 con aria-activedescendant)
+// ---------------------------------------------------------------------
+const MAX_SUGERENCIAS = 6;
+let activa = -1;
+
+function opcionesSugerencia() {
+  return qa('[data-sugerencias] [role="option"]');
+}
+
+function abrirSugerencias(abrir: boolean) {
+  const lista = q('[data-sugerencias]');
+  const input = q<HTMLInputElement>('[data-buscador]');
+  const hay = opcionesSugerencia().length > 0;
+  const abierta = abrir && hay;
+  if (lista) lista.hidden = !abierta;
+  input?.setAttribute('aria-expanded', String(abierta));
+  if (!abierta) marcarActiva(-1);
+}
+
+function marcarActiva(i: number) {
+  const ops = opcionesSugerencia();
+  const input = q<HTMLInputElement>('[data-buscador]');
+  activa = ops.length ? Math.max(-1, Math.min(i, ops.length - 1)) : -1;
+  ops.forEach((o, k) => o.setAttribute('aria-selected', String(k === activa)));
+  if (activa >= 0) {
+    input?.setAttribute('aria-activedescendant', ops[activa].id);
+    ops[activa].scrollIntoView({ block: 'nearest' });
+  } else {
+    input?.removeAttribute('aria-activedescendant');
+  }
+}
+
+function pintarSugerencias(ids: string[], total: number) {
+  const lista = q('[data-sugerencias]');
+  if (!lista) return;
+  const items: HTMLElement[] = ids.map((id) => {
+    const p = porId.get(id)!;
+    const li = document.createElement('li');
+    li.id = `sug-${id}`;
+    li.className = 'prod-sug';
+    li.setAttribute('role', 'option');
+    li.setAttribute('aria-selected', 'false');
+    li.dataset.sugId = id;
+    const mini = document.createElement('span');
+    mini.className = 'prod-sug-mini';
+    mini.setAttribute('aria-hidden', 'true');
+    const img = document.createElement('img');
+    img.src = p.miniatura ?? IMAGEN_GENERICA;
+    img.alt = '';
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    mini.append(img);
+    const nombre = document.createElement('span');
+    nombre.className = 'prod-sug-nombre';
+    nombre.textContent = p.nombre;
+    const meta = document.createElement('small');
+    meta.textContent = [p.marca, nombreCategoria(p.categoria)].filter(Boolean).join(' · ');
+    nombre.append(meta);
+    const precio = document.createElement('span');
+    precio.className = 'prod-sug-precio';
+    precio.textContent = p.precioTexto;
+    li.append(mini, nombre, precio);
+    return li;
+  });
+  // Si hay mas de los que caben, ultima opcion: la lista completa filtrada
+  if (total > ids.length && ids.length) {
+    const li = document.createElement('li');
+    li.id = 'sug-todos';
+    li.className = 'prod-sug prod-sug-todos';
+    li.setAttribute('role', 'option');
+    li.setAttribute('aria-selected', 'false');
+    li.dataset.sugTodos = '';
+    li.textContent = plantilla(datos?.textos.verResultados ?? 'Ver los {n}', { n: total });
+    items.push(li);
+  }
+  lista.replaceChildren(...items);
+  const input = q<HTMLInputElement>('[data-buscador]');
+  abrirSugerencias(document.activeElement === input && items.length > 0);
+}
+
+function elegirSugerencia(op: HTMLElement) {
+  const input = q<HTMLInputElement>('[data-buscador]');
+  abrirSugerencias(false);
+  if (op.dataset.sugTodos !== undefined) return abrirLista(input);
+  const id = op.dataset.sugId;
+  if (id) seleccionar(id, { origen: 'busqueda' });
+  input?.focus();
+}
+
+// ---------------------------------------------------------------------
+// Lista completa en un <dialog> (data-dialogo-lista)
+// ---------------------------------------------------------------------
+let origenLista: HTMLElement | null = null;
+
+export function abrirLista(desde: HTMLElement | null = null) {
+  const d = q<HTMLDialogElement>('[data-dialogo-lista]');
+  if (!d || d.open) return;
+  origenLista = desde;
+  d.showModal();
+  q<HTMLElement>('#titulo-lista')?.focus();
+  // Al abrir, la fila del producto al frente (o el primer resultado) a la vista
+  requestAnimationFrame(() => {
+    const lista = q('[data-lista-catalogo]');
+    if (lista) lista.scrollTop = 0;
+    mostrarEnLista(actualId);
+  });
+}
+
+function cerrarLista(devolverFoco = true) {
+  const d = q<HTMLDialogElement>('[data-dialogo-lista]');
+  if (!d?.open) return;
+  if (!devolverFoco) origenLista = null;
+  d.close();
 }
 
 /** Vacia el buscador y muestra la lista completa. */
@@ -419,7 +585,21 @@ function arrancar() {
     const celda = el.closest<HTMLElement>('[data-rejilla-producto]');
     if (celda) return seleccionar(celda.dataset.rejillaProducto!, { origen: 'rejilla' });
     const fila = el.closest<HTMLElement>('[data-seleccionar-producto]');
-    if (fila) return seleccionar(fila.dataset.seleccionarProducto!, { origen: 'lista' });
+    if (fila) {
+      // Desde la lista completa: el producto pasa al frente y se cierra
+      seleccionar(fila.dataset.seleccionarProducto!, { origen: 'lista' });
+      return cerrarLista();
+    }
+    const abrir = el.closest<HTMLElement>('[data-abrir-lista], [data-ver-resultados]');
+    if (abrir) return abrirLista(abrir);
+    if (el.closest('[data-cerrar-lista]')) return cerrarLista();
+    if (el.closest('[data-quitar-filtro]')) {
+      limpiarBusqueda();
+      q<HTMLElement>('#titulo-lista')?.focus();
+      return;
+    }
+    const sug = el.closest<HTMLElement>('[data-sugerencias] [role="option"]');
+    if (sug) return elegirSugerencia(sug);
     if (el.closest('[data-borrar-busqueda]')) {
       limpiarBusqueda();
       q<HTMLInputElement>('[data-buscador]')?.focus();
@@ -435,19 +615,6 @@ function arrancar() {
       else mostrarEnLista(actualId, true);
       q<HTMLElement>(`#grupo-${cat}`)?.focus();
       return;
-    }
-    // Movil: "Ver en la lista" baja hasta el primer resultado
-    if (el.closest('[data-ver-resultados]')) {
-      // Primer resultado o, si no hay, el mensaje con los atajos
-      const f = filas.find((x) => !x.fila.hidden);
-      const destino = f ? f.fila : q('[data-sin-resultados]');
-      const foco = f
-        ? f.fila.querySelector<HTMLElement>('[data-seleccionar-producto]')
-        : q<HTMLElement>('[data-atajo-categoria]');
-      if (destino && foco) {
-        destino.scrollIntoView({ block: 'center', behavior: mqReducido.matches ? 'auto' : 'smooth' });
-        foco.focus({ preventScroll: true });
-      }
     }
   });
 
@@ -472,10 +639,54 @@ function arrancar() {
   const input = q<HTMLInputElement>('[data-buscador]');
   input?.addEventListener('input', () => filtrar(input.value));
   input?.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Escape' && input.value) {
+    const lista = q('[data-sugerencias]');
+    const abierta = Boolean(lista && !lista.hidden);
+    const n = opcionesSugerencia().length;
+    if (ev.key === 'ArrowDown' && n) {
       ev.preventDefault();
-      limpiarBusqueda();
+      if (!abierta) abrirSugerencias(true);
+      marcarActiva(activa + 1 >= n ? 0 : activa + 1);
+    } else if (ev.key === 'ArrowUp' && n) {
+      ev.preventDefault();
+      if (!abierta) abrirSugerencias(true);
+      marcarActiva(activa <= 0 ? n - 1 : activa - 1);
+    } else if (ev.key === 'Enter') {
+      const op = opcionesSugerencia()[activa] ?? (abierta ? opcionesSugerencia()[0] : undefined);
+      if (op) {
+        ev.preventDefault();
+        elegirSugerencia(op);
+      }
+    } else if (ev.key === 'Escape') {
+      // Primero cierra las sugerencias; un segundo Esc borra la busqueda
+      if (abierta) {
+        ev.preventDefault();
+        abrirSugerencias(false);
+      } else if (input.value) {
+        ev.preventDefault();
+        limpiarBusqueda();
+      }
     }
+  });
+  input?.addEventListener('focus', () => {
+    if (input.value) abrirSugerencias(true);
+  });
+  input?.addEventListener('blur', () => abrirSugerencias(false));
+  // Pulsar una sugerencia no debe quitar el foco del campo antes del clic
+  q('[data-sugerencias]')?.addEventListener('pointerdown', (ev) => ev.preventDefault());
+
+  // Lista completa: al cerrarse (Esc, "Cerrar", fila elegida) el foco vuelve
+  // a quien la abrio; el dialogo lleva data-captura-flechas
+  const dialogo = q<HTMLDialogElement>('[data-dialogo-lista]');
+  dialogo?.addEventListener('close', () => {
+    if (origenLista?.isConnected) origenLista.focus();
+    origenLista = null;
+  });
+  dialogo?.addEventListener('click', (ev) => {
+    if (ev.target === dialogo) cerrarLista(); // telon
+  });
+  // Si se sale de Productos con la lista abierta (atras del navegador)
+  window.addEventListener('hashchange', () => {
+    if (dialogo?.open && location.hash !== '#productos') cerrarLista(false);
   });
   if (input?.value) filtrar(input.value); // valor restaurado por el navegador
 
@@ -486,7 +697,7 @@ function arrancar() {
     if (p) seleccionar(p.id, { origen: 'inicial' });
   }
 
-  window.hinojosaCatalogo = { seleccionar, seleccionarCategoria, siguiente, anterior, estado, producto };
+  window.hinojosaCatalogo = { seleccionar, seleccionarCategoria, siguiente, anterior, estado, producto, abrirLista };
 }
 
 declare global {
@@ -498,6 +709,7 @@ declare global {
       anterior: typeof anterior;
       estado: typeof estado;
       producto: typeof producto;
+      abrirLista: typeof abrirLista;
     };
   }
   interface WindowEventMap {
@@ -561,8 +773,8 @@ export function abrirAnimal(clave: string, palabra = clave) {
   if (!datos || !input || !datos.productos.some((p) => p.animales.includes(clave))) return false;
   input.value = palabra;
   filtrar(palabra);
-  const primero = filas.find((f) => !f.fila.hidden);
-  if (primero && primero.id !== actualId) seleccionar(primero.id, { origen: 'busqueda', anunciarCambio: false });
+  const primero = resultados[0];
+  if (primero && primero !== actualId) seleccionar(primero, { origen: 'busqueda', anunciarCambio: false });
   const quitar = alCambiarVista((d) => {
     quitar();
     if (d.vista !== 'productos') return;
