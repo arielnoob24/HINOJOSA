@@ -1,6 +1,6 @@
 // Router de vistas de Comercial Hinojosa (contrato: skill `vistas-hinojosa`).
 //
-// Una sola pagina con 5 <section class="vista"> en el HTML servido. Este
+// Una sola pagina con 4 <section class="vista"> en el HTML servido. Este
 // modulo, al importarse por primera vez:
 //   - marca <html data-router="activo"> (el CSS de Layout.astro aplica
 //     entonces overflow:hidden y la capa fija; sin JS no pasa nada de esto),
@@ -16,7 +16,10 @@
 //   - registrarTransicion(fn): anima salida/entrada SIN retrasar el foco.
 //   - window.hinojosaVistas: misma API para scripts sin bundler.
 
-export const VISTAS = ['inicio', 'productos', 'nosotros', 'por-que', 'visitanos'] as const;
+// 2026-10-16: "Por que elegirnos" deja de ser vista y pasa a ser un bloque
+// de Quienes somos con id="por-que": resolver() abre #por-que dentro de
+// #nosotros, asi que los enlaces viejos siguen funcionando.
+export const VISTAS = ['inicio', 'productos', 'nosotros', 'visitanos'] as const;
 export type Vista = (typeof VISTAS)[number];
 
 export interface DetalleVista {
@@ -24,7 +27,7 @@ export interface DetalleVista {
   vista: Vista;
   /** Vista anterior (null en el arranque). */
   anterior: Vista | null;
-  /** Posicion 0..4 de la vista activa. */
+  /** Posicion 0..3 de la vista activa. */
   indice: number;
   /** +1 si se avanza en el orden de la barra, -1 si se retrocede, 0 en el arranque. */
   direccion: 1 | -1 | 0;

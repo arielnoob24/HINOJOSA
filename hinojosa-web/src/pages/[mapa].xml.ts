@@ -1,4 +1,4 @@
-// sitemap.xml con UNA sola URL: la portada. Las 5 vistas (#inicio,
+// sitemap.xml con UNA sola URL: la portada. Las 4 vistas (#inicio,
 // #productos...) son la misma pagina y no se listan por separado.
 //
 // Ruta dinamica a proposito: sin `site` en astro.config.mjs no hay URL

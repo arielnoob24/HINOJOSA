@@ -41,8 +41,10 @@ const arranque = `(function () {
   // Bloque 14: sin boton de pausa no se restaura una pausa guardada (no
   // habria forma de quitarla); se borra la clave de visitas anteriores.
   try { localStorage.removeItem('hinojosa-movimiento'); } catch (e) {}
-  var vistas = ['inicio', 'productos', 'nosotros', 'por-que', 'visitanos'];
+  var vistas = ['inicio', 'productos', 'nosotros', 'visitanos'];
   var h = location.hash.slice(1);
+  // #por-que es ahora un bloque de Quienes somos (2026-10-16)
+  if (h === 'por-que') h = 'nosotros';
   var inicial = vistas.indexOf(h) > -1 ? h : 'inicio';
   html.setAttribute('data-router', 'arrancando');
   html.setAttribute('data-vista-inicial', inicial);
@@ -116,7 +118,7 @@ const arranque = `(function () {
          - .js y la preferencia "Pausar animacion" guardada;
          - data-router + data-vista-inicial: solo la vista del hash se pinta
            mientras carga router.ts (sin esto se veria un instante la pagina
-           apilada). Sin JS no se pone nada y las 5 vistas quedan apiladas.
+           apilada). Sin JS no se pone nada y las 4 vistas quedan apiladas.
          - si se entra por #productos: preload de la imagen del producto al
            frente (QA M5). -->
     <script is:inline set:html={arranque} />

@@ -1,347 +1,489 @@
 ---
-// Vista 2 - Quienes somos (guia-estilo 7.2): mosaico, todo visible, sin
-// clics. Tarjeta grande con el video de Canela jugando (arriba) y la frase
-// en una banda bosque OPACA (abajo, nunca sobre el video); Mision
-// (canela oscuro, .tema-canela) y Vision (bosque) a la derecha; los 6
-// valores en UNA banda hoja-claro (icono 28 px + palabra, separados por un
-// punto maiz de 6 px; N5). Reparto del color: guia 2.2 (bloque 13).
+// Vista 3 - Nosotros (2026-10-16, opcion A "Canela presenta"). Absorbe lo
+// mejor de "Por que elegirnos", que deja de ser vista propia.
+//   - Escenario: Canela jugando, GRANDE y sin tarjeta (video con alfa) sobre
+//     un circulo crema-oscuro, en el crema de la vista.
+//   - Columna de texto: antetitulo NOSOTROS + h2 "Somos parte de tu
+//     familia" (sistema de titulos; "familia" en Caveat canela oscuro, 5.22
+//     sobre crema, siempre >= 24 px), la mision como parrafo y las 3
+//     razones (icono en circulo con aro maiz: la UNICA familia con circulo,
+//     G2). Textos de las razones en propuesta (textos.json >
+//     _estadoRazones). El bloque de razones lleva id="por-que": los enlaces
+//     viejos a #por-que abren esta vista con el foco ahi (router.ts).
+//   - Banda bosque a sangre al pie: animales que atendemos, cada uno enlace
+//     a #productos filtrado (Q4, data-abrir-animal; oyente en catalogo.ts),
+//     con el sello de su costal real en Aves, Cerdos, Vacas y Cuyes (Q1).
+// Fuera de pantalla: Vision y los 6 valores (siguen en negocio.json para
+// metadatos y JSON-LD), pilares y diferenciales (resumidos en las razones).
 //
-// Video (N1, N2, N8): object-fit contain anclado abajo, para no cortar la
-// gorra de Canela; la caja tiene el gris del fondo del video (medido en el
-// poster: #EBEBE7) para que no se note el marco. En movil, 16/8.
-// Hover (N7): tilt (hasta --tilt-max) solo en la tarjeta grande y en la
-// banda de valores; Mision y Vision solo se elevan (no son pulsables).
-//
-// Video: muted loop playsinline, preload="none", poster. Solo se reproduce
-// con la vista activa, sin reduced motion y sin la pausa del usuario
-// (src/lib/video-vista.ts). Sin boton de pausa desde el bloque 14 (decision
-// del usuario; riesgo WCAG 2.2.2 registrado).
-// Ganchos: [data-mosaico], [data-tarjeta-familia], video[data-video-vista],
-//          [data-tilt] (tilt al pasar el raton), [data-elevar] (solo
-//          elevacion), [data-banda-valores], [data-icono-animado].
+// Video: canela-jugando-alfa.webm (VP9 con alfa), muted loop playsinline,
+// preload="none", poster con alfa diferido. Safari/iOS no reproduce el alfa
+// de VP9: video-vista.ts no lo reproduce ahi (data-alfa) y queda el poster.
+// Solo se reproduce con la vista activa, sin reduced motion y sin la pausa
+// del sitio. Sin boton de pausa (bloque 14; riesgo WCAG 2.2.2).
+// Ganchos: [data-escenario], video[data-video-vista][data-alfa],
+//          [data-icono-animado="razon-N" | "animal-<icono>"] (entradas.ts),
+//          a[data-abrir-animal], [data-banda="animales"].
 import Vista from '../Vista.astro';
 import Icono from '../Icono.astro';
-import { negocio, textos } from '../../lib/negocio';
+import { negocio, textos, catalogo, miniaturaDe } from '../../lib/negocio';
+import { miniaturaLista } from '../../lib/srcset-producto';
 
 const t = textos.nosotros;
 const p = negocio.pantalla;
-const iconosValores = ['manos', 'corazon', 'sonrisa', 'escudo', 'verificado', 'estrella'];
-// "familia" en Caveat oro: acento de la vista (5.44 sobre bosque)
 const [antes, despues] = t.frase.includes('familia') ? t.frase.split('familia') : [t.frase, null];
-// Poster diferido (QA M4): data-poster -> poster al entrar en la vista
-// (video-vista.ts). Sin JS se pinta como fondo del contenedor.
-const poster = '/video/canela-jugando-poster.webp';
+// Poster con alfa diferido (QA M4): data-poster -> poster al entrar en la
+// vista (video-vista.ts). Sin JS se pinta como fondo del escenario.
+const poster = '/video/canela-jugando-alfa-poster.webp';
+
+// Palabra visible -> icono y clave del campo `animales` de productos.json
+const animal: Record<string, { icono: string; clave: string }> = {
+  Aves: { icono: 'ave', clave: 'ave' },
+  Cerdos: { icono: 'cerdo', clave: 'cerdo' },
+  Conejos: { icono: 'conejo', clave: 'conejo' },
+  Cuyes: { icono: 'cuy', clave: 'cuy' },
+  Vacas: { icono: 'vaca', clave: 'vaca' },
+  Perros: { icono: 'perro', clave: 'perro' },
+  Gatos: { icono: 'gato', clave: 'gato' },
+  Tilapias: { icono: 'pez', clave: 'tilapia' },
+};
+// Sellos de costal (Q1): el costal real de la especie, miniatura -thumb-80
+// (~4 kB). Decorativos: la palabra del animal es el texto.
+const productoSello: Record<string, string> = {
+  Aves: 'nutri-pollos',
+  Cerdos: 'nutri-cerdos',
+  Vacas: 'nutri-vacas',
+  Cuyes: 'nutri-cuyes',
+};
+function sello(nombre: string) {
+  const id = productoSello[nombre];
+  const prod = id ? catalogo.productos.find((x) => x.id === id) : null;
+  return prod ? miniaturaLista(miniaturaDe(prod.imagen)) : null;
+}
 ---
 <Vista id="nosotros" nombre={textos.navegacion.find((n) => n.id === 'nosotros')!.texto} cuerpo="nosotros-cuerpo">
   <div class="nos-marco">
-    <h2 id="titulo-nosotros" tabindex="-1" data-titulo-vista class="text-h2 titulo-vista" data-entra style="--orden: 0">{t.titulo}</h2>
+    <header class="nos-cabecera" data-entra style="--orden: 0">
+      <p class="nos-antetitulo">{t.antetitulo}</p>
+      <h2 id="titulo-nosotros" tabindex="-1" data-titulo-vista class="text-h2 titulo-vista nos-titulo">
+        {despues !== null ? (
+          <>{antes}<span class="nos-familia">familia</span>{despues}</>
+        ) : (
+          t.frase
+        )}
+      </h2>
+    </header>
 
-    <div class="nos-mosaico" data-mosaico>
-      <article class="nos-familia" data-tarjeta-familia data-tilt data-entra style="--orden: 1" aria-labelledby="frase-familia">
-        <div class="nos-video" style={`--poster-video: url(${poster})`}>
-          <video
-            muted
-            loop
-            playsinline
-            preload="none"
-            data-poster={poster}
-            width="1280"
-            height="720"
-            aria-hidden="true"
-            tabindex="-1"
-            disablepictureinpicture
-            data-video-vista="nosotros"
-          >
-            <source src="/video/canela-jugando.webm" type="video/webm" />
-            <source src="/video/canela-jugando.mp4" type="video/mp4" />
-          </video>
-        </div>
-        <p id="frase-familia" class="nos-frase">
-          {despues !== null ? (
-            <>{antes}<span class="font-script text-maiz">familia</span>{despues}</>
-          ) : (
-            t.frase
-          )}
-        </p>
-      </article>
+    <div class="nos-escenario" data-escenario data-entra style={`--orden: 1; --poster-video: url(${poster})`}>
+      <div class="nos-canela">
+      <video
+        muted
+        loop
+        playsinline
+        preload="none"
+        data-poster={poster}
+        width="606"
+        height="480"
+        aria-hidden="true"
+        tabindex="-1"
+        disablepictureinpicture
+        data-video-vista="nosotros"
+        data-alfa
+      >
+        <source src="/video/canela-jugando-alfa.webm" type="video/webm" />
+      </video>
+      </div>
+    </div>
 
-      <article class="nos-tarjeta nos-mision tema-canela" data-elevar data-entra style="--orden: 2" aria-labelledby="eyebrow-mision">
-        <h3 id="eyebrow-mision" class="nos-eyebrow">{t.tituloMision}</h3>
-        <p class="nos-texto">{p.mision}</p>
-      </article>
+    <div class="nos-cuerpo" data-entra style="--orden: 2">
+      <p class="nos-mision">
+        <span class="sr-only">{t.tituloMision}: </span>{p.mision}
+      </p>
 
-      <article class="nos-tarjeta nos-vision tema-oscuro" data-elevar data-entra style="--orden: 2" aria-labelledby="eyebrow-vision">
-        <h3 id="eyebrow-vision" class="nos-eyebrow text-maiz">{t.tituloVision}</h3>
-        <p class="nos-texto text-blanco">{p.vision}</p>
-      </article>
-
-      <section class="nos-valores" data-banda-valores data-tilt data-entra style="--orden: 2" aria-labelledby="titulo-valores">
-        <h3 id="titulo-valores" class="sr-only">{t.tituloValores}</h3>
-        <ul class="nos-lista-valores">
-          {p.valores.map((v, i) => (
-            <li class="nos-valor">
-              <span class="nos-valor-icono" aria-hidden="true" data-icono-animado={`valor-${i}`}>
-                <Icono nombre={iconosValores[i] ?? 'estrella'} class="size-7" />
+      <section class="nos-razones" aria-labelledby="por-que">
+        <h3 id="por-que" tabindex="-1" class="nos-razones-titulo">{t.tituloRazones}</h3>
+        <ul class="nos-lista-razones">
+          {t.razones.map((r, i) => (
+            <li class="nos-razon">
+              <span class="nos-razon-icono" aria-hidden="true" data-icono-animado={`razon-${i}`}>
+                <Icono nombre={r.icono} class="size-full" />
               </span>
-              <span class="nos-valor-palabra">{v}</span>
+              <span class="nos-razon-textos">
+                <span class="nos-razon-titulo">{r.titulo}</span>
+                {r.enlace ? (
+                  <a href={r.enlace} class="nos-razon-enlace">{r.texto}<span aria-hidden="true"> →</span></a>
+                ) : (
+                  <span class="nos-razon-texto">{r.texto}</span>
+                )}
+              </span>
             </li>
           ))}
         </ul>
       </section>
     </div>
+
+    <section class="nos-animales tema-oscuro" aria-labelledby="nos-animales" data-banda="animales" data-entra style="--orden: 2">
+      <div class="nos-animales-interior">
+        <h3 id="nos-animales" class="nos-animales-titulo">{t.tituloAnimales}</h3>
+        <ul class="nos-lista-animales">
+          {negocio.animalesAtendidos.map((a) => {
+            const info = animal[a] ?? { icono: 'hoja', clave: '' };
+            const s = sello(a);
+            return (
+              <li>
+                <a href="#productos" class="nos-animal" data-abrir-animal={info.clave || undefined}>
+                  <span class="nos-animal-figura">
+                    <span class="nos-animal-icono" aria-hidden="true" data-icono-animado={`animal-${info.icono}`}>
+                      <Icono nombre={info.icono} class="size-full" />
+                    </span>
+                    {s && (
+                      <span class="nos-sello" aria-hidden="true">
+                        <img src={s.src} srcset={s.srcset} alt="" width={s.w} height={s.h} loading="lazy" decoding="async" />
+                      </span>
+                    )}
+                  </span>
+                  <span class="nos-animal-nombre">{a}</span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
   </div>
 </Vista>
 
 <style>
+  /* Movil (base): cabecera, Canela, mision + razones y banda, en columna */
   .nos-marco {
-    display: flex;
+    display: grid;
     flex: 1 1 auto;
-    flex-direction: column;
-    gap: var(--spacing-mosaico);
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 1rem;
     width: 100%;
     max-width: var(--container-contenido);
     margin-inline: auto;
-    padding: var(--spacing-vista) 1rem;
+    padding: var(--spacing-vista) 1rem 0;
   }
-  .nos-mosaico {
-    display: grid;
-    gap: var(--spacing-mosaico);
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .nos-familia {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border-radius: var(--radius-tarjeta-grande);
-    background: var(--color-bosque);
-    box-shadow: var(--shadow-suave);
-  }
-  /* Caja del video: el gris del fondo del video, medido en el poster
-     (mediana de los bordes: #EBEBE7), para que el contain no deje un marco
-     visible (N1, N2). */
-  .nos-video {
-    --gris-video: #ebebe7;
-    position: relative;
-    flex: 1 1 auto;
-    min-height: 8rem;
-    aspect-ratio: 16 / 8;
-    background: var(--gris-video);
-  }
-  /* Sin JS nadie asigna el poster al video: se ve como fondo, con el mismo
-     encuadre que el video. Con JS esta regla no aplica y no se descarga. */
-  :global(html:not(.js)) .nos-video {
-    background: var(--gris-video) var(--poster-video) 50% 100% / contain no-repeat;
-  }
-  /* contain + anclado abajo: Canela entera (con la gorra) y "de pie" sobre
-     la banda de la frase. */
-  .nos-video video {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: 50% 100%;
-  }
-  .nos-frase {
-    --color-foco: var(--color-foco-oscuro);
-    padding: 0.875rem 1.25rem 1rem;
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(1.5rem, min(3.6vw, 5.2dvh), 3.625rem);
-    line-height: 1.05;
-    color: var(--color-blanco);
-    text-wrap: balance;
-  }
-  .nos-frase :global(.font-script) {
-    font-weight: 400;
-  }
-  .nos-tarjeta {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.5rem;
-    border-radius: var(--radius-tarjeta);
-    padding: clamp(1rem, 2.4vw, 1.75rem);
-    box-shadow: var(--shadow-suave);
-  }
-  /* Mision: el bloque canela de la vista (.tema-canela): antetitulo crema
-     800 (5.22), texto blanco (5.88), foco crema. */
-  .nos-mision {
-    background: var(--color-canela-oscuro);
-  }
-  .nos-mision .nos-texto {
-    color: var(--color-blanco);
-  }
-  /* Vision: bosque (.tema-oscuro): antetitulo maiz (5.44), texto blanco
-     (9.80), foco maiz. */
-  .nos-vision {
-    background: var(--color-bosque);
-  }
-  .nos-vision .nos-texto {
-    color: var(--color-blanco);
-  }
-  /* Antetitulo en 800; el texto en 400 a text-lead (N6): deja de competir
-     con la frase de marca. */
-  .nos-eyebrow {
-    font-family: var(--font-sans);
+
+  /* ---------- Cabecera: antetitulo + h2 (sistema de titulos, G3) ---------- */
+  .nos-antetitulo {
+    margin-bottom: 0.25rem;
     font-size: var(--text-etiqueta);
     font-weight: 800;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
+    color: var(--color-canela-oscuro); /* 5.22 sobre crema */
   }
-  .nos-vision .nos-eyebrow {
-    color: var(--color-maiz);
+  .nos-titulo {
+    font-size: clamp(1.75rem, min(3.6vw, 6.2dvh), 3.5rem);
+    line-height: 1.05;
   }
-  .nos-mision .nos-eyebrow {
-    color: var(--color-crema);
+  /* Acento Caveat canela oscuro (5.22 sobre crema; >= 24 px siempre) */
+  .nos-familia {
+    font-family: var(--font-script);
+    font-weight: 400;
+    font-size: 1.12em;
+    color: var(--color-canela-oscuro);
   }
-  .nos-texto {
-    font-family: var(--font-sans);
+
+  /* ---------- Escenario de Canela ----------
+     .nos-canela es la caja de Canela; el circulo crema-oscuro (decorativo)
+     va detras, centrado. El video (606x480, solo el tramo sentada en ida y
+     vuelta: la gorra nunca toca el borde) ocupa todo el alto de la caja y
+     se desplaza para que el centro de Canela, que en el video cae al 65 %
+     del ancho, quede en el centro de la caja y del circulo. Lo que sobra a
+     los lados es transparente. El video ya trae su sombra. */
+  .nos-escenario {
+    position: relative;
+    height: clamp(11rem, 32dvh, 16rem);
+  }
+  .nos-canela {
+    --centro-canela: 65%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    isolation: isolate;
+  }
+  .nos-canela::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    bottom: 3%;
+    left: 50%;
+    height: 94%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--color-crema-oscuro);
+    transform: translateX(-50%);
+  }
+  /* Sin JS nadie asigna el poster: se pinta como fondo con el mismo encuadre */
+  :global(html:not(.js)) .nos-canela {
+    background: var(--poster-video) 62% 100% / auto 100% no-repeat;
+  }
+  .nos-canela video {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: auto;
+    max-width: none;
+    height: 100%;
+    transform: translateX(calc(var(--centro-canela) * -1));
+    background: transparent;
+    /* Lados difuminados: la sombra del suelo del video no se corta en seco
+       en el borde de la caja */
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  }
+
+  /* ---------- Mision y razones ---------- */
+  .nos-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .nos-mision {
+    max-width: 34rem;
     font-size: var(--text-lead);
     line-height: var(--text-lead--line-height);
-    font-weight: 400;
-    text-wrap: pretty;
-  }
-
-  /* --------- Valores: UNA banda hoja-claro (N5, guia 2.2) ---------
-     Icono suelto de 28 px trazo bosque (8.62) + palabra 800 tinta (12.57);
-     sin circulo (el aro maiz es solo de los pilares de Por que). */
-  .nos-valores {
-    border-radius: var(--radius-tarjeta);
-    background: var(--color-hoja-claro);
-    padding: 0.875rem 1rem;
-  }
-  .nos-lista-valores {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.625rem 0.75rem;
-  }
-  .nos-valor {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .nos-valor-icono {
-    display: inline-flex;
-    flex: 0 0 auto;
-    color: var(--color-bosque);
-  }
-  .nos-valor-palabra {
-    font-weight: 800;
-    font-size: 0.9375rem;
-    line-height: 1.15;
     color: var(--color-tinta);
   }
-  /* Reflujo (WCAG 1.4.10, QA M-3): por debajo de 360 px "Responsabilidad"
-     no cabe en media banda (se salia 15 px de la banda hoja-claro). Una sola
-     columna; a 360 px o mas se mantienen las 2 columnas. */
-  @media (max-width: 22.499rem) {
-    .nos-lista-valores {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 0.5rem;
-    }
-    .nos-valor-palabra {
-      min-width: 0;
-      overflow-wrap: break-word;
-    }
+  .nos-razones-titulo {
+    margin-bottom: 0.625rem;
+    font-size: var(--text-etiqueta);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-bosque); /* 8.69 */
+  }
+  .nos-lista-razones {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.625rem, 1.6dvh, 1rem);
+  }
+  .nos-razon {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+  }
+  /* Unica familia con circulo (G2): interior hoja-claro, icono bosque
+     (8.62), aro maiz 3 px (decorativo). */
+  .nos-razon-icono {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: clamp(2.75rem, 6dvh, 3.25rem);
+    height: clamp(2.75rem, 6dvh, 3.25rem);
+    border: 3px solid var(--color-maiz);
+    border-radius: 50%;
+    background: var(--color-hoja-claro);
+    color: var(--color-bosque);
+  }
+  .nos-razon-icono :global(svg) {
+    width: 56%;
+    height: 56%;
+  }
+  .nos-razon-textos {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+  .nos-razon-titulo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.0625rem, 1.5vw, 1.3125rem);
+    line-height: 1.2;
+    color: var(--color-bosque);
+  }
+  .nos-razon-texto {
+    font-size: 0.9375rem;
+    line-height: 1.35;
+    color: var(--color-tinta-suave); /* 6.78 */
+  }
+  /* Enlace de texto: marca-fuerte sobre crema (4.77), subrayado */
+  .nos-razon-enlace {
+    align-self: flex-start;
+    font-size: 0.9375rem;
+    font-weight: 800;
+    line-height: 1.35;
+    color: var(--color-marca-fuerte);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+  .nos-razon-enlace:hover {
+    color: var(--color-bosque);
   }
 
+  /* ---------- Banda bosque a sangre: animales ----------
+     .tema-oscuro: foco maiz. Titulo maiz (5.44), iconos crema, nombres
+     blanco (9.80). El margen negativo la lleva de borde a borde. */
+  .nos-animales {
+    margin-inline: calc(50% - 50vw);
+    padding: 0.875rem calc(50vw - 50%) 0.75rem;
+  }
+  .nos-animales-titulo {
+    margin-bottom: 0.375rem;
+    font-size: var(--text-etiqueta);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-maiz);
+  }
+  .nos-lista-animales {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.25rem 0.375rem;
+  }
+  .nos-animal {
+    display: flex;
+    min-height: var(--spacing-objetivo);
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: var(--radius-miniatura);
+    padding: 0.25rem 0.125rem;
+    text-align: center;
+    color: var(--color-blanco);
+  }
+  .nos-animal-figura {
+    position: relative;
+    display: inline-flex;
+  }
+  .nos-animal-icono {
+    display: inline-flex;
+    width: 2rem;
+    height: 2rem;
+    color: var(--color-crema);
+  }
+  .nos-animal-nombre {
+    font-size: var(--text-etiqueta);
+    line-height: 1.2;
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+  .nos-animal:hover .nos-animal-nombre {
+    text-decoration-color: var(--color-maiz);
+  }
+  /* Sello de costal (Q1): miniatura real sobre una etiqueta kraft girada
+     -6 grados, borde filete canela. */
+  .nos-sello {
+    position: absolute;
+    top: -0.25rem;
+    left: calc(100% + 0.125rem);
+    display: inline-flex;
+    width: 1.75rem;
+    height: 1.75rem;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid var(--color-filete-canela);
+    border-radius: var(--radius-miniatura);
+    background: var(--color-kraft);
+    transform: rotate(-6deg);
+  }
+  .nos-sello img {
+    width: auto;
+    height: 1.625rem;
+  }
+
+  /* ---------- Escritorio: Canela a la izquierda, texto a la derecha ---------- */
   @media (min-width: 48rem) {
-    .nos-mosaico {
-      flex: 1 1 auto;
-      min-height: 0;
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto;
-    }
     .nos-marco {
-      padding-inline: var(--spacing-vista);
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      /* Filas 1 y 4 elasticas: cabecera y cuerpo quedan centrados en
+         vertical junto a Canela */
+      grid-template-rows: minmax(0, 1fr) auto auto minmax(0, 1fr) auto;
+      align-content: stretch;
+      column-gap: clamp(1.5rem, 4vw, 4rem);
+      row-gap: 0;
+      padding: clamp(1rem, 3dvh, 2rem) var(--spacing-vista) 0;
     }
-    .nos-familia {
-      grid-column: 1 / span 7;
-      grid-row: 1 / span 2;
-    }
-    .nos-video {
-      aspect-ratio: auto;
-    }
-    .nos-mision {
-      grid-column: 8 / span 5;
-      grid-row: 1;
-    }
-    .nos-vision {
-      grid-column: 8 / span 5;
+    .nos-cabecera {
+      grid-column: 2;
       grid-row: 2;
     }
-    .nos-valores {
-      grid-column: 1 / -1;
+    .nos-escenario {
+      grid-column: 1;
+      grid-row: 1 / span 4;
+      height: auto;
+      min-height: 0;
+      margin-top: clamp(0.5rem, 2dvh, 1.5rem);
+    }
+    /* Centrada en vertical, como la columna de texto */
+    .nos-canela {
+      top: 50%;
+      bottom: auto;
+      height: min(100%, 27rem);
+      transform: translateY(-50%);
+    }
+    .nos-cuerpo {
+      grid-column: 2;
       grid-row: 3;
-      padding: clamp(0.75rem, 1.8dvh, 1.125rem) 1.5rem;
+      margin-top: clamp(1rem, 3dvh, 2rem);
+      margin-bottom: clamp(0.75rem, 2dvh, 1.5rem);
+      gap: clamp(0.875rem, 2.6dvh, 1.75rem);
     }
-    /* En linea, separados por un punto maiz de 6 px (decorativo) */
-    .nos-lista-valores {
+    .nos-animales {
+      grid-column: 1 / -1;
+      grid-row: 5;
+      padding-block: clamp(0.625rem, 1.8dvh, 1.125rem) clamp(0.5rem, 1.4dvh, 0.875rem);
+    }
+    .nos-animales-interior {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
-      justify-content: center;
-      gap: 0.5rem 0;
+      gap: 1.5rem;
     }
-    .nos-valor + .nos-valor::before {
-      content: '';
-      width: 6px;
-      height: 6px;
+    .nos-animales-titulo {
       flex: 0 0 auto;
-      margin-inline: clamp(0.75rem, 1.6vw, 1.5rem);
-      border-radius: 50%;
-      background: var(--color-maiz);
+      max-width: 11rem;
+      margin: 0;
+      line-height: 1.3;
     }
-    .nos-valor {
-      gap: 0;
+    .nos-lista-animales {
+      flex: 1 1 auto;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
     }
-    .nos-valor-icono {
-      margin-right: 0.5rem;
+    .nos-animal-icono {
+      width: clamp(1.875rem, 4dvh, 2.375rem);
+      height: clamp(1.875rem, 4dvh, 2.375rem);
     }
-    .nos-valor-palabra {
-      font-size: clamp(0.9375rem, 1.3vw, 1.1875rem);
-      white-space: nowrap;
+    .nos-sello {
+      top: -0.375rem;
+      width: 2.25rem;
+      height: 2.25rem;
+    }
+    .nos-sello img {
+      height: 2rem;
     }
   }
 
-  /* Pantallas bajas de escritorio (1366x650): text-lead escala con el
-     ancho, no con el alto, y Mision empujaba el mosaico 17 px por debajo
-     del pliegue. Se compactan texto y relleno de Mision/Vision. */
+  /* Pantallas bajas de escritorio (1366x650) */
   @media (min-width: 48rem) and (max-height: 43.75rem) {
-    .nos-texto {
-      font-size: 1.125rem;
+    .nos-mision {
+      font-size: 1.0625rem;
       line-height: 1.4;
     }
-    .nos-tarjeta {
-      padding: 1rem 1.375rem;
+    .nos-razon-texto {
+      display: none;
     }
   }
 
-  /* --------- Hover (N7) ---------
-     Solo raton, con movimiento permitido y sin la pausa del sitio. Nunca
-     revela contenido. Tilt (hasta --tilt-max) en la tarjeta grande y en la
-     banda de valores; Mision y Vision solo se elevan: no son pulsables. */
-  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-    :global(html:not([data-movimiento='pausado'])) :is([data-tilt], [data-elevar]) {
-      transition: transform var(--duracion-hover) var(--ease-vista), box-shadow var(--duracion-hover) ease;
-    }
-    :global(html:not([data-movimiento='pausado'])) .nos-familia:hover {
-      transform: perspective(100rem) rotateY(calc(var(--tilt-max) * -1)) translateY(-4px);
-      box-shadow: var(--shadow-elevada);
-    }
-    :global(html:not([data-movimiento='pausado'])) .nos-valores:hover {
-      transform: perspective(100rem) rotateX(var(--tilt-max)) translateY(-2px);
-      box-shadow: var(--shadow-suave);
-    }
-    :global(html:not([data-movimiento='pausado'])) [data-elevar]:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-suave);
+  @media (forced-colors: active) {
+    .nos-animales {
+      border-top: 1px solid CanvasText;
     }
   }
 </style>
 
 <script>
   import '../../lib/video-vista';
+  // Entradas unicas de iconos (razones y animales) y del pin (Visitanos)
+  import '../../lib/animacion/entradas';
 </script>

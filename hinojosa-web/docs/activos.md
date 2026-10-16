@@ -90,8 +90,8 @@ Original: 1920×1080, 24 fps, 7,96 s (191 cuadros), H.264 + audio AAC, 3,3 MB. *
 | `/video/canela-jugando.webm` | 1280×720 | ≈ 608 KB | VP9, sin audio, con fondo |
 | `/video/canela-jugando.mp4` | 1280×720 | ≈ 634 KB | H.264 High, `+faststart`, sin audio |
 | `/video/canela-jugando-poster.webp` | 1280×720 | 22.3 KB | Primer cuadro |
-| `/video/canela-jugando-alfa.webm` | 688×480 | ≈ 1151 KB | **VP9 con alfa** (`yuva420p`), recortado al área común de todos los cuadros; sombra semitransparente |
-| `/video/canela-jugando-alfa-poster.webp` | 688×480 | ≈ 26 KB | Primer cuadro recortado con alfa; fallback de Safari/iOS y de `prefers-reduced-motion` |
+| `/video/canela-jugando-alfa.webm` | 606×480 | ≈ 640 KB | **VP9 con alfa** (`yuva420p`). Desde 2026-10-16 **solo los cuadros 1–69** (sentada: mira y saluda) **en ida y vuelta** (136 cuadros, 5,7 s): el salto se descarta porque la gorra se sale del original (cuadros 116–138) y el tramo no empalma consigo mismo. El giro va en el cuadro 69, con la pata arriba y casi quieta (girar en el 80, a mitad de bajarla, hacía que la pata bajara y subiera de golpe). Recortado al área común de esos cuadros; la gorra queda a 7 px del borde. Centro de Canela al 65 % del ancho (lo usa `--centro-canela` en `VistaNosotros.astro`). Se regenera con `python nuevos_req.py video-alfa` (`ALFA_ULTIMO_CUADRO`) |
+| `/video/canela-jugando-alfa-poster.webp` | 606×480 | ≈ 29 KB | Primer cuadro recortado con alfa; fallback de Safari/iOS y de `prefers-reduced-motion` |
 
 Safari (macOS/iOS) **no reproduce el alfa de VP9**: muestra fondo negro o no reproduce. Detectarlo y usar `canela-jugando-alfa-poster.webp` (o `canela-franja.webp`) en su lugar. Un HEVC con alfa (`.mov`) solo se puede codificar en macOS (VideoToolbox).
 

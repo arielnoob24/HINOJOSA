@@ -2,8 +2,7 @@
   "navegacion": [
     { "id": "inicio", "hash": "#inicio", "texto": "Inicio" },
     { "id": "productos", "hash": "#productos", "texto": "Productos" },
-    { "id": "nosotros", "hash": "#nosotros", "texto": "Quiénes somos" },
-    { "id": "por-que", "hash": "#por-que", "texto": "Por qué elegirnos" },
+    { "id": "nosotros", "hash": "#nosotros", "texto": "Nosotros" },
     { "id": "visitanos", "hash": "#visitanos", "texto": "Visítanos" }
   ],
   "comunes": {
@@ -45,12 +44,20 @@
   },
 
   "nosotros": {
-    "titulo": "Quiénes somos",
+    "antetitulo": "Nosotros",
     "frase": "Somos parte de tu familia",
+    "_titulo": "Sistema de títulos (G3): antetítulo + h2. El h2 de la vista es la frase.",
     "tituloMision": "Misión",
-    "tituloVision": "Visión",
-    "tituloValores": "Nuestros valores",
-    "_fuentes": "Textos de misión, visión y valores en pantalla: negocio.json > pantalla.mision, pantalla.vision, pantalla.valores."
+    "_fuentes": "Misión en pantalla: negocio.json > pantalla.mision. Visión y valores ya no se muestran (2026-10-16); siguen en negocio.json para metadatos y JSON-LD.",
+    "tituloRazones": "Por qué elegirnos",
+    "_estadoRazones": "PROPUESTA pendiente de aprobación (bloque 10). Salen de los 4 pilares y los 4 diferenciales anteriores, sin datos nuevos: Naturales + De calidad -> 1; Atención cercana y personalizada -> 2; Ubicación estratégica -> 3. Descartados por repetidos: Confiables, Sostenibles, 'Calidad que se siente', 'Para aves, cerdos, mascotas y tilapias' (ya lo dice la fila de animales).",
+    "razones": [
+      { "titulo": "Naturales y de calidad", "texto": "Alimento natural para tus animales", "icono": "hoja" },
+      { "titulo": "Atención cercana", "texto": "Personalizada, como en familia", "icono": "conversacion" },
+      { "titulo": "Ubicación estratégica", "texto": "Ver cómo llegar", "icono": "pin", "enlace": "#visitanos" }
+    ],
+    "tituloAnimales": "Animales que atendemos",
+    "_fuenteAnimales": "negocio.json > animalesAtendidos"
   },
 
   "productos": {
@@ -91,27 +98,6 @@
     },
     "avisoPrecios": "Precios referenciales — consulta disponibilidad",
     "avisoMarcas": "Marcas registradas de sus respectivos propietarios."
-  },
-
-  "porQue": {
-    "titulo": "¿Por qué elegirnos?",
-    "frase": "Calidad que alimenta, amor que se siente",
-    "tituloPilares": "Nuestra esencia",
-    "pilares": [
-      { "titulo": "Naturales", "texto": "Alimento natural para tus animales" },
-      { "titulo": "Confiables", "texto": "Productos en los que confías" },
-      { "titulo": "De calidad", "texto": "Calidad que alimenta y se siente" },
-      { "titulo": "Sostenibles", "texto": "Pensando en el campo de mañana" }
-    ],
-    "tituloDiferenciales": "Lo que nos distingue",
-    "diferenciales": [
-      "Ubicación estratégica y cercana",
-      "Para aves, cerdos, mascotas y tilapias",
-      "Atención cercana y personalizada",
-      "Calidad que se siente"
-    ],
-    "tituloAnimales": "Animales que atendemos",
-    "_fuenteAnimales": "negocio.json > animalesAtendidos"
   },
 
   "visitanos": {

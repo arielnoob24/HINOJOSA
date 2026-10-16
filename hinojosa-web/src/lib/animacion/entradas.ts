@@ -1,6 +1,6 @@
 // Entradas UNICAS al entrar por primera vez en una vista (sin bucles):
-//   - Quienes somos: iconos de los 6 valores.
-//   - Por que elegirnos: iconos de los 4 pilares y de los 8 animales.
+//   - Quienes somos: iconos de las 3 razones ("Por que elegirnos") y de
+//     los 8 animales.
 //   - Visitanos: el pin del mapa cae y asienta (ease-rebote).
 //
 // Sustituye a los Lottie del plan: los iconos ya son SVG de trazo, asi que
@@ -17,8 +17,7 @@ const ESCALONADO = 60; // ms entre iconos
 const DURACION = 900; // pop (500) + dibujo (700) desfasados; margen para limpiar
 
 const grupos: Partial<Record<Vista, string>> = {
-  nosotros: '[data-icono-animado^="valor-"]',
-  'por-que': '[data-icono-animado^="pilar-"], [data-icono-animado^="animal-"]',
+  nosotros: '[data-icono-animado^="razon-"], [data-icono-animado^="animal-"]',
 };
 
 function retrasoBase(d: DetalleVista | null): number {

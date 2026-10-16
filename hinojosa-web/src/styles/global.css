@@ -223,7 +223,6 @@ html[data-router] .vista-cuerpo {
 html[data-vista-inicial="inicio"] .vista:not(#inicio),
 html[data-vista-inicial="nosotros"] .vista:not(#nosotros),
 html[data-vista-inicial="productos"] .vista:not(#productos),
-html[data-vista-inicial="por-que"] .vista:not(#por-que),
 html[data-vista-inicial="visitanos"] .vista:not(#visitanos) {
   display: none;
 }

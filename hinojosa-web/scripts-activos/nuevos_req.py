@@ -19,7 +19,9 @@ temporal y deja la version web en `hinojosa-web/public/`:
     img/canela/canela.webp|.avif            600 px de alto
     img/canela/canela-franja[@2x].webp|.avif  200 / 400 px de alto
     video/canela-jugando.webm|.mp4 + -poster.webp       video con fondo, sin audio
-    video/canela-jugando-alfa.webm + -alfa-poster.webp  VP9 con canal alfa (fondo quitado)
+    video/canela-jugando-alfa.webm + -alfa-poster.webp  VP9 con canal alfa (fondo quitado),
+        solo cuadros 1-69 en ida y vuelta (ver ALFA_ULTIMO_CUADRO)
+    Uso: python nuevos_req.py [imagenes] [video | video-alfa]
 """
 import json
 import multiprocessing as mp
@@ -220,8 +222,33 @@ def imagenes() -> None:
 
 # ---------------------------------------------------------------- video
 
+def _ffmpeg() -> str | None:
+    """ffmpeg del PATH o, si no esta, el binario del paquete imageio-ffmpeg."""
+    if shutil.which("ffmpeg"):
+        return "ffmpeg"
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except ImportError:
+        return None
+
+
+FFMPEG = _ffmpeg()
+
+# Video con alfa de Nosotros: solo el tramo en que Canela esta sentada
+# (mira a los lados y saluda), en ida y vuelta. Desde el cuadro ~73 baja la
+# pata y se levanta, y en el salto (cuadros 116-138) la gorra se sale por
+# arriba del original: ese tramo no se puede usar. El tramo no empalma
+# consigo mismo (el mejor cuadro difiere ~3 veces el paso medio), por eso
+# se hace ida y vuelta: sin costura. El giro va en el cuadro 69, con la pata
+# arriba y casi quieta (movimiento 2,2 frente a ~25 al bajarla): girar a
+# mitad de un gesto rapido (cuadro 80) hacia que la pata bajara y volviera
+# a subir de golpe.
+ALFA_ULTIMO_CUADRO = 69
+
+
 def ff(*args: str) -> None:
-    subprocess.run(["ffmpeg", "-v", "error", "-y", *args], check=True)
+    subprocess.run([FFMPEG, "-v", "error", "-y", *args], check=True)
 
 
 def _recortar_cuadro(ruta: str) -> None:
@@ -229,15 +256,22 @@ def _recortar_cuadro(ruta: str) -> None:
     quitar_fondo_liso(rgb, 14, 34).save(ruta, compress_level=1)
 
 
-def video() -> None:
-    if not shutil.which("ffmpeg"):
-        sys.exit("Falta FFmpeg en el PATH (scoop install ffmpeg).")
+def video(con_fondo: bool = True) -> None:
+    if not FFMPEG:
+        sys.exit("Falta FFmpeg (PATH o pip install imageio-ffmpeg).")
     out = PUB / "video"
     out.mkdir(parents=True, exist_ok=True)
     base = out / "canela-jugando"
-
-    # 1) Version con fondo, sin audio, 1280x720
     esc = "scale=1280:-2:flags=lanczos"
+    if con_fondo:
+        _video_con_fondo(base, esc)
+    _video_alfa(base)
+    for f in sorted(out.glob("canela-jugando*")):
+        print(f"{f.name:34s} {f.stat().st_size / 1024:8.1f} KB")
+
+
+def _video_con_fondo(base: Path, esc: str) -> None:
+    # 1) Version con fondo, sin audio, 1280x720
     ff("-i", str(VIDEO), "-an", "-vf", esc, "-c:v", "libvpx-vp9", "-crf", "38", "-b:v", "0",
        "-row-mt", "1", "-deadline", "good", "-cpu-used", "1", "-pix_fmt", "yuv420p",
        f"{base}.webm")
@@ -248,11 +282,16 @@ def video() -> None:
         ff("-i", str(VIDEO), "-frames:v", "1", "-vf", esc, str(tmp / "poster.png"))
         Image.open(tmp / "poster.png").save(f"{base}-poster.webp", "WEBP", quality=78, method=6)
 
-        # 2) Version con alfa: el fondo es blanco/gris liso y la camara casi fija,
-        #    asi que se recorta cuadro a cuadro con el mismo metodo de las imagenes.
+
+def _video_alfa(base: Path) -> None:
+    # 2) Version con alfa: el fondo es blanco/gris liso y la camara casi fija,
+    #    asi que se recorta cuadro a cuadro con el mismo metodo de las imagenes.
+    with tempfile.TemporaryDirectory(prefix="hino-video-") as t:
+        tmp = Path(t)
         cuadros = tmp / "cuadros"
         cuadros.mkdir()
-        ff("-i", str(VIDEO), "-an", "-vf", "scale=1280:-2:flags=lanczos", str(cuadros / "%04d.png"))
+        ff("-i", str(VIDEO), "-an", "-vf", "scale=1280:-2:flags=lanczos",
+           "-frames:v", str(ALFA_ULTIMO_CUADRO), str(cuadros / "%04d.png"))
         rutas = sorted(str(p) for p in cuadros.glob("*.png"))
         with mp.Pool() as pool:
             pool.map(_recortar_cuadro, rutas, chunksize=4)
@@ -268,7 +307,12 @@ def video() -> None:
         x0, y0, x1, y1 = max(x0 - m, 0), max(y0 - m, 0), min(x1 + m, 1279), min(y1 + m, 719)
         w, h = (x1 - x0 + 1) // 2 * 2, (y1 - y0 + 1) // 2 * 2
         print(f"Caja de recorte del video con alfa: {w}x{h} en ({x0},{y0})")
-        ff("-framerate", "24", "-i", str(cuadros / "%04d.png"),
+        # Ida y vuelta: 1..N y N-1..2 (el bucle del <video> vuelve al 1)
+        idavuelta = tmp / "idavuelta"
+        idavuelta.mkdir()
+        for k, r in enumerate(rutas + rutas[-2:0:-1], start=1):
+            shutil.copyfile(r, idavuelta / f"{k:04d}.png")
+        ff("-framerate", "24", "-i", str(idavuelta / "%04d.png"),
            "-vf", f"crop={w}:{h}:{x0}:{y0},scale=-2:480:flags=lanczos",
            "-c:v", "libvpx-vp9", "-pix_fmt", "yuva420p", "-crf", "34", "-b:v", "0",
            "-auto-alt-ref", "0", "-row-mt", "1", "-deadline", "good", "-cpu-used", "1",
@@ -277,9 +321,6 @@ def video() -> None:
         primero = primero.resize((round(w * 480 / h / 2) * 2, 480), Image.LANCZOS)  # = scale=-2:480
         primero.save(f"{base}-alfa-poster.webp", "WEBP", quality=82, alpha_quality=90, method=6)
 
-    for f in sorted(out.glob("canela-jugando*")):
-        print(f"{f.name:34s} {f.stat().st_size / 1024:8.1f} KB")
-
 
 if __name__ == "__main__":
     que = sys.argv[1:] or ["imagenes", "video"]
@@ -287,3 +328,5 @@ if __name__ == "__main__":
         imagenes()
     if "video" in que:
         video()
+    elif "video-alfa" in que:  # solo la version con alfa
+        video(con_fondo=False)

@@ -9,10 +9,17 @@
 //   la pausa del usuario (html[data-movimiento="pausado"], evento
 //   hinojosa:movimiento). Al salir de la vista se pausa.
 // - Con reduced motion queda el poster (sin autoplay).
+// - Videos con alfa (data-alfa, VP9 en WebM): Safari/iOS no reproduce el
+//   alfa de VP9 (fondo negro o nada). En WebKit no se reproducen ni se
+//   descargan: queda el poster, que tambien lleva alfa.
 import { alCambiarVista, vistaActual } from './router';
 
 const videos = Array.from(document.querySelectorAll<HTMLVideoElement>('video[data-video-vista]'));
 const mqReducido = window.matchMedia('(prefers-reduced-motion: reduce)');
+// WebKit sin motor Chromium: Safari en macOS y cualquier navegador de iOS
+const ua = navigator.userAgent;
+const esWebKit = /AppleWebKit/.test(ua) && !/Chrome|Chromium|Edg|OPR/.test(ua);
+const puedeReproducir = (v: HTMLVideoElement) => !(esWebKit && v.hasAttribute('data-alfa'));
 const pausadoPorUsuario = () => document.documentElement.getAttribute('data-movimiento') === 'pausado';
 
 /** Asigna el poster diferido de los videos de una vista (una sola vez). */
@@ -29,7 +36,7 @@ function sincronizar() {
   const activa = vistaActual();
   prepararPoster(activa);
   for (const v of videos) {
-    const debe = v.dataset.videoVista === activa && !mqReducido.matches && !pausadoPorUsuario();
+    const debe = v.dataset.videoVista === activa && puedeReproducir(v) && !mqReducido.matches && !pausadoPorUsuario();
     if (debe) {
       v.play().catch(() => {
         /* autoplay bloqueado o formato no soportado: queda el poster */

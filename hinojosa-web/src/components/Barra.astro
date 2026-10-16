@@ -3,7 +3,7 @@
 // - Anclas reales (<a href="#vista">): funcionan sin JS y con el historial.
 // - router.ts pone aria-current="page" en la vista activa; aqui la pastilla
 //   de fondo + peso 800 hacen que no dependa solo del color (WCAG 1.4.1).
-// - >= 48rem: barra superior. < 48rem: logo arriba y los 5 enlaces abajo,
+// - >= 48rem: barra superior. < 48rem: logo arriba y los 4 enlaces abajo,
 //   con icono + palabra (objetivos de 44 px o mas).
 // - Etiquetas cortas hasta 64rem (no caben las largas con el logo). Si la
 //   larga empieza por la corta ("Por que" / "Por que elegirnos"), el resto
@@ -19,7 +19,6 @@ const extra: Record<string, { corto: string; icono: string }> = {
   inicio: { corto: 'Inicio', icono: 'casa' },
   productos: { corto: 'Productos', icono: 'costal' },
   nosotros: { corto: 'Nosotros', icono: 'corazon' },
-  'por-que': { corto: 'Por qué', icono: 'medalla' },
   visitanos: { corto: 'Visítanos', icono: 'pin' },
 };
 ---
@@ -289,7 +288,7 @@ const extra: Record<string, { corto: string; icono: string }> = {
     }
     :global(html[data-router]) .barra-lista {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 0;
       height: var(--spacing-barra-movil);
     }

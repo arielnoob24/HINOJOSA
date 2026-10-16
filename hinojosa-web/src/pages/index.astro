@@ -1,6 +1,6 @@
 ---
-// Pagina unica con 5 vistas a pantalla completa (PLAN.md, secciones 3 y 4;
-// contrato en la skill vistas-hinojosa). Las 5 vistas van SIEMPRE en el
+// Pagina unica con 4 vistas a pantalla completa (PLAN.md, secciones 3 y 4;
+// contrato en la skill vistas-hinojosa). Las 4 vistas van SIEMPRE en el
 // HTML servido (SEO); src/lib/router.ts muestra una y oculta las demas
 // con hidden + inert. Sin JS se ven apiladas.
 import Layout from '../layouts/Layout.astro';
@@ -8,7 +8,6 @@ import Barra from '../components/Barra.astro';
 import VistaInicio from '../components/vistas/VistaInicio.astro';
 import VistaNosotros from '../components/vistas/VistaNosotros.astro';
 import VistaProductos from '../components/vistas/VistaProductos.astro';
-import VistaPorQue from '../components/vistas/VistaPorQue.astro';
 import VistaVisitanos from '../components/vistas/VistaVisitanos.astro';
 ---
 <Layout>
@@ -17,7 +16,6 @@ import VistaVisitanos from '../components/vistas/VistaVisitanos.astro';
     <VistaInicio />
     <VistaProductos />
     <VistaNosotros />
-    <VistaPorQue />
     <VistaVisitanos />
   </main>
 </Layout>
