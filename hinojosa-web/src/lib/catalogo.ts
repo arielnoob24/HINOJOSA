@@ -67,6 +67,8 @@ export interface ProductoDatos {
   conFondo: boolean;
   /** Especies a las que sirve (perro, gato, ave, cerdo, vaca, cuy, conejo, tilapia). */
   animales: string[];
+  /** Descripcion corta (<= 110 caracteres) o null si el producto aun no la tiene. */
+  descripcion: string | null;
 }
 
 /** Costal generico para productos sin imagen (guia-estilo 7.3, P5). */
@@ -225,6 +227,12 @@ function pintarFicha(p: ProductoDatos, dir: number, animar: boolean) {
   };
   poner('[data-ficha-nombre]', p.nombre);
   poner('[data-ficha-precio]', p.precioTexto);
+  // Descripcion corta: si falta, el parrafo se oculta (sin hueco)
+  const desc = q('[data-ficha-descripcion]', ficha);
+  if (desc) {
+    desc.textContent = p.descripcion ?? '';
+    desc.hidden = !p.descripcion;
+  }
   poner('[data-ficha-marca]', p.marca ?? '');
   poner('[data-ficha-presentacion]', p.presentacion ?? '');
   // Marca | Presentacion lado a lado; si falta una, la otra a todo el ancho

@@ -95,6 +95,18 @@ Pedido del usuario el 2026-10-17, ya en la rama **`HinoV2`** (a partir de ahora 
 | **Sin tarjeta verde** | Se **quita el panel bosque/vidrio**: logo, acento, subtítulo, botones y accesos van directamente sobre el video. El contraste se consigue con un **velo oscuro suave** (degradado `bosque-noche`/`bosque` desde la izquierda que se desvanece, no una tarjeta), sombra de texto y botones opacos; medir sobre varios cuadros del video (≥ 4.5:1 texto normal, ≥ 3:1 texto grande y bordes) |
 | **Animales como foto familiar** | **Más grandes** y **agrupados como en una foto de familia**: juntos, de frente a la cámara, en filas (atrás los grandes —vaca, cerdo—; en medio perro y aves; delante los pequeños —conejos, cuyes, gato, pato, tilapias—), ocupando buena parte del lado derecho y apoyados en la hierba cercana. Se abandona la escala real estricta en favor de una composición de retrato; la vaca sigue siendo la más alta. Más grandes también en móvil |
 
+### Ajustes de Productos del 2026-10-17 (noche) — mandan sobre los bloques 23–24
+
+✅ **Hecho 2026-10-17 (bloque 23b):** retícula 68/32 (categorías en fila con hover verde, carrusel con frente ×1,4; buscador, tarjeta y "Cómo llegar" a la derecha), descripción en la ficha y la hoja móvil, desvanecido verde, sin texto legal, fondo de huellas y hojas inline. 37/37 sin scroll, axe 0, Lighthouse móvil 93–97 (mediana 94).
+| Tema | Decisión |
+|---|---|
+| **Retícula** | El carrusel ocupa **la parte izquierda y el centro** (≈ 66–70 % del ancho); la columna derecha lleva el **buscador arriba** y debajo la tarjeta (Detalle / Lista). Las **pestañas de categoría van en fila encima del carrusel** y **se pintan al pasar el cursor** (relleno de color, foco visible igual) |
+| **Frente del carrusel** | Un poco más grande que el ×1,3 del bloque 23 (sin romper M5 ni tapar flechas/rótulo) |
+| **Descripción corta** | Cada producto lleva una **descripción de una o dos líneas** en el Detalle (campo `descripcion` en `productos.json`, ≤ 110 caracteres, tono de la marca, **sin inventar datos técnicos** —nada de % ni beneficios que no estén en los afiches—; en propuesta hasta que la apruebe el usuario o la dueña) |
+| **Tarjeta** | Se le añade un **desvanecido verde** (degradado de `hoja-claro`/`hoja` hacia la base o desde una esquina) sin perder los contrastes |
+| **Texto legal fuera** | Se quita de la vista "Precios referenciales — consulta disponibilidad · Marcas registradas de sus respectivos propietarios." (decisión del usuario). ⚠️ Riesgo 20: sin aviso de precios referenciales y de marcas de terceros |
+| **Fondo de Productos** | Textura de **huellas de animales y hojas/plantas** muy sutil en el fondo crema (SVG ligero, decorativo) |
+
 ### Paleta de la escena de Inicio (sin colores nuevos)
 - **Cielo:** degradado de `crema` (#F6F1E4) a `hoja-claro` (#EAF4DC) con un halo `maíz` al 15–25 % como sol; **no hay azul** en la paleta: si el usuario quiere cielo azul, es un color nuevo y **requiere aprobación** (calcular contrastes).
 - **Nubes:** blanco y `crema`, bordes suaves, deriva lenta (80–140 s por cruce), 3 capas con profundidad.
@@ -792,6 +804,7 @@ En `.claude/skills/` del proyecto:
 18. **Cielo sin azul:** la paleta no tiene azul; el cielo va en crema y verde muy claro. Si el usuario lo quiere azul, es un color nuevo que requiere aprobación y recalcular contrastes.
 19. ~~Cuyes sin imagen~~: ✅ añadidos el 2026-10-17 (`Animales/cuyes.png`).
 
+20. **Sin aviso legal en Productos (decisión del usuario, 2026-10-17):** ya no se muestra "Precios referenciales — consulta disponibilidad" ni "Marcas registradas de sus respectivos propietarios". Los precios de los afiches pueden estar desactualizados y las marcas son de terceros; si se quiere cubrir, se puede mover a una línea del pie de Visítanos o al texto de la hoja de detalle (pendiente de decidir).
 ---
 
 ## 13. Checklist

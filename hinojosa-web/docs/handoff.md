@@ -122,6 +122,7 @@ Commits en `Ariel` (sin subir): `0e86d50` (agentes, skills y plan alineados), `1
 2. **Datos que faltan:** ciudad, **cuál de los dos teléfonos tiene WhatsApp** (si alguno), horario, **enlace de Facebook** (la URL de "@Comercial Hinojosa"), Google Maps y coordenadas, referencias para llegar, año de apertura o una línea de historia.
 3. **Visítanos y Productos** fuera del reparto 55/30/15: falta medir de nuevo Productos (cambió) y Nosotros.
 4. **Para la dueña:** casos dudosos del campo `animales` (melaza, sal, maíz, trigo, arrocillo, afrecho, semillas, comedero doble), unidad de "Desde $1.00" en Pro-Can.
+5. **Descripciones cortas de producto** (campo `descripcion` en `productos.json`, 37, ≤ 110 caracteres, 2026-10-17): **en propuesta** hasta que las aprueben el usuario o la dueña. Las más dudosas: melaza, sal en grano, trigo, arrocillo, comedero doble, Nutri Pollos / Vacas / Gallos (sacos de 30 a 40 kg de la línea, no del producto suelto).
 
 ## Mejoras menores abiertas (de `qa-informe.md`)
 M-5 unidad de precio · M-6 "Mascotas" repetido en Inicio · M-8 con 5 productos los laterales del anillo tapan el frente · M-9 halo verdoso del bebedero. Ninguna bloquea. (M-7 y M-11 dejan de aplicar: Nosotros ya no tiene caja gris y escribir ya no gira el carrusel.)

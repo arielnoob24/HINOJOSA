@@ -8,7 +8,8 @@
 //
 // Ganchos: [data-hoja-detalle] (dialog), [data-hoja-titulo] (recibe el
 // foco), [data-hoja-imagen], [data-hoja-detalle-texto], [data-hoja-categoria],
-// [data-hoja-precio], [data-hoja-cta], [data-hoja-cerrar].
+// [data-hoja-precio], [data-hoja-descripcion], [data-hoja-cta],
+// [data-hoja-cerrar].
 // data-captura-flechas: con la hoja abierta, ←/→ no cambian de vista.
 import Icono from './Icono.astro';
 import { textos } from '../lib/negocio';
@@ -48,6 +49,7 @@ const t = textos.productos.hoja;
     <span class="hoja-asa" aria-hidden="true"></span>
     <div class="hoja-imagen" data-hoja-imagen></div>
     <h2 id="hoja-titulo" class="hoja-titulo" tabindex="-1" data-hoja-titulo></h2>
+    <p class="hoja-descripcion" data-hoja-descripcion hidden></p>
     <p class="hoja-detalle" data-hoja-detalle-texto></p>
     <p class="hoja-meta">
       <span data-hoja-categoria></span>
@@ -205,6 +207,14 @@ const t = textos.productos.hoja;
   }
   .hoja-detalle {
     color: var(--color-tinta-suave);
+  }
+  /* Descripcion corta (bloque 23b): tinta-suave sobre crema (6.78) */
+  .hoja-descripcion {
+    color: var(--color-tinta-suave);
+    line-height: 1.4;
+  }
+  .hoja-descripcion[hidden] {
+    display: none;
   }
   .hoja-detalle:empty {
     display: none;

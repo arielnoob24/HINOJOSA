@@ -87,15 +87,16 @@ export function miniaturaLista(mini: string | null): { src: string; srcset?: str
 /**
  * Tarjeta del anillo: --carrusel-ancho. 116 px en movil (no crece: ver
  * VistaProductos, regla M5), 180 px entre 48 y 64rem y, en >= 64rem,
- * clamp(11.25rem, min(27dvh, 17vw), 18rem) (bloque 23; antes 24dvh y
- * 15rem): se declara el tope de 18rem
- * (288 px) para que el frente grande no se pida corto. A 1x sigue saliendo
- * la variante de 400 px de alto (la de la precarga de M5).
- * El realce del frente (--escala-frente, 1,3 / movil 1,15) NO se suma aqui
+ * clamp(10rem, min(53cqh - 2.75rem, 30cqw), 16rem) (bloque 23b: sale del
+ * alto real del escenario; antes min(27dvh, 17vw) con tope 18rem). Se
+ * declara 18rem (288 px, < 300w de la variante chica): a 1x sigue saliendo
+ * la variante de 400 px de alto (la de la precarga de M5) y a 2x la de 800.
+ * El realce del frente (--escala-frente, 1,4 >= 64rem / 1,3 / movil 1,15) NO se suma aqui
  * a proposito: con `sizes` escalado el anillo pediria la de 800 px a DPR 1
  * y dejaria de coincidir con la provisional de M5 (y en movil el LCP
- * pasaria al anillo). A 1440x900 el frente se ve a ~421 px de alto con la
- * de 400 px (ampliacion ~5 %).
+ * pasaria al anillo). A 1440x900 el frente se ve a ~478 px de alto con la
+ * de 400 px a 1x (ampliacion ~20 %, el tope de 16rem lo limita a eso); a
+ * 1366x650, ~334 px (sin ampliar). A DPR 2 se usa la de 800 px.
  */
 export const SIZES_ANILLO = '(max-width: 47.999rem) 7.25rem, (min-width: 64rem) 18rem, 11.25rem';
 /**

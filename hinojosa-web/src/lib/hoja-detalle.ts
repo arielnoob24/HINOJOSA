@@ -76,6 +76,11 @@ function abrir(id: string, fila: HTMLElement) {
   pintarImagen(p);
   const titulo = campo('[data-hoja-titulo]');
   if (titulo) titulo.textContent = p.nombre;
+  const descripcion = campo('[data-hoja-descripcion]');
+  if (descripcion) {
+    descripcion.textContent = p.descripcion ?? '';
+    descripcion.hidden = !p.descripcion;
+  }
   const detalle = campo('[data-hoja-detalle-texto]');
   if (detalle) detalle.textContent = [p.marca, p.presentacion].filter(Boolean).join(' · ');
   const cat = campo('[data-hoja-categoria]');
