@@ -19,7 +19,8 @@ Commits en `Ariel` (sin subir): `0e86d50` (agentes, skills y plan alineados), `1
 
 7. **Bloque 18:** hover de la barra con el trazo de pincel maíz (sustituye al fondo hoja-claro) y ficha de Productos en verde bosque (`.tema-oscuro`).
 8. **Bloque 19:** Productos sin botón de compra en la ficha (línea "Todos estos productos los encuentras en nuestro local · Cómo llegar ›" en el pie) y con pestañas **Detalle / Lista (N)** en lugar de la ventana "Ver todos" (ya no hay `<dialog>` de lista: `abrirLista`/`cerrarLista` se borraron; ahora `elegirPestana`, `abrirResultados`, `quitarFiltro`, `pintarLista` en `catalogo.ts`). En móvil no hay pestañas: la lista de la categoría va bajo el carrusel. Barra: trazo a toda la palabra (`.barra-letras`), 400/250 ms.
-9. **Flujo de trabajo pedido por el usuario:** cambios → `PLAN.md` → agentes y skills → aplicar con los agentes del proyecto → commit y push a `origin Ariel`.
+9. **Bloque 20:** ficha compacta sin scroll (selector Detalle | Lista dentro del cuadro, sin fila Categoría, Marca/Presentación lado a lado, proteína del tilapero en pastillas, notas en una línea) y transición entre pestañas (`cruzarPaneles()`, 140/260 ms, pastilla 240 ms). Los scripts de prueba `b20_*.js` del scratchpad no persisten entre sesiones.
+10. **Flujo de trabajo pedido por el usuario:** cambios → `PLAN.md` → agentes y skills → aplicar con los agentes del proyecto → commit y push a `origin Ariel`.
 
 ### Decisiones del 2026-10-16
 - Trabajar solo en `Ariel`; no tocar `main`.

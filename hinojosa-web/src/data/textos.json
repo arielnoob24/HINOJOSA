@@ -87,6 +87,8 @@
     "_pestanas": "Bloque 19 (2A): pestañas del panel derecho. {n} = total de la categoría activa.",
     "filtradoPor": "Resultados para «{termino}»",
     "quitarFiltro": "Quitar filtro",
+    "franjaProductos": "productos",
+    "_franja": "Bloque 20: la franja bosque del panel en Lista dice «Alimento Mascotas · 16»; «productos» solo lo oye el lector de pantalla.",
     "compraTexto": "Todos estos productos los encuentras en nuestro local",
     "compraEnlace": "Cómo llegar",
     "compraDestino": "#visitanos",
@@ -111,6 +113,7 @@
     "sinPrecio": "Consulta precio",
     "tablaTilapia": {
       "titulo": "Proteína por etapa de la tilapia",
+      "tituloCorto": "Proteína por etapa",
       "columnaEtapa": "Etapa",
       "columnaProteina": "Proteína"
     },

@@ -49,7 +49,7 @@ Un oyente en fase de captura en `src/lib/catalogo.ts` (`abrirCategoria()`) prepa
 ## Excepciones de scroll (las únicas)
 
 - **La pestaña Lista** del panel derecho de Productos (solo la categoría activa, o los resultados de una búsqueda) tiene scroll interno; es enfocable (`tabindex="0"`). (Lenis se retiró del proyecto.)
-- **El cuerpo de la ficha de producto** (escritorio) se desplaza si no cabe (1366×650 con la tabla de la tilapia); es enfocable (`tabindex="0"`) y el botón de compra queda fuera del desplazamiento.
+- ~~El cuerpo de la ficha de producto~~: **desde el bloque 20 la ficha (Detalle) no tiene scroll nunca**; todo cabe con los 37 productos a 1440×900 y 1366×650.
 - **Las sugerencias del buscador** (`listbox`) se desplazan si no caben.
 - **La hoja de detalle de producto en móvil** (`<dialog>` modal) puede tener scroll propio si su contenido no cabe.
 - **En móvil**, si una vista no cabe en la pantalla, se permite scroll interno en esa vista. Es preferible a recortar contenido esencial. Probar a 360×640.
@@ -207,6 +207,8 @@ Las nueve primeras son los modos de fallo propios de este diseño. Si alguna fal
 20. **Pestañas Detalle / Lista (bloque 19):** `←`/`→` cambian de pestaña y **no** de vista; la Lista muestra solo la categoría activa (N = su total) y cambia con la pestaña de categoría; elegir una fila pone el producto al frente y vuelve a Detalle con el foco en esa pestaña; "Ver los N" del buscador abre la Lista con los resultados y "Quitar filtro" vuelve a la categoría. Ya no existe la ventana `<dialog>` de la lista.
 21. **`#por-que` (2026-10-16):** abre `#nosotros` con el foco en el bloque de razones.
 22. **Hover de la barra (2026-10-16):** con el ratón sobre un rótulo no activo, el trazo de pincel maíz se dibuja bajo el texto y la posición `x` de los demás enlaces no cambia (prueba 14); sobre el activo no aparece; con `prefers-reduced-motion` o la pausa aparece sin transición; en táctil no aparece.
+23. **Ficha sin scroll (bloque 20):** para cada uno de los 37 productos (`window.hinojosaCatalogo.seleccionar(id)`), a 1440×900 y 1366×650, el panel Detalle cumple `scrollHeight <= clientHeight` y ningún hijo queda fuera del cuadro (rectángulos medidos).
+24. **Transición Detalle ↔ Lista (bloque 20):** al cambiar de pestaña, muestreando fotogramas, el cuadro no cambia de tamaño (tolerancia 1 px), el saliente se va en ~140 ms y el entrante llega en ~260 ms desde el lado de la pestaña, y la pastilla del selector se desliza ~240 ms; con reduced motion o la pausa, instantáneo. El foco sigue en la pestaña elegida.
 
 ---
 

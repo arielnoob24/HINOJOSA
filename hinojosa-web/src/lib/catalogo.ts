@@ -36,6 +36,12 @@
 //     en esa pestana. En movil no hay pestanas: la lista de la categoria va
 //     bajo el carrusel. mostrarEnLista() y resaltarFila() (C4, carrusel.ts)
 //     siguen igual: si la Lista no se ve, mostrarEnLista no hace nada.
+//   - Bloque 20 (ficha compacta): la ficha no tiene scroll; el selector
+//     va en la franja bosque del cuadro ([data-franja]). pintarLista() pone
+//     data-modo-lista ('categoria' | 'busqueda') en [data-panel] y el
+//     titulo de la franja ("Categoria · N"). La transicion entre pestanas
+//     (animacion-interaccion) puede poner data-cruzando en [data-panel]
+//     para ver los dos paneles a la vez y animar [data-pastilla-panel].
 //
 // RECUENTOS (P4, decidido 2026-10-14): la pestana y la cabecera de grupo
 // cuentan TODOS los productos de la categoria (lo mismo que la lista). El
@@ -44,7 +50,7 @@
 // pestana, 12 en el anillo). Si todos tienen foto: "4 de 9".
 import { alCambiarVista, alEntrarEnVista } from './router';
 import { indexar, prepararConsulta, buscar, type Indexado } from './busqueda';
-import { movimientoPermitido } from './animacion/movimiento';
+import { movimientoPermitido, token } from './animacion/movimiento';
 
 export interface ProductoDatos {
   id: string;
@@ -221,17 +227,19 @@ function pintarFicha(p: ProductoDatos, dir: number, animar: boolean) {
   poner('[data-ficha-precio]', p.precioTexto);
   poner('[data-ficha-marca]', p.marca ?? '');
   poner('[data-ficha-presentacion]', p.presentacion ?? '');
-  poner('[data-ficha-categoria]', nombreCategoria(p.categoria));
+  // Marca | Presentacion lado a lado; si falta una, la otra a todo el ancho
+  let pares = 0;
   for (const fila of qa('[data-ficha-fila="marca"], [data-ficha-fila="presentacion"]', ficha)) {
     fila.hidden = !q('dd', fila)?.textContent;
+    if (!fila.hidden) pares++;
   }
+  const datosFicha = q('[data-ficha-datos]', ficha);
+  if (datosFicha) datosFicha.dataset.pares = String(pares);
   for (const li of qa('[data-ficha-animal]', ficha)) li.hidden = !p.animales.includes(li.dataset.fichaAnimal!);
   const para = q('[data-ficha-para]', ficha);
   if (para) para.hidden = p.animales.length === 0;
   const tabla = q('[data-ficha-tabla]', ficha);
   if (tabla) tabla.hidden = p.id !== datos?.tablaTilapia;
-  const cuerpo = q('[data-ficha-cuerpo]', ficha);
-  if (cuerpo) cuerpo.scrollTop = 0;
   // Mismo gesto que el rotulo (C2), mas corto: entra desde el sentido del giro
   if (animar && movimientoPermitido() && ficha.offsetParent !== null) {
     const contenido = Array.from(ficha.children) as HTMLElement[];
@@ -281,7 +289,9 @@ export function mostrarEnLista(id: string, alGrupo = false) {
   const contenedor = lista;
   const rc = contenedor.getBoundingClientRect();
   const rf = fila.getBoundingClientRect();
-  const cabecera = alGrupo ? 0 : 52; // cabecera de grupo pegajosa
+  // Cabecera de grupo pegajosa (en escritorio, con la categoria, no se ve)
+  const titulo = fila.closest('[data-grupo]')?.querySelector<HTMLElement>('.prod-grupo-titulo');
+  const cabecera = alGrupo ? 0 : (titulo?.offsetHeight ?? 0) + 8;
   const comportamiento: ScrollBehavior = mqReducido.matches ? 'auto' : 'smooth';
   if (alGrupo) {
     contenedor.scrollBy({ top: rf.top - rc.top - cabecera, behavior: comportamiento });
@@ -426,6 +436,13 @@ function pintarLista() {
   // "Resultados para «perro» · Quitar filtro"
   const filtro = q('[data-filtro-lista]');
   if (filtro) filtro.hidden = !buscando;
+  // Franja del panel (bloque 20): "Alimento Mascotas · 16" o el filtro
+  const panel = q('[data-panel]');
+  if (panel) panel.dataset.modoLista = buscando ? 'busqueda' : 'categoria';
+  const franjaNombre = q('[data-franja-nombre]');
+  if (franjaNombre) franjaNombre.textContent = nombreCategoria(categoria);
+  const franjaTotal = q('[data-franja-total]');
+  if (franjaTotal) franjaTotal.textContent = String(totalPorCategoria.get(categoria) ?? 0);
   const filtroTermino = q('[data-filtro-termino]');
   if (filtroTermino) filtroTermino.textContent = plantilla(datos?.textos.filtradoPor ?? '«{termino}»', { termino: terminoBuscado });
   // "Lista (N)": N = total de la categoria activa
@@ -566,11 +583,84 @@ function elegirSugerencia(op: HTMLElement) {
 // ---------------------------------------------------------------------
 // Pestanas Detalle / Lista (bloque 19, 2A)
 // ---------------------------------------------------------------------
+// Transicion Detalle <-> Lista (bloque 20, solo >= 48rem). Dos capas en la
+// misma celda: con data-cruzando en [data-panel] se ven las dos.
+//   - Saliente: opacidad -> 0 y translateX(-dir x 12 px), 140 ms
+//     ease-salida, por debajo e inerte. Al terminar (tope 200 ms) se quita
+//     data-cruzando y la regla CSS la oculta, como el router con las vistas.
+//   - Entrante: desde dir x 12 px y opacidad 0, 260 ms ease-vista, encima.
+//   dir = +1 hacia Lista (entra desde la derecha), -1 hacia Detalle.
+// Clics rapidos: la ultima pestana gana; cada capa parte de la opacidad y
+// el desplazamiento que tenia en ese instante (sin saltos). El foco y
+// data-pestana cambian antes; con reduced motion o la pausa, corte seco.
+const PANEL_SALE = 140;
+const PANEL_ENTRA = 260;
+const TOPE_PANEL = 200;
+let cruce: { salida: Animation; saliente: HTMLElement; tope: number } | null = null;
+let entradaPanel: Animation | null = null;
+
+function estadoCapa(el: HTMLElement) {
+  const cs = getComputedStyle(el);
+  return { opacity: cs.opacity, transform: cs.transform === 'none' ? 'none' : cs.transform };
+}
+
+function cerrarCruce(panel: HTMLElement) {
+  if (!cruce) return;
+  window.clearTimeout(cruce.tope);
+  cruce.salida.cancel();
+  cruce.saliente.inert = false;
+  cruce = null;
+  panel.removeAttribute('data-cruzando');
+}
+
+function cruzarPaneles(panel: HTMLElement, cual: 'detalle' | 'lista') {
+  const ficha = q<HTMLElement>('[data-ficha]', panel);
+  const lista = q<HTMLElement>('[data-panel-lista]', panel);
+  if (!ficha || !lista) return;
+  const entrante = cual === 'lista' ? lista : ficha;
+  const saliente = cual === 'lista' ? ficha : lista;
+  const animar = mqEscritorio.matches && movimientoPermitido() && panel.offsetParent !== null;
+
+  // Estado de partida, leido ANTES de cancelar lo que hubiera en curso: la
+  // saliente era la activa (visible); la entrante solo si seguia cruzando.
+  const desdeSale = animar ? estadoCapa(saliente) : null;
+  const desdeEntra = animar && panel.hasAttribute('data-cruzando') ? estadoCapa(entrante) : null;
+  entradaPanel?.cancel();
+  entradaPanel = null;
+  cerrarCruce(panel);
+  if (!animar || !desdeSale) return;
+
+  const dir = cual === 'lista' ? 1 : -1;
+  panel.setAttribute('data-cruzando', '');
+  saliente.inert = true;
+  const salida = saliente.animate(
+    [desdeSale, { opacity: 0, transform: `translateX(${-dir * 12}px)` }],
+    { duration: PANEL_SALE, easing: token('--ease-salida') || 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' },
+  );
+  const entrada = entrante.animate(
+    [desdeEntra ?? { opacity: 0, transform: `translateX(${dir * 12}px)` }, { opacity: 1, transform: 'none' }],
+    { duration: PANEL_ENTRA, easing: token('--ease-vista') || 'cubic-bezier(0.22, 1, 0.36, 1)' },
+  );
+  entradaPanel = entrada;
+  entrada.addEventListener('finish', () => {
+    if (entradaPanel === entrada) entradaPanel = null;
+  });
+  const actual = { salida, saliente, tope: window.setTimeout(() => cruce === actual && cerrarCruce(panel), TOPE_PANEL) };
+  cruce = actual;
+  salida.addEventListener('finish', () => {
+    if (cruce === actual) cerrarCruce(panel);
+  });
+}
+
 /** Cambia de pestana (patron ARIA de pestanas, activacion automatica). */
 export function elegirPestana(cual: 'detalle' | 'lista', { foco = false } = {}) {
+  const previa = pestanaPanel;
   pestanaPanel = cual;
   const panel = q('[data-panel]');
-  if (panel) panel.dataset.pestana = cual;
+  if (panel) {
+    panel.dataset.pestana = cual;
+    if (previa !== cual) cruzarPaneles(panel, cual);
+  }
   for (const b of qa<HTMLButtonElement>('[data-pestana-boton]')) {
     const sel = b.dataset.pestanaBoton === cual;
     b.setAttribute('aria-selected', String(sel));
@@ -602,7 +692,18 @@ export function abrirResultados() {
 /** "Quitar filtro": vacia el buscador y la Lista vuelve a la categoria activa. */
 function quitarFiltro() {
   limpiarBusqueda();
-  q<HTMLElement>(`#grupo-${categoria}`)?.focus();
+  enfocarCabeceraLista(categoria);
+}
+
+/**
+ * Foco en la cabecera de la Lista de una categoria: en escritorio, el
+ * titulo de la franja ("Alimento Mascotas · 16"; la cabecera kraft del
+ * grupo no se ve); en movil, la cabecera kraft del grupo.
+ */
+function enfocarCabeceraLista(cat: string) {
+  const franja = q<HTMLElement>('[data-franja-categoria]');
+  if (mqEscritorio.matches && franja && franja.offsetParent !== null) franja.focus();
+  else q<HTMLElement>(`#grupo-${cat}`)?.focus();
 }
 
 /** Vacia el buscador; la Lista vuelve a la categoria activa. */
@@ -676,7 +777,7 @@ function arrancar() {
       limpiarBusqueda();
       if (cat !== categoria) seleccionarCategoria(cat, { origen: 'pestana' });
       else mostrarEnLista(actualId, true);
-      q<HTMLElement>(`#grupo-${cat}`)?.focus();
+      enfocarCabeceraLista(cat);
       return;
     }
   });

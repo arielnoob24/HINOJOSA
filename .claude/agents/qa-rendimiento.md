@@ -14,6 +14,9 @@ Comprueba que Visítanos tenga dos botones "Llamar" (`tel:+593997085015`, `tel:+
 ## Bloque 18 (2026-10-16)
 Tras aplicarlo: prueba 22 de `vistas-hinojosa` (hover de la barra), prueba 14 (la barra no salta con el hover), axe sobre Productos con la ficha en bosque (contrastes de `dt` maíz, `dd` crema, pastillas, tabla, foco maíz) a 1440 y 1366.
 
+## Bloque 20 (2026-10-16)
+Pruebas 23 (ficha sin scroll con los 37 productos a 1440×900 y 1366×650) y 24 (transición Detalle ↔ Lista) de `vistas-hinojosa`; axe en Productos con cada pestaña; Lighthouse móvil `#productos` ≥ 93.
+
 ## Bloque 19 (2026-10-16)
 Tras aplicarlo: pruebas 14, 20 y 22 de `vistas-hinojosa` (pestañas Detalle / Lista, hover de la barra a todo el ancho y 400/250 ms), axe en Productos con cada pestaña abierta, Lighthouse móvil `#productos` ≥ 93.
 

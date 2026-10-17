@@ -24,7 +24,11 @@
 //   [data-carrusel-anterior|siguiente] flechas <button>
 //   [data-carrusel-rotulo] [data-rotulo-nombre|categoria|posicion|precio]
 //   [data-carrusel-anuncio]           region aria-live (visualmente oculta)
-//   [data-panel] (data-pestana="detalle|lista") [data-pestanas-panel]
+//   [data-panel] (data-pestana="detalle|lista", data-modo-lista=
+//     "categoria|busqueda", data-cruzando durante la transicion)
+//   [data-franja] [data-franja-categoria] [data-franja-nombre|total]
+//   [data-pastilla-panel] (--pastilla-x) [data-panel-cuerpo] (celda unica)
+//   [data-pestanas-panel]
 //   [data-pestana-boton=detalle|lista] [data-pestana-lista-texto]
 //   [data-panel-lista][data-lista-catalogo] #lista-<cat> [data-producto-fila=<id>]
 //   [data-filtro-lista] [data-filtro-termino] [data-quitar-filtro]
@@ -302,68 +306,83 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       </ul>
     </div>
 
-    <!-- ================= Panel derecho: pestanas Detalle / Lista (bloque 19, 2A) =================
-         Escritorio (>= 48rem): tablist con "Detalle" (la ficha del producto
-         al frente) y "Lista (N)" (solo la categoria activa, o los resultados
-         de "Ver los N"). data-captura-flechas: ←/→ cambian de pestana, no de
-         vista. El estado lo lleva data-pestana (catalogo.ts, elegirPestana).
+    <!-- ================= Panel derecho: Detalle / Lista (bloque 19, 2A; bloque 20) =================
+         Escritorio (>= 48rem): un solo cuadro (fila 3 de la rejilla) con
+         una franja superior bosque ([data-franja]) que lleva a la derecha el
+         selector segmentado "Detalle | Lista (N)" (tablist) y, en Lista, a
+         la izquierda "Categoria · N" o "Resultados para «…» · Quitar filtro".
+         Debajo, en la MISMA celda ([data-panel-cuerpo], grid-area 1 / 1 para
+         los dos), la ficha (Detalle, sin scroll nunca) o la lista (con scroll
+         propio). data-captura-flechas: ←/→ cambian de pestana, no de vista.
+         El estado lo llevan data-pestana y data-modo-lista (catalogo.ts).
+         Transicion (animacion-interaccion): con data-cruzando en [data-panel]
+         se ven los dos paneles a la vez, superpuestos; [data-pastilla-panel]
+         es la pastilla del selector (transform por --pastilla-x).
          Movil: sin pestanas ni ficha; la lista de la categoria va bajo el
-         carrusel, dentro del scroll de la vista.
-         Sin JS: sin pestanas ni ficha; la lista con los 4 grupos ocupa la
+         carrusel, dentro del scroll de la vista; la franja solo aparece con
+         "Resultados para «…» · Quitar filtro".
+         Sin JS: sin franja ni ficha; la lista con los 4 grupos ocupa la
          columna derecha (SEO y alternativa textual del carrusel). -->
-    <div class="prod-panel" data-panel data-pestana="detalle" data-entra style="--orden: 2">
-      <div class="prod-pestanas-panel" role="tablist" aria-label={t.etiquetaPanel} data-pestanas-panel data-captura-flechas data-solo-js>
-        <button type="button" id="tab-detalle" class="prod-pestana prod-pestana-panel" role="tab" aria-selected="true" aria-controls="panel-detalle" tabindex="0" data-pestana-boton="detalle">
-          {t.pestanaDetalle}
-        </button>
-        <button type="button" id="tab-lista" class="prod-pestana prod-pestana-panel" role="tab" aria-selected="false" aria-controls="panel-lista" tabindex="-1" data-pestana-boton="lista">
-          <span data-pestana-lista-texto>{t.pestanaLista.replace('{n}', String(grupos[0]?.productos.length ?? 0))}</span>
-        </button>
+    <div class="prod-panel" data-panel data-pestana="detalle" data-modo-lista="categoria" data-entra style="--orden: 2">
+      <div class="prod-franja tema-oscuro" data-franja data-solo-js>
+        <p class="prod-franja-titulo" tabindex="-1" data-franja-categoria>
+          <span data-franja-nombre>{grupos[0]?.nombre}</span>{' '}<span aria-hidden="true">·</span><span class="sr-only">,</span>{' '}<span class="cifra" data-franja-total>{grupos[0]?.productos.length ?? 0}</span><span class="sr-only">{' '}{t.franjaProductos}</span>
+        </p>
+        <p class="prod-filtro" tabindex="-1" data-filtro-lista hidden>
+          <span class="prod-filtro-termino" data-filtro-termino></span>
+          <span aria-hidden="true">·</span>
+          <button type="button" class="prod-quitar-filtro" data-quitar-filtro>{t.quitarFiltro}</button>
+        </p>
+        <div class="prod-selector">
+          <span class="prod-selector-pastilla" data-pastilla-panel aria-hidden="true"></span>
+          <div class="prod-selector-opciones" role="tablist" aria-label={t.etiquetaPanel} data-pestanas-panel data-captura-flechas>
+            <button type="button" id="tab-detalle" class="prod-selector-opcion" role="tab" aria-selected="true" aria-controls="panel-detalle" tabindex="0" data-pestana-boton="detalle">
+              {t.pestanaDetalle}
+            </button>
+            <button type="button" id="tab-lista" class="prod-selector-opcion" role="tab" aria-selected="false" aria-controls="panel-lista" tabindex="-1" data-pestana-boton="lista">
+              <span data-pestana-lista-texto>{t.pestanaLista.replace('{n}', String(grupos[0]?.productos.length ?? 0))}</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <!-- Ficha del producto al frente (>= 48rem). La pinta catalogo.ts con
-           cada `hinojosa:producto`. No es una region viva: el producto ya se
-           anuncia en [data-carrusel-anuncio]. Sin boton de compra (1A): la
-           compra es la linea del pie. -->
-      <div id="panel-detalle" class="prod-ficha tema-oscuro" role="tabpanel" aria-labelledby="tab-detalle" data-ficha data-solo-js>
-        <div class="prod-ficha-cuerpo" tabindex="0" role="group" aria-labelledby="ficha-nombre" data-ficha-cuerpo>
+      <div class="prod-panel-cuerpo" data-panel-cuerpo>
+      <!-- Ficha compacta del producto al frente (>= 48rem, bloque 20). La
+           pinta catalogo.ts con cada `hinojosa:producto`. Sin scroll: todo
+           cabe con los 37 productos a 1440x900 y 1366x650. No es una region
+           viva (el producto ya se anuncia en [data-carrusel-anuncio]). -->
+      <div id="panel-detalle" class="prod-ficha tema-oscuro" role="tabpanel" aria-labelledby="tab-detalle" tabindex="0" data-ficha data-solo-js>
+        <div class="prod-ficha-cuerpo" data-ficha-cuerpo>
           <h3 id="ficha-nombre" class="prod-ficha-nombre" data-ficha-nombre></h3>
           <p class="prod-ficha-precio"><span class="prod-chip prod-chip-grande cifra" data-ficha-precio></span></p>
-          <dl class="prod-ficha-datos">
+          <dl class="prod-ficha-datos" data-ficha-datos>
             <div data-ficha-fila="marca"><dt>{t.fichaMarca}</dt><dd data-ficha-marca></dd></div>
             <div data-ficha-fila="presentacion"><dt>{t.fichaPresentacion}</dt><dd data-ficha-presentacion></dd></div>
-            <div data-ficha-fila="categoria"><dt>{t.fichaCategoria}</dt><dd data-ficha-categoria></dd></div>
-            <div data-ficha-fila="para" data-ficha-para hidden>
-              <dt>{t.fichaPara}</dt>
-              <dd>
-                <ul class="prod-ficha-animales">
-                  {Object.entries(nombresAnimales).map(([clave, nombre]) => (
-                    <li data-ficha-animal={clave} hidden>
-                      <Icono nombre={iconoAnimal[clave] ?? 'hoja'} class="size-5 shrink-0" />
-                      <span>{nombre}</span>
-                    </li>
-                  ))}
-                </ul>
-              </dd>
-            </div>
           </dl>
-          <table class="prod-tabla" data-ficha-tabla hidden>
-            <caption>{t.tablaTilapia.titulo}</caption>
-            <thead>
-              <tr>
-                <th scope="col">{t.tablaTilapia.columnaEtapa}</th>
-                <th scope="col">{t.tablaTilapia.columnaProteina}</th>
-              </tr>
-            </thead>
-            <tbody>
+          <dl class="prod-ficha-para" data-ficha-para hidden>
+            <dt>{t.fichaPara}</dt>
+            <dd>
+              <ul class="prod-ficha-animales">
+                {Object.entries(nombresAnimales).map(([clave, nombre]) => (
+                  <li data-ficha-animal={clave} hidden>
+                    <Icono nombre={iconoAnimal[clave] ?? 'hoja'} class="size-5 shrink-0" />
+                    <span>{nombre}</span>
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </dl>
+          {/* Solo el tilapero: proteina por etapa en 6 pastillas (2 filas de 3) */}
+          <div class="prod-ficha-proteina" data-ficha-tabla hidden>
+            <p id="ficha-proteina-titulo" class="prod-ficha-etiqueta">{t.tablaTilapia.tituloCorto}</p>
+            <ul class="prod-ficha-etapas" aria-labelledby="ficha-proteina-titulo">
               {tabla.etapas.map((e) => (
-                <tr>
-                  <th scope="row">{e.etapa}</th>
-                  <td class="cifra">{e.proteina}{tabla.unidad}</td>
-                </tr>
+                <li>
+                  <span>{e.etapa}</span>{' '}<span class="prod-ficha-cifra cifra">{`${e.proteina} ${tabla.unidad}`}</span>
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -371,13 +390,10 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
            pone role="tabpanel", aria-labelledby="tab-lista" y tabindex="0"
            (es su contenedor con scroll en escritorio) y muestra solo el
            grupo de la categoria activa (o los resultados de "Ver los N").
-           data-teclas-propias: AvPag/RePag desplazan la lista, no la vista. -->
+           En escritorio, con la categoria (sin busqueda), la cabecera kraft
+           del grupo se oculta: la dice la franja. data-teclas-propias:
+           AvPag/RePag desplazan la lista, no la vista. -->
       <div id="panel-lista" class="prod-lista-panel" data-panel-lista data-lista-catalogo data-teclas-propias="pagina">
-        <p class="prod-filtro" tabindex="-1" data-filtro-lista hidden>
-          <span data-filtro-termino></span>
-          <span aria-hidden="true">·</span>
-          <button type="button" class="prod-quitar-filtro" data-quitar-filtro>{t.quitarFiltro}</button>
-        </p>
         {grupos.map((g) => (
           <section id={`lista-${g.id}`} class="prod-grupo" aria-labelledby={`grupo-${g.id}`} data-grupo={g.id}>
             <h3 id={`grupo-${g.id}`} class="prod-grupo-titulo" tabindex="-1">
@@ -446,17 +462,17 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
           </ul>
         </div>
       </div>
+      </div>
     </div>
 
-    <!-- ================= Pie: linea de compra (1A) + notas ================= -->
+    <!-- ================= Pie: linea de compra (1A) + notas (una linea, bloque 20) ================= -->
     <div class="prod-pie" data-entra style="--orden: 2">
       <p class="prod-compra">
         {t.compraTexto}<span aria-hidden="true">&nbsp;· </span><span class="sr-only">. </span><a href={t.compraDestino} class="prod-compra-enlace">{t.compraEnlace}<Icono nombre="flecha_derecha" class="size-4" /></a>
       </p>
-      <div class="prod-notas">
-        <p>{t.avisoPrecios}</p>
-        <p>{t.avisoMarcas}</p>
-      </div>
+      <p class="prod-notas">
+        {t.avisoPrecios}<span aria-hidden="true"> · </span><span class="sr-only">. </span>{t.avisoMarcas}
+      </p>
     </div>
   </div>
 
@@ -994,60 +1010,97 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     display: none;
   }
 
-  /* ---------- Ficha del producto al frente (solo >= 48rem) ----------
-     Bosque con .tema-oscuro (bloque 18; mismo lenguaje que .vis-tarjeta):
-     nombre blanco (9.80), etiquetas maiz (5.44), datos crema (8.69),
-     filetes crema al 20 % (decorativos), foco maiz (5.44). Chip de precio
-     maiz con tinta (7.93). Animales en pastillas hoja-claro con texto e
-     icono bosque (8.63). Sin boton de compra (bloque 19, 1A: va en el
-     pie). Si no cabe (1366x650, tabla de la tilapia), se desplaza el
-     cuerpo (enfocable). Es el tabpanel de la pestana Detalle. */
+  /* ---------- Ficha compacta del producto al frente (solo >= 48rem) ----------
+     Bloque 20: SIN scroll nunca (prueba 23: los 37 productos caben a
+     1440x900 y 1366x650). Bosque con .tema-oscuro: nombre blanco (9.80),
+     etiquetas maiz (5.44), datos crema (8.69), filetes crema al 20 %
+     (decorativos), foco maiz. Chip de precio maiz con tinta (7.93).
+     Marca y Presentacion lado a lado; "Para" en pastillas hoja-claro con
+     texto e icono bosque (8.63); en el tilapero, la proteina por etapa en
+     6 pastillas (crema al 12 % con texto crema). Letra y huecos escalan con
+     el alto (dvh). Es el tabpanel de la pestana Detalle. */
   .prod-ficha {
     display: none;
   }
   .prod-ficha-cuerpo {
     display: flex;
     min-height: 0;
-    flex: 1 1 auto;
     flex-direction: column;
-    gap: clamp(0.625rem, 1.8dvh, 1rem);
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    gap: var(--ficha-hueco);
   }
   .prod-ficha-nombre {
     font-family: var(--font-serif);
     font-weight: 700;
-    font-size: clamp(1.625rem, min(2.3vw, 4.4dvh), 2.375rem);
-    line-height: 1.08;
+    /* Lo primero que se reduce si no cabe (bloque 20) */
+    font-size: clamp(1.25rem, min(2.1vw, 3.6dvh), 2.25rem);
+    line-height: 1.06;
     color: var(--color-blanco);
     text-wrap: balance;
   }
+  .prod-ficha-precio {
+    line-height: 1;
+  }
   .prod-chip-grande {
     display: inline-block;
-    padding: 0.25rem 0.875rem;
-    font-size: clamp(1.125rem, 1.5vw, 1.375rem);
+    line-height: 1.35;
+    padding: 0.125rem 0.875rem;
+    font-size: clamp(1rem, min(1.5vw, 2.6dvh), 1.375rem);
   }
-  .prod-ficha-datos > div {
-    display: grid;
-    grid-template-columns: 9.5rem minmax(0, 1fr); /* cabe PRESENTACION */
-    align-items: baseline;
-    gap: 0.75rem;
-    border-top: 1px solid rgb(246 241 228 / 0.2); /* crema 20 %, decorativo */
-    padding-block: clamp(0.5rem, 1.4dvh, 0.75rem);
-  }
-  .prod-ficha-datos > div[hidden] {
-    display: none;
-  }
-  .prod-ficha-datos dt {
+  /* Etiqueta pequena maiz en mayusculas, encima del valor */
+  .prod-ficha-datos dt,
+  .prod-ficha-para dt,
+  .prod-ficha-etiqueta {
+    margin-bottom: 0.125rem;
     font-size: var(--text-etiqueta);
     font-weight: 800;
-    letter-spacing: 0.04em;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--color-maiz);
   }
+  /* Marca | Presentacion en dos columnas iguales; si falta una, la otra
+     ocupa el ancho (data-pares="1", lo pone catalogo.ts) */
+  .prod-ficha-datos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 clamp(1rem, 2vw, 1.5rem);
+  }
+  .prod-ficha-datos[data-pares='1'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .prod-ficha-datos[data-pares='0'],
+  .prod-ficha-datos > div[hidden] {
+    display: none;
+  }
   .prod-ficha-datos dd {
     color: var(--color-crema);
-    line-height: 1.4;
+    font-size: clamp(0.9375rem, 2.5dvh, 1.0625rem);
+    line-height: 1.3;
+  }
+  /* Filetes crema al 20 % entre los bloques 3-4-5 */
+  .prod-ficha-datos,
+  .prod-ficha-para,
+  .prod-ficha-proteina {
+    border-top: 1px solid rgb(246 241 228 / 0.2); /* crema 20 %, decorativo */
+    padding-top: calc(var(--ficha-hueco) * 0.75);
+  }
+  .prod-ficha-para[hidden],
+  .prod-ficha-proteina[hidden] {
+    display: none;
+  }
+  /* "Para": etiqueta a la izquierda de las pastillas (ahorra una linea) */
+  .prod-ficha-para:not([hidden]) {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .prod-ficha-para dt {
+    flex: none;
+    margin-bottom: 0;
+  }
+  .prod-ficha-para dd {
+    min-width: 0;
+    flex: 1 1 auto;
   }
   .prod-ficha-animales {
     display: flex;
@@ -1060,7 +1113,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     gap: 0.375rem;
     border-radius: var(--radius-chip);
     background: var(--color-hoja-claro);
-    padding: 0.125rem 0.75rem 0.125rem 0.5rem;
+    padding: 0.0625rem 0.75rem 0.0625rem 0.5rem;
     font-size: var(--text-chico);
     font-weight: 800;
     color: var(--color-bosque);
@@ -1071,15 +1124,24 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   .prod-ficha-animales li[hidden] {
     display: none;
   }
-  .prod-ficha .prod-tabla {
-    margin: 0;
+  /* Tilapero: 6 pastillas en 2 filas de 3 */
+  .prod-ficha-etapas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.375rem;
+  }
+  .prod-ficha-etapas li {
+    border-radius: var(--radius-chip);
+    background: rgb(246 241 228 / 0.12); /* crema 12 % sobre bosque */
+    padding: 0.125rem 0.5rem;
+    font-size: var(--text-chico);
+    line-height: 1.3;
     color: var(--color-crema);
+    text-align: center;
+    white-space: nowrap;
   }
-  .prod-ficha .prod-tabla caption {
-    color: var(--color-maiz);
-  }
-  .prod-ficha .prod-tabla[hidden] {
-    display: none;
+  .prod-ficha-cifra {
+    font-weight: 800;
   }
   /* ---------- Pie: linea de compra (1A) + notas ---------- */
   .prod-pie {
@@ -1122,28 +1184,134 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     color: var(--color-tinta-suave); /* 6.78 sobre crema */
   }
 
-  /* ---------- Panel derecho: pestanas Detalle / Lista (2A) ----------
-     Las pestanas reutilizan .prod-pestana (mismo estilo que las de
-     categoria); la seleccionada, bosque con blanco (aria-selected). Solo
-     se ven en >= 48rem (en movil la lista va directa bajo el carrusel). */
+  /* ---------- Panel derecho: Detalle / Lista (2A, bloque 20) ----------
+     Un solo cuadro con franja superior bosque (.tema-oscuro: foco maiz).
+     En escritorio la franja lleva el selector segmentado a la derecha y,
+     en Lista, "Categoria · N" (o el filtro) a la izquierda. En movil no
+     hay selector: la franja solo aparece con "Resultados para «…»". */
   .prod-panel {
     display: flex;
     min-width: 0;
     flex-direction: column;
-    gap: 0.625rem;
   }
-  .prod-pestanas-panel {
+  .prod-panel-cuerpo {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+  .prod-franja {
+    display: none;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    padding: 0.5rem 0.75rem 0.5rem 1rem;
+  }
+  .prod-panel[data-modo-lista='busqueda'] .prod-franja {
+    display: flex;
+  }
+  .prod-franja-titulo,
+  .prod-filtro {
+    min-width: 0;
+    flex: 1 1 auto;
+    font-size: var(--text-etiqueta);
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--color-crema); /* 8.69 sobre bosque */
+  }
+  /* Una sola linea; si no cabe, "…" (el nombre completo lo dicen la
+     pestana de categoria y el rotulo del carrusel) */
+  .prod-franja-titulo {
+    display: none;
+    overflow: hidden;
+    color: var(--color-maiz); /* 5.44 */
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .prod-franja-titulo [data-franja-total],
+  .prod-franja-titulo [aria-hidden='true'] {
+    color: var(--color-crema);
+  }
+  .prod-filtro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.5rem;
+  }
+  .prod-filtro[hidden] {
     display: none;
   }
-  .prod-pestana-panel {
-    min-width: 6.5rem;
-    padding-inline: 1rem;
+  .prod-franja-titulo:focus-visible,
+  .prod-filtro:focus-visible {
+    outline-offset: 2px;
   }
-  .prod-pestana-panel[aria-selected='true'] {
-    border-color: var(--color-bosque);
-    background: var(--color-bosque);
-    color: var(--color-blanco);
+  .prod-quitar-filtro {
+    min-height: 1.5rem;
     font-weight: 800;
+    color: var(--color-maiz); /* 5.44 sobre bosque */
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  /* Selector segmentado Detalle | Lista (N): borde crema al 40 %, pastilla
+     crema con texto bosque en la activa, texto crema en la inactiva. La
+     pastilla es un elemento propio ([data-pastilla-panel]) que se coloca
+     con --pastilla-x (0 % Detalle, 100 % Lista); la animacion la anade
+     animacion-interaccion. Las dos opciones miden lo mismo (1fr 1fr). */
+  .prod-selector {
+    position: relative;
+    display: none;
+    flex: none;
+    margin-left: auto;
+    border: 1px solid rgb(246 241 228 / 0.4); /* crema 40 % */
+    border-radius: var(--radius-chip);
+    padding: 3px;
+  }
+  .prod-selector-opciones {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .prod-selector-pastilla {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc((100% - 6px) / 2);
+    border-radius: var(--radius-chip);
+    background: var(--color-crema);
+    transform: translateX(var(--pastilla-x, 0%));
+    /* Sin movimiento, salto seco (no la transicion de 0,01 ms de
+       global.css, que Chrome resuelve 2-3 fotogramas tarde); la de 240 ms
+       esta en la media query >= 48rem */
+    transition-property: none;
+  }
+  .prod-panel[data-pestana='lista'] .prod-selector-pastilla {
+    --pastilla-x: 100%;
+  }
+  .prod-selector-opcion {
+    min-width: 5rem;
+    min-height: 1.75rem;
+    border-radius: var(--radius-chip);
+    padding: 0.125rem 0.875rem;
+    font-size: var(--text-etiqueta);
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--color-crema); /* 8.69 sobre bosque */
+    white-space: nowrap;
+  }
+  .prod-selector-opcion[aria-selected='false']:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .prod-selector-opcion[aria-selected='true'] {
+    color: var(--color-bosque); /* 8.69 sobre crema */
+  }
+  @media (forced-colors: active) {
+    .prod-selector-pastilla {
+      display: none;
+    }
+    .prod-selector-opcion[aria-selected='true'] {
+      outline: 2px solid Highlight;
+    }
   }
 
   /* ---------- Lista (pestana Lista; movil bajo el carrusel; sin JS en la
@@ -1159,29 +1327,6 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     background: var(--color-hoja-claro);
     padding: 0 0.5rem 0.5rem;
     color: var(--color-tinta);
-  }
-  .prod-filtro {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0 0.5rem;
-    padding: 0.625rem 0.5rem 0.375rem;
-    font-size: var(--text-chico);
-    font-weight: 800;
-    color: var(--color-tinta);
-  }
-  .prod-filtro[hidden] {
-    display: none;
-  }
-  .prod-filtro:focus-visible {
-    outline-offset: -3px;
-  }
-  .prod-quitar-filtro {
-    min-height: 1.5rem;
-    font-weight: 800;
-    color: var(--color-marca-fuerte); /* 4.73 sobre hoja-claro */
-    text-decoration: underline;
-    text-underline-offset: 3px;
   }
   /* Cabecera de grupo: banda kraft de 36 px a sangre del panel (sustituye
      al subrayado hoja de 3 px). Nombre bosque 800 (6.41 sobre kraft),
@@ -1421,6 +1566,14 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     .prod-escena {
       height: 15rem;
     }
+    /* Con "Resultados para «…»" la franja va pegada encima de la lista */
+    .prod-panel[data-modo-lista='busqueda'] .prod-lista-panel {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+    .prod-quitar-filtro {
+      min-height: var(--spacing-objetivo);
+    }
     /* P9: flechas fuera del escenario, a los lados del rotulo (junto a la
        linea de categoria y posicion) para no tapar los renders */
     .prod-flecha-izq {
@@ -1486,51 +1639,133 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       left: 0;
       right: 0;
     }
-    /* Panel (2A): pestanas arriba y, debajo, la ficha o la lista en el
-       mismo hueco (fila 3). El margen deja sitio a "N productos
-       encontrados · Ver los N", que cuelga del buscador. */
+    /* Panel (2A, bloque 20): un solo cuadro en la fila 3; franja bosque
+       arriba y, debajo, la ficha o la lista en la MISMA celda (los dos con
+       grid-area 1 / 1), asi cambiar de pestana no cambia el tamano. El
+       margen deja sitio a "N productos encontrados · Ver los N", que cuelga
+       del buscador. */
     .prod-panel {
       grid-area: 3 / 2;
       min-height: 0;
       margin-top: 1.25rem;
     }
-    .prod-pestanas-panel {
-      display: flex;
-      flex: none;
-      gap: 0.5rem;
-    }
-    .prod-ficha {
-      display: flex;
-      flex: 1 1 auto;
-      min-height: 0;
-      flex-direction: column;
+    :global(html.js) .prod-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      overflow: clip;
       border-radius: var(--radius-panel);
       background: var(--color-bosque);
-      padding: clamp(1rem, 3dvh, 1.75rem) clamp(1.25rem, 2vw, 1.75rem);
     }
-    :global(html.js) .prod-lista-panel {
-      flex: 1 1 auto;
+    .prod-franja {
+      display: flex;
+      min-height: 2.5rem;
+      border-radius: 0;
+      padding: clamp(0.1875rem, 0.8dvh, 0.5rem) clamp(0.375rem, 0.8dvh, 0.5rem) clamp(0.1875rem, 0.8dvh, 0.5rem) clamp(1.25rem, 2vw, 1.75rem);
+    }
+    .prod-selector {
+      display: block;
+    }
+    /* En Detalle la franja no lleva titulo; en Lista, la categoria o el filtro */
+    .prod-panel[data-pestana='lista'][data-modo-lista='categoria'] .prod-franja-titulo {
+      display: block;
+    }
+    .prod-panel[data-pestana='detalle'] .prod-filtro {
+      display: none;
+    }
+    :global(html.js) .prod-panel-cuerpo {
+      display: grid;
       min-height: 0;
+      grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    }
+    :global(html.js) .prod-panel-cuerpo > * {
+      grid-area: 1 / 1;
+      min-height: 0;
+    }
+    .prod-ficha {
+      --ficha-hueco: clamp(0.375rem, 1.3dvh, 0.875rem);
+      display: flex;
+      flex-direction: column;
+      /* Sin scroll a 1440x900, 1366x650 y >= 600 px de alto con >= 1280 de
+         ancho (prueba 23). auto es solo la red de seguridad para pantallas
+         estrechas y bajas a la vez (p. ej. 1024x600 con el tilapero):
+         mejor desplazar que recortar; el tabpanel es enfocable. */
       overflow-y: auto;
       overscroll-behavior: contain;
+      padding: clamp(0.25rem, 1dvh, 0.75rem) clamp(1.25rem, 2vw, 1.75rem) clamp(0.625rem, 2dvh, 1.5rem);
     }
-    .prod-panel[data-pestana='lista'] .prod-ficha,
-    :global(html.js) .prod-panel[data-pestana='detalle'] .prod-lista-panel {
+    /* Esquinas de abajo del cuadro: el anillo de foco las sigue */
+    .prod-ficha {
+      border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+    }
+    .prod-ficha:focus-visible {
+      outline-offset: -4px;
+    }
+    :global(html.js) .prod-lista-panel {
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      border-radius: 0;
+    }
+    /* En categoria la cabecera kraft del grupo repite la franja: fuera */
+    :global(html.js) .prod-panel[data-modo-lista='categoria'] .prod-grupo-titulo {
       display: none;
+    }
+    :global(html.js) .prod-panel[data-modo-lista='categoria'] .prod-lista-panel {
+      padding-top: 0.5rem;
+    }
+    /* Panel inactivo fuera; con data-cruzando (transicion) se ven los dos */
+    .prod-panel:not([data-cruzando])[data-pestana='lista'] .prod-ficha,
+    :global(html.js) .prod-panel:not([data-cruzando])[data-pestana='detalle'] .prod-lista-panel {
+      display: none;
+    }
+    /* Transicion (bloque 20, catalogo.ts cruzarPaneles): la entrante por
+       encima; la saliente no recibe el puntero mientras se funde */
+    .prod-panel[data-cruzando][data-pestana='detalle'] .prod-ficha,
+    .prod-panel[data-cruzando][data-pestana='lista'] .prod-lista-panel {
+      z-index: 1;
+    }
+    .prod-panel[data-cruzando][data-pestana='lista'] .prod-ficha,
+    .prod-panel[data-cruzando][data-pestana='detalle'] .prod-lista-panel {
+      pointer-events: none;
+    }
+    /* Pastilla del selector: se desliza 240 ms; con reduced motion o la
+       pausa del sitio, salta (la pausa no anula transition en global.css) */
+    @media (prefers-reduced-motion: no-preference) {
+      :global(html:not([data-movimiento='pausado'])) .prod-selector-pastilla {
+        transition: transform 240ms var(--ease-vista);
+      }
+      /* El color del rotulo cambia de golpe cuando la pastilla ya cubre
+         media opcion (~60 ms con ease-vista), como el texto activo de la
+         barra: asi no hay bosque sobre bosque ni crema sobre crema */
+      :global(html:not([data-movimiento='pausado'])) .prod-selector-opcion {
+        transition: color 0s linear 60ms;
+      }
     }
     .prod-pie {
       grid-area: 4 / 2;
       padding-bottom: 0.25rem;
     }
-    /* Pantallas bajas (1366x650): la linea de compra en una sola linea,
-       para que la ficha y la lista no pierdan alto */
+    /* Pantallas bajas (1366x650): la linea de compra en una sola linea y
+       menos aire bajo el pie, para que la ficha quepa sin scroll (bloque
+       20: el tilapero necesita ~290 px de cuadro) */
     @media (max-height: 47.5rem) {
+      .prod-marco {
+        padding-bottom: 1.25rem;
+      }
       .prod-compra {
         font-size: var(--text-chico);
         line-height: var(--text-chico--line-height);
       }
       .prod-compra-enlace {
         padding-block: 0.125rem;
+      }
+    }
+    /* Muy bajas (alto 600-640 px): menos aire arriba y entre bloques */
+    @media (max-height: 40rem) {
+      .prod-marco {
+        padding-top: 1.5rem;
+      }
+      .prod-ficha {
+        --ficha-hueco: 0.3125rem;
       }
     }
     /* La ficha ya dice nombre y precio: bajo el anillo queda solo la meta

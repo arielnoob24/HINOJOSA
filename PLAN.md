@@ -49,6 +49,7 @@ La auditoría completa está en [`auditoria.md`](auditoria.md). Estas son las de
 | **Ficha de Productos en verde bosque** (2026-10-16, bloque 18) | La ficha del producto pasa de kraft a **verde bosque** (`.tema-oscuro`), con el mismo lenguaje que la tarjeta de Visítanos. Da a Productos su bloque verde (antes 74/26/0, sin banda bosque) | Kraft (primera versión de la ficha); verde claro `hoja-claro` |
 | **Productos: compra en el pie y pestañas Detalle / Lista** (2026-10-16, bloque 19) | **1A:** el botón "¿Dónde comprarlo? Visítanos" sale de la ficha; queda una **línea de texto en el pie**: "Todos estos productos los encuentras en nuestro local · Cómo llegar →". La hoja de detalle móvil conserva su botón. Con WhatsApp, botón pequeño "Preguntar" junto al precio. **2A:** el botón "Ver todos los productos" y su ventana desaparecen; el panel derecho tiene **pestañas "Detalle" / "Lista (N)"**, y la lista muestra solo la categoría activa en el mismo sitio de la ficha | Enlace junto al precio; quitar la compra; quitar la lista; tira de miniaturas bajo el carrusel; ventana con los 37 (versión anterior) |
 | **Barra: trazo de toda la palabra y más lento** (2026-10-16, bloque 19) | El trazo del hover cubre **todo el ancho del rótulo** (antes ~60 %) y se dibuja en **400 ms** (antes 220) y se recoge en **250 ms** (antes 150) | — |
+| **Ficha compacta y transición Detalle ↔ Lista** (2026-10-16, bloque 20) | El cuadro de Detalle **nunca tiene scroll**: todo se ve con los 37 productos a 1440×900 y 1366×650. Ficha compacta: sin fila Categoría; Marca y Presentación lado a lado; "Para" en pastillas; la tabla del tilapero como 6 pastillas; el selector Detalle \| Lista dentro del cuadro, en una franja superior bosque; notas del pie en una línea. Cambio de pestaña con fundido y deslizamiento corto y pastilla que se desliza | Ficha mínima sin etiquetas; ficha en dos columnas; scroll interno (versión anterior) |
 | **Datos de contacto** (2026-10-16) | Confirmados por el usuario: dirección **Av. del Chofer y Rubén Larson**, teléfonos **099 708 5015** y **098 928 1882**, correo **rubenhinojosa4@yahoo.es**, Facebook **@Comercial Hinojosa** (falta el enlace). Ver sección 1 | — |
 
 **Cambios de criterio que se derivan** (aplican aunque contradigan secciones antiguas):
@@ -323,8 +324,8 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 │ [barra]                                                  │
 │  Nuestros productos               Buscar producto        │
 │  [Granja][Mascotas][Com.][Granos] [🔍 perro…         ✕]  │
-│                                   [ Detalle ][ Lista (9) ]│
-│     [img]   [IMG]   [img]         ┌ FICHA (bosque) ────┐ │
+│                                   ┌ (bosque) [Det.|Lista]┐│
+│     [img]   [IMG]   [img]         │ FICHA compacta     │ │
 │  ◀     (anillo CSS 3D)    ▶       │ Camperito pollos   │ │
 │          [ tarima ]               │ [$28.00]           │ │
 │                                   │ Marca · Present. · │ │
@@ -351,24 +352,27 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 - Bajo el campo: "14 productos encontrados · Ver los 14" (o "Ver categorías" sin resultados).
 - Busca en nombre, marca, presentación, categoría **y en el campo `animales`** (perro, gato, ave/pollo/gallina, cerdo, vaca, cuy, conejo, tilapia/pez), ignorando tildes, guiones y espacios ("procan" = "pro-can") y tolerando singular/plural (`src/lib/busqueda.ts`).
 
-**Ficha del producto al frente (derecha, solo ≥ 48rem)**
-- **Fondo verde bosque** (`.tema-oscuro`, decidido 2026-10-16; antes kraft), como la tarjeta de Visítanos. Nombre en Cormorant grande **blanco** (9.80), chip de precio oro con tinta (7.93), y filas **Marca · Presentación · Categoría · Para** con la etiqueta en **maíz** (5.44) y el valor en **crema** (8.69), separadas por filetes crema al 20 % (decorativos). Animales en pastillas `hoja-claro` con icono y texto bosque (8.63). Para el tilapero, la **tabla de proteína por etapa** (título maíz, celdas crema). Foco maíz.
-- **Sin botón de compra dentro de la ficha (bloque 19, 1A):** la ficha es solo información. Si no cabe (1366×650, tilapia), se desplaza su cuerpo.
-- **Línea de compra en el pie**, bajo la ficha y encima de las notas: texto crema-tinta normal "Todos estos productos los encuentras en nuestro local · " + enlace **"Cómo llegar →"** (`marca-fuerte` subrayado, 4.77 sobre crema) a `#visitanos`. No es un botón.
-- Con la ficha en bosque, el kraft de la vista queda en la tarima del carrusel y en las cabeceras de grupo de la lista completa.
-- Cambia con un fundido corto en el sentido del giro (sin movimiento con reduced motion o pausa).
-- **P2:** cuando WhatsApp esté confirmado, junto al chip del precio aparece un botón pequeño (≈ 36 px de alto, objetivo ≥ 24 px) con el icono de WhatsApp y "Preguntar" (`wa.me` con "Hola, quiero preguntar por {producto}").
-
+**Ficha del producto al frente (derecha, solo ≥ 48rem) — ficha compacta (bloque 20, 2026-10-16)**
+- **Sin scroll nunca:** con cualquiera de los 37 productos, todo el contenido de Detalle se ve dentro del cuadro a 1440×900 y a 1366×650 (y en pantallas ≥ 48rem con alto ≥ 600 px). Los tamaños de letra y los huecos escalan con el alto (`dvh`) para lograrlo; si aun así no cabe, se reduce el tamaño del nombre antes que añadir scroll. Se verifica producto por producto.
+- **Contenedor del panel** (mismo para Detalle y Lista, mismo alto: ocupa la fila de la rejilla; cambiar de pestaña no cambia su tamaño): esquinas redondeadas, **franja superior bosque** con el selector **Detalle \| Lista (N)** a la derecha (control segmentado: pastilla crema con texto bosque en la activa, texto crema en la inactiva, borde crema al 40 %; foco maíz). En Lista, la franja muestra a la izquierda el nombre de la categoría y su recuento ("Alimento Mascotas · 16") en maíz/crema y la lista va debajo sobre `hoja-claro`. En Detalle, el cuadro entero es bosque y la franja no lleva título (el nombre del producto va justo debajo).
+- **Contenido de Detalle** (`.tema-oscuro`, en este orden):
+  1. **Nombre** (Cormorant, blanco 9.80), hasta 2 líneas.
+  2. **Chip de precio** oro con tinta (7.93). Con WhatsApp, el botón "Preguntar" va a su derecha (P2).
+  3. **Marca** y **Presentación lado a lado** en dos columnas iguales: etiqueta pequeña maíz en mayúsculas (5.44) encima del valor crema (8.69). Si falta uno de los dos, el otro ocupa el ancho. **Sin fila Categoría** (la dicen la pestaña de categoría activa y el rótulo bajo el carrusel).
+  4. **Para:** etiqueta maíz + pastillas `hoja-claro` con icono y nombre del animal en bosque (8.63), en una fila que puede partirse.
+  5. **Solo en el tilapero:** "Proteína por etapa" (etiqueta maíz) + **6 pastillas** en 2 filas de 3: "Alevín 45 %", "Preinicial 42 %", "Inicial 38 %", "Crecimiento 32 %", "Desarrollo 28 %", "Engorde 24 %" (fondo crema al 12 %, texto crema; la cifra en 800). Para lectores de pantalla, como lista con nombre accesible (no hace falta `<table>`).
+  - Separación por filetes crema al 20 % entre bloques 3-4-5, o solo por aire; lo que mejor quepa.
 **Pestañas "Detalle" / "Lista (N)" (bloque 19, 2A; sustituyen a "Ver todos los productos" y su ventana)**
-- Arriba del panel derecho, bajo el buscador, dos pestañas con el estilo de las de categoría: **"Detalle"** (por defecto) y **"Lista (N)"**, donde N es el total de la categoría activa (Granja 9, Mascotas 16, Comederos 5, Granos 7). Patrón ARIA de pestañas (`role="tablist"`, `tab` con `aria-selected` y `aria-controls`, `tabpanel`), con ←/→ entre pestañas (el contenedor lleva `data-captura-flechas`: no cambian de vista) e Inicio/Fin.
+- **Desde el bloque 20 van dentro del cuadro** (franja superior bosque, ver arriba), no encima. Dos pestañas: **"Detalle"** (por defecto) y **"Lista (N)"**, donde N es el total de la categoría activa (Granja 9, Mascotas 16, Comederos 5, Granos 7). Patrón ARIA de pestañas (`role="tablist"`, `tab` con `aria-selected` y `aria-controls`, `tabpanel`), con ←/→ entre pestañas (el contenedor lleva `data-captura-flechas`: no cambian de vista) e Inicio/Fin.
 - **Detalle:** la ficha verde.
+- **Transición (bloque 20):** el panel que sale se funde y se desplaza 12 px hacia el lado contrario (140 ms, `--ease-salida`); el que entra llega desde 12 px en la dirección de la pestaña (Detalle → Lista: entra desde la derecha; Lista → Detalle: desde la izquierda) con opacidad 0 → 1 (260 ms, `--ease-vista`), sin cambiar el tamaño del cuadro. La pastilla del selector se desliza entre las dos opciones en 240 ms. Con `prefers-reduced-motion` o la pausa del sitio: instantáneo. Solo `transform` y `opacity`.
 - **Lista:** en el mismo espacio de la ficha, sin ventana, **solo los productos de la categoría activa**, en filas de una línea: miniatura de 40 px, nombre (con "…" si no cabe) y precio a la derecha. Fondo crema-oscuro o hoja-claro (el que mida mejor `direccion-arte`), cabecera de grupo kraft. El producto al frente se marca con la barra bosque de 4 px a la izquierda (C4). Si no cabe, la lista se desplaza dentro del panel. La tabla de la tilapia no va en la lista (está en la ficha).
 - **Tocar una fila:** ese producto gira al frente del carrusel y el panel vuelve a **Detalle** (foco a la pestaña Detalle).
 - **Cambiar de categoría con la Lista abierta:** la lista pasa a la nueva categoría.
 - **Búsqueda:** "Ver los N" del buscador abre la pestaña Lista con los resultados de todas las categorías ("Resultados para «perro» · Quitar filtro" arriba de la lista); al quitar el filtro vuelve a la categoría activa.
 - **Desaparecen:** el botón "Ver todos los productos (37)" y el `<dialog>` de la lista.
 - **Sin JS:** sin pestañas; la ficha no existe y se ven las listas de las 4 categorías en la columna derecha, como antes. **Siempre en el HTML servido** (SEO) y alternativa textual del carrusel.
-- Notas fijas en el pie, bajo la línea de compra: *"Precios referenciales — consulta disponibilidad"* y *"Marcas registradas de sus respectivos propietarios."*
+- Notas fijas en el pie, bajo la línea de compra, **en una sola línea** desde el bloque 20: *"Precios referenciales — consulta disponibilidad · Marcas registradas de sus respectivos propietarios."* (en tamaño chico; puede partirse en pantallas estrechas).
 
 **Móvil (P6)**
 - Orden: título, buscador, pestañas de categoría en una fila, carrusel, rótulo + **"Ver detalle"**, pestañas Detalle / Lista (en móvil "Detalle" muestra solo un aviso corto o se omite y la Lista se ve directamente bajo el carrusel, dentro del scroll de la vista; decide `frontend` lo más simple que pase las pruebas), línea de compra y notas.
@@ -684,6 +688,7 @@ En `.claude/skills/` del proyecto:
 | 17 | **Datos de contacto (2026-10-16):** dirección, 2 teléfonos y correo en `negocio.json`, Visítanos y JSON-LD | contenido-estrategia, frontend, seo-negocio-local | ✅ Hecho 2026-10-16. Falta: ciudad, WhatsApp, horario, enlace de Facebook, coordenadas |
 | 18 | **Ajustes 2026-10-16 (2):** hover de la barra con el trazo de pincel maíz que se dibuja (sustituye al fondo hoja-claro) y ficha de Productos en verde bosque | direccion-arte (guía), frontend, animacion-interaccion | ✅ Hecho 2026-10-16 (la guía de estilo aún no lo recoge) |
 | 19 | **Ajustes 2026-10-16 (3):** Productos: compra como línea en el pie (1A) y pestañas Detalle / Lista por categoría en lugar de la ventana (2A); barra: trazo a todo el ancho del rótulo, 400 / 250 ms | frontend, animacion-interaccion | ✅ Hecho 2026-10-16 (Lighthouse móvil Productos 96–97, axe 0) |
+| 20 | **Ajustes 2026-10-16 (4):** ficha compacta sin scroll (sin Categoría, Marca/Presentación lado a lado, tabla del tilapero en pastillas, selector Detalle \| Lista dentro del cuadro, notas en una línea) y transición suave entre pestañas | frontend, animacion-interaccion | ✅ Hecho 2026-10-16 (37/37 sin scroll a 1440×900 y 1366×650; Lighthouse móvil 96; axe 0) |
 | Cierre | Lighthouse móvil (Inicio ≥ 99, Productos ≥ 93), pruebas del router de `vistas-hinojosa`, axe 0, capturas comparativas. Tras los bloques 15–17 hay que repetir el cierre completo | qa-rendimiento | ⏳ |
 
 ---
