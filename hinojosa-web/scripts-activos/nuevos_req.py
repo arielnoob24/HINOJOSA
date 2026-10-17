@@ -4,6 +4,8 @@ Uso (desde cualquier carpeta):
     python hinojosa-web/scripts-activos/nuevos_req.py            # todo
     python hinojosa-web/scripts-activos/nuevos_req.py imagenes   # solo productos + Canela
     python hinojosa-web/scripts-activos/nuevos_req.py video      # solo el video
+    python hinojosa-web/scripts-activos/nuevos_req.py animales   # solo los animales de Inicio
+    python hinojosa-web/scripts-activos/nuevos_req.py producto sal-en-grano  # un producto
 
 Requisitos: Python 3.13 + Pillow + numpy; Node con `sharp` (en hinojosa-web/node_modules)
 para codificar WebP/AVIF; FFmpeg en el PATH (`scoop install ffmpeg`) para el video.
@@ -21,7 +23,8 @@ temporal y deja la version web en `hinojosa-web/public/`:
     video/canela-jugando.webm|.mp4 + -poster.webp       video con fondo, sin audio
     video/canela-jugando-alfa.webm + -alfa-poster.webp  VP9 con canal alfa (fondo quitado),
         solo cuadros 1-69 en ida y vuelta (ver ALFA_ULTIMO_CUADRO)
-    Uso: python nuevos_req.py [imagenes] [video | video-alfa]
+    img/animales/<slug>[-240].webp|.avif   480 / 240 px de alto, escena de Inicio (2026-10-17)
+    Uso: python nuevos_req.py [imagenes] [video | video-alfa] [animales] [producto <slug>...]
 """
 import json
 import multiprocessing as mp
@@ -41,6 +44,7 @@ from comun import PUB, RAIZ, WEB, dilatar, flood_desde_bordes
 ORIG = RAIZ / "Nuevos Req"
 CATALOGO = ORIG / "CatalogoF"
 MASCOTA = ORIG / "Mascota"
+ANIMALES = ORIG / "Animales"  # 9 animales con alfa para la escena de Inicio (2026-10-17)
 VIDEO = MASCOTA / "Canela Jugando.mp4"
 CODIFICADOR = Path(__file__).with_name("nuevos_req_codificar.mjs")
 
@@ -56,7 +60,7 @@ ERRATAS = {"balaceado": "balanceado"}
 # recorte no queda limpio y se publica con su fondo.
 CON_FONDO = {
     "melaza.jpg": (18, 40),                     # fondo gris liso de estudio: se recorta
-    "sal en grano.jpg": None,                   # foto con fondo texturizado: se deja
+    # sal en grano.jpg (fondo texturizado) se sustituyo el 2026-10-17 por un PNG recortado
     "diferentes tipos de semillas.jpg": None,   # bordes blancos de los sobres se confunden con el fondo
 }
 
@@ -206,6 +210,41 @@ def maestros(tmp: Path) -> tuple[list[dict], list[str]]:
     return trabajos, con_fondo
 
 
+def maestros_animales(tmp: Path) -> list[dict]:
+    """Animales de la escena de Inicio. El RGB bajo el alfa conserva el fondo azul
+    del estudio: el recorte va siempre por alfa, nunca por color."""
+    trabajos = []
+    dest = PUB / "img" / "animales"
+    for f in sorted(ANIMALES.glob("*.png")):
+        s = slug(f.name)
+        im = recortar_contenido(Image.open(f).convert("RGBA"), umbral=24)
+        # pixeles casi transparentes: se vacian para que el azul no tina el borde
+        px = np.asarray(im).copy()
+        px[px[..., 3] < 24] = 0
+        m = tmp / "animales" / f"{s}.png"
+        m.parent.mkdir(parents=True, exist_ok=True)
+        Image.fromarray(px).save(m, compress_level=1)
+        trabajos.append({"in": str(m), "out": str(dest / s), "alto": 480, "avif": True})
+        trabajos.append({"in": str(m), "out": str(dest / f"{s}-240"), "alto": 240, "avif": True})
+    return trabajos
+
+
+def animales() -> None:
+    with tempfile.TemporaryDirectory(prefix="hino-animales-") as t:
+        tmp = Path(t)
+        codificar(maestros_animales(tmp), tmp)
+
+
+def un_producto(nombres: list[str]) -> None:
+    """Regenera solo los productos cuyo slug esta en `nombres` (p. ej. sal-en-grano)."""
+    with tempfile.TemporaryDirectory(prefix="hino-nuevos-req-") as t:
+        tmp = Path(t)
+        trabajos, _ = maestros(tmp)
+        sel = [x for x in trabajos if "/productos/" in x["out"].replace("\\", "/")
+               and any(Path(x["out"]).name.startswith(n) for n in nombres)]
+        codificar(sel, tmp)
+
+
 def codificar(trabajos: list[dict], tmp: Path) -> None:
     manifiesto = tmp / "trabajos.json"
     manifiesto.write_text(json.dumps(trabajos), encoding="utf-8")
@@ -323,10 +362,14 @@ def _video_alfa(base: Path) -> None:
 
 
 if __name__ == "__main__":
-    que = sys.argv[1:] or ["imagenes", "video"]
+    que = sys.argv[1:] or ["imagenes", "video", "animales"]
     if "imagenes" in que:
         imagenes()
     if "video" in que:
         video()
     elif "video-alfa" in que:  # solo la version con alfa
         video(con_fondo=False)
+    if "animales" in que:
+        animales()
+    if "producto" in que:  # python nuevos_req.py producto sal-en-grano
+        un_producto(que[que.index("producto") + 1:])

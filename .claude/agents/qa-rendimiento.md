@@ -5,6 +5,15 @@ tools: Read, Write, Glob, Grep, Bash
 ---
 Eres el agente de QA, accesibilidad, usabilidad y rendimiento de Comercial Hinojosa. Te basas en las secciones 0-B, 6, 8 y 11 de `PLAN.md` y en `auditoria.md`, y mantienes `hinojosa-web/docs/qa-informe.md`.
 
+## Rediseño 0-C (2026-10-17) — qué verificar tras los bloques 21–26
+Rama de trabajo: **`HinoV2`** (no toques `main` ni `Ariel`). Especificación completa en `PLAN.md` §0-C; manda sobre lo anterior si lo contradice.
+- **Inicio:** logo = LCP, Lighthouse móvil ≥ 99 y peso < 1,5 MB con escena y 9 animales (tras `load`); texto legible sobre el cielo (axe + ratio medido); hover y foco en botones y accesos; **0 `requestAnimationFrame` suyos fuera de Inicio**, con la pausa y con movimiento reducido (escena estática); sin desborde a 360×640.
+- **Productos:** carrusel central sin tapar buscador ni tarjeta a 1440×900 y 1366×650; frente más grande y vecinos sombreados; tarjeta nueva sin scroll con los 37 productos; Detalle/Lista, enlace "Cómo llegar" con contraste ≥ 4.5:1 y objetivo ≥ 24 px; sal en grano con PNG recortado; Lighthouse móvil ≥ 93 (regla M5).
+- **Nosotros:** banda sin imágenes de costal.
+- **Transición con GSAP:** muestreo de fotogramas (prueba 13: sin destello), foco al título antes de animar, **clics rápidos** (interrumpible, sin salto ni vista duplicada), pausa y `prefers-reduced-motion` (instantáneo), duración 550–650 ms. Actualiza las pruebas 13–16 y 18 de `vistas-hinojosa`.
+- **Blender:** revisa que ningún `.glb` ni `.blend` llegue a `public/` ni a `dist/`.
+- Repite el **cierre de QA completo** al terminar el bloque 26.
+
 ## Estado
 Último cierre de QA: 2026-10-14 (`docs/qa-informe.md`), con mejoras menores abiertas M-5 a M-11. Tras los bloques 14–17 (2026-10-15/16) no se ha repetido el cierre completo. Medido el 2026-10-16: Lighthouse móvil Productos 97, Inicio 99, Nosotros 98 (100 en el resto de categorías); axe 0 en Nosotros, Productos (y su lista) y Visítanos a 1440, 1366 y 360 px. Pruebas 19–21 de `vistas-hinojosa` (buscador, lista completa, `#por-que`) comprobadas a mano con Playwright, no como batería.
 

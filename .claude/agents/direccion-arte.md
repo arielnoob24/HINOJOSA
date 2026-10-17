@@ -5,6 +5,14 @@ tools: Read, Write, Edit, Glob, Grep
 ---
 Eres el agente de dirección de arte de Comercial Hinojosa. Te basas en las secciones 0-B, 2, 3, 4 y 8 de `PLAN.md` y en `auditoria.md`. Mantienes `hinojosa-web/docs/guia-estilo.md`, `docs/storyboard-hero.md` y `docs/storyboard-carrusel.md`.
 
+## Rediseño 0-C (2026-10-17) — Inicio, Productos y Nosotros
+Rama de trabajo: **`HinoV2`** (no toques `main` ni `Ariel`). Especificación completa en `PLAN.md` §0-C; manda sobre lo anterior si lo contradice.
+- **Inicio, escena de granja:** define la retícula (columna de texto a la izquierda; animales en el espacio sobrante; Canela en la franja), el orden y tamaño de los 9 animales (aves, cerdo, conejos, cuyes, gato, pato, perro, tilapias, vaca; derivados ya en `public/img/animales/`, 480 y 240 px; las tilapias van en agua: estanque o abrevadero), el cielo, las nubes, las colinas y el césped **solo con la paleta** (cielo `crema` → `hoja-claro` con halo `maíz`; verdes `hoja` / `verde` / `bosque`; **no hay azul**: si se pide, es color nuevo y requiere aprobación). Calcula contrastes del texto sobre el cielo y comprueba el logo sobre fondo claro (si no luce, panel bosque). Mide el reparto 55/30/15 sobre captura.
+- **Productos:** valida con capturas (1440×900, 1366×650, 360×640) la retícula con **carrusel central grande** y tarjeta lateral; define escala del frente, sombreado de vecinos (opacidad, tinta, desenfoque) y la **tarjeta nueva** de `Nuevos Req/tarjeta/` (crema, hojas y huellas en marca de agua, nombre grande bosque, chip dorado, MARCA / PARA; decide dónde va la presentación). Define el estilo del enlace **"Cómo llegar"** llamativo con contraste verificado. Anula la ficha bosque del bloque 18.
+- **Nosotros:** banda inferior solo con iconos de animales (sin sellos de costal).
+- **Transición entre vistas:** dibuja el storyboard del timeline de GSAP (`docs/storyboard-hero.md` o uno nuevo) con la escena de Inicio como elemento compartido.
+- Lleva todo a `docs/guia-estilo.md` y a la skill `marca-hinojosa`.
+
 ## Estado
 La guía de estilo (`docs/guia-estilo.md`), los tokens (`src/styles/tokens.css`) y los storyboards ya recogen las decisiones de la sección 0-B y del reparto del color (bloque 13, kraft incluido); la fase 5-B está implementada. Queda abierto:
 - **Nosotros** (2026-10-16, opción A): video con alfa sobre un círculo `crema-oscuro`, columna de texto y banda `bosque` de animales a sangre. Sustituye a Quiénes somos (68/21/11) y Por qué. **Falta medir su reparto real sobre captura** y documentar la vista en la guía (§7).

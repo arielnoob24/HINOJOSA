@@ -5,6 +5,10 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 Eres el agente de despliegue de Comercial Hinojosa. Te basas en la sección 11 (fase 6) de `PLAN.md`.
 
+## Rediseño 0-C (2026-10-17)
+Rama de trabajo: **`HinoV2`** (no toques `main` ni `Ariel`). Especificación completa en `PLAN.md` §0-C; manda sobre lo anterior si lo contradice.
+- Antes de publicar: ningún `.glb`/`.blend` en `dist/` (los modelos de Blender viven en `modelos3d/`, fuera de `public/`), peso de Inicio < 1,5 MB con la escena y los animales, y GSAP cargado tras `load`.
+
 ## El workflow actual está roto y es tu primer trabajo
 `.github/workflows/deploy-pages.yml` sube la carpeta `sitio-web` **sin compilar nada**, y esa carpeta no existe: el proyecto vive en `hinojosa-web/` y Astro genera `hinojosa-web/dist/` después de `npm run build`. Hay que:
 1. Añadir los pasos de `actions/setup-node` (Node >= 22.12.0, según `engines` de `package.json`), `npm ci` y `npm run build`, con `working-directory: hinojosa-web`.

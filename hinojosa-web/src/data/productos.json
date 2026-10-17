@@ -115,8 +115,7 @@
       "precio": null,
       "precioDesde": false,
       "imagen": "/img/productos/granja/sal-en-grano.webp",
-      "destacado": false,
-      "conFondo": true
+      "destacado": false
     },
 
     {

@@ -1,6 +1,41 @@
 # Handoff: sitio web de Comercial Hinojosa
 
-Última actualización: **2026-10-16**. Rama de trabajo: **`Ariel`**. **Desde el 2026-10-16 el usuario quiere trabajar solo en `Ariel` y no tocar `main`** (ni push, ni merge): `main` se quedó en el commit del 2026-10-15 (`35976cb`). Cada push a `main` dispara el workflow de GitHub Pages. Los commits de esta sesión están en `Ariel` local; **no se han subido** (`git push origin Ariel` cuando el usuario lo pida).
+Última actualización: **2026-10-17**. Rama de trabajo: **`HinoV2`** (hasta el 2026-10-16, `Ariel`; ver la sesión del 2026-10-17). **Desde el 2026-10-16 el usuario quiere trabajar solo en `Ariel` y no tocar `main`** (ni push, ni merge): `main` se quedó en el commit del 2026-10-15 (`35976cb`). Cada push a `main` dispara el workflow de GitHub Pages. Los commits de esta sesión están en `Ariel` local; **no se han subido** (`git push origin Ariel` cuando el usuario lo pida).
+
+## Sesión del 2026-10-17 (planificación, sin código)
+
+**Rama de trabajo: `HinoV2`** (el usuario cambió de `Ariel`; `HinoV2` ya tiene todo `origin/main`, commit `1db934f`). No se tocó el código del sitio: esta sesión solo actualizó **`PLAN.md` (nueva sección 0-C y bloques 21–26), los 8 agentes y las skills `vistas-hinojosa` y `marca-hinojosa`**. Lo implementa la siguiente sesión, bloque por bloque.
+
+**Pedido del usuario (detalle y decisiones en `PLAN.md` §0-C):**
+- **Inicio:** sin los costales de abajo; logo, lema y botones a la **izquierda**; los 9 animales de `Nuevos Req/Animales/` (aves, cerdo, conejos, gato, pato, perro, tilapias, vaca; PNG con alfa) en el espacio sobrante, con movimiento; fondo de **granja con césped y nubes que se mueven**, en la paleta (sin azul: cielo crema → hoja-claro); Canela abajo con **mejor render**; botones y accesos que se **pintan o subrayan al hover**.
+- **Productos:** carrusel **más grande y centrado**, el seleccionado **más grande** y los vecinos **sombreados**; **tarjeta nueva** según `Nuevos Req/tarjeta/` (crema, hojas y huellas, nombre grande, chip dorado, MARCA, PARA) que sigue conteniendo Detalle y Lista; "Cómo llegar" **vistoso**; **sal en grano** con el PNG nuevo.
+- **Nosotros:** banda inferior **solo con iconos de animales**.
+- **Transición entre vistas** más fluida: timeline de **GSAP**.
+- **Herramientas:** GSAP como motor de toda la animación; **Blender MCP** (imagen → modelo 3D) como herramienta de producción.
+
+**Supuestos míos que el usuario debe confirmar:**
+1. **Blender solo para renders** (Canela mejor, poses de animales); el sitio sigue sirviendo imágenes/sprites, no 3D en el navegador.
+2. **Cielo sin azul** (la paleta no lo tiene); si lo quiere azul, es color nuevo.
+3. ~~Faltan los cuyes~~ → añadidos.
+4. Retícula de Productos (carrusel al centro, tarjeta lateral estrecha): la valida `direccion-arte` con capturas antes de implementar.
+
+**Cosas que descubrí:**
+- `Nuevos Req/CatalogoF/Alimento Animales de Granja/sal en grano.jpg` ya no existe (git lo marca borrado) y hay un `sal en grano.png` nuevo, sin commitear. `scripts-activos/nuevos_req.py:59` aún dice `"sal en grano.jpg": None`: hay que cambiarlo y regenerar solo ese producto.
+- Los PNG de `Animales/` pesan ~7 MB c/u: derivar a ≤ 640 px en AVIF/WebP. El RGB bajo el alfa conserva fondo azul: **recortar siempre por alfa**.
+- ~~Blender no está instalado~~ → instalado y probado (ver la segunda parte).
+- GSAP ya está en `package.json` (3.15.0) pero solo se carga en Productos (`carrusel-carga.ts`); hay que crear un cargador común.
+- Sin commitear en `HinoV2`: los cambios de documentación de esta sesión, `Animales/`, `tarjeta/` y el cambio de `sal en grano`.
+
+### Segunda parte del 2026-10-17 (instalación y activos)
+- El usuario confirmó: **cuyes añadidos** (`Animales/cuyes.png`, 9 animales), sal en grano en PNG (el `.jpg` se borró a propósito) y **reducir el tamaño**.
+- **Animales reducidos:** `python hinojosa-web/scripts-activos/nuevos_req.py animales` → `public/img/animales/<slug>{,-240}.{avif,webp}` (480 y 240 px de alto). AVIF ≈ 300 KB el juego de 480, ≈ 115 KB el de 240. Revisados sobre crema, sin halo azul. Las tilapias son peces: la escena necesita agua.
+- **Sal en grano:** fuera de `CON_FONDO`, regenerada sola con el modo nuevo `producto sal-en-grano`; `conFondo` quitado en `productos.json`.
+- **Blender instalado y conectado:** **Instalado y probado el 2026-10-17:** Blender **4.5.10 LTS** (`C:\Program Files\Blender Foundation\Blender 4.5\blender.exe`; se eligió la LTS 4.5 y no la 5.x por compatibilidad del complemento), `uv` 0.13.1 (winget; su carpeta se añadió al PATH del usuario), complemento **MCP for Blender** (protocolo 13, el que trae el paquete) instalado y activado en `%APPDATA%\Blender Foundation\Blender\4.5\scripts\addons\blender_mcp_addon.py`, con **arranque automático del servidor en `localhost:9876`** al abrir Blender, y el servidor registrado en **`.mcp.json`** de la raíz: `uvx mcp-for-blender==2.1.9` (el paquete `blender-mcp` se renombró a `mcp-for-blender`), con `DISABLE_TELEMETRY=true`. Probado de punta a punta: Blender respondió a `get_scene_info` y el servidor conectó.
+  - **Cómo se usa:** (1) abrir Blender (el servidor del complemento arranca solo); (2) reiniciar Claude Code en la raíz del proyecto y aprobar el servidor `blender` de `.mcp.json` (`/mcp` muestra su estado); (3) las herramientas aparecen como `mcp__blender__*`: `get_scene_info`, `execute_blender_code`, `look`/`viewport_capture`, `search_assets`/`import_asset` y **`generate_3d`** (imagen o texto → modelo 3D).
+  - **`generate_3d` necesita clave:** Hyper3D Rodin, fal.ai o Tencent Hunyuan3D (las pone el usuario en el panel del complemento, Barra lateral de la vista 3D → "MCP for Blender"), o la **prueba gratuita de Rodin** (limitada). **La imagen se sube a ese servicio externo:** confirmar con la dueña que se pueden subir Canela y los animales. Sin clave, Blender sirve igual para iluminar, posar y renderizar modelos hechos a mano o importados.
+- Agentes y plan puestos al día con esto (`activos-3d-video` ya tiene `mcp__blender` en `tools`).
+
+**Orden recomendado:** 21 (GSAP común, Blender, derivados) → 22 (Inicio) → 23–24 (Productos) → 25 (Nosotros) → 26 (transición) → cierre de QA.
 
 ## Estado en una línea
 
@@ -124,6 +159,7 @@ M-5 unidad de precio · M-6 "Mascotas" repetido en Inicio · M-8 con 5 productos
 
 ## Lo siguiente
 
+0. **Bloques 21–26 del rediseño 0-C** (`PLAN.md` §0-C y §11): Inicio granja, Productos centrado y tarjeta nueva, Nosotros, GSAP y Blender. Antes, confirmar los 4 supuestos de la sesión del 2026-10-17.
 1. Que el usuario apruebe (o cambie) las 3 razones de Nosotros y dé los datos que faltan (sobre todo WhatsApp, enlace de Facebook, ciudad y horario).
 2. Repetir el cierre de QA completo (`qa-rendimiento`) tras los bloques 14–17.
 3. Medir el reparto de color de Nosotros y Productos y llevar las dos vistas nuevas a `docs/guia-estilo.md` (`direccion-arte`).

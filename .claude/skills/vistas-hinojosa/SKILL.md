@@ -152,6 +152,8 @@ Sin scroll **no hay `IntersectionObserver` ni ScrollTrigger**. El evento de camb
 
 ### Transición entre vistas (decidida 2026-10-13)
 
+> ⚠️ **Rediseño 0-C (2026-10-17, bloque 26, pendiente de implementar):** esta versión en dos capas CSS (≈ 440 ms) se sustituye por un **timeline de GSAP**: capas solapadas, `power3.out`, desplazamiento horizontal con algo de profundidad, `stagger` en `[data-entra]`, escena de Inicio compartida, total 550–650 ms e **interrumpible** (un clic nuevo invierte o reemplaza el timeline sin saltos). No cambia el contrato: `vistas.ts` devuelve una `Promise`, foco al título antes de animar, `inert` y `display`, pausa y `prefers-reduced-motion` instantáneos, sin destello (prueba 13). GSAP lo carga un cargador común tras `load` (`gsap-carga.ts`); con la pausa o sin GSAP, cambio instantáneo. Al implementarlo, `animacion-interaccion` reescribe esta sección y las pruebas 13–16 y 18 (Inicio ya tiene bucle propio —nubes, animales, Canela—; fuera de Inicio, 0 `requestAnimationFrame`).
+
 `dir` = +1 si la vista destino va después en el orden de la barra, −1 si va antes.
 
 | Capa | Propiedades | Duración | Curva |

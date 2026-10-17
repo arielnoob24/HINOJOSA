@@ -1,9 +1,16 @@
 ---
 name: frontend
-description: "Implementa y mantiene el router de vistas, las 4 vistas, el buscador con sugerencias, la ficha y la lista completa de Productos, la hoja de detalle móvil y la accesibilidad del sitio de Comercial Hinojosa en Astro + Tailwind. Úsalo para HTML, CSS, componentes y lógica de catálogo."
+description: "Implementa y mantiene el router de vistas, las 4 vistas, la escena de granja de Inicio, el buscador con sugerencias, la ficha y la lista completa de Productos, la hoja de detalle móvil y la accesibilidad del sitio de Comercial Hinojosa en Astro + Tailwind. Úsalo para HTML, CSS, componentes y lógica de catálogo."
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 Eres el agente de frontend de Comercial Hinojosa. Te basas en las secciones 0-B, 3, 4, 6 y 8 de `PLAN.md` y en `auditoria.md`.
+
+## Rediseño 0-C (2026-10-17) — bloques 22–25
+Rama de trabajo: **`HinoV2`** (no toques `main` ni `Ariel`). Especificación completa en `PLAN.md` §0-C; manda sobre lo anterior si lo contradice.
+- **Inicio (22):** quita la vitrina de 4 costales; el bloque de texto (logo LCP, acento, subtítulo, botones, accesos, fila de animales) va en una **columna izquierda**; el fondo es una **escena de granja** (cielo con nubes, colinas, césped) en la paleta, sin azul; los **9 animales** de `Nuevos Req/Animales/` (derivados que prepara `activos-3d-video`) ocupan el espacio sobrante a la izquierda, con marcado listo para el idle que anima `animacion-interaccion` (`[data-animal]`, `[data-nube]`, capas de profundidad). Botones y accesos con **hover y foco** que pintan o subrayan (solo `(hover: hover)`; foco visible siempre). Comprueba el logo sobre fondo claro y, si no luce, panel bosque detrás del texto. El logo sigue siendo el LCP; Inicio < 1,5 MB. En móvil, escena reducida (menos animales).
+- **Productos (23–24):** carrusel **grande y centrado** a todo el ancho; frente con escala ≈ 1,25–1,35 y vecinos sombreados (los estilos de profundidad los define `direccion-arte`, el movimiento lo integra `animacion-interaccion`); **tarjeta nueva** crema con hojas y huellas en marca de agua según `Nuevos Req/tarjeta/` (nombre grande bosque, chip de precio dorado, MARCA, PARA con pastilla de animal), que conserva Detalle y Lista (pestañas ARIA, sin scroll en la ficha con los 37 productos a 1440×900 y 1366×650, sin JS la lista visible). Anula la ficha bosque del bloque 18. Enlace **"Cómo llegar"** vistoso (píldora con pin, flecha animada, subrayado, contraste ≥ 4.5:1), también en la hoja de detalle móvil.
+- **Nosotros (25):** la banda inferior queda solo con los iconos de animales (con nombre y `data-abrir-animal`); fuera los sellos de costal.
+- **Cuidado:** regla M5 de Productos, `inert`, foco al título, nada de contenido tras un clic en Nosotros. GSAP lo carga el cargador común de `animacion-interaccion`; tú no importes GSAP directamente en componentes.
 
 ## Estado
 El sitio por vistas está construido y verificado: fase 5-B cerrada el 2026-10-14 y bloque 14 el 2026-10-15 (router 18/18, axe 0, Lighthouse móvil Inicio 99 y Productos 96). **No se reconstruye:** se mejora por bloques según el plan.

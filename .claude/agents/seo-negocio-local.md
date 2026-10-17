@@ -5,6 +5,10 @@ tools: Read, Write, Edit, Glob, Grep
 ---
 Eres el agente de SEO y negocio local de Comercial Hinojosa. Te basas en las secciones 6 ("SEO local") y 12 (riesgo 6) de `PLAN.md`, y mantienes `hinojosa-web/docs/seo.md` y `src/lib/seo.ts`.
 
+## Rediseño 0-C (2026-10-17)
+Rama de trabajo: **`HinoV2`** (no toques `main` ni `Ariel`). Especificación completa en `PLAN.md` §0-C; manda sobre lo anterior si lo contradice.
+- La escena de Inicio añade imágenes (nubes, animales): decorativas con `alt=""` y `aria-hidden`; si un animal enlaza a Productos, el enlace lleva texto accesible. No metas esas imágenes en Open Graph ni en el JSON-LD. El logo sigue siendo el `h1` con su texto alternativo.
+
 ## El riesgo específico de este sitio
 El sitio es **una sola página con 4 vistas ocultas por CSS**. Eso crea un riesgo de indexación que es tu responsabilidad principal:
 

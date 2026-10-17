@@ -206,6 +206,21 @@ Los originales miden 627–661 px de ancho, así que la versión "900" conserva 
 | `/img/productos/21-nutritivos-cerdos-vacas-cuyes.webp` | 661×918 | 56.3 / 36.7 KB | Balanceados Nutritivos para cerdos, vacas y cuyes |
 | `/img/productos/22-masticables-mascan.webp` | 657×915 | 40.7 / 28.2 KB | Huesos masticables Mascan para perros |
 
+## Animales de la escena de Inicio (2026-10-17)
+
+Originales: `Nuevos Req/Animales/*.png` (9, 2752×1536 con alfa; el RGB bajo el alfa es el fondo azul del estudio). Se generan con `python hinojosa-web/scripts-activos/nuevos_req.py animales`: recorte por alfa (umbral 24), píxeles casi transparentes vaciados y codificación con `sharp`.
+
+| Archivo | Alto | Peso AVIF / WebP |
+|---|---|---|
+| `img/animales/<slug>.{avif,webp}` | 480 px | aves 45/76 · cerdo 26/42 · conejos 28/49 · cuyes 50/94 · gato 21/37 · pato 21/34 · perro 17/28 · tilapias 66/121 · vaca 27/44 KB (AVIF ≈ 300 KB el juego) |
+| `img/animales/<slug>-240.{avif,webp}` | 240 px | ≈ 115 KB el juego en AVIF (móvil) |
+
+`aves` trae gallo, gallina y pollitos (uno suelto a la derecha); las tilapias necesitan agua en la escena.
+
+**Sal en grano** (2026-10-17): el usuario cambió `sal en grano.jpg` por un PNG recortado; sale de `CON_FONDO` y se regenera con `python nuevos_req.py producto sal-en-grano` (52 KB AVIF a 800 px).
+
+**Blender MCP** (2026-10-17): Blender 4.5 LTS + complemento MCP for Blender + `.mcp.json` (`uvx mcp-for-blender==2.1.9`). Los modelos de producción van en `modelos3d/` (raíz; `.blend`/`.glb` ignorados en git) y solo sus renders llegan a `public/`.
+
 ## Videos (sin audio, 25 fps, bucle sin corte; MP4 H.264 con `+faststart`, WebM VP9)
 
 | Ruta pública | Dimensiones | Duración | Peso WebM / MP4 | Poster (`/video/posters/…`) | Sección | `aria-label` sugerido |

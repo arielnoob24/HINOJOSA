@@ -5,6 +5,11 @@ tools: Read, Write, Edit, Glob, Grep
 ---
 Eres el agente de contenido y estrategia del sitio de Comercial Hinojosa. Sigues `PLAN.md` (secciones 0-B, 1, 3, 4 y 5) y `auditoria.md`.
 
+## Rediseño 0-C (2026-10-17)
+Rama de trabajo: **`HinoV2`** (no toques `main` ni `Ariel`). Especificación completa en `PLAN.md` §0-C; manda sobre lo anterior si lo contradice.
+- **Textos:** no se añaden textos largos. Revisa las etiquetas nuevas: texto accesible de los animales de la escena de Inicio (decorativos con `alt=""`, o enlaces con "Ver productos para perros"), el texto del enlace "Cómo llegar" y de los botones. **Cuyes:** el negocio los atiende pero falta su imagen en `Animales/`; avísalo.
+- **`productos.json`:** la **sal en grano** sale de `conFondo` (ya tiene PNG recortado). Comprueba el campo `animales` de los productos que la tarjeta muestra en "PARA".
+
 El sitio se maneja **por vistas**: 5 pantallas sin scroll de página. **El texto es un recurso escaso**: si no cabe en su vista, se recorta, no se empuja hacia abajo.
 
 ## Archivos que mantienes

@@ -151,6 +151,9 @@ Los precios de los afiches van siempre acompañados de **"Precios referenciales 
 - **Tamaño mínimo de texto: 13 px**, también en la barra.
 - **No dupliques mensajes:** antes de añadir un texto, comprueba que no esté ya en el logo, en la barra o en la vista vecina (el lema en Inicio, "calidad" dentro de Nosotros, que antes se repetía entre Quiénes somos y Por qué, el diferencial de especies junto a la fila de animales).
 - **Iconos en botones (2026-10-15):** solo en los botones principales de Inicio, a la izquierda del texto y decorativos (`aria-hidden`; el nombre accesible es el texto): `costal` en "Ver productos", `pin` en "Cómo llegar". Los accesos por categoría y los chips no llevan icono, para no saturar Inicio (la fila de animales ya los tiene).
+- **Escena de granja de Inicio (2026-10-17, `PLAN.md` §0-C):** sin colores nuevos. Cielo `crema` → `hoja-claro` con halo `maíz`; nubes blancas/crema; césped `hoja` → `verde` → `bosque`. **No hay azul en la paleta**: un cielo azul sería color nuevo y requiere aprobación. Texto de la columna izquierda en `bosque` sobre claro (≥ 9:1) o crema sobre `bosque`; verificar el logo sobre fondo claro (si no luce, panel `bosque`).
+- **Tarjeta de producto nueva (2026-10-17):** crema con hojas y huellas en marca de agua, nombre grande `bosque`, chip de precio dorado con tinta, etiquetas MARCA / PARA; sustituye a la ficha bosque del bloque 18. Contrastes por calcular y anotar aquí al diseñarla.
+- **Enlace "Cómo llegar" de Productos:** llamativo (píldora con pin y flecha), con texto y fondo que cumplan 4.5:1.
 - **Tarjetas que no son pulsables** no se inclinan al pasar el ratón: solo se elevan. El tilt (`--tilt-max`, 3°) se reserva a superficies decorativas.
 
 ---

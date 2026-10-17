@@ -1,3 +1,8 @@
 
 # Python
 __pycache__/
+
+# Modelos 3D de produccion (Blender MCP): no se publican ni se versionan los pesados
+modelos3d/**/*.blend
+modelos3d/**/*.blend1
+modelos3d/**/*.glb
