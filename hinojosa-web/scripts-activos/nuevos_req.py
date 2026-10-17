@@ -24,7 +24,8 @@ temporal y deja la version web en `hinojosa-web/public/`:
     video/canela-jugando-alfa.webm + -alfa-poster.webp  VP9 con canal alfa (fondo quitado),
         solo cuadros 1-69 en ida y vuelta (ver ALFA_ULTIMO_CUADRO)
     img/animales/<slug>[-240].webp|.avif   480 / 240 px de alto, escena de Inicio (2026-10-17)
-    Uso: python nuevos_req.py [imagenes] [video | video-alfa] [animales] [producto <slug>...]
+    img/escena/cielo[-280], campo[-320]     fondo de Inicio en dos capas (Animales/fondo.jpg)
+    Uso: python nuevos_req.py [imagenes] [video | video-alfa] [animales] [fondo] [producto <slug>...]
 """
 import json
 import multiprocessing as mp
@@ -37,7 +38,7 @@ import unicodedata
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 from comun import PUB, RAIZ, WEB, dilatar, flood_desde_bordes
 
@@ -229,6 +230,55 @@ def maestros_animales(tmp: Path) -> list[dict]:
     return trabajos
 
 
+FONDO = ANIMALES / "fondo.jpg"  # foto del campo al atardecer (2026-10-17)
+CIELO_HASTA, CAMPO_DESDE = 780, 640  # filas del original (2752x1536); horizonte ~668-705
+
+
+def maestros_fondo(tmp: Path) -> list[dict]:
+    """Escena de Inicio en dos capas: el cielo (sin alfa) deriva lentamente detras
+    del campo (con alfa desde el horizonte), asi las nubes de la foto se mueven."""
+    im = Image.open(FONDO).convert("RGB")
+    a = np.asarray(im).astype(np.float32)
+    h, w, _ = a.shape
+    r, g = a[..., 0], a[..., 1]
+    lum = 0.299 * r + 0.587 * g + 0.114 * a[..., 2]
+    tierra = (g > r * 0.92) | (lum < 95)  # verde o arboles oscuros
+    y0 = int(h * 0.40)
+    hor = np.full(w, h - 1)
+    for x in range(w):
+        run = np.convolve(tierra[y0:, x].astype(int), np.ones(6, int), "valid")
+        idx = np.where(run == 6)[0]
+        if len(idx):
+            hor[x] = y0 + idx[0]
+    hor = np.clip(hor, 668, 705)
+    # junto al sol la neblina engana al detector: alli el horizonte va en las colinas
+    xs = np.arange(w)
+    hor = np.where((xs > w * 0.52) & (xs < w * 0.70), np.maximum(hor, 692), hor)
+    k = 40
+    hp = np.pad(hor, k, mode="edge")
+    hor = np.array([np.median(hp[i:i + 2 * k + 1]) for i in range(w)]).astype(int)
+    mascara = (np.arange(h)[:, None] >= hor[None, :]).astype(np.uint8) * 255
+    campo = im.convert("RGBA")
+    campo.putalpha(Image.fromarray(mascara).filter(ImageFilter.GaussianBlur(4)))
+
+    dest = PUB / "img" / "escena"
+    m_cielo, m_campo = tmp / "cielo.png", tmp / "campo.png"
+    im.crop((0, 0, w, CIELO_HASTA)).save(m_cielo, compress_level=1)
+    campo.crop((0, CAMPO_DESDE, w, h)).save(m_campo, compress_level=1)
+    return [
+        {"in": str(m_cielo), "out": str(dest / "cielo"), "alto": 560, "avif": True, "q": 72},
+        {"in": str(m_cielo), "out": str(dest / "cielo-280"), "alto": 280, "avif": True, "q": 72},
+        {"in": str(m_campo), "out": str(dest / "campo"), "alto": 640, "avif": True, "q": 74},
+        {"in": str(m_campo), "out": str(dest / "campo-320"), "alto": 320, "avif": True, "q": 74},
+    ]
+
+
+def fondo() -> None:
+    with tempfile.TemporaryDirectory(prefix="hino-fondo-") as t:
+        tmp = Path(t)
+        codificar(maestros_fondo(tmp), tmp)
+
+
 def animales() -> None:
     with tempfile.TemporaryDirectory(prefix="hino-animales-") as t:
         tmp = Path(t)
@@ -362,7 +412,7 @@ def _video_alfa(base: Path) -> None:
 
 
 if __name__ == "__main__":
-    que = sys.argv[1:] or ["imagenes", "video", "animales"]
+    que = sys.argv[1:] or ["imagenes", "video", "animales", "fondo"]
     if "imagenes" in que:
         imagenes()
     if "video" in que:
@@ -371,5 +421,7 @@ if __name__ == "__main__":
         video(con_fondo=False)
     if "animales" in que:
         animales()
+    if "fondo" in que:
+        fondo()
     if "producto" in que:  # python nuevos_req.py producto sal-en-grano
         un_producto(que[que.index("producto") + 1:])

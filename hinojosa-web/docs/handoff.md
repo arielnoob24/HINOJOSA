@@ -35,6 +35,15 @@
   - **`generate_3d` necesita clave:** Hyper3D Rodin, fal.ai o Tencent Hunyuan3D (las pone el usuario en el panel del complemento, Barra lateral de la vista 3D → "MCP for Blender"), o la **prueba gratuita de Rodin** (limitada). **La imagen se sube a ese servicio externo:** confirmar con la dueña que se pueden subir Canela y los animales. Sin clave, Blender sirve igual para iluminar, posar y renderizar modelos hechos a mano o importados.
 - Agentes y plan puestos al día con esto (`activos-3d-video` ya tiene `mcp__blender` en `tools`).
 
+### Bloque 22 hecho (2026-10-17, tercera parte)
+- **Inicio con foto real:** `Nuevos Req/Animales/fondo.jpg` (campo al atardecer) en dos capas (`python nuevos_req.py fondo` → `public/img/escena/cielo*` y `campo*`), pintadas en `<canvas>` tras `load` por `src/lib/escena-foto.ts` para que el logo siga siendo el LCP; velo cálido que lleva los morados al dorado; el cielo hace un vaivén lento (`xPercent` ±5, 75 s) y 5 nubes difuminadas derivan encima.
+- **Panel del logo en vidrio esmerilado** (bosque translúcido + `backdrop-filter`, opaco con `prefers-reduced-transparency` o sin soporte). Contraste medido sobre la foto: crema ≥ 6,4, acento maíz ≥ 4,0.
+- **Sin vitrina de costales ni fila de iconos** (`inicio.animales` y `etiquetaAnimales` borrados de `textos.json`).
+- **9 animales** en perspectiva (altura = escala real × distancia bajo el horizonte), con idle por especie en GSAP (`src/lib/animacion/escena-inicio.ts`) y respaldo CSS; tilapias en una charca. Móvil: vaca, cerdo, aves y pato.
+- **Cargador común de GSAP** (`src/lib/animacion/gsap-carga.ts`, tras `load`); el carrusel lo usa. 0 rAF fuera de Inicio.
+- Medido: axe 0; Lighthouse móvil Inicio 95–97 (LCP = logo; la versión anterior da 94–98 en este equipo, el 99 histórico no se reproduce aquí); ~60 fps con CPU ×4 y GPU; peso ~700 KB escritorio.
+- **Pendiente del usuario:** charca (se ve borrosa) o abrevadero; aves y pato muy pequeños en móvil.
+
 **Orden recomendado:** 21 (GSAP común, Blender, derivados) → 22 (Inicio) → 23–24 (Productos) → 25 (Nosotros) → 26 (transición) → cierre de QA.
 
 ## Estado en una línea

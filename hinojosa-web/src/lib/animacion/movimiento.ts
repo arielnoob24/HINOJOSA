@@ -1,6 +1,6 @@
 // Utilidades de movimiento compartidas (fase 4). Va en el JS inicial: no
-// importa ninguna libreria. GSAP solo se carga con import() dinamico desde
-// carrusel-carga.ts al entrar en Productos.
+// importa ninguna libreria. GSAP se carga con import() dinamico desde el
+// cargador comun gsap-carga.ts (tras `load`, o bajo demanda).
 //
 // Regla comun: con prefers-reduced-motion o con la pausa del usuario
 // (html[data-movimiento="pausado"], evento hinojosa:movimiento) no hay

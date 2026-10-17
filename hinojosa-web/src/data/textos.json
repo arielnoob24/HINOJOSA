@@ -32,13 +32,6 @@
       { "categoria": "comederos", "texto": "Comederos" },
       { "categoria": "granos", "texto": "Granos" }
     ],
-    "etiquetaAnimales": "Animales que atendemos",
-    "animales": [
-      { "icono": "ave", "texto": "Aves" },
-      { "icono": "cerdo", "texto": "Cerdos" },
-      { "icono": "perro", "texto": "Mascotas" },
-      { "icono": "pez", "texto": "Tilapias" }
-    ],
     "pausarAnimacion": "Pausar animación",
     "reanudarAnimacion": "Reanudar animación"
   },

@@ -129,17 +129,18 @@ Sin scroll **no hay `IntersectionObserver` ni ScrollTrigger**. El evento de camb
 
 | Recurso | Se carga al entrar en |
 |---|---|
-| Carrusel CSS 3D (`src/lib/animacion/carrusel.ts` + GSAP core, import dinámico desde `carrusel-carga.ts`) e imágenes de la categoría activa | `#productos` |
+| **GSAP 3.15** (`gsap` core + CSSPlugin, un solo chunk y una sola instancia): cargador común `src/lib/animacion/gsap-carga.ts` (`cargarGsap()`, bloque 21) | Cualquier vista, **después de `load`** y en `requestIdleCallback`; antes, solo bajo demanda (entrada directa por `#productos`) |
+| Carrusel CSS 3D (`src/lib/animacion/carrusel.ts`, import dinámico desde `carrusel-carga.ts`, que pide GSAP a `gsap-carga.ts` en paralelo) e imágenes de la categoría activa | `#productos` |
 | Mapa (Leaflet) | `#visitanos` |
 | Entrada única de iconos de las razones y de los animales (CSS sobre los SVG; sin Lottie) | `#nosotros` |
 | Video de Canela jugando con alfa (`video-vista.ts`; en Safari/iOS no se reproduce, queda el póster) | `#nosotros` |
 | Video de la fachada | `#visitanos` |
 | Sprites de Canela corriendo (arranque, carrera, giro) | `#inicio`, pero **después del evento `load`** (el logo sigue siendo el LCP; mientras tanto se ve `canela-franja` sentada) |
-| Costales de la vitrina de Inicio | `#inicio`, con `fetchpriority="low"` o tras `load` |
+| Escena de granja de Inicio (bloque 22): imágenes de los 9 animales (`loading="lazy"`, `fetchpriority="low"`; por debajo de 64rem solo 4) y su movimiento (`escena-inicio.ts`: deriva de las nubes e idle de los animales con GSAP) | `#inicio`; el módulo, tras `load` + LCP pintado + hueco libre (como el paralaje y Canela). Hasta que GSAP toma el control (`html[data-escena-gsap]`), respiración CSS de respaldo |
 
 - Solo la vista **Inicio** se descarga completa de entrada. Presupuesto: **menos de 1,5 MB**.
-- Fuera de Inicio, la carrera de Canela se detiene (0 `requestAnimationFrame`); al volver, empieza otra vez desde sentada.
-- No hay Three.js. El carrusel no tiene bucle de render: GSAP solo anima mientras gira y su ticker se duerme solo; al salir de `#productos` se terminan los tweens en curso. Comprobado con un contador de `requestAnimationFrame` (0 por segundo fuera de Productos).
+- **Inicio tiene bucles propios** (rediseño 0-C): nubes a la deriva (80/110/140 s por cruce según la capa), idle de los animales y carrera de Canela. **Fuera de Inicio, 0 `requestAnimationFrame`**: al salir, la escena se congela mientras la vista sale y, en cuanto el router pone `hidden` a `#inicio`, mata todos sus tweens y llamadas diferidas y limpia los transforms (el ticker de GSAP se duerme solo a los 120 cuadros); la carrera de Canela se detiene y al volver empieza otra vez desde sentada.
+- No hay Three.js. El carrusel no tiene bucle de render: GSAP solo anima mientras gira y su ticker se duerme solo; al salir de `#productos` se terminan los tweens en curso. Comprobado con un contador de `requestAnimationFrame` (0 por segundo en Productos con el anillo quieto, en Nosotros y en Visítanos; en Inicio sí hay bucle: escena y Canela).
 - Un recurso ya cargado no se vuelve a cargar al volver a entrar en su vista.
 
 ---
@@ -147,12 +148,13 @@ Sin scroll **no hay `IntersectionObserver` ni ScrollTrigger**. El evento de camb
 ## Animación
 
 - **Una sola metáfora de transición** en todo el sitio: desplazamiento horizontal en la dirección del orden de las vistas, con fundido.
-- Con `prefers-reduced-motion` **o con la pausa del sitio** (`html[data-movimiento="pausado"]`), el cambio de vista es **instantáneo**, Canela queda sentada y fija, no hay paralaje y el giro del carrusel es instantáneo.
+- Con `prefers-reduced-motion` **o con la pausa del sitio** (`html[data-movimiento="pausado"]`), el cambio de vista es **instantáneo**, Canela queda sentada y fija, no hay paralaje, la escena de Inicio queda **estática** (nubes en su sitio, animales en reposo, sin respiración CSS) y el giro del carrusel es instantáneo.
+- **Regla común de GSAP:** los módulos que animan con GSAP lo piden a `cargarGsap()` (nunca `import 'gsap'` estático fuera de módulos que ya se cargan en diferido) y vigilan el permiso con `vigilarMovimiento(cb)` de `gsap-carga.ts` (reduced motion + pausa; la pausa se observa con `MutationObserver` sobre `data-movimiento`, así vale aunque se ponga por código sin el evento `hinojosa:movimiento`).
 - **Sin botones de pausa (decisión del usuario, 2026-10-15):** Canela corriendo y el video de Quiénes somos van en bucle sin control visible. Esto **incumple WCAG 2.2.2** y está registrado como riesgo 11 en `PLAN.md`; no lo "corrijas" añadiendo un botón sin que el usuario lo pida. La pausa global (`html[data-movimiento="pausado"]`) se conserva en el código. El carrusel, en cambio, **nunca gira solo**, y por eso no necesita control propio.
 
 ### Transición entre vistas (decidida 2026-10-13)
 
-> ⚠️ **Rediseño 0-C (2026-10-17, bloque 26, pendiente de implementar):** esta versión en dos capas CSS (≈ 440 ms) se sustituye por un **timeline de GSAP**: capas solapadas, `power3.out`, desplazamiento horizontal con algo de profundidad, `stagger` en `[data-entra]`, escena de Inicio compartida, total 550–650 ms e **interrumpible** (un clic nuevo invierte o reemplaza el timeline sin saltos). No cambia el contrato: `vistas.ts` devuelve una `Promise`, foco al título antes de animar, `inert` y `display`, pausa y `prefers-reduced-motion` instantáneos, sin destello (prueba 13). GSAP lo carga un cargador común tras `load` (`gsap-carga.ts`); con la pausa o sin GSAP, cambio instantáneo. Al implementarlo, `animacion-interaccion` reescribe esta sección y las pruebas 13–16 y 18 (Inicio ya tiene bucle propio —nubes, animales, Canela—; fuera de Inicio, 0 `requestAnimationFrame`).
+> ⚠️ **Rediseño 0-C (2026-10-17, bloque 26, pendiente de implementar):** esta versión en dos capas CSS (≈ 440 ms) se sustituye por un **timeline de GSAP**: capas solapadas, `power3.out`, desplazamiento horizontal con algo de profundidad, `stagger` en `[data-entra]`, escena de Inicio compartida, total 550–650 ms e **interrumpible** (un clic nuevo invierte o reemplaza el timeline sin saltos). No cambia el contrato: `vistas.ts` devuelve una `Promise`, foco al título antes de animar, `inert` y `display`, pausa y `prefers-reduced-motion` instantáneos, sin destello (prueba 13). GSAP lo carga un cargador común tras `load` (`gsap-carga.ts`); con la pausa o sin GSAP, cambio instantáneo. Al implementarlo, `animacion-interaccion` reescribe esta sección y las pruebas 13–16 y 18 (Inicio ya tiene bucle propio —nubes, animales, Canela, implementado en el bloque 22, prueba 25—; fuera de Inicio, 0 `requestAnimationFrame`).
 
 `dir` = +1 si la vista destino va después en el orden de la barra, −1 si va antes.
 
@@ -185,7 +187,7 @@ La pausa del sitio hoy anula `animation` pero **no** `transition` (`global.css`)
 
 ## Pruebas obligatorias
 
-Las nueve primeras son los modos de fallo propios de este diseño. Si alguna falla, es **bloqueante**. De la 13 a la 18 se añadieron tras la auditoría de 2026-10-13; de la 19 a la 21, con la vista Nosotros y la ficha de Productos (2026-10-16).
+Las nueve primeras son los modos de fallo propios de este diseño. Si alguna falla, es **bloqueante**. De la 13 a la 18 se añadieron tras la auditoría de 2026-10-13; de la 19 a la 21, con la vista Nosotros y la ficha de Productos (2026-10-16); la 25, con la escena de Inicio (2026-10-17).
 
 1. Se llega a las 4 vistas y se recorren solo con teclado (`Tab`, `Enter`, `←`, `→`).
 2. **Con una vista activa, `Tab` no alcanza ningún elemento de las otras tres.** Es el fallo más probable.
@@ -197,7 +199,7 @@ Las nueve primeras son los modos de fallo propios de este diseño. Si alguna fal
 8. `body` no desborda en ninguna vista; en escritorio los únicos scrolls internos son los de "Excepciones de scroll".
 9. A 360×640 ninguna vista desborda en horizontal ni corta contenido esencial.
 10. En el HTML de `dist/` (no en el DOM ya ejecutado) están las 4 vistas completas, con la lista completa de productos.
-11. Con `prefers-reduced-motion` activado no hay bucles, paralaje ni transiciones animadas.
+11. Con `prefers-reduced-motion` activado no hay bucles, paralaje ni transiciones animadas (en Inicio: `html[data-escena-gsap]` ausente, `transform` de nubes y animales `none`, 0 `requestAnimationFrame` por segundo).
 12. ~~Control de pausa del perrito~~: **retirada el 2026-10-15** por decisión del usuario (riesgo 11 del plan). En su lugar: con `prefers-reduced-motion` Canela queda sentada fija y el video no se reproduce.
 13. **Sin destello entre vistas:** muestreando fotogramas con `requestAnimationFrame` durante un cambio de vista, en ningún fotograma la vista saliente está oculta mientras la entrante tiene opacidad < 0,5. Probar sobre todo al salir de Inicio (fondo oscuro).
 14. **La barra no salta:** al cambiar de vista, la posición `x` de los enlaces no activos no cambia (tolerancia 0,5 px).
@@ -205,6 +207,7 @@ Las nueve primeras son los modos de fallo propios de este diseño. Si alguna fal
 16. **Clics rápidos:** pulsar tres vistas seguidas en menos de 300 ms termina en la última, con una sola vista visible y el foco en su título.
 17. **Hoja de detalle (móvil):** "Ver detalle" la abre como `<dialog>` modal con el foco en su título, se cierra con `Esc` y con "Cerrar", y el foco vuelve al botón. Con la hoja abierta, `←`/`→` no cambian de vista.
 18. **Canela corriendo:** nunca sale de la pantalla; gira en cada borde a 1440, 1366 y 360 px de ancho y tras redimensionar la ventana; la pausa global (`data-movimiento="pausado"`, sin botón desde 2026-10-15) congela cuadro y posición; con movimiento reducido queda sentada y fija; al quitar el botón de pausa, el límite derecho vuelve a ser el borde de la franja (ya no se detiene antes del botón); fuera de Inicio no hay `requestAnimationFrame` suyo.
+25. **Escena de Inicio (bloque 22):** en `#inicio` el cielo de la foto (`canvas[data-cielo]`: vaivén `xPercent` ±5 en 75 s por tramo y escala 1 ↔ 1,02 con origen en el horizonte), las nubes `[data-nube]` visibles y los animales visibles (9 en escritorio, los 4 `[data-movil]` por debajo de 64rem) cambian de `transform` entre dos instantes separados 1,5 s, y `html[data-escena-gsap]` está puesto. Al pasar a `#productos`, a los 1,5 s `window.hinojosaEscena.vivas()` y `tweensEscena()` valen 0 y, pasados ~2,5 s más (sueño del ticker), el contador de `requestAnimationFrame` da 0 por segundo (también tras girar el carrusel). Con `html[data-movimiento="pausado"]` (puesto por código) o con `prefers-reduced-motion`, estado `parada`, transforms `none` (cielo incluido) y nada cambia entre dos instantes. GSAP no se pide antes de `load` en `#inicio` (`startTime` del chunk `gsap.*.js` ≥ `loadEventEnd`).
 19. **Buscador con sugerencias (2026-10-16):** al escribir "perro" se abre el `listbox` (≤ 6 opciones + "Ver los N"), `aria-expanded="true"`; `↓`/`↑` mueven `aria-activedescendant`; Enter pone ese producto al frente del carrusel y en la ficha; Esc cierra y un segundo Esc borra. Escribir **no** gira el carrusel.
 20. **Pestañas Detalle / Lista (bloque 19):** `←`/`→` cambian de pestaña y **no** de vista; la Lista muestra solo la categoría activa (N = su total) y cambia con la pestaña de categoría; elegir una fila pone el producto al frente y vuelve a Detalle con el foco en esa pestaña; "Ver los N" del buscador abre la Lista con los resultados y "Quitar filtro" vuelve a la categoría. Ya no existe la ventana `<dialog>` de la lista.
 21. **`#por-que` (2026-10-16):** abre `#nosotros` con el foco en el bloque de razones.

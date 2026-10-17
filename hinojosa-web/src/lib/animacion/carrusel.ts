@@ -2,6 +2,7 @@
 //
 // Se carga con import() dinamico la primera vez que se entra en Productos
 // (carrusel-carga.ts): ni este modulo ni GSAP estan en la carga inicial.
+// GSAP es la instancia comun de gsap-carga.ts (mismo modulo `gsap`).
 //
 // Anillo de "carteles": cada producto se coloca en su punto del circulo con
 // translate3d(x, y, z) dentro de un contenedor con `perspective`, y SIEMPRE
@@ -30,7 +31,7 @@
 // Nunca gira solo. Con reduced motion o con la pausa del usuario todo
 // cambio es instantaneo (y el arrastre da pasos discretos, sin inercia).
 // Sin soporte de 3D no se monta y se queda la rejilla de respaldo.
-import { gsap } from 'gsap/gsap-core';
+import { gsap } from 'gsap';
 import {
   estado,
   seleccionar,

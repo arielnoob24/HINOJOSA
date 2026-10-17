@@ -1,6 +1,9 @@
 // Carga diferida del carrusel 3D: el disparador es el cambio de vista
 // (no hay scroll ni IntersectionObserver). La primera vez que se entra en
-// Productos se descargan carrusel.ts + GSAP (core, sin CSSPlugin). Si la
+// Productos se descargan carrusel.ts y GSAP. GSAP llega por el cargador
+// comun (gsap-carga.ts, bloque 21): si ya se descargo tras `load` no se
+// pide otra vez; si se entra directo por #productos se pide en ese momento,
+// en paralelo con carrusel.ts (misma instancia, mismo chunk). Si la
 // descarga falla, se queda la rejilla de respaldo y la lista intacta.
 // Con reduced motion tambien se monta: el anillo es informacion espacial
 // estatica; solo sus cambios pasan a ser instantaneos.
@@ -16,6 +19,7 @@
 //   - si no hay 3D, si la carga falla o si tarda mas de ESPERA_MAX (la
 //     rejilla vuelve a ser el respaldo visible).
 import { alEntrarEnVista } from '../router';
+import { cargarGsap } from './gsap-carga';
 
 const ESPERA_MAX = 5000;
 const ESPERA_RELEVO = 1500;
@@ -58,7 +62,7 @@ if (document.querySelector('[data-carrusel-escena]')) {
         provisional.src = provisional.dataset.src ?? '';
       }
       const vigia = window.setTimeout(quitarPendiente, ESPERA_MAX);
-      import('./carrusel')
+      Promise.all([cargarGsap(), import('./carrusel')])
         .then(() => {
           window.clearTimeout(vigia);
           // Sin 3D no se monta el anillo: la rejilla queda como definitiva

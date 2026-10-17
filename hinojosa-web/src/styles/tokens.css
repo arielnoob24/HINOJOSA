@@ -58,7 +58,6 @@
   --color-fila-activa-panel: #ffffff;              /* fila activa sobre el panel hoja-claro de la lista (+ barra bosque 4px): tinta encima 14.28 */
   --color-filete-canela: rgb(138 90 31 / 0.35);    /* filete de la tarima kraft y borde de los sellos de costal (decorativo) */
   --color-pendiente-oscuro: rgb(246 241 228 / 0.7); /* iconos de canales pendientes sobre la tarjeta bosque: 5.17 (solo iconos, el texto va en crema 8.69) */
-  --color-velo-costal: rgb(20 48 29 / 0.25);       /* capa de profundidad del costal de atras en la vitrina de Inicio */
 
   /* ---------- Tokens de ROL (la regla de contraste viaja con el token) ---------- */
   --color-fondo: #f6f1e4;              /* = crema */
