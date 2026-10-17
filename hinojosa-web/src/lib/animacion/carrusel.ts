@@ -27,6 +27,11 @@
 //   C7 rotulo atenuado mientras se arrastra. C8 llegada del frente.
 //   P5 tarjeta generica (costal) al frente para productos sin foto.
 //   P9 un lanzamiento mueve como mucho 2 posiciones.
+//   Realce (bloque 23): el frente crece (--escala-frente, `scale` en la
+//      tarjeta) con mas sombra; anterior y siguiente con tinta ~50 %,
+//      menos opacidad y algo desaturados; el resto, mas atenuado. Todo se
+//      interpola por la distancia al frente en pasos (realce()), asi viaja
+//      con el giro, el arrastre y C5 sin saltar cuando cambia data-frente.
 //
 // Nunca gira solo. Con reduced motion o con la pausa del usuario todo
 // cambio es instantaneo (y el arrastre da pasos discretos, sin inercia).
@@ -104,6 +109,7 @@ let tarima: HTMLElement;
 let avisoError: HTMLElement;
 let costalEl: HTMLElement;
 let costalSombra: HTMLElement;
+let costalTarjeta: HTMLElement;
 let costalNombre: HTMLElement;
 /** Sin src hasta que se use: oculto no debe pedirse ni competir por el LCP (M5). */
 let costalImg: HTMLImageElement;
@@ -113,8 +119,19 @@ const cfg = {
   ancho: 180,
   hueco: 16,
   radioMin: 260,
+  /** Realce (bloque 23): escala del frente y sombreado por distancia. */
+  escala: 1.3,
+  opacidadVecino: 0.9,
+  opacidadResto: 0.6,
   opacidadMin: 0.4,
-  oscuroMax: 0.45,
+  oscuroVecino: 0.5,
+  oscuroMax: 0.64,
+  saturacionVecino: 0.7,
+  saturacionResto: 0.55,
+  desenfoqueVecino: 0.6,
+  desenfoqueResto: 1.2,
+  /** Sin desaturar si el navegador no lo pinta bien o si cuesta (ver render). */
+  filtro: true,
   giro: 450,
   giroExtra: 60,
   giroMax: 750,
@@ -146,8 +163,20 @@ function leerConfig() {
   cfg.ancho = items[0]?.el.offsetWidth || px(token('--carrusel-ancho'), 180);
   cfg.hueco = px(token('--carrusel-hueco'), 16);
   cfg.radioMin = px(token('--carrusel-radio-min'), 260);
-  cfg.opacidadMin = parseFloat(token('--carrusel-opacidad-min')) || 0.4;
-  cfg.oscuroMax = parseFloat(token('--carrusel-oscuro-max')) || 0.45;
+  const num = (v: string, d: number) => {
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : d;
+  };
+  // La escala vive en .prod-escenario (cambia entre movil y escritorio)
+  cfg.escala = carrusel ? num(getComputedStyle(carrusel).getPropertyValue('--escala-frente'), 1) : 1;
+  cfg.opacidadVecino = num(token('--carrusel-opacidad-vecino'), 0.9);
+  cfg.opacidadResto = num(token('--carrusel-opacidad-resto'), 0.6);
+  cfg.opacidadMin = num(token('--carrusel-opacidad-min'), 0.4);
+  cfg.oscuroVecino = num(token('--carrusel-oscuro-vecino'), 0.5);
+  cfg.oscuroMax = num(token('--carrusel-oscuro-max'), 0.64);
+  cfg.saturacionVecino = num(token('--carrusel-saturacion-vecino'), 0.7);
+  cfg.desenfoqueVecino = num(token('--carrusel-desenfoque-vecino'), 0.6);
+  cfg.desenfoqueResto = num(token('--carrusel-desenfoque-resto'), 1.2);
   cfg.giro = ms(token('--duracion-giro'), 450);
   cfg.giroExtra = ms(token('--duracion-giro-extra'), 60);
   cfg.giroMax = ms(token('--duracion-giro-max'), 750);
@@ -167,6 +196,52 @@ function calcularRadio() {
 // ---------------------------------------------------------------------
 // Pintado
 // ---------------------------------------------------------------------
+const mezcla = (a: number, b: number, f: number) => a + (b - a) * Math.min(1, Math.max(0, f));
+
+/**
+ * Realce (bloque 23) en funcion de la distancia al frente en pasos, t
+ * (continua: sale de pos.p, no de data-frente, asi que el frente que se va
+ * encoge y se oscurece a la vez que el que llega crece y se aclara, en el
+ * mismo tween del giro, del arrastre y del medio giro de C5).
+ *   e: realce del frente, 1 en t = 0 y 0 desde t = 1 (coseno: sin
+ *      arranque brusco ni al salir ni al llegar).
+ *   t = 1 (anterior/siguiente): tinta oscuroVecino, opacidad opacidadVecino,
+ *   saturacionVecino y un desenfoque leve. t >= 2: el resto, mas atenuado.
+ */
+function realce(t: number) {
+  const e = t < 1 ? (1 + Math.cos(Math.PI * t)) / 2 : 0;
+  const f = 1 - e; // 0 al frente, 1 en anterior/siguiente
+  const lejos = t - 1; // 0..1 entre vecino y resto
+  return {
+    e,
+    escala: 1 + (cfg.escala - 1) * e,
+    oscuro: t <= 1 ? cfg.oscuroVecino * f : mezcla(cfg.oscuroVecino, cfg.oscuroMax, lejos),
+    opacidad:
+      t <= 1
+        ? 1 - (1 - cfg.opacidadVecino) * f
+        : t <= 2
+          ? mezcla(cfg.opacidadVecino, cfg.opacidadResto, lejos)
+          : mezcla(cfg.opacidadResto, cfg.opacidadMin, (t - 2) / 2),
+    saturacion: t <= 1 ? 1 - (1 - cfg.saturacionVecino) * f : mezcla(cfg.saturacionVecino, cfg.saturacionResto, lejos),
+    desenfoque: t <= 1 ? cfg.desenfoqueVecino * f : mezcla(cfg.desenfoqueVecino, cfg.desenfoqueResto, lejos),
+  };
+}
+
+/**
+ * Escala, desaturacion y desenfoque de una tarjeta. Al frente, sin filter
+ * (pixel identico a la provisional de M5). Coste medido (trazas, 6 giros):
+ * el filter lo aplica el compositor; +0-5 ms de raster en 3,3 s.
+ */
+function pintarTarjeta(tarjeta: HTMLElement, escala: number, saturacion: number, desenfoque: number) {
+  tarjeta.style.scale = Math.abs(escala - 1) < 1e-4 ? '' : escala.toFixed(4);
+  let filtro = '';
+  if (cfg.filtro) {
+    if (saturacion < 0.995) filtro += `saturate(${saturacion.toFixed(3)})`;
+    if (desenfoque > 0.05) filtro += ` blur(${desenfoque.toFixed(2)}px)`;
+  }
+  tarjeta.style.filter = filtro.trim();
+}
+
 function render() {
   const n = items.length;
   if (!n) return;
@@ -179,21 +254,27 @@ function render() {
     const x = r * Math.sin(phi);
     const z = r * (c - 1); // el frente queda en z = 0 (tamano 1:1)
     const d = (1 + c) / 2; // 1 al frente, 0 detras
+    let t = Math.abs(modulo(k - pos.p, n));
+    if (t > n / 2) t = n - t; // distancia al frente en pasos
+    const rc = realce(t);
     const l = k === llegadaK ? llegada.l : 0;
-    const base = (cfg.opacidadMin + (1 - cfg.opacidadMin) * d) * fase.a;
+    const base = rc.opacidad * fase.a;
     const transform = `translate3d(${x.toFixed(2)}px, ${(-4 * l).toFixed(2)}px, ${z.toFixed(2)}px)`;
-    const zIndex = String(Math.round(d * 100));
+    // El frente realzado (escala > 1) va siempre por encima de sus vecinos
+    const zIndex = String(Math.round(d * 100 + 20 * rc.e));
     it.el.style.transform = transform;
     it.el.style.opacity = (k === costalK ? base * (1 - costal.v) : base).toFixed(3);
     it.el.style.zIndex = zIndex;
-    it.oscuro.style.opacity = (cfg.oscuroMax * (1 - d)).toFixed(3);
-    pintarSombra(it.sombra, d, l);
+    it.oscuro.style.opacity = rc.oscuro.toFixed(3);
+    pintarTarjeta(it.tarjeta, rc.escala, rc.saturacion, rc.desenfoque);
+    pintarSombra(it.sombra, d, l, rc.e);
     it.el.toggleAttribute('data-frente', k === frente);
     if (k === costalK && costal.v > 0) {
       costalEl.style.transform = transform;
       costalEl.style.opacity = (base * costal.v).toFixed(3);
       costalEl.style.zIndex = zIndex;
-      pintarSombra(costalSombra, d, l);
+      pintarTarjeta(costalTarjeta, rc.escala, 1, 0);
+      pintarSombra(costalSombra, d, l, rc.e);
     }
   }
   const conCostal = costal.v > 0 && costalK >= 0;
@@ -205,10 +286,16 @@ function render() {
   tarima.style.transform = `translate3d(0, 0, ${(-r).toFixed(1)}px) rotateX(90deg) scale(${escala.toFixed(4)})`;
 }
 
-/** Sombra de contacto: mas intensa y ancha en la llegada (C8: 0,35 -> 0,5, scaleX 1,06). */
-function pintarSombra(s: HTMLElement, d: number, l: number) {
-  s.style.opacity = (0.1 + 0.25 * d + 0.15 * l).toFixed(3);
-  s.style.transform = l > 0 ? `scaleX(${(1 + 0.06 * l).toFixed(4)})` : '';
+/**
+ * Sombra de contacto: mas intensa y ancha en la llegada (C8: +0,15 y
+ * scaleX 1,06) y, con el realce (e), tan ancha como la tarjeta escalada,
+ * algo mas alta y mas oscura: el frente "pesa" mas sobre la tarima.
+ */
+function pintarSombra(s: HTMLElement, d: number, l: number, e: number) {
+  s.style.opacity = (0.1 + 0.25 * d + 0.15 * l + 0.2 * e).toFixed(3);
+  const sx = (1 + 0.06 * l) * (1 + (cfg.escala - 1) * e);
+  const sy = 1 + 0.5 * e;
+  s.style.transform = sx !== 1 || sy !== 1 ? `scale(${sx.toFixed(4)}, ${sy.toFixed(4)})` : '';
 }
 
 // ---------------------------------------------------------------------
@@ -923,6 +1010,7 @@ function crearCostal() {
   costalSombra.className = 'anillo-sombra';
   const tarjeta = document.createElement('span');
   tarjeta.className = 'anillo-tarjeta anillo-costal';
+  costalTarjeta = tarjeta;
   const img = document.createElement('img');
   img.alt = '';
   img.width = 200;
@@ -1008,6 +1096,8 @@ function montar() {
       a: fase.a,
       r: fase.r,
       radio: radioDestino,
+      escala: cfg.escala,
+      filtro: cfg.filtro,
       llegadaK,
       llegada: llegada.l,
       costalK,

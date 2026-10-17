@@ -14,6 +14,12 @@
 //   Movil: buscador, carrusel con rotulo y "Ver detalle" (abre la hoja de
 //   detalle), lista de la categoria activa (sin pestanas), compra y notas.
 //   La ficha solo existe en >= 48rem.
+// Rediseno 0-C, bloques 23-24 (2026-10-17), >= 64rem: TRES columnas.
+//   Izquierda: titulo, buscador, categorias apiladas (.prod-categorias,
+//   fuera de .prod-carrusel), compra con "Como llegar" en pildora y notas.
+//   Centro: el carrusel, mucho mas grande (~36 dvh de alto el frente).
+//   Derecha: la tarjeta crema (Detalle | Lista) con hojas y huellas en
+//   marca de agua. Entre 48 y 64rem sigue el 60/40 de arriba.
 // Logica en src/lib/catalogo.ts (puntos de enganche documentados alli).
 //
 // Ganchos de marcado:
@@ -176,8 +182,11 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       </div>
     </div>
 
-    <!-- ================= Carrusel ================= -->
-    <div class="prod-carrusel" data-entra style="--orden: 1">
+    <!-- ================= Categorias =================
+         Fuera de .prod-carrusel desde el bloque 23 para poder apilarlas en
+         la columna izquierda (>= 64rem). Movil y tableta: mismo sitio que
+         antes (entre el buscador y el carrusel). -->
+    <div class="prod-categorias" data-entra style="--orden: 1">
       <div class="prod-pestanas" role="group" aria-label={t.etiquetaPestanas} data-solo-js>
         {grupos.map((g) => (
           <button
@@ -187,11 +196,14 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
             aria-controls="carrusel-productos"
             data-categoria-boton={g.id}
           >
-            {g.nombreCorto} <span class="prod-cuenta">({g.productos.length})</span>
+            <span class="prod-pestana-nombre">{g.nombreCorto}</span> <span class="prod-cuenta">({g.productos.length})</span>
           </button>
         ))}
       </div>
+    </div>
 
+    <!-- ================= Carrusel ================= -->
+    <div class="prod-carrusel" data-entra style="--orden: 1">
       <div
         id="carrusel-productos"
         class="prod-escenario"
@@ -324,7 +336,38 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
          Sin JS: sin franja ni ficha; la lista con los 4 grupos ocupa la
          columna derecha (SEO y alternativa textual del carrusel). -->
     <div class="prod-panel" data-panel data-pestana="detalle" data-modo-lista="categoria" data-entra style="--orden: 2">
-      <div class="prod-franja tema-oscuro" data-franja data-solo-js>
+      {/* Marca de agua de la tarjeta (bloque 23, maqueta Nuevos Req/tarjeta):
+          hojas de trazo fino arriba a la derecha y huellas abajo a la
+          derecha. Decorativa; solo con la tarjeta (>= 48rem con JS). */}
+      <svg class="prod-marca-agua prod-marca-hojas" viewBox="0 0 120 150" aria-hidden="true" focusable="false" data-solo-js>
+        <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M118 2C92 30 70 70 58 148" />
+          <path d="M100 22c-20-4-38 6-46 24 20 6 40-4 46-24zM100 22L54 46" />
+          <path d="M92 38c20-8 30-26 26-44-18 6-28 24-26 44zM92 38l26-44" transform="translate(0 6)" />
+          <path d="M78 70c-22-2-40 10-46 30 22 4 42-8 46-30zM78 70l-46 30" />
+          <path d="M74 80c22-6 36-24 34-46-20 6-34 24-34 46zM74 80l34-46" />
+          <path d="M64 114c-18-2-34 8-40 26 18 4 36-6 40-26zM64 114l-40 26" />
+        </g>
+      </svg>
+      <svg class="prod-marca-agua prod-marca-huellas" viewBox="0 0 110 80" aria-hidden="true" focusable="false" data-solo-js>
+        <g fill="currentColor">
+          <g transform="translate(26 50) rotate(-14)">
+            <ellipse cx="0" cy="8" rx="13" ry="11" />
+            <ellipse cx="-14" cy="-9" rx="5" ry="6.5" />
+            <ellipse cx="-5" cy="-17" rx="5" ry="6.5" />
+            <ellipse cx="6" cy="-17" rx="5" ry="6.5" />
+            <ellipse cx="15" cy="-8" rx="5" ry="6.5" />
+          </g>
+          <g transform="translate(84 34) rotate(12) scale(0.9)">
+            <ellipse cx="0" cy="8" rx="13" ry="11" />
+            <ellipse cx="-14" cy="-9" rx="5" ry="6.5" />
+            <ellipse cx="-5" cy="-17" rx="5" ry="6.5" />
+            <ellipse cx="6" cy="-17" rx="5" ry="6.5" />
+            <ellipse cx="15" cy="-8" rx="5" ry="6.5" />
+          </g>
+        </g>
+      </svg>
+      <div class="prod-franja" data-franja data-solo-js>
         <p class="prod-franja-titulo" tabindex="-1" data-franja-categoria>
           <span data-franja-nombre>{grupos[0]?.nombre}</span>{' '}<span aria-hidden="true">·</span><span class="sr-only">,</span>{' '}<span class="cifra" data-franja-total>{grupos[0]?.productos.length ?? 0}</span><span class="sr-only">{' '}{t.franjaProductos}</span>
         </p>
@@ -351,7 +394,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
            pinta catalogo.ts con cada `hinojosa:producto`. Sin scroll: todo
            cabe con los 37 productos a 1440x900 y 1366x650. No es una region
            viva (el producto ya se anuncia en [data-carrusel-anuncio]). -->
-      <div id="panel-detalle" class="prod-ficha tema-oscuro" role="tabpanel" aria-labelledby="tab-detalle" tabindex="0" data-ficha data-solo-js>
+      <div id="panel-detalle" class="prod-ficha" role="tabpanel" aria-labelledby="tab-detalle" tabindex="0" data-ficha data-solo-js>
         <div class="prod-ficha-cuerpo" data-ficha-cuerpo>
           <h3 id="ficha-nombre" class="prod-ficha-nombre" data-ficha-nombre></h3>
           <p class="prod-ficha-precio"><span class="prod-chip prod-chip-grande cifra" data-ficha-precio></span></p>
@@ -465,11 +508,16 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       </div>
     </div>
 
-    <!-- ================= Pie: linea de compra (1A) + notas (una linea, bloque 20) ================= -->
+    <!-- ================= Pie: compra (1A) con "Como llegar" en pildora (bloque 24) + notas =================
+         >= 64rem: al pie de la columna izquierda. Debajo: al pie de la
+         columna derecha (tableta) o al final del scroll de la vista (movil). -->
     <div class="prod-pie" data-entra style="--orden: 2">
-      <p class="prod-compra">
-        {t.compraTexto}<span aria-hidden="true">&nbsp;· </span><span class="sr-only">. </span><a href={t.compraDestino} class="prod-compra-enlace">{t.compraEnlace}<Icono nombre="flecha_derecha" class="size-4" /></a>
-      </p>
+      <p class="prod-compra">{t.compraTexto}</p>
+      <a href={t.compraDestino} class="prod-llegar">
+        <Icono nombre="pin" class="prod-llegar-pin size-5" />
+        <span class="prod-llegar-texto">{t.compraEnlace}</span>
+        <Icono nombre="flecha_derecha" class="prod-llegar-flecha size-5" />
+      </a>
       <p class="prod-notas">
         {t.avisoPrecios}<span aria-hidden="true"> · </span><span class="sr-only">. </span>{t.avisoMarcas}
       </p>
@@ -504,10 +552,11 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
 
   /* ---------- Pestanas ----------
      Rejilla 2x2 cuando la columna es estrecha y fila de 4 cuando cabe
-     (consulta de contenedor sobre .prod-carrusel). Antes era una fila con
+     (consulta de contenedor sobre .prod-categorias). Antes era una fila con
      scroll horizontal propio y "Granos" quedaba fuera de pantalla en movil
-     (QA M1). */
-  .prod-carrusel {
+     (QA M1). En >= 64rem, apiladas en la columna izquierda (al final). */
+  .prod-categorias {
+    min-width: 0;
     container-type: inline-size;
   }
   .prod-pestanas {
@@ -644,8 +693,11 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     margin-left: calc(var(--carrusel-ancho) / -2);
     border-radius: var(--radius-tarjeta);
     /* El frente del anillo arranca "llegado" (C8: 4 px arriba); la
-       provisional va igual para seguir identica debajo (regla M5) */
-    transform: translateY(-4px);
+       provisional va igual para seguir identica debajo (regla M5). Con
+       `translate` y no `transform`: se aplica DESPUES de la escala del
+       realce (--escala-frente), como en el anillo, donde los -4 px van en
+       el item y la escala en la tarjeta; con transform quedaba en -5,2 px */
+    translate: 0 -4px;
   }
   .prod-frente-tarjeta img {
     display: block;
@@ -872,6 +924,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     padding: 0.5rem 3rem 0.5rem 2.75rem;
     font-size: max(16px, var(--text-cuerpo)); /* evita el zoom de iOS */
     color: var(--color-tinta);
+    text-overflow: ellipsis; /* el ejemplo del placeholder, si no cabe */
   }
   .prod-campo input::placeholder {
     color: var(--color-tinta-suave);
@@ -1010,15 +1063,16 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     display: none;
   }
 
-  /* ---------- Ficha compacta del producto al frente (solo >= 48rem) ----------
-     Bloque 20: SIN scroll nunca (prueba 23: los 37 productos caben a
-     1440x900 y 1366x650). Bosque con .tema-oscuro: nombre blanco (9.80),
-     etiquetas maiz (5.44), datos crema (8.69), filetes crema al 20 %
-     (decorativos), foco maiz. Chip de precio maiz con tinta (7.93).
-     Marca y Presentacion lado a lado; "Para" en pastillas hoja-claro con
-     texto e icono bosque (8.63); en el tilapero, la proteina por etapa en
-     6 pastillas (crema al 12 % con texto crema). Letra y huecos escalan con
-     el alto (dvh). Es el tabpanel de la pestana Detalle. */
+  /* ---------- Ficha del producto al frente: tarjeta crema (bloques 23-24) ----------
+     Maqueta: Nuevos Req/tarjeta. Anula la ficha bosque del bloque 18. SIN
+     scroll nunca (prueba 23: los 37 productos caben a 1440x900 y
+     1366x650). Contrastes (sobre crema #F6F1E4; el degradado de la
+     tarjeta solo aclara, asi que crema es el peor caso): nombre bosque
+     Nunito 800 (8.69), etiquetas tinta 800 en mayusculas (12.67), valores
+     tinta-suave (6.78), chip de precio maiz con tinta (7.93), pastillas
+     "Para" hoja-claro con bosque (8.63), etapas del tilapero crema-oscuro
+     con tinta (11.27). Foco bosque (8.69). Letra y huecos escalan con el
+     alto (dvh). Es el tabpanel de la pestana Detalle. */
   .prod-ficha {
     display: none;
   }
@@ -1029,12 +1083,20 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     gap: var(--ficha-hueco);
   }
   .prod-ficha-nombre {
-    font-family: var(--font-serif);
-    font-weight: 700;
-    /* Lo primero que se reduce si no cabe (bloque 20) */
-    font-size: clamp(1.25rem, min(2.1vw, 3.6dvh), 2.25rem);
-    line-height: 1.06;
-    color: var(--color-blanco);
+    /* Lo primero que se reduce si no cabe (bloque 20); hasta 3 lineas y,
+       si aun asi no cabe, "..." (el nombre entero esta en la lista, en el
+       anuncio del carrusel y en el alt) */
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    font-family: var(--font-sans);
+    font-weight: 800;
+    font-size: clamp(1.375rem, min(2.45vw, 4.6dvh), 2.625rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--color-bosque);
     text-wrap: balance;
   }
   .prod-ficha-precio {
@@ -1043,10 +1105,11 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   .prod-chip-grande {
     display: inline-block;
     line-height: 1.35;
-    padding: 0.125rem 0.875rem;
-    font-size: clamp(1rem, min(1.5vw, 2.6dvh), 1.375rem);
+    padding: 0.1875rem 1rem;
+    font-size: clamp(1rem, min(1.4vw, 2.6dvh), 1.375rem);
+    box-shadow: 0 4px 12px -6px rgb(217 158 15 / 0.7);
   }
-  /* Etiqueta pequena maiz en mayusculas, encima del valor */
+  /* Etiqueta en mayusculas (tinta 800), encima del valor */
   .prod-ficha-datos dt,
   .prod-ficha-para dt,
   .prod-ficha-etiqueta {
@@ -1056,14 +1119,14 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     line-height: 1.2;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--color-maiz);
+    color: var(--color-tinta);
   }
   /* Marca | Presentacion en dos columnas iguales; si falta una, la otra
      ocupa el ancho (data-pares="1", lo pone catalogo.ts) */
   .prod-ficha-datos {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 clamp(1rem, 2vw, 1.5rem);
+    gap: var(--ficha-hueco) clamp(0.75rem, 1.5vw, 1.25rem);
   }
   .prod-ficha-datos[data-pares='1'] {
     grid-template-columns: minmax(0, 1fr);
@@ -1073,22 +1136,16 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     display: none;
   }
   .prod-ficha-datos dd {
-    color: var(--color-crema);
-    font-size: clamp(0.9375rem, 2.5dvh, 1.0625rem);
+    color: var(--color-tinta-suave);
+    font-size: clamp(0.9375rem, 2.5dvh, 1.125rem);
     line-height: 1.3;
-  }
-  /* Filetes crema al 20 % entre los bloques 3-4-5 */
-  .prod-ficha-datos,
-  .prod-ficha-para,
-  .prod-ficha-proteina {
-    border-top: 1px solid rgb(246 241 228 / 0.2); /* crema 20 %, decorativo */
-    padding-top: calc(var(--ficha-hueco) * 0.75);
+    overflow-wrap: anywhere;
   }
   .prod-ficha-para[hidden],
   .prod-ficha-proteina[hidden] {
     display: none;
   }
-  /* "Para": etiqueta a la izquierda de las pastillas (ahorra una linea) */
+  /* "Para": etiqueta a la izquierda de las pastillas (como la maqueta) */
   .prod-ficha-para:not([hidden]) {
     display: flex;
     align-items: center;
@@ -1113,7 +1170,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     gap: 0.375rem;
     border-radius: var(--radius-chip);
     background: var(--color-hoja-claro);
-    padding: 0.0625rem 0.75rem 0.0625rem 0.5rem;
+    padding: 0.1875rem 0.875rem 0.1875rem 0.5rem;
     font-size: var(--text-chico);
     font-weight: 800;
     color: var(--color-bosque);
@@ -1130,53 +1187,119 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.375rem;
   }
+  /* Cada etapa en dos lineas (nombre y cifra): en una sola no cabian
+     "Crecimiento 32 %" y vecinas en la columna de ~370 px */
   .prod-ficha-etapas li {
-    border-radius: var(--radius-chip);
-    background: rgb(246 241 228 / 0.12); /* crema 12 % sobre bosque */
-    padding: 0.125rem 0.5rem;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 0.75rem;
+    background: var(--color-crema-oscuro);
+    padding: 0.125rem 0.25rem;
     font-size: var(--text-chico);
-    line-height: 1.3;
-    color: var(--color-crema);
+    line-height: 1.25;
+    color: var(--color-tinta);
     text-align: center;
+  }
+  .prod-ficha-etapas li > span:first-child {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
   .prod-ficha-cifra {
     font-weight: 800;
+    white-space: nowrap;
   }
-  /* ---------- Pie: linea de compra (1A) + notas ---------- */
+
+  /* ---------- Pie: compra (1A) + "Como llegar" en pildora (bloque 24) + notas ----------
+     Frase tinta sobre crema (12.67). La pildora es un enlace con forma de
+     boton: bosque con texto blanco (9.80), pin maiz (decorativo, 5.44) y
+     flecha que se desplaza 4 px al pasar el raton; el texto se subraya con
+     un trazo blanco que crece. Hover y foco: bosque-noche (blanco 14.38)
+     y, con raton, se eleva 1 px. Foco: anillo bosque por fuera (8.69
+     sobre crema). Alto 44 px en todas las anchuras. */
   .prod-pie {
     display: flex;
     min-width: 0;
     flex-direction: column;
+    align-items: flex-start;
     gap: 0.375rem;
   }
-  /* Texto tinta sobre crema (12.67) + enlace marca-fuerte subrayado
-     (4.77 sobre crema). No es un boton (bloque 19, 1A). */
   .prod-compra {
     color: var(--color-tinta);
-    line-height: 1.45;
+    font-size: var(--text-chico);
+    line-height: var(--text-chico--line-height);
   }
-  .prod-compra-enlace {
+  .prod-llegar {
     display: inline-flex;
+    min-height: var(--spacing-objetivo);
     align-items: center;
-    gap: 0.25rem;
-    padding-block: 0.25rem;
+    gap: 0.5rem;
+    border-radius: var(--radius-boton);
+    background: var(--color-bosque);
+    padding: 0.5rem 1.125rem 0.5rem 0.875rem;
     font-weight: 800;
-    color: var(--color-marca-fuerte);
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    line-height: 1.2;
+    color: var(--color-blanco);
+    text-decoration: none;
     white-space: nowrap;
+    box-shadow: 0 6px 16px -8px rgb(20 48 29 / 0.55);
   }
-  .prod-compra-enlace :global(svg) {
+  .prod-llegar :global(svg) {
     flex: none;
   }
-  @media (prefers-reduced-motion: no-preference) {
-    :global(html:not([data-movimiento='pausado'])) .prod-compra-enlace :global(svg) {
-      transition: transform var(--duracion-hover) var(--ease-vista);
+  .prod-llegar :global(.prod-llegar-pin) {
+    color: var(--color-maiz);
+  }
+  .prod-llegar-texto {
+    background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0% 2px;
+    padding-bottom: 1px;
+  }
+  .prod-llegar:hover,
+  .prod-llegar:focus-visible {
+    background-color: var(--color-bosque-noche);
+  }
+  .prod-llegar:focus-visible {
+    outline: 3px solid var(--color-foco);
+    outline-offset: 3px;
+  }
+  .prod-llegar:active {
+    transform: scale(0.97);
+  }
+  @media (hover: hover) {
+    .prod-llegar:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px -10px rgb(20 48 29 / 0.6);
     }
   }
-  .prod-compra-enlace:hover :global(svg) {
-    transform: translateX(3px);
+  .prod-llegar:hover .prod-llegar-texto,
+  .prod-llegar:focus-visible .prod-llegar-texto {
+    background-size: 100% 2px;
+  }
+  .prod-llegar:hover :global(.prod-llegar-flecha),
+  .prod-llegar:focus-visible :global(.prod-llegar-flecha) {
+    transform: translateX(4px);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not([data-movimiento='pausado'])) .prod-llegar {
+      transition:
+        background-color var(--duracion-hover) ease,
+        box-shadow var(--duracion-hover) ease,
+        transform var(--duracion-presion) ease-out;
+    }
+    :global(html:not([data-movimiento='pausado'])) .prod-llegar-texto {
+      transition: background-size 220ms var(--ease-vista);
+    }
+    :global(html:not([data-movimiento='pausado'])) .prod-llegar :global(.prod-llegar-flecha) {
+      transition: transform 220ms var(--ease-vista);
+    }
+  }
+  @media (forced-colors: active) {
+    .prod-llegar {
+      border: 2px solid ButtonText;
+    }
   }
   .prod-notas {
     font-size: var(--text-chico);
@@ -1184,15 +1307,20 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     color: var(--color-tinta-suave); /* 6.78 sobre crema */
   }
 
-  /* ---------- Panel derecho: Detalle / Lista (2A, bloque 20) ----------
-     Un solo cuadro con franja superior bosque (.tema-oscuro: foco maiz).
-     En escritorio la franja lleva el selector segmentado a la derecha y,
-     en Lista, "Categoria · N" (o el filtro) a la izquierda. En movil no
-     hay selector: la franja solo aparece con "Resultados para «…»". */
+  /* ---------- Tarjeta: Detalle / Lista (2A, bloque 20; crema desde el 23) ----------
+     Un solo cuadro crema (>= 48rem). Arriba, la franja sin fondo propio:
+     a la derecha el selector segmentado "Detalle | Lista (N)" y, en Lista,
+     "Categoria · N" (o el filtro) a la izquierda. En movil no hay
+     selector: la franja solo aparece con "Resultados para «…»", sobre
+     crema-oscuro. */
   .prod-panel {
+    position: relative;
     display: flex;
     min-width: 0;
     flex-direction: column;
+  }
+  .prod-marca-agua {
+    display: none;
   }
   .prod-panel-cuerpo {
     display: flex;
@@ -1204,6 +1332,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     align-items: center;
     gap: 0.5rem 0.75rem;
     border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    background: var(--color-crema-oscuro);
     padding: 0.5rem 0.75rem 0.5rem 1rem;
   }
   .prod-panel[data-modo-lista='busqueda'] .prod-franja {
@@ -1216,20 +1345,20 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     font-size: var(--text-etiqueta);
     font-weight: 800;
     line-height: 1.3;
-    color: var(--color-crema); /* 8.69 sobre bosque */
+    color: var(--color-tinta); /* 11.27 crema-oscuro, 12.67 crema */
   }
-  /* Una sola linea; si no cabe, "…" (el nombre completo lo dicen la
+  /* Una sola linea; si no cabe, "..." (el nombre completo lo dicen la
      pestana de categoria y el rotulo del carrusel) */
   .prod-franja-titulo {
     display: none;
     overflow: hidden;
-    color: var(--color-maiz); /* 5.44 */
+    color: var(--color-bosque); /* 8.69 sobre crema */
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   .prod-franja-titulo [data-franja-total],
   .prod-franja-titulo [aria-hidden='true'] {
-    color: var(--color-crema);
+    color: var(--color-tinta-suave); /* 6.78 */
   }
   .prod-filtro {
     display: flex;
@@ -1247,22 +1376,24 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   .prod-quitar-filtro {
     min-height: 1.5rem;
     font-weight: 800;
-    color: var(--color-maiz); /* 5.44 sobre bosque */
+    color: var(--color-bosque); /* 7.73 crema-oscuro, 8.69 crema */
     text-decoration: underline;
     text-underline-offset: 3px;
   }
-  /* Selector segmentado Detalle | Lista (N): borde crema al 40 %, pastilla
-     crema con texto bosque en la activa, texto crema en la inactiva. La
-     pastilla es un elemento propio ([data-pastilla-panel]) que se coloca
-     con --pastilla-x (0 % Detalle, 100 % Lista); la animacion la anade
+  /* Selector segmentado Detalle | Lista (N) en claro: carril crema-oscuro
+     con borde kraft, pastilla bosque con texto crema en la activa (8.69),
+     texto bosque en la inactiva (7.73 sobre crema-oscuro). La pastilla es
+     un elemento propio ([data-pastilla-panel]) que se coloca con
+     --pastilla-x (0 % Detalle, 100 % Lista); la anima
      animacion-interaccion. Las dos opciones miden lo mismo (1fr 1fr). */
   .prod-selector {
     position: relative;
     display: none;
     flex: none;
     margin-left: auto;
-    border: 1px solid rgb(246 241 228 / 0.4); /* crema 40 % */
+    border: 1px solid var(--color-kraft);
     border-radius: var(--radius-chip);
+    background: var(--color-crema-oscuro);
     padding: 3px;
   }
   .prod-selector-opciones {
@@ -1277,7 +1408,8 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     left: 3px;
     width: calc((100% - 6px) / 2);
     border-radius: var(--radius-chip);
-    background: var(--color-crema);
+    background: var(--color-bosque);
+    box-shadow: 0 2px 6px -2px rgb(20 48 29 / 0.45);
     transform: translateX(var(--pastilla-x, 0%));
     /* Sin movimiento, salto seco (no la transicion de 0,01 ms de
        global.css, que Chrome resuelve 2-3 fotogramas tarde); la de 240 ms
@@ -1288,14 +1420,14 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     --pastilla-x: 100%;
   }
   .prod-selector-opcion {
-    min-width: 5rem;
-    min-height: 1.75rem;
+    min-width: 4.5rem;
+    min-height: 1.875rem;
     border-radius: var(--radius-chip);
-    padding: 0.125rem 0.875rem;
+    padding: 0.125rem 0.75rem;
     font-size: var(--text-etiqueta);
     font-weight: 800;
     line-height: 1.2;
-    color: var(--color-crema); /* 8.69 sobre bosque */
+    color: var(--color-bosque); /* 7.73 sobre crema-oscuro */
     white-space: nowrap;
   }
   .prod-selector-opcion[aria-selected='false']:hover {
@@ -1303,7 +1435,10 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     text-underline-offset: 3px;
   }
   .prod-selector-opcion[aria-selected='true'] {
-    color: var(--color-bosque); /* 8.69 sobre crema */
+    color: var(--color-crema); /* 8.69 sobre bosque */
+  }
+  .prod-selector-opcion:focus-visible {
+    outline-offset: 1px;
   }
   @media (forced-colors: active) {
     .prod-selector-pastilla {
@@ -1563,6 +1698,11 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
 
   /* ---------- Movil: la vista entera hace scroll interno ---------- */
   @media (max-width: 47.999rem) {
+    /* El tamano del carrusel en movil NO se agranda (bloque 23, probado):
+       con 8rem (128 px) la tarjeta provisional de M5 (variante de 400 px
+       de alto) se muestra por encima de su tamano natural a DPR 2,6, Chrome
+       recorta su area de LCP y el frente del anillo (variante de 800 px)
+       pasa a ser el LCP: 3,9 s y Lighthouse 72-88. Sigue el token (116 px). */
     .prod-escena {
       height: 15rem;
     }
@@ -1602,9 +1742,15 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     .prod-campo input:placeholder-shown {
       padding-right: 0.5rem;
     }
+    /* "Como llegar" a todo el ancho, centrado */
+    .prod-llegar {
+      align-self: stretch;
+      justify-content: center;
+    }
   }
 
-  /* ---------- Escritorio: carrusel 60 % | buscador, ficha y pie 40 % ---------- */
+  /* ---------- Tableta (48-64rem): carrusel 60 % | buscador, tarjeta y pie 40 % ----------
+     Desde 64rem, tres columnas (mas abajo). */
   @media (min-width: 48rem) {
     :global(html[data-router] .productos-cuerpo) {
       overflow: hidden;
@@ -1624,8 +1770,11 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       grid-area: 1 / 1;
       align-self: end;
     }
+    .prod-categorias {
+      grid-area: 2 / 1;
+    }
     .prod-carrusel {
-      grid-area: 2 / 1 / 5 / 2;
+      grid-area: 3 / 1 / 5 / 2;
       min-height: 0;
     }
     /* El campo queda a la altura de las pestanas */
@@ -1639,11 +1788,11 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       left: 0;
       right: 0;
     }
-    /* Panel (2A, bloque 20): un solo cuadro en la fila 3; franja bosque
-       arriba y, debajo, la ficha o la lista en la MISMA celda (los dos con
-       grid-area 1 / 1), asi cambiar de pestana no cambia el tamano. El
-       margen deja sitio a "N productos encontrados · Ver los N", que cuelga
-       del buscador. */
+    /* Tarjeta (2A, bloque 20; crema desde el 23): un solo cuadro con la
+       franja arriba y, debajo, la ficha o la lista en la MISMA celda (los
+       dos con grid-area 1 / 1), asi cambiar de pestana no cambia el
+       tamano. El margen deja sitio a "N productos encontrados · Ver los
+       N", que cuelga del buscador. */
     .prod-panel {
       grid-area: 3 / 2;
       min-height: 0;
@@ -1653,14 +1802,55 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
       overflow: clip;
-      border-radius: var(--radius-panel);
-      background: var(--color-bosque);
+      isolation: isolate;
+      border: 1px solid var(--color-kraft); /* decorativo (no es control) */
+      border-radius: var(--radius-tarjeta-grande);
+      /* Crema que se aclara hacia arriba (solo aclara: los contrastes
+         calculados sobre crema son el peor caso) */
+      background:
+        radial-gradient(120% 70% at 0% 0%, rgb(255 255 255 / 0.55), transparent 70%),
+        var(--color-crema);
+      box-shadow: var(--shadow-tarjeta);
+    }
+    /* Marca de agua: hojas (trazo hoja, arriba a la derecha) y huellas
+       (kraft, abajo a la derecha). Debajo del contenido. */
+    :global(html.js) .prod-marca-agua {
+      position: absolute;
+      z-index: 0;
+      display: block;
+      pointer-events: none;
+    }
+    .prod-marca-hojas {
+      top: 2.5rem;
+      right: -0.5rem;
+      width: clamp(6rem, 36%, 9rem);
+      height: auto;
+      color: var(--color-hoja);
+      opacity: 0.4;
+    }
+    /* En Lista, las hojas casi desaparecen: no compiten con los precios */
+    .prod-panel[data-pestana='lista'] .prod-marca-hojas {
+      opacity: 0.14;
+    }
+    .prod-marca-huellas {
+      right: 0.75rem;
+      bottom: 0.75rem;
+      width: clamp(5rem, 30%, 7.5rem);
+      height: auto;
+      color: var(--color-kraft);
+      opacity: 0.7;
+    }
+    .prod-franja,
+    .prod-panel-cuerpo {
+      position: relative;
+      z-index: 1;
     }
     .prod-franja {
       display: flex;
       min-height: 2.5rem;
       border-radius: 0;
-      padding: clamp(0.1875rem, 0.8dvh, 0.5rem) clamp(0.375rem, 0.8dvh, 0.5rem) clamp(0.1875rem, 0.8dvh, 0.5rem) clamp(1.25rem, 2vw, 1.75rem);
+      background: transparent;
+      padding: clamp(0.375rem, 1.2dvh, 0.75rem) clamp(0.5rem, 1dvh, 0.75rem) clamp(0.125rem, 0.6dvh, 0.375rem) clamp(1.25rem, 2vw, 1.75rem);
     }
     .prod-selector {
       display: block;
@@ -1682,7 +1872,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       min-height: 0;
     }
     .prod-ficha {
-      --ficha-hueco: clamp(0.375rem, 1.3dvh, 0.875rem);
+      --ficha-hueco: clamp(0.5rem, 1.6dvh, 1rem);
       display: flex;
       flex-direction: column;
       /* Sin scroll a 1440x900, 1366x650 y >= 600 px de alto con >= 1280 de
@@ -1691,11 +1881,9 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
          mejor desplazar que recortar; el tabpanel es enfocable. */
       overflow-y: auto;
       overscroll-behavior: contain;
-      padding: clamp(0.25rem, 1dvh, 0.75rem) clamp(1.25rem, 2vw, 1.75rem) clamp(0.625rem, 2dvh, 1.5rem);
-    }
-    /* Esquinas de abajo del cuadro: el anillo de foco las sigue */
-    .prod-ficha {
-      border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+      padding: clamp(0.25rem, 1dvh, 0.75rem) clamp(1.25rem, 2vw, 1.75rem) clamp(0.75rem, 2.4dvh, 1.75rem);
+      /* Esquinas de abajo del cuadro: el anillo de foco las sigue */
+      border-radius: 0 0 var(--radius-tarjeta-grande) var(--radius-tarjeta-grande);
     }
     .prod-ficha:focus-visible {
       outline-offset: -4px;
@@ -1703,14 +1891,20 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     :global(html.js) .prod-lista-panel {
       overflow-y: auto;
       overscroll-behavior: contain;
-      border-radius: 0;
+      border-radius: 0 0 var(--radius-tarjeta-grande) var(--radius-tarjeta-grande);
+      /* En claro, sobre el crema de la tarjeta: tinta 12.67, bosque 8.69,
+         tinta-suave 6.78, marca-fuerte 4.77; fila activa blanca (14.28) */
+      background: transparent;
+    }
+    :global(html.js) .prod-fila:hover {
+      background: var(--color-crema-oscuro); /* tinta 11.27 */
     }
     /* En categoria la cabecera kraft del grupo repite la franja: fuera */
     :global(html.js) .prod-panel[data-modo-lista='categoria'] .prod-grupo-titulo {
       display: none;
     }
     :global(html.js) .prod-panel[data-modo-lista='categoria'] .prod-lista-panel {
-      padding-top: 0.5rem;
+      padding-top: 0.25rem;
     }
     /* Panel inactivo fuera; con data-cruzando (transicion) se ven los dos */
     .prod-panel:not([data-cruzando])[data-pestana='lista'] .prod-ficha,
@@ -1735,7 +1929,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       }
       /* El color del rotulo cambia de golpe cuando la pastilla ya cubre
          media opcion (~60 ms con ease-vista), como el texto activo de la
-         barra: asi no hay bosque sobre bosque ni crema sobre crema */
+         barra: asi no hay crema sobre crema ni bosque sobre bosque */
       :global(html:not([data-movimiento='pausado'])) .prod-selector-opcion {
         transition: color 0s linear 60ms;
       }
@@ -1744,19 +1938,11 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       grid-area: 4 / 2;
       padding-bottom: 0.25rem;
     }
-    /* Pantallas bajas (1366x650): la linea de compra en una sola linea y
-       menos aire bajo el pie, para que la ficha quepa sin scroll (bloque
-       20: el tilapero necesita ~290 px de cuadro) */
+    /* Pantallas bajas (1366x650): menos aire bajo el pie, para que la
+       ficha quepa sin scroll (bloque 20: el tilapero necesita ~290 px) */
     @media (max-height: 47.5rem) {
       .prod-marco {
         padding-bottom: 1.25rem;
-      }
-      .prod-compra {
-        font-size: var(--text-chico);
-        line-height: var(--text-chico--line-height);
-      }
-      .prod-compra-enlace {
-        padding-block: 0.125rem;
       }
     }
     /* Muy bajas (alto 600-640 px): menos aire arriba y entre bloques */
@@ -1817,16 +2003,182 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     }
   }
 
-  /* Producto al frente mas grande en escritorio (P7): override local del
-     token, lo heredan el anillo (.anillo-item), la tarjeta provisional de M5
-     (.prod-frente) y carrusel.ts (mide el ancho real del item). 216 px a
-     900 de alto, 180 px (minimo) a 650, tope 240. */
+  /* ---------- Escritorio (>= 64rem, bloque 23): tres columnas ----------
+     Izquierda (~24 %): titulo, buscador, categorias apiladas y, al pie,
+     la compra con "Como llegar" y las notas. Centro (~48 %): el carrusel,
+     protagonista, centrado en la pantalla. Derecha (~28 %): la tarjeta.
+     Las columnas laterales van por encima del anillo en el apilado: el
+     anillo puede asomar por los huecos entre columnas, nunca bajo texto. */
   @media (min-width: 64rem) {
+    .prod-marco {
+      --hueco-col: clamp(1.25rem, 2.2vw, 2.5rem);
+      max-width: 100rem;
+      grid-template-columns: minmax(0, 23fr) minmax(0, 47fr) minmax(0, 30fr);
+      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+      gap: clamp(0.5rem, 1.6dvh, 1rem) var(--hueco-col);
+      padding-block: clamp(1rem, 3.2dvh, 2rem) clamp(0.75rem, 2.4dvh, 1.5rem);
+    }
+    .prod-cabecera,
+    .prod-buscador,
+    .prod-categorias,
+    .prod-pie,
+    .prod-panel {
+      position: relative;
+      z-index: 2;
+    }
+    .prod-buscador {
+      z-index: 3;
+    }
+    .prod-cabecera {
+      grid-area: 1 / 1;
+      align-self: start;
+    }
+    .prod-cabecera :global(.titulo-vista) {
+      font-size: clamp(1.625rem, min(2.4vw, 4.6dvh), 2.5rem);
+    }
+    .prod-buscador {
+      grid-area: 2 / 1;
+      align-self: start;
+    }
+    /* Las sugerencias pueden ser mas anchas que la columna: flotan sobre
+       el carrusel (el buscador va por encima) */
+    .prod-sugerencias {
+      right: auto;
+      width: max(100%, 24rem);
+    }
+    .prod-categorias {
+      grid-area: 3 / 1;
+      /* Sitio para "N productos encontrados · Ver los N" (cuelga del campo) */
+      margin-top: 1.25rem;
+    }
+    /* Categorias apiladas: nombre a la izquierda y recuento a la derecha.
+       Mismo grupo de botones con aria-pressed y mismo teclado. */
+    .prod-pestanas {
+      grid-template-columns: minmax(0, 1fr);
+      gap: clamp(0.375rem, 0.9dvh, 0.5rem);
+    }
+    .prod-pestana {
+      display: flex;
+      min-height: clamp(2.5rem, 5.4dvh, 3rem);
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.25rem 1rem 0.25rem 1.125rem;
+      text-align: left;
+    }
+    .prod-pestana-nombre {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .prod-cuenta {
+      display: inline;
+      font-variant-numeric: tabular-nums;
+    }
+    .prod-pie {
+      grid-area: 5 / 1;
+      align-self: end;
+      padding-bottom: 0;
+    }
+    .prod-carrusel {
+      grid-area: 1 / 2 / -1 / 3;
+      z-index: 1;
+    }
+    .prod-panel {
+      grid-area: 1 / 3 / -1 / 4;
+      align-self: center;
+      height: min(100%, 34rem);
+      margin-top: 0;
+    }
+    :global(html:not(.js)) .prod-panel {
+      grid-area: 1 / 3 / -1 / 4;
+      height: auto;
+      align-self: stretch;
+    }
+    /* Producto al frente mucho mas grande (bloque 23): ~36 dvh de alto a
+       1440x900 (antes 24). Override local del token: lo heredan el anillo
+       (.anillo-item), la tarjeta provisional de M5 (.prod-frente) y
+       carrusel.ts (mide el ancho real del item). Tope 18rem, declarado en
+       SIZES_ANILLO. La escena se estira por los huecos entre columnas
+       para que el anillo respire sin pasar bajo el texto. */
     .prod-escenario {
-      --carrusel-ancho: clamp(11.25rem, 24dvh, 15rem);
+      --carrusel-ancho: clamp(11.25rem, min(27dvh, 17vw), 18rem);
+      --carrusel-perspectiva: 1100px;
+    }
+    .prod-escenario[data-modo='3d'] .prod-escena {
+      margin-inline: calc(var(--hueco-col) * -1);
+    }
+    .prod-rotulo {
+      padding-bottom: 0.25rem;
     }
   }
+
+  /* Tarjeta estrecha (p. ej. 1024 px de ancho: ~270 px): la franja pone
+     el selector arriba y "Categoria · N" debajo, y en la Lista el precio
+     pasa bajo el nombre para que ninguno se corte. Consulta de contenedor
+     sobre la propia tarjeta (.prod-panel, >= 48rem con JS). */
+  @media (min-width: 48rem) {
+    :global(html.js) .prod-panel {
+      container: tarjeta / inline-size;
+    }
+  }
+  @container tarjeta (max-width: 22rem) {
+    .prod-franja {
+      flex-wrap: wrap;
+      row-gap: 0.25rem;
+    }
+    .prod-franja-titulo,
+    .prod-filtro {
+      order: 2;
+      flex-basis: 100%;
+    }
+    :global(html.js) .prod-fila {
+      grid-template-columns: 2.5rem minmax(0, 1fr);
+      grid-template-rows: auto auto;
+      row-gap: 0;
+    }
+    :global(html.js) .prod-mini {
+      grid-row: 1 / 3;
+    }
+    .prod-fila-precio {
+      grid-column: 2;
+      text-align: left;
+      font-size: var(--text-chico);
+    }
+    .prod-ficha-datos {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .prod-ficha-etapas {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* Realce del producto al frente (bloque 23, PLAN 0-C "Producto
+     seleccionado"):
+       --escala-frente  escala de la tarjeta al frente respecto al resto del
+                        anillo. carrusel.ts la lee de aqui y la escribe con
+                        la propiedad `scale` en cada .anillo-tarjeta,
+                        interpolada por la distancia al frente (el frente que
+                        sale encoge mientras el que entra crece, sin salto al
+                        cambiar data-frente). La tarjeta provisional de M5
+                        lleva la misma escala para seguir identica debajo.
+     El sombreado de anterior/siguiente y del resto (tinta, opacidad,
+     saturacion) lo pinta carrusel.ts con los tokens --carrusel-*. */
+  .prod-escenario {
+    --escala-frente: 1.15;
+  }
+  @media (min-width: 48rem) {
+    .prod-escenario {
+      --escala-frente: 1.3;
+    }
+  }
+  .prod-frente-tarjeta {
+    scale: var(--escala-frente);
+    transform-origin: 50% 100%;
+  }
+
   /* Tiempo local de C6 (no hay token en tokens.css) */
+  .prod-categorias,
   .prod-carrusel {
     --duracion-pestana: 180ms;
   }
@@ -1888,6 +2240,12 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   }
   .anillo-item:not([data-frente]) {
     cursor: pointer;
+  }
+  /* Realce del frente: carrusel.ts escribe `scale` (y `filter` en los que
+     no estan al frente) en cada tarjeta, interpolado por la distancia al
+     frente; crece desde la linea de suelo, como la provisional de M5 */
+  .anillo-tarjeta {
+    transform-origin: 50% 100%;
   }
   .anillo.arrastrando .anillo-item {
     cursor: grabbing;

@@ -23,6 +23,28 @@ const t = textos.productos.hoja;
   data-captura-flechas
 >
   <div class="hoja-contenido">
+    {/* Marca de agua de la tarjeta de producto (bloque 23): hojas arriba a
+        la derecha y huellas abajo a la derecha, decorativas */}
+    <svg class="hoja-agua hoja-agua-hojas" viewBox="0 0 120 150" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M118 2C92 30 70 70 58 148" />
+        <path d="M100 22c-20-4-38 6-46 24 20 6 40-4 46-24zM100 22L54 46" />
+        <path d="M92 44c20-8 30-26 26-44-18 6-28 24-26 44zM92 44l26-44" />
+        <path d="M78 70c-22-2-40 10-46 30 22 4 42-8 46-30zM78 70l-46 30" />
+        <path d="M74 80c22-6 36-24 34-46-20 6-34 24-34 46zM74 80l34-46" />
+        <path d="M64 114c-18-2-34 8-40 26 18 4 36-6 40-26zM64 114l-40 26" />
+      </g>
+    </svg>
+    <svg class="hoja-agua hoja-agua-huellas" viewBox="0 0 110 80" aria-hidden="true" focusable="false">
+      <g fill="currentColor">
+        <g transform="translate(26 50) rotate(-14)">
+          <ellipse cx="0" cy="8" rx="13" ry="11" /><ellipse cx="-14" cy="-9" rx="5" ry="6.5" /><ellipse cx="-5" cy="-17" rx="5" ry="6.5" /><ellipse cx="6" cy="-17" rx="5" ry="6.5" /><ellipse cx="15" cy="-8" rx="5" ry="6.5" />
+        </g>
+        <g transform="translate(84 34) rotate(12) scale(0.9)">
+          <ellipse cx="0" cy="8" rx="13" ry="11" /><ellipse cx="-14" cy="-9" rx="5" ry="6.5" /><ellipse cx="-5" cy="-17" rx="5" ry="6.5" /><ellipse cx="6" cy="-17" rx="5" ry="6.5" /><ellipse cx="15" cy="-8" rx="5" ry="6.5" />
+        </g>
+      </g>
+    </svg>
     <span class="hoja-asa" aria-hidden="true"></span>
     <div class="hoja-imagen" data-hoja-imagen></div>
     <h2 id="hoja-titulo" class="hoja-titulo" tabindex="-1" data-hoja-titulo></h2>
@@ -31,9 +53,12 @@ const t = textos.productos.hoja;
       <span data-hoja-categoria></span>
       <span class="hoja-chip cifra" data-hoja-precio></span>
     </p>
-    <a href={t.destino} class="boton boton-oro hoja-cta" data-hoja-cta>
-      <span>{t.dondeComprar}</span>
-      <span class="hoja-cta-destino">{t.irVisitanos} <Icono nombre="flecha_derecha" class="size-5" /></span>
+    {/* Mismo estilo que "Como llegar" de Productos (bloque 24): pildora
+        bosque con pin maiz y flecha que se desplaza */}
+    <a href={t.destino} class="hoja-cta" data-hoja-cta>
+      <Icono nombre="pin" class="hoja-cta-pin size-5" />
+      <span>{t.dondeComprar} <span class="hoja-cta-destino">{t.irVisitanos}</span></span>
+      <Icono nombre="flecha_derecha" class="hoja-cta-flecha size-5" />
     </a>
     <button type="button" class="boton hoja-cerrar" data-hoja-cerrar>
       <Icono nombre="cerrar" class="size-5" />
@@ -64,10 +89,32 @@ const t = textos.productos.hoja;
     background: var(--color-velo-franja);
   }
   .hoja-contenido {
+    position: relative;
+    isolation: isolate;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     padding: 0.625rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  }
+  /* Marca de agua (decorativa, debajo del contenido) */
+  .hoja-agua {
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .hoja-agua-hojas {
+    top: 0.5rem;
+    right: -0.25rem;
+    width: 7rem;
+    color: var(--color-hoja);
+    opacity: 0.45;
+  }
+  .hoja-agua-huellas {
+    top: 9rem;
+    left: 0.75rem;
+    width: 5rem;
+    color: var(--color-kraft);
+    opacity: 0.7;
   }
   .hoja-asa {
     align-self: center;
@@ -136,12 +183,13 @@ const t = textos.productos.hoja;
     text-align: center;
     color: var(--color-bosque);
   }
+  /* Como el nombre de la tarjeta de Productos: Nunito 800 bosque (8.69) */
   .hoja-titulo {
-    font-family: var(--font-serif);
-    font-weight: 700;
-    font-size: var(--text-producto);
-    line-height: var(--text-producto--line-height);
-    color: var(--color-tinta);
+    font-family: var(--font-sans);
+    font-weight: 800;
+    font-size: clamp(1.375rem, 6vw, 1.75rem);
+    line-height: 1.12;
+    color: var(--color-bosque);
     text-wrap: balance;
   }
   /* Recibe el foco por programa: subrayado, como los titulos de vista */
@@ -175,19 +223,66 @@ const t = textos.productos.hoja;
     font-weight: 800;
     color: var(--color-tinta);
   }
+  /* Pildora bosque con texto blanco (9.80), pin maiz decorativo (5.44) y
+     flecha que se desplaza 4 px; hover/foco bosque-noche (14.38). Mismo
+     estilo que .prod-llegar de VistaProductos (bloque 24). */
   .hoja-cta {
-    flex-wrap: wrap;
+    display: inline-flex;
     width: 100%;
+    min-height: var(--spacing-objetivo);
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
     margin-top: 0.5rem;
-    border: 2px solid var(--color-bosque);
-    column-gap: 0.375rem;
+    border-radius: var(--radius-boton);
+    background: var(--color-bosque);
+    padding: 0.5rem 1.125rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--color-blanco);
+    text-align: center;
+    box-shadow: 0 6px 16px -8px rgb(20 48 29 / 0.55);
+  }
+  .hoja-cta :global(svg) {
+    flex: none;
+  }
+  .hoja-cta :global(.hoja-cta-pin) {
+    color: var(--color-maiz);
   }
   .hoja-cta-destino {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
     text-decoration: underline;
+    text-decoration-thickness: 2px;
     text-underline-offset: 3px;
+  }
+  .hoja-cta:hover,
+  .hoja-cta:focus-visible {
+    background-color: var(--color-bosque-noche);
+  }
+  .hoja-cta:focus-visible {
+    outline: 3px solid var(--color-foco);
+    outline-offset: 3px;
+  }
+  .hoja-cta:active {
+    transform: scale(0.97);
+  }
+  .hoja-cta:hover :global(.hoja-cta-flecha),
+  .hoja-cta:focus-visible :global(.hoja-cta-flecha) {
+    transform: translateX(4px);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not([data-movimiento='pausado'])) .hoja-cta {
+      transition:
+        background-color var(--duracion-hover) ease,
+        transform var(--duracion-presion) ease-out;
+    }
+    :global(html:not([data-movimiento='pausado'])) .hoja-cta :global(.hoja-cta-flecha) {
+      transition: transform 220ms var(--ease-vista);
+    }
+  }
+  @media (forced-colors: active) {
+    .hoja-cta {
+      border: 2px solid ButtonText;
+    }
   }
   .hoja-cerrar {
     width: 100%;

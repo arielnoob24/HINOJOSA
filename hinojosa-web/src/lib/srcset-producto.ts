@@ -85,12 +85,19 @@ export function miniaturaLista(mini: string | null): { src: string; srcset?: str
 }
 
 /**
- * Tarjeta del anillo: --carrusel-ancho. 116 px en movil, 180 px entre 48 y
- * 64rem y, en >= 64rem, clamp(11.25rem, 24dvh, 15rem) (P7): se declara el
- * tope de 15rem (240 px) para que el frente grande no se pida corto. A 1x
- * sigue saliendo la variante de 400 px de alto (la de la precarga de M5).
+ * Tarjeta del anillo: --carrusel-ancho. 116 px en movil (no crece: ver
+ * VistaProductos, regla M5), 180 px entre 48 y 64rem y, en >= 64rem,
+ * clamp(11.25rem, min(27dvh, 17vw), 18rem) (bloque 23; antes 24dvh y
+ * 15rem): se declara el tope de 18rem
+ * (288 px) para que el frente grande no se pida corto. A 1x sigue saliendo
+ * la variante de 400 px de alto (la de la precarga de M5).
+ * El realce del frente (--escala-frente, 1,3 / movil 1,15) NO se suma aqui
+ * a proposito: con `sizes` escalado el anillo pediria la de 800 px a DPR 1
+ * y dejaria de coincidir con la provisional de M5 (y en movil el LCP
+ * pasaria al anillo). A 1440x900 el frente se ve a ~421 px de alto con la
+ * de 400 px (ampliacion ~5 %).
  */
-export const SIZES_ANILLO = '(max-width: 47.999rem) 7.25rem, (min-width: 64rem) 15rem, 11.25rem';
+export const SIZES_ANILLO = '(max-width: 47.999rem) 7.25rem, (min-width: 64rem) 18rem, 11.25rem';
 /**
  * Celda de la rejilla de respaldo (3:4, ~60-145 px). Se usa el MISMO `sizes`
  * que el anillo a proposito: la rejilla se pinta un instante al entrar en

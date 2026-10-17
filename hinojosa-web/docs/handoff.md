@@ -50,6 +50,11 @@
 - **Animales en foto de familia**, más grandes (vaca ≈ 40 % de la escena en escritorio, 109 px en móvil); tilapias en una **pecera de vidrio**. Se borraron `escena-foto.ts`, `public/img/escena/`, nubes SVG y `crearCielo()`.
 - Medido: Lighthouse móvil Inicio 98/98/97 (LCP = logo), axe 0, peso ≈ 1,2 MB escritorio / 1,0 MB móvil.
 
+### Bloques 23 y 24 (2026-10-17)
+- **Productos en 3 columnas desde 64rem** (23/47/30): izquierda título, buscador, categorías apiladas y píldora "Cómo llegar"; centro el carrusel (frente ≈ 36 dvh, ×1,3 al realzarlo); derecha la **tarjeta crema** de la maqueta (hojas y huellas, nombre Nunito 800 bosque, chip oro, MARCA/PRESENTACIÓN, PARA), con Detalle/Lista dentro. Entre 48 y 64rem sigue el 60/40; móvil igual que antes (el carrusel no se agranda: rompía M5, Lighthouse 72–88).
+- **Realce del frente** en `carrusel.ts`: escala, tinta, opacidad y filtro calculados por distancia al frente (sin salto al cambiar `data-frente`); tokens nuevos `--carrusel-*-vecino` en `tokens.css`. M5 coincide al píxel (la provisional usa `translate`).
+- Medido: 37/37 sin scroll, axe 0, Lighthouse móvil `#productos` 95–97 (LCP = tarjeta provisional), 0 rAF fuera.
+
 **Orden recomendado:** 21 (GSAP común, Blender, derivados) → 22 (Inicio) → 23–24 (Productos) → 25 (Nosotros) → 26 (transición) → cierre de QA.
 
 ## Estado en una línea

@@ -254,8 +254,17 @@
   --carrusel-ancho: 11.25rem;       /* 180 px, tarjeta 3:4 -> 240 px de alto */
   --carrusel-hueco: 1rem;           /* separacion entre tarjetas al calcular el radio */
   --carrusel-radio-min: 260px;      /* el radio nunca baja de aqui (categorias de 5-7 productos) */
-  --carrusel-oscuro-max: 0.45;      /* opacidad de la capa tinta sobre el producto de mas atras */
-  --carrusel-opacidad-min: 0.4;     /* opacidad del producto de mas atras */
+  /* Realce del frente (bloque 23, carrusel.ts lo interpola por distancia al
+     frente en pasos, t: 0 frente, 1 anterior/siguiente, 2+ el resto). La
+     escala del frente es --escala-frente (VistaProductos: 1,3 / movil 1,15). */
+  --carrusel-oscuro-vecino: 0.5;    /* capa tinta sobre anterior y siguiente */
+  --carrusel-oscuro-max: 0.64;      /* capa tinta sobre el resto (t >= 2) */
+  --carrusel-opacidad-vecino: 0.9;  /* opacidad de anterior y siguiente (mas baja transparenta lo de detras) */
+  --carrusel-opacidad-resto: 0.6;   /* t = 2 */
+  --carrusel-opacidad-min: 0.4;     /* producto de mas atras (t >= 4) */
+  --carrusel-saturacion-vecino: 0.7;/* saturate() de anterior y siguiente (resto: 0,55) */
+  --carrusel-desenfoque-vecino: 0.6px; /* blur() de anterior y siguiente (tope 1,5 px) */
+  --carrusel-desenfoque-resto: 1.2px;
 
   /* Canela (carrera de Inicio: canela-carrera.ts usa el alto; los sprites y tiempos van en public/img/canela/carrera.json) */
   --canela-alto: clamp(4rem, 12.5dvh, 7.5rem);  /* 112 px en 1440x900 (13 % de la vista) */
