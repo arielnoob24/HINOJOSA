@@ -821,3 +821,4 @@ En `.claude/skills/` del proyecto:
 - [ ] Bloques 21–26 (sección 11): Inicio granja, Productos centrado y tarjeta nueva, Nosotros, transición con GSAP
 - [ ] Confirmar con el usuario: Blender solo para renders (0-C), cielo sin azul (cuyes ✅)
 - [ ] Repetir el cierre de QA tras los bloques 21–26
+- [ ] **Decidir al final (pospuesto por el usuario, 2026-10-17):** (1) en móvil, el velo que hace legible el texto de Inicio oscurece bastante el cielo del atardecer; para ver más cielo habría que bajar el bloque de texto o agrandar el acento. (2) El agua de la pecera de las tilapias es verdosa porque la paleta no tiene azul; agua azul = color nuevo con aprobación

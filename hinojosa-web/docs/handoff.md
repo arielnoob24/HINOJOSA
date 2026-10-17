@@ -112,6 +112,7 @@ Commits en `Ariel` (sin subir): `0e86d50` (agentes, skills y plan alineados), `1
 
 ## Decisiones pendientes del usuario
 
+0. **Para el final (pospuesto el 2026-10-17):** velo de Inicio en móvil (oscurece el cielo; alternativa: bajar el texto) y color del agua de la pecera (verdosa por la paleta; azul sería color nuevo).
 1. **Textos de las 3 razones de Nosotros** (en propuesta) y los títulos de Productos ("Lo que tenemos para tus animales") y del bloque 10.
 2. **Datos que faltan:** ciudad, **cuál de los dos teléfonos tiene WhatsApp** (si alguno), horario, **enlace de Facebook** (la URL de "@Comercial Hinojosa"), Google Maps y coordenadas, referencias para llegar, año de apertura o una línea de historia.
 3. **Visítanos y Productos** fuera del reparto 55/30/15: falta medir de nuevo Productos (cambió) y Nosotros.
