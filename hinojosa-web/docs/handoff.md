@@ -44,6 +44,12 @@
 - Medido: axe 0; Lighthouse móvil Inicio 95–97 (LCP = logo; la versión anterior da 94–98 en este equipo, el 99 histórico no se reproduce aquí); ~60 fps con CPU ×4 y GPU; peso ~700 KB escritorio.
 - **Pendiente del usuario:** charca (se ve borrosa) o abrevadero; aves y pato muy pequeños en móvil.
 
+### Bloque 22, ronda de la tarde (2026-10-17)
+- **Fondo en video** (`Nuevos Req/Animales/videofondo.mp4`, time-lapse): bucle de 8,5 s sin salto (`python nuevos_req.py videofondo` → `public/video/campo{,-movil}.{webm,mp4}` + pósteres). Se dibuja en `<canvas>` con `requestVideoFrameCallback` (`src/lib/escena-lienzos.ts`) porque un `<video>` casi a pantalla completa le quitaba el LCP al logo; los animales también van en canvas por lo mismo. Video tras `load`; con reduced motion, pausa del sitio o `saveData`, solo el póster. Se pausa fuera de Inicio.
+- **Sin tarjeta verde:** logo, acento, subtítulo, botones y accesos sobre un velo `bosque-noche` que se funde; contraste medido en 5 cuadros del video (peor caso: acento 3,58, texto ≥ 6,5, bordes ≥ 4,3).
+- **Animales en foto de familia**, más grandes (vaca ≈ 40 % de la escena en escritorio, 109 px en móvil); tilapias en una **pecera de vidrio**. Se borraron `escena-foto.ts`, `public/img/escena/`, nubes SVG y `crearCielo()`.
+- Medido: Lighthouse móvil Inicio 98/98/97 (LCP = logo), axe 0, peso ≈ 1,2 MB escritorio / 1,0 MB móvil.
+
 **Orden recomendado:** 21 (GSAP común, Blender, derivados) → 22 (Inicio) → 23–24 (Productos) → 25 (Nosotros) → 26 (transición) → cierre de QA.
 
 ## Estado en una línea

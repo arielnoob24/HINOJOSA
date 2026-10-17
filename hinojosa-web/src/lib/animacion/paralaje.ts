@@ -1,10 +1,10 @@
 // Paralaje con el raton de Inicio (storyboard-hero.md, 5; guia 7.1).
 // - Capas: todo [data-paralaje] de la escena de granja (0-C), con su
-//   data-profundidad (nubes lejos 0.1, medio 0.2, cerca 0.3; colinas 0.12;
-//   granja de animales 0.3). Desplazamiento = profundidad x --paralaje-max
-//   (<= 8 px). La marca de agua no lleva [data-paralaje]: no se mueve.
-// - Se mueve con la propiedad `translate`: no pisa el `transform` de la
-//   deriva de las nubes ni del idle de los animales (escena-inicio.ts, GSAP)
+//   data-profundidad (hoy solo la granja de animales, 0.3; el fondo es un
+//   video y no se mueve). Desplazamiento = profundidad x --paralaje-max
+//   (<= 8 px).
+// - Se mueve con la propiedad `translate`: no pisa el `transform` del
+//   idle de los animales (escena-inicio.ts, GSAP)
 //   ni el de la entrada en cascada (I9).
 // - Solo con raton (hover + pointer fine), sin reduced motion, sin la pausa
 //   del usuario y con Inicio activa. En tactil no se engancha nada.

@@ -24,8 +24,9 @@ temporal y deja la version web en `hinojosa-web/public/`:
     video/canela-jugando-alfa.webm + -alfa-poster.webp  VP9 con canal alfa (fondo quitado),
         solo cuadros 1-69 en ida y vuelta (ver ALFA_ULTIMO_CUADRO)
     img/animales/<slug>[-240].webp|.avif   480 / 240 px de alto, escena de Inicio (2026-10-17)
-    img/escena/cielo[-280], campo[-320]     fondo de Inicio en dos capas (Animales/fondo.jpg)
-    Uso: python nuevos_req.py [imagenes] [video | video-alfa] [animales] [fondo] [producto <slug>...]
+    img/escena/cielo[-280], campo[-320]     fondo en dos capas (Animales/fondo.jpg; ya no se usa en el sitio)
+    video/campo[-movil].webm|.mp4 + -poster  fondo de Inicio en video (Animales/videofondo.mp4)
+    Uso: python nuevos_req.py [imagenes] [video | video-alfa] [animales] [fondo] [videofondo] [producto <slug>...]
 """
 import json
 import multiprocessing as mp
@@ -279,6 +280,43 @@ def fondo() -> None:
         codificar(maestros_fondo(tmp), tmp)
 
 
+VIDEO_FONDO = ANIMALES / "videofondo.mp4"  # time-lapse del campo, 1920x1080, 24 fps, 10 s
+# El video no empalma consigo mismo: los ultimos 1,5 s se funden con los primeros
+# 1,5 s (bucle de 8,5 s sin salto).
+_BUCLE = ("[0:v]fps=24,split[a][b];"
+          "[a]trim=1.5:10,setpts=PTS-STARTPTS,fps=24[cuerpo];"
+          "[b]trim=0:1.5,setpts=PTS-STARTPTS,fps=24[ini];"
+          "[cuerpo][ini]xfade=transition=fade:duration=1.5:offset=7[v]")
+
+
+def videofondo() -> None:
+    """Fondo de Inicio en video (2026-10-17): sustituye a la deriva del cielo de fondo.jpg.
+    Escritorio 1280x720 y movil vertical 432x768 (recorte central), WebM VP9 + MP4 H.264,
+    sin audio, y poster (primer cuadro del bucle) en AVIF/WebP."""
+    d = PUB / "video"
+    d.mkdir(parents=True, exist_ok=True)
+    variantes = {"campo": "scale=1280:-2", "campo-movil": "crop=608:1080:656:0,scale=432:768"}
+    with tempfile.TemporaryDirectory(prefix="hino-videofondo-") as t:
+        tmp = Path(t)
+        trabajos = []
+        for nombre, esc in variantes.items():
+            filtro = f"{_BUCLE};[v]{esc}[o]"
+            ff("-i", str(VIDEO_FONDO), "-filter_complex", filtro, "-map", "[o]", "-an",
+               "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "47", "-row-mt", "1",
+               "-deadline", "good", "-cpu-used", "2", str(d / f"{nombre}.webm"))
+            ff("-i", str(VIDEO_FONDO), "-filter_complex", filtro, "-map", "[o]", "-an",
+               "-c:v", "libx264", "-crf", "32", "-preset", "slow", "-pix_fmt", "yuv420p",
+               "-movflags", "+faststart", str(d / f"{nombre}.mp4"))
+            png = tmp / f"{nombre}-poster.png"
+            ff("-i", str(d / f"{nombre}.mp4"), "-frames:v", "1", str(png))
+            alto = 720 if nombre == "campo" else 768
+            trabajos.append({"in": str(png), "out": str(d / f"{nombre}-poster"), "alto": alto,
+                             "avif": True, "q": 72})
+        codificar(trabajos, tmp)
+    for f in sorted(d.glob("campo*")):
+        print(f"{f.stat().st_size / 1024:8.1f} KB  {f}")
+
+
 def animales() -> None:
     with tempfile.TemporaryDirectory(prefix="hino-animales-") as t:
         tmp = Path(t)
@@ -412,7 +450,7 @@ def _video_alfa(base: Path) -> None:
 
 
 if __name__ == "__main__":
-    que = sys.argv[1:] or ["imagenes", "video", "animales", "fondo"]
+    que = sys.argv[1:] or ["imagenes", "video", "animales", "fondo", "videofondo"]
     if "imagenes" in que:
         imagenes()
     if "video" in que:
@@ -423,5 +461,7 @@ if __name__ == "__main__":
         animales()
     if "fondo" in que:
         fondo()
+    if "videofondo" in que:
+        videofondo()
     if "producto" in que:  # python nuevos_req.py producto sal-en-grano
         un_producto(que[que.index("producto") + 1:])

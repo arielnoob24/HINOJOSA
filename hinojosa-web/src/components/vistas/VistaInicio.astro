@@ -1,291 +1,184 @@
 ---
-// Vista 1 - Inicio, rediseno 0-C (bloque 22, 2026-10-17; PLAN.md 0-C y
-// aviso "Rediseno 0-C" de la vista 1). Escena de granja sobre una FOTO real
-// (Nuevos Req/Animales/fondo.jpg: campo con colinas y cielo de atardecer) en
-// dos capas, cielo y campo, con un velo calido que lleva los morados del
-// cielo a la paleta (crema/maiz). Los 9 animales de Nuevos Req/Animales se
-// colocan con la perspectiva de la foto (horizonte al 45 % del alto): la
-// altura de cada uno es proporcional a su altura real Y a la distancia de
-// sus pies bajo el horizonte. El bloque de texto va en una COLUMNA IZQUIERDA
-// sobre un panel bosque esmerilado (.tema-oscuro; vidrio con backdrop-filter,
-// opaco sin soporte o con prefers-reduced-transparency). Abajo, la franja de
-// Canela como SEGUNDA FILA del grid, sin fondo propio: corre sobre la hierba.
+// Vista 1 - Inicio, rediseno 0-C (bloque 22; PLAN.md 0-C, "Ajustes del
+// 2026-10-17 (tarde)"). Fondo en VIDEO (time-lapse del campo al atardecer,
+// public/video/campo*.{webm,mp4}, bucle de 8,5 s) volcado en un <canvas>;
+// sin tarjeta: logo, acento, subtitulo, botones y accesos van directamente
+// sobre el video con un velo oscuro que se funde con la escena. Los animales
+// posan como una FOTO DE FAMILIA a la derecha (atras vaca y cerdo; en medio
+// aves y perro; delante conejos, cuyes, gato, pato y la pecera de las
+// tilapias). Abajo, la franja de Canela como SEGUNDA FILA del grid: corre
+// por delante del grupo.
 //
 // Ganchos:
 //   [data-escena="inicio"]                  raiz de la escena (grid de 2 filas)
 //   .inicio-paisaje [data-paisaje]          fondo decorativo (aria-hidden), ocupa
-//                                           las 2 filas (container-type: size)
-//   .inicio-foto [data-foto]                caja de la foto (proporcion 2752/1536,
-//                                           cubre la escena; horizonte fijo al 45 %)
-//     .inicio-cielo-capa [data-paralaje]    envoltorio del cielo (paralaje 0.1)
-//       canvas[data-cielo][data-foto-capa="cielo"]
-//                                           cielo: 115 % del ancho de la foto (7,5 %
-//                                           de margen a cada lado) para que
-//                                           animacion-interaccion lo haga derivar
-//                                           (transform) sin que se vean los bordes
-//     .inicio-velo [data-velo]              velo calido (no se mueve)
-//     canvas[data-foto-capa="campo"]        campo con alfa sobre el horizonte
-//     (las capas se pintan en canvas tras `load`: src/lib/escena-foto.ts)
-//   [data-capa="nubes-lejos|nubes-medio|nubes-cerca"]
-//                                           velos de nube calidos y desenfocados;
-//                                           llevan [data-paralaje] (translate)
-//   [data-nube] [data-profundidad] style="--fase"
-//                                           cada nube (svg). Deriva con GSAP
-//                                           (escena-inicio.ts, en su transform)
-//   [data-capa="granja"]                    contenedor de los animales (paralaje 0.3)
-//   [data-animal="<slug>"] style="--fase; --x; --d; --r; --z"
-//                                           un animal; --d = pies bajo el horizonte
-//                                           (cqh), --r = altura real relativa (vaca 1)
-//     [data-animal-cuerpo]                  <picture> que se anima (idle). Origen
-//                                           de transformacion abajo al centro
-//     [data-sombra]                         sombra de contacto (no se escala con el
-//                                           cuerpo); luz baja desde el centro-derecha
-//     [data-movil]                          los que se ven por debajo de 64rem
-//   [data-capa="estanque"]                  charca de las tilapias (solo escritorio)
-//     [data-estanque-ventana]               agua (overflow hidden, elipse): las
-//                                           tilapias se ven bajo la superficie; el
-//                                           idle puede moverlas dentro
+//                                           las 2 filas
+//     canvas[data-video-lienzo]             fondo: poster y cuadros del video
+//                                           (src/lib/escena-lienzos.ts)
+//     video[data-video-fondo]               fuente del lienzo (no se ve; muted,
+//                                           playsinline, loop, preload="none")
+//     .inicio-velo [data-velo]              velo oscuro para el texto (no se mueve)
+//   [data-capa="granja"]                    area de los animales (paralaje 0.3)
+//     .inicio-familia                       grupo; --u = alto de la vaca
+//       [data-animal="<slug>"] style="--fase; --x --y --h --z (escritorio,
+//                                           en unidades de --u); --mx --my --mh --mz (movil)"
+//         [data-animal-cuerpo]              lo que se anima (idle). Origen abajo
+//           canvas[data-animal-lienzo]      el animal, pintado tras el LCP
+//         [data-sombra]                     sombra de contacto
+//       [data-movil]                        los que se ven por debajo de 64rem (5)
+//       [data-capa="pecera"]                pecera de vidrio de las tilapias
+//                                           (solo escritorio); dentro
+//                                           [data-animal="tilapias"]
 //   html[data-escena-gsap]                  lo pone escena-inicio.ts mientras GSAP
-//                                           anima la escena: se apaga la
-//                                           respiracion CSS de respaldo
+//                                           anima la escena (se apaga la
+//                                           respiracion CSS de respaldo)
 //   [data-abrir-categoria="<id>"]           acceso por categoria (catalogo.ts)
 //   [data-entra] style="--orden: N"         entrada al llegar desde otra vista
-//                                           (vistas.ts): 0 panel, nada mas
 //   [data-cascada] style="--paso: N"        entrada I9 solo en carga directa
 //   [data-perrito-pista] .franja-canela     pista de Canela (canela-carrera.ts)
-//   [data-perrito] [data-canela-recorrido] [data-canela-caja] [data-canela-sombra]
 //   (Sin boton de pausa desde el bloque 14: decision del usuario, riesgo
-//   WCAG 2.2.2 registrado. html[data-movimiento="pausado"] sigue parando
+//   WCAG 2.2.2 registrado. html[data-movimiento="pausado"] para el video,
 //   la carrera y la respiracion si se pone por codigo.)
 //
-// LCP: el logo. La foto va en <canvas> (no es candidato a LCP) y se pide
-// despues de `load`. Ningun animal se pinta con mas area que el logo
-// (1440x900, 1366x650, 1024x768 y 360x640); llevan loading="lazy",
-// fetchpriority="low" y por debajo de 64rem solo 4 (los otros 5 con
-// display:none no se piden).
+// LCP: el logo. El video y los animales se pintan en <canvas>, que no es
+// candidato a LCP (un <video> o un <img> grande pintado despues del logo
+// pasaria a ser el LCP: medido, ver informe). Todo se pide despues de `load`
+// y del primer LCP. Sin JS: <noscript> con el poster y los animales en <img>.
 import Vista from '../Vista.astro';
 import Icono from '../Icono.astro';
 import { textos, altDe } from '../../lib/negocio';
 
 const t = textos.inicio;
 
-// Animales (public/img/animales, 480 px de alto y variante -240; la imagen
-// esta recortada al animal: su alto es el del animal o el del mas alto del
-// grupo). `ancho` = ancho real de la variante de 480.
-// Escritorio (>= 64rem), en el area de la granja (a la derecha de la columna,
-// con container-type: size; el horizonte de la foto queda al 45cqh):
-//   x = borde izquierdo en % del ancho del area
-//   d = pies bajo el horizonte, en cqh (mas = mas cerca)
-//   r = altura real relativa a la vaca (cerdo 0,57; perro 0,45; gato 0,30;
-//       gallo y pato 0,25; conejos 0,19; cuyes 0,18)
-//   alto en pantalla = r x d x --k (camara a ~1,1 m del suelo: una vaca a
-//   d = 14 mide 18cqh). --k baja en areas estrechas (1024x768): todos
-//   encogen a la vez y la perspectiva se mantiene.
-// Grupos: vaca y cerdo en la loma (atras), corral de aves y pato junto a la
-// charca (medio), conejos con cuyes y perro con gato delante.
-// Movil: fila sobre la hierba de la franja, detras de Canela (x en %, h en px,
-// b = pies sobre el borde inferior, en fracciones de la franja); null = no
-// se muestra. Mismo criterio: alto ~ r x cercania.
+// Animales (public/img/animales, 480 px de alto y variante -240, recortados
+// al animal). `ancho` = ancho real de la variante de 480 (prop = ancho/480).
+// Posiciones en unidades de --u (alto de la vaca), desde la esquina inferior
+// izquierda del grupo: x = borde izquierdo, y = pies sobre la base, h = alto.
+// e = escritorio (>= 64rem), m = movil (null = no se muestra).
+interface Pose {
+  x: number;
+  y: number;
+  h: number;
+  z: number;
+}
 interface Animal {
   slug: string;
   ancho: number;
-  x: number;
-  d: number;
-  r: number;
   fase: number;
-  movil: { x: number; h: number; b: number } | null;
+  e: Pose;
+  m: Pose | null;
 }
 const animales: Animal[] = [
-  { slug: 'vaca', ancho: 675, x: 55, d: 14, r: 1, fase: 0.0, movil: { x: 3, h: 60, b: 0.5 } },
-  { slug: 'cerdo', ancho: 555, x: 41, d: 15.5, r: 0.57, fase: 0.55, movil: { x: 36, h: 36, b: 0.44 } },
-  { slug: 'aves', ancho: 959, x: 6, d: 24, r: 0.25, fase: 0.3, movil: { x: 54, h: 23, b: 0.26 } },
-  { slug: 'pato', ancho: 498, x: 61, d: 24, r: 0.25, fase: 0.9, movil: { x: 27, h: 22, b: 0.22 } },
-  { slug: 'conejos', ancho: 802, x: 1, d: 34, r: 0.19, fase: 0.8, movil: null },
-  { slug: 'cuyes', ancho: 902, x: 13, d: 35.5, r: 0.18, fase: 0.4, movil: null },
-  { slug: 'perro', ancho: 367, x: 28, d: 31, r: 0.45, fase: 0.15, movil: null },
-  { slug: 'gato', ancho: 465, x: 51, d: 34, r: 0.3, fase: 0.65, movil: null },
+  // Fila de atras (pies a 0,42)
+  { slug: 'vaca', ancho: 675, fase: 0.0, e: { x: 0.92, y: 0.42, h: 1, z: 1 }, m: { x: 0.86, y: 0.3, h: 1, z: 1 } },
+  { slug: 'cerdo', ancho: 555, fase: 0.55, e: { x: 0.3, y: 0.42, h: 0.6, z: 2 }, m: { x: 0.24, y: 0.3, h: 0.6, z: 2 } },
+  // Fila del medio (pies a 0,2)
+  { slug: 'aves', ancho: 959, fase: 0.3, e: { x: 0.06, y: 0.2, h: 0.42, z: 3 }, m: { x: 0, y: 0, h: 0.42, z: 3 } },
+  { slug: 'perro', ancho: 367, fase: 0.15, e: { x: 1.3, y: 0.2, h: 0.62, z: 4 }, m: { x: 0.92, y: 0, h: 0.6, z: 4 } },
+  // Fila de delante (pies en la base)
+  { slug: 'conejos', ancho: 802, fase: 0.8, e: { x: 0, y: 0, h: 0.3, z: 6 }, m: null },
+  { slug: 'cuyes', ancho: 902, fase: 0.4, e: { x: 0.46, y: 0, h: 0.28, z: 7 }, m: null },
+  { slug: 'gato', ancho: 465, fase: 0.65, e: { x: 1.0, y: 0, h: 0.4, z: 8 }, m: null },
+  { slug: 'pato', ancho: 498, fase: 0.9, e: { x: 1.4, y: 0, h: 0.36, z: 7 }, m: { x: 1.5, y: 0, h: 0.38, z: 5 } },
 ];
-// Tilapias: bajo el agua de la charca (una tilapia adulta ~0,2 de la vaca).
+// Pecera de vidrio con las tilapias, en la fila de delante (escritorio)
+const pecera = { x: 1.8, y: 0, w: 0.53, h: 0.32, z: 6 };
 const tilapias = { slug: 'tilapias', ancho: 1352, fase: 0.25 };
-const charca = { x: 68, d: 23 };
 
-const ancho240 = (ancho: number) => Math.round(ancho / 2);
-const fuentes = (slug: string, ancho: number, tipo: 'avif' | 'webp') =>
-  `/img/animales/${slug}-240.${tipo} ${ancho240(ancho)}w, /img/animales/${slug}.${tipo} ${ancho}w`;
-// Ancho mostrado aproximado: escritorio r x d x 1,2vh (--k ≈ 1,29cqh y
-// cqh ≈ 0,93vh) x proporcion; movil en px.
-const tamanos = (a: { ancho: number; r: number; d: number; movil?: { h: number } | null }) => {
-  const prop = a.ancho / 480;
-  const movil = a.movil ? Math.round(a.movil.h * prop) : 1;
-  return `(min-width: 64rem) ${(a.r * a.d * 1.2 * prop).toFixed(1)}vh, ${movil}px`;
-};
-
-// Nubes: velos calidos muy suaves sobre la foto (refuerzan el movimiento del
-// cielo). x/y en % de la franja del cielo, w en rem. `movil: false` = solo
-// desde 48rem.
-const nubes = [
-  {
-    capa: 'nubes-lejos',
-    profundidad: 0.1,
-    items: [
-      { x: 30, y: 10, w: 9, forma: 'b', fase: 0.1, movil: false },
-      { x: 62, y: 4, w: 8, forma: 'a', fase: 0.5, movil: true },
-    ],
-  },
-  {
-    capa: 'nubes-medio',
-    profundidad: 0.2,
-    items: [
-      { x: 44, y: 26, w: 14, forma: 'a', fase: 0.3, movil: false },
-      { x: 80, y: 14, w: 12, forma: 'b', fase: 0.7, movil: true },
-    ],
-  },
-  {
-    capa: 'nubes-cerca',
-    profundidad: 0.3,
-    items: [{ x: 4, y: 6, w: 16, forma: 'b', fase: 0.6, movil: true }],
-  },
-];
-
-// Trebol del isotipo (public/img/marca/trebol.svg), inline: un <symbol> para
-// la marca de agua del panel. NO como mask-image/background con url():
-// Chrome cuenta ese fondo como candidato a LCP. Un <svg> inline no.
-const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12.8Q59.2 11.5 61.2 10.4Q63.2 9.2 65.5 8.3Q67.7 7.4 70.1 6.7Q72.4 5.9 75 5.5Q77.6 5 80.2 4.9Q82.9 4.8 85.6 5Q88.3 5.1 90.9 5.8Q93.5 6.5 95.4 8.1Q97.2 9.7 97.9 12.2Q98.6 14.7 98.8 17.3Q99 20 99 22.5Q99 25 98.8 27.4Q98.6 29.9 98.2 32.2Q97.7 34.5 97 36.7Q96.3 38.9 95.3 40.9Q94.3 43 92.6 44.9Q90.9 46.8 89.8 48.4Q88.6 50 89.8 51.6Q90.9 53.2 92.6 55.1Q94.3 57 95.3 59.1Q96.3 61.1 97 63.3Q97.7 65.5 98.2 67.8Q98.6 70.1 98.8 72.6Q99 75 99 77.5Q99 80 98.8 82.7Q98.6 85.3 97.9 87.8Q97.2 90.3 95.4 91.9Q93.5 93.5 90.9 94.2Q88.3 94.9 85.6 95Q82.9 95.2 80.2 95.1Q77.6 95 75 94.5Q72.4 94.1 70.1 93.3Q67.7 92.6 65.5 91.7Q63.2 90.8 61.2 89.6Q59.2 88.5 57.5 87.2Q55.7 85.9 54.2 84.9Q52.7 84 51.3 83.6Q50 83.3 48.7 83.6Q47.3 84 45.8 84.9Q44.3 85.9 42.5 87.2Q40.8 88.5 38.8 89.6Q36.8 90.8 34.5 91.7Q32.3 92.6 29.9 93.3Q27.6 94.1 25 94.5Q22.4 95 19.8 95.1Q17.1 95.2 14.4 95Q11.7 94.9 9.1 94.2Q6.5 93.5 4.6 91.9Q2.8 90.3 2.1 87.8Q1.4 85.3 1.2 82.7Q1 80 1 77.5Q1 75 1.2 72.6Q1.4 70.1 1.8 67.8Q2.3 65.5 3 63.3Q3.7 61.1 4.7 59.1Q5.7 57 7.4 55.1Q9.1 53.2 10.2 51.6Q11.4 50 10.2 48.4Q9.1 46.8 7.4 44.9Q5.7 43 4.7 40.9Q3.7 38.9 3 36.7Q2.3 34.5 1.8 32.2Q1.4 29.9 1.2 27.4Q1 25 1 22.5Q1 20 1.2 17.3Q1.4 14.7 2.1 12.2Q2.8 9.7 4.6 8.1Q6.5 6.5 9.1 5.8Q11.7 5.1 14.4 5Q17.1 4.8 19.8 4.9Q22.4 5 25 5.5Q27.6 5.9 29.9 6.7Q32.3 7.4 34.5 8.3Q36.8 9.2 38.8 10.4Q40.8 11.5 42.5 12.8Q44.3 14.1 45.8 15.1Q47.3 16 48.7 16.4Z';
+const estilo = (a: Animal) =>
+  [
+    `--fase:${a.fase}`,
+    `--prop:${(a.ancho / 480).toFixed(3)}`,
+    `--x:${a.e.x}`,
+    `--y:${a.e.y}`,
+    `--h:${a.e.h}`,
+    `--z:${a.e.z}`,
+    ...(a.m ? [`--mx:${a.m.x}`, `--my:${a.m.y}`, `--mh:${a.m.h}`, `--mz:${a.m.z}`] : []),
+  ].join(';');
 ---
 <Vista id="inicio" nombre={textos.navegacion.find((n) => n.id === 'inicio')!.texto} class="vista-inicio" cuerpo="inicio-cuerpo">
   <div class="inicio-escena" data-escena="inicio">
-    <!-- Escena de granja (decorativa): foto en dos capas + velo calido -->
+    <!-- Escena (decorativa): video del campo en un lienzo + velo + animales -->
     <div class="inicio-paisaje" aria-hidden="true" data-paisaje>
-      <svg class="inicio-simbolos" aria-hidden="true" focusable="false">
-        <symbol id="inicio-trebol" viewBox="0 0 100 100">
-          <path fill="currentColor" d={trebol} />
-        </symbol>
-        <symbol id="inicio-nube-a" viewBox="0 0 220 92">
-          <rect x="14" y="50" width="192" height="36" rx="18" />
-          <circle cx="62" cy="52" r="28" />
-          <circle cx="108" cy="40" r="36" />
-          <circle cx="154" cy="54" r="26" />
-        </symbol>
-        <symbol id="inicio-nube-b" viewBox="0 0 180 80">
-          <rect x="10" y="44" width="160" height="30" rx="15" />
-          <circle cx="52" cy="42" r="22" />
-          <circle cx="92" cy="34" r="28" />
-          <circle cx="128" cy="46" r="18" />
-        </symbol>
-      </svg>
+      <canvas class="inicio-fondo" data-video-lienzo width="0" height="0"></canvas>
+      <video
+        class="inicio-video"
+        data-video-fondo
+        data-fuente-escritorio="/video/campo"
+        data-fuente-movil="/video/campo-movil"
+        muted
+        playsinline
+        loop
+        preload="none"
+        disablepictureinpicture
+        disableRemotePlayback
+        tabindex="-1"
+        aria-hidden="true"></video>
+      <noscript>
+        <picture>
+          <source type="image/avif" media="(orientation: portrait)" srcset="/video/campo-movil-poster.avif" />
+          <source type="image/webp" media="(orientation: portrait)" srcset="/video/campo-movil-poster.webp" />
+          <source type="image/avif" srcset="/video/campo-poster.avif" />
+          <img class="inicio-fondo-sinjs" src="/video/campo-poster.webp" alt="" width="1280" height="720" />
+        </picture>
+      </noscript>
+      <div class="inicio-velo" data-velo></div>
 
-      <div class="inicio-foto" data-foto>
-        <div class="inicio-cielo-capa" data-paralaje data-profundidad="0.1">
-          <canvas class="inicio-cielo" data-cielo data-foto-capa="cielo" width="0" height="0"></canvas>
-        </div>
-        <div class="inicio-velo" data-velo></div>
-        <canvas class="inicio-campo" data-foto-capa="campo" width="0" height="0"></canvas>
-        <noscript>
-          <picture>
-            <source type="image/avif" media="(min-width: 48rem)" srcset="/img/escena/cielo.avif" />
-            <source type="image/avif" srcset="/img/escena/cielo-280.avif" />
-            <img class="inicio-cielo inicio-foto-sinjs" src="/img/escena/cielo-280.webp" alt="" width="988" height="280" />
-          </picture>
-          <picture>
-            <source type="image/avif" media="(min-width: 48rem)" srcset="/img/escena/campo.avif" />
-            <source type="image/avif" srcset="/img/escena/campo-320.avif" />
-            <img class="inicio-campo inicio-foto-sinjs" src="/img/escena/campo-320.webp" alt="" width="983" height="320" />
-          </picture>
-        </noscript>
-      </div>
-
-      {nubes.map((c) => (
-        <div class={`inicio-nubes inicio-${c.capa}`} data-capa={c.capa} data-paralaje data-profundidad={c.profundidad}>
-          {c.items.map((n) => (
-            <svg
-              class:list={['inicio-nube', !n.movil && 'solo-amplio']}
-              style={`left:${n.x}%;top:${n.y}%;width:${n.w}rem;--fase:${n.fase}`}
-              viewBox={n.forma === 'a' ? '0 0 220 92' : '0 0 180 80'}
-              data-nube
-              data-profundidad={c.profundidad}
-            >
-              <use href={`#inicio-nube-${n.forma}`} />
-            </svg>
-          ))}
-        </div>
-      ))}
-
-      <!-- Granja: animales y charca, a la derecha de la columna de texto -->
+      <!-- Granja: foto de familia de los animales, a la derecha de la columna -->
       <div class="inicio-granja" data-capa="granja" data-paralaje data-profundidad="0.3">
-        <div class="inicio-estanque solo-escritorio" data-capa="estanque" style={`--x:${charca.x}%;--d:${charca.d};--z:${Math.round(charca.d)}`}>
-          <span class="estanque-orilla"></span>
-          <div class="estanque-ventana" data-estanque-ventana>
-            <div class="animal animal-tilapias" data-animal={tilapias.slug} style={`--fase:${tilapias.fase};--prop:${(tilapias.ancho / 480).toFixed(3)}`}>
-              <picture data-animal-cuerpo>
-                <source type="image/avif" srcset={fuentes(tilapias.slug, tilapias.ancho, 'avif')} sizes="(min-width: 64rem) 16vh, 1px" />
-                <img
-                  src={`/img/animales/${tilapias.slug}-240.webp`}
-                  srcset={fuentes(tilapias.slug, tilapias.ancho, 'webp')}
-                  sizes="(min-width: 64rem) 16vh, 1px"
-                  width={tilapias.ancho}
-                  height="480"
-                  alt=""
-                  loading="lazy"
-                  fetchpriority="low"
-                  decoding="async"
-                  draggable="false"
-                />
-              </picture>
+        <div class="inicio-familia">
+          {animales.map((a) => (
+            <div
+              class:list={['animal', `animal-${a.slug}`, !a.m && 'solo-escritorio']}
+              data-animal={a.slug}
+              data-movil={a.m ? '' : undefined}
+              style={estilo(a)}
+            >
+              <span class="animal-sombra" data-sombra></span>
+              <div class="animal-cuerpo" data-animal-cuerpo>
+                <canvas class="animal-lienzo" data-animal-lienzo data-slug={a.slug} width="0" height="0"></canvas>
+                <noscript><img class="animal-sinjs" src={`/img/animales/${a.slug}-240.webp`} width={Math.round(a.ancho / 2)} height="240" alt="" /></noscript>
+              </div>
             </div>
-            <span class="estanque-reflejo"></span>
-          </div>
-          <svg class="estanque-hierba" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true" focusable="false"><g fill="#4f6c12"><path d="M32.4 27.3Q33.0 21.1 33.6 16.9Q33.9 22.1 34.1 27.3Z"/><path d="M36.5 27.8Q36.5 22.5 36.5 18.9Q37.3 23.4 38.1 27.8Z"/><path d="M7.8 29.4Q7.5 25.4 7.2 22.8Q8.8 26.1 10.4 29.4Z"/><path d="M22.7 28.0Q24.4 17.2 26.2 10.0Q25.6 19.0 24.9 28.0Z"/><path d="M95.7 29.3Q97.1 25.6 98.6 23.2Q98.1 26.2 97.6 29.3Z"/><path d="M12.4 27.1Q13.7 21.7 15.0 18.0Q14.6 22.6 14.2 27.1Z"/><path d="M63.0 29.7Q63.2 21.3 63.4 15.7Q64.0 22.7 64.6 29.7Z"/><path d="M21.0 27.1Q20.7 15.7 20.4 8.2Q21.7 17.6 23.0 27.1Z"/><path d="M45.0 28.8Q46.1 21.1 47.3 16.0Q47.4 22.4 47.4 28.8Z"/><path d="M56.7 28.6Q58.2 18.7 59.7 12.2Q59.5 20.4 59.2 28.6Z"/><path d="M96.1 29.2Q95.7 25.1 95.4 22.3Q97.0 25.8 98.6 29.2Z"/><path d="M48.4 27.1Q49.1 22.0 49.8 18.5Q50.4 22.8 50.9 27.1Z"/><path d="M85.9 27.1Q86.7 21.6 87.5 18.0Q87.9 22.5 88.2 27.1Z"/><path d="M45.3 26.7Q47.0 13.8 48.8 5.2Q48.1 16.0 47.4 26.7Z"/><path d="M6.9 25.9Q7.5 17.8 8.1 12.4Q8.9 19.2 9.7 25.9Z"/><path d="M28.6 27.7Q29.3 19.2 30.0 13.5Q30.1 20.6 30.2 27.7Z"/></g><g fill="#7a9a22"><path d="M17.3 29.4Q15.5 23.4 13.8 19.5Q16.8 24.4 19.8 29.4Z"/><path d="M25.0 27.8Q26.5 19.2 28.0 13.5Q27.4 20.6 26.7 27.8Z"/><path d="M54.3 28.6Q55.6 15.3 56.8 6.5Q56.9 17.5 56.9 28.6Z"/><path d="M41.3 29.2Q42.8 21.0 44.4 15.5Q44.2 22.4 44.0 29.2Z"/><path d="M18.1 27.1Q17.0 20.0 16.0 15.3Q18.1 21.2 20.3 27.1Z"/><path d="M26.5 27.2Q26.2 22.3 25.8 19.1Q27.2 23.1 28.5 27.2Z"/><path d="M93.5 26.6Q93.5 18.6 93.6 13.3Q94.7 20.0 95.8 26.6Z"/><path d="M6.2 26.0Q7.4 16.6 8.5 10.3Q8.7 18.2 8.9 26.0Z"/><path d="M39.1 29.7Q37.5 21.1 35.9 15.3Q38.7 22.5 41.4 29.7Z"/><path d="M7.5 29.7Q6.2 25.0 4.8 21.8Q7.2 25.8 9.5 29.7Z"/><path d="M1.0 29.9Q-0.6 25.5 -2.2 22.6Q0.4 26.2 3.1 29.9Z"/><path d="M85.8 28.3Q84.4 20.8 83.0 15.8Q85.4 22.0 87.7 28.3Z"/><path d="M36.3 27.7Q37.7 21.7 39.1 17.7Q39.1 22.7 39.1 27.7Z"/><path d="M47.9 28.7Q46.3 23.1 44.7 19.3Q47.3 24.0 49.9 28.7Z"/><path d="M81.4 27.4Q79.5 21.0 77.6 16.8Q80.9 22.1 84.1 27.4Z"/><path d="M15.2 25.1Q13.3 15.1 11.4 8.4Q14.4 16.8 17.5 25.1Z"/></g></svg>
-        </div>
+          ))}
 
-        {animales.map((a) => (
-          <div
-            class:list={['animal', `animal-${a.slug}`, !a.movil && 'solo-escritorio']}
-            data-animal={a.slug}
-            data-movil={a.movil ? '' : undefined}
-            style={`--fase:${a.fase};--x:${a.x}%;--d:${a.d};--r:${a.r};--z:${Math.round(a.d)};--prop:${(a.ancho / 480).toFixed(3)}${a.movil ? `;--mx:${a.movil.x}%;--mh:${a.movil.h}px;--mb:${a.movil.b}` : ''}`}
-          >
-            <span class="animal-sombra" data-sombra></span>
-            <picture data-animal-cuerpo>
-              <source type="image/avif" srcset={fuentes(a.slug, a.ancho, 'avif')} sizes={tamanos(a)} />
-              <img
-                src={`/img/animales/${a.slug}-240.webp`}
-                srcset={fuentes(a.slug, a.ancho, 'webp')}
-                sizes={tamanos(a)}
-                width={a.ancho}
-                height="480"
-                alt=""
-                loading="lazy"
-                fetchpriority="low"
-                decoding="async"
-                draggable="false"
-              />
-            </picture>
+          <div class="pecera solo-escritorio" data-capa="pecera" style={`--x:${pecera.x};--y:${pecera.y};--w:${pecera.w};--h:${pecera.h};--z:${pecera.z}`}>
+            <span class="pecera-sombra"></span>
+            <div class="pecera-vidrio">
+              <div class="pecera-agua">
+                <div class="animal animal-tilapias" data-animal={tilapias.slug} style={`--fase:${tilapias.fase};--prop:${(tilapias.ancho / 480).toFixed(3)}`}>
+                  <div class="animal-cuerpo" data-animal-cuerpo>
+                    <canvas class="animal-lienzo" data-animal-lienzo data-slug={tilapias.slug} width="0" height="0"></canvas>
+                    <noscript><img class="animal-sinjs" src={`/img/animales/${tilapias.slug}-240.webp`} width={Math.round(tilapias.ancho / 2)} height="240" alt="" /></noscript>
+                  </div>
+                </div>
+                <span class="pecera-grava"></span>
+              </div>
+              <span class="pecera-brillo"></span>
+            </div>
+            <span class="pecera-base"></span>
           </div>
-        ))}
+        </div>
       </div>
     </div>
 
-    <!-- Columna de texto (izquierda en >= 64rem): panel bosque esmerilado -->
+    <!-- Columna de texto (izquierda en >= 64rem), sin tarjeta: sobre el velo -->
     <div class="inicio-columna">
-      <div class="inicio-panel tema-oscuro" data-entra style="--orden: 0">
-        <div class="inicio-marco">
-          <!-- Marca de agua del trebol del isotipo (I7), detras de la insignia. Estatica. -->
-          <svg class="inicio-marca-agua" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#inicio-trebol" /></svg>
-          <h1 id="titulo-inicio" tabindex="-1" data-titulo-vista class="inicio-insignia">
-            <img
-              src="/img/marca/logo.webp"
-              srcset="/img/marca/logo-480.webp 480w, /img/marca/logo.webp 929w"
-              sizes="(min-width: 48rem) 400px, 60vw"
-              width="929"
-              height="489"
-              alt={altDe('/img/marca/logo.webp')}
-              loading="eager"
-              fetchpriority="high"
-              class="inicio-logo"
-              data-logo-inicio
-            />
-          </h1>
-        </div>
+      <div class="inicio-texto" data-entra style="--orden: 0">
+        <h1 id="titulo-inicio" tabindex="-1" data-titulo-vista class="inicio-insignia">
+          <img
+            src="/img/marca/logo.webp"
+            srcset="/img/marca/logo-480.webp 480w, /img/marca/logo.webp 929w"
+            sizes="(min-width: 48rem) 400px, 60vw"
+            width="929"
+            height="489"
+            alt={altDe('/img/marca/logo.webp')}
+            loading="eager"
+            fetchpriority="high"
+            class="inicio-logo"
+            data-logo-inicio
+          />
+        </h1>
         <p class="inicio-acento" data-cascada style="--paso: 0">{t.acento}</p>
         <p class="inicio-subtitulo" data-cascada style="--paso: 1">{t.subtitulo}</p>
         <div class="inicio-botones" data-cascada style="--paso: 2">
@@ -342,10 +235,10 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
   }
 
   /* ---------- Fondo de respaldo ----------
-     Colores medios de la foto (ya con el velo): se ve mientras se pinta la
-     foto, si falla y como base del cielo. Sin azul. */
+     Colores medios del poster por altura (cielo de atardecer, horizonte al
+     44 %, campo): se ve mientras llega el video y si falla. Sin azul. */
   :global(.vista-inicio) {
-    background: linear-gradient(180deg, #d9b493 0%, #e9bb7c 30%, #f3c784 44%, #7d8f22 47%, #5c7a14 62%, #3f5e10 100%);
+    background: linear-gradient(180deg, #c49a8a 0%, #bc855d 15%, #e0a060 32%, #e8ad66 42%, #8a6c2a 47%, #6c6711 56%, #5b6017 72%, #47511a 86%, #323e19 100%);
   }
   :global(.inicio-cuerpo) {
     display: flex;
@@ -374,190 +267,140 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
     pointer-events: none;
     container-type: size;
   }
-  .inicio-simbolos {
+  /* Lienzo del video: cubre el paisaje (el encuadre tipo cover lo hace el
+     script). Aparece con un fundido cuando tiene el poster pintado. */
+  .inicio-fondo {
     position: absolute;
-    width: 0;
-    height: 0;
-    overflow: hidden;
-  }
-
-  /* Caja de la foto: proporcion del original (2752x1536), cubre el paisaje
-     (como object-fit: cover) y deja el horizonte (fila 690 de 1536 = 44,92 %)
-     SIEMPRE al 45cqh, asi la granja puede medir la perspectiva en cqh.
-     Si el paisaje es mas ancho que la foto, sobra por abajo, no por arriba. */
-  .inicio-foto {
-    --hc: max(100cqh, 100cqw * 1536 / 2752);
-    position: absolute;
-    left: calc(50cqw - var(--hc) * 0.8958);
-    top: calc(45cqh - var(--hc) * 0.4492);
-    width: calc(var(--hc) * 2752 / 1536);
-    height: var(--hc);
-    isolation: isolate;
-  }
-  /* Cielo: filas 0-780 del original (50,78 % del alto). Se agranda un 15 %
-     alrededor de la linea del horizonte (fila 690 = 88,5 % de su alto) para
-     que sobre 7,5 % a cada lado: margen de la deriva. 115 % x 50,78 % =
-     58,40 % de alto; arriba: 44,92 % - 0,885 x 58,40 % = -6,74 %. */
-  .inicio-cielo-capa {
-    position: absolute;
-    left: -7.5%;
-    top: -6.74%;
-    width: 115%;
-    height: 58.4%;
-  }
-  .inicio-cielo {
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
-  }
-  /* Campo: filas 640-1536 (41,67 % arriba, 58,33 % de alto), con alfa por
-     encima del horizonte */
-  .inicio-campo {
-    position: absolute;
-    left: 0;
-    top: 41.67%;
-    width: 100%;
-    height: 58.33%;
-  }
-  canvas.inicio-cielo,
-  canvas.inicio-campo {
     opacity: 0;
   }
-  canvas[data-lista] {
+  .inicio-fondo[data-lista] {
     opacity: 1;
   }
-  @media (prefers-reduced-motion: no-preference) {
-    canvas.inicio-cielo,
-    canvas.inicio-campo {
-      transition: opacity 700ms ease-out;
-    }
-  }
-  /* Sin JS (<noscript>): las mismas cajas con <img> */
-  :global(.inicio-foto-sinjs) {
+  /* La fuente del lienzo no se ve (1 px transparente: no es candidato a LCP
+     y el navegador la sigue decodificando) */
+  .inicio-video {
     position: absolute;
-    max-width: none;
-    object-fit: fill;
-  }
-  :global(img.inicio-campo.inicio-foto-sinjs) {
     left: 0;
-    top: 41.67%;
-    width: 100%;
-    height: 58.33%;
+    top: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
   }
-  :global(img.inicio-cielo.inicio-foto-sinjs) {
-    z-index: -1; /* por debajo del velo (el <noscript> va despues) */
-    left: -7.5%;
-    top: -6.74%;
-    width: 115%;
-    height: 58.4%;
-  }
-  /* Velo calido sobre el cielo (debajo del campo): ::before tine de maiz
-     los morados (mix-blend-mode: color, solo arriba) y ::after aclara con
-     crema hacia la parte alta, para que el panel bosque destaque. */
-  .inicio-velo {
-    position: absolute;
-    inset: 0 0 50%;
-    pointer-events: none;
-  }
-  .inicio-velo::before,
-  .inicio-velo::after {
-    content: '';
+  :global(.inicio-fondo-sinjs) {
     position: absolute;
     inset: 0;
-  }
-  .inicio-velo::before {
-    background: linear-gradient(180deg, rgb(242 184 35 / 0.55) 0%, rgb(242 184 35 / 0.4) 45%, rgb(242 184 35 / 0) 92%);
-    mix-blend-mode: color;
-  }
-  .inicio-velo::after {
-    background: linear-gradient(180deg, rgb(246 241 228 / 0.42) 0%, rgb(246 241 228 / 0.18) 50%, rgb(246 241 228 / 0) 85%);
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
   }
 
-  /* Nubes: velos calidos, desenfocados y muy suaves sobre la foto */
-  .inicio-nubes {
+  /* Velo oscuro (sin bordes de tarjeta): bosque-noche detras del texto que
+     se desvanece hacia la escena. Opacidades elegidas midiendo el pixel mas
+     claro del video tras el velo en 5 cuadros (0, 2, 4, 6 y 8 s): ver informe.
+     Movil: centrado arriba, detras de la columna; escritorio: desde la
+     izquierda. */
+  .inicio-velo {
     position: absolute;
-    inset: 0 0 auto;
-    height: 40%;
+    inset: 0;
+    background:
+      radial-gradient(ellipse var(--velo-ancho, 80%) 52% at 50% 38%, rgb(16 48 27 / 0.86) 0%, rgb(16 48 27 / 0.82) 62%, rgb(16 48 27 / 0.5) 84%, rgb(16 48 27 / 0) 100%),
+      linear-gradient(180deg, rgb(16 48 27 / 0.35) 0%, rgb(16 48 27 / 0) 12%);
   }
-  .inicio-nube {
-    position: absolute;
-    height: auto;
-    fill: var(--color-crema);
-    opacity: 0.2;
-    filter: blur(10px);
+
+  /* Tableta vertical: el velo no pasa del ancho del bloque de texto */
+  @media (min-width: 40rem) {
+    .inicio-velo {
+      --velo-ancho: 24rem;
+    }
   }
-  .inicio-nubes-medio .inicio-nube {
-    fill: #f8dfa6;
-    opacity: 0.22;
-  }
-  .inicio-nubes-cerca .inicio-nube {
-    opacity: 0.16;
-    filter: blur(14px);
-  }
-  .solo-amplio,
+
   .solo-escritorio {
     display: none;
   }
-  @media (min-width: 48rem) {
-    .solo-amplio {
-      display: block;
-    }
-  }
 
-  /* ---------- Granja: animales ----------
-     Movil (< 64rem): fila pequena de 4 sobre la hierba de la franja, DETRAS
-     de Canela (la franja va por encima del paisaje), sin tapar la columna. */
+  /* ---------- Granja: foto de familia ----------
+     Movil (< 64rem): grupo de 5 bajo los botones, apoyado abajo; Canela
+     pasa por delante (la franja va por encima del paisaje). */
   .inicio-granja {
     position: absolute;
-    inset: auto 0 0;
-    height: var(--franja-canela);
+    inset: 0;
+    container-type: size;
+  }
+  .inicio-familia {
+    --u: min(20.5cqh, 41cqw);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.5cqh;
+    width: calc(var(--u) * 2.28);
+    height: calc(var(--u) * 1.3);
+    margin-inline: auto;
   }
   .animal {
+    --ax: var(--mx, 0);
+    --ay: var(--my, 0);
+    --ah: var(--mh, 0.5);
     position: absolute;
-    left: var(--mx, 0%);
-    bottom: calc(var(--franja-canela) * var(--mb, 0.36));
-    z-index: var(--z, 1);
-    width: calc(var(--mh, 2rem) * var(--prop));
-    height: var(--mh, 2rem);
+    left: calc(var(--ax) * var(--u));
+    bottom: calc(var(--ay) * var(--u));
+    z-index: var(--mz, 1);
+    width: calc(var(--ah) * var(--u) * var(--prop));
+    height: calc(var(--ah) * var(--u));
   }
-  .animal picture,
-  .animal img {
+  .animal-cuerpo {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-origin: 50% 100%;
+  }
+  .animal-lienzo,
+  :global(.animal-sinjs) {
     display: block;
     width: 100%;
     height: 100%;
   }
-  .animal picture {
-    position: relative;
-    transform-origin: 50% 100%;
+  /* Integracion con la luz calida del atardecer */
+  .animal-lienzo {
+    opacity: 0;
+    filter: sepia(0.08) saturate(0.96);
   }
-  /* Integracion con la foto (contraluz calido): un punto mas calidos y
-     menos saturados que el recorte de estudio */
-  .animal img {
-    filter: sepia(0.1) saturate(0.95) brightness(0.96);
+  .animal-lienzo[data-lista] {
+    opacity: 1;
   }
-  /* Sombra de contacto: el sol bajo esta detras, a la derecha del centro;
-     la sombra cae hacia la izquierda y hacia el espectador. Nucleo oscuro
-     bajo los pies + estela difusa. */
+  @media (prefers-reduced-motion: no-preference) {
+    .inicio-fondo,
+    .animal-lienzo {
+      transition: opacity 600ms ease-out;
+    }
+  }
+  /* Sin JS: los lienzos no se pintan */
+  :global(html:not(.js)) .animal-lienzo,
+  :global(html:not(.js)) .inicio-fondo {
+    display: none;
+  }
+  /* Sombra de contacto suave bajo los pies (luz de frente, alta) */
   .animal-sombra {
     position: absolute;
-    left: -16%;
-    bottom: -9%;
-    width: 104%;
-    height: 20%;
+    left: 6%;
+    bottom: -5%;
+    width: 88%;
+    height: 12%;
     border-radius: 50%;
-    background:
-      radial-gradient(ellipse 42% 38% at 66% 42%, rgb(16 30 8 / 0.5), rgb(16 30 8 / 0) 100%),
-      radial-gradient(ellipse 50% 50% at 50% 50%, rgb(16 30 8 / 0.3), rgb(16 30 8 / 0) 100%);
+    background: radial-gradient(ellipse 50% 50% at 50% 50%, rgb(16 30 8 / 0.55), rgb(16 30 8 / 0) 100%);
     filter: blur(2px);
   }
-  /* Grupos (aves, conejos, cuyes): sombra mas ancha y plana */
   .animal-aves .animal-sombra,
   .animal-cuyes .animal-sombra,
   .animal-conejos .animal-sombra {
-    left: -8%;
-    width: 104%;
-    height: 14%;
-    bottom: -6%;
+    left: 2%;
+    width: 96%;
+    height: 9%;
+    bottom: -3%;
   }
 
   @media (min-width: 64rem) {
@@ -565,106 +408,121 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
       display: block;
     }
     .inicio-escena {
-      /* Columna de texto: ancho del panel + margen izquierdo */
+      /* Columna de texto: ancho del bloque + margen izquierdo */
       --columna: clamp(28.5rem, 38vw, 34rem);
     }
+    /* Velo desde la izquierda, mas denso detras del texto y fundido hacia
+       el centro; un poco desde abajo para el campo cercano */
+    .inicio-velo {
+      background:
+        radial-gradient(ellipse calc(var(--columna) * 1.05) 62% at calc(var(--spacing-vista) + var(--columna) * 0.5) 60%, rgb(16 48 27 / 0.62) 0%, rgb(16 48 27 / 0.44) 60%, rgb(16 48 27 / 0) 100%),
+        linear-gradient(90deg, rgb(16 48 27 / 0.6) 0%, rgb(16 48 27 / 0.5) calc(var(--columna) * 0.75), rgb(16 48 27 / 0.2) calc(var(--columna) * 1.2), rgb(16 48 27 / 0) calc(var(--columna) * 1.6)),
+        linear-gradient(0deg, rgb(16 48 27 / 0.3) 0%, rgb(16 48 27 / 0) 30%);
+    }
     /* Area de la granja: desde la columna hasta el borde derecho, todo el
-       alto del paisaje (horizonte al 45cqh). --k = alto en pantalla de una
-       vaca por cada cqh bajo el horizonte; en areas estrechas lo limita el
-       ancho (todo encoge a la vez). */
+       alto del paisaje. --u = alto de la vaca (~42 % de la vista; en areas
+       estrechas lo limita el ancho y todo encoge a la vez). */
     .inicio-granja {
-      --k: min(1.29cqh, 1.4cqw);
       inset: 0 var(--spacing-vista) 0 calc(var(--spacing-vista) + var(--columna) + 1.5rem);
-      height: auto;
-      container-type: size;
+    }
+    .inicio-familia {
+      --u: min(42cqh, 42.5cqw);
+      bottom: 12cqh;
+      width: calc(var(--u) * 2.33);
+      height: calc(var(--u) * 1.42);
     }
     .animal {
-      --alto: calc(var(--r) * var(--d) * var(--k));
-      left: var(--x);
-      bottom: calc(55cqh - var(--d) * 1cqh);
-      width: calc(var(--alto) * var(--prop));
-      height: var(--alto);
-    }
-    /* Neblina de distancia: los de la loma, un punto mas lavados */
-    .animal-vaca img,
-    .animal-cerdo img {
-      filter: sepia(0.14) saturate(0.88) brightness(0.98) contrast(0.94);
+      --ax: var(--x);
+      --ay: var(--y);
+      --ah: var(--h);
+      z-index: var(--z, 1);
     }
     .animal-sombra {
       filter: blur(3px);
     }
 
-    /* Charca de las tilapias, vista casi a ras de suelo (ancho ~ 1 vaca a su
-       distancia, alto 21 % del ancho), centrada en su profundidad. Como en una
-       charca real al atardecer: agua oliva oscura (refleja la hierba y la
-       orilla), con la estela dorada del sol bajo en el centro-derecha; contorno irregular y difuminado (mascara), barro y hierba en
-       la orilla, sombra interior bajo el borde lejano. Las tilapias se ven
-       apagadas bajo la superficie, con ondas y el brillo del sol encima. */
-    .inicio-estanque {
-      --ancho: calc(var(--d) * var(--k) * 1.05);
+    /* Pecera de vidrio de las tilapias: agua verdosa (sin azul), grava,
+       brillo del cristal y base de madera */
+    .pecera {
       position: absolute;
-      left: var(--x);
-      bottom: calc(55cqh - var(--d) * 1cqh - var(--ancho) * 0.105);
+      left: calc(var(--x) * var(--u));
+      bottom: calc(var(--y) * var(--u));
       z-index: var(--z);
-      width: var(--ancho);
-      height: calc(var(--ancho) * 0.21);
+      width: calc(var(--w) * var(--u));
+      height: calc(var(--h) * var(--u));
     }
-    .estanque-orilla {
+    .pecera-sombra {
       position: absolute;
-      inset: -16% -4% -30%;
-      border-radius: 46% 54% 50% 50% / 50% 46% 54% 50%;
-      background:
-        radial-gradient(ellipse 50% 46% at 50% 44%, rgb(58 46 20 / 0.75) 70%, rgb(58 46 20 / 0) 100%),
-        radial-gradient(ellipse 50% 50% at 46% 64%, rgb(40 52 12 / 0.45) 55%, rgb(40 52 12 / 0) 100%);
-      filter: blur(2px);
+      left: 2%;
+      right: 2%;
+      bottom: -7%;
+      height: 16%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse 50% 50% at 50% 50%, rgb(16 30 8 / 0.55), rgb(16 30 8 / 0) 100%);
+      filter: blur(3px);
     }
-    .estanque-ventana {
+    .pecera-vidrio {
       position: absolute;
-      inset: 0;
+      inset: 0 0 9%;
       overflow: hidden;
-      border-radius: 44% 56% 52% 48% / 58% 50% 50% 42%;
+      border-radius: 9% 9% 6% 6% / 14% 14% 8% 8%;
+      background: linear-gradient(180deg, rgb(255 255 255 / 0.16) 0%, rgb(255 255 255 / 0.08) 100%);
+      box-shadow:
+        inset 0 0 0 2px rgb(246 241 228 / 0.7),
+        inset 0 0 14px rgb(246 241 228 / 0.35),
+        0 6px 14px -6px rgb(16 30 8 / 0.5);
+    }
+    .pecera-agua {
+      position: absolute;
+      inset: 16% 3px 3px;
+      overflow: hidden;
+      border-top: 2px solid rgb(234 244 220 / 0.85);
       background:
-        radial-gradient(ellipse 26% 9% at 61% 30%, rgb(255 236 170 / 0.9), rgb(255 236 170 / 0) 100%),
-        linear-gradient(90deg, rgb(242 184 35 / 0) 30%, rgb(242 184 35 / 0.3) 61%, rgb(242 184 35 / 0) 85%),
-        linear-gradient(180deg, #2e3a14 0%, #4a5622 22%, #6f6e30 48%, #5b5a26 75%, #3c4418 100%);
-      box-shadow: inset 0 calc(var(--ancho) * 0.02) calc(var(--ancho) * 0.02) rgb(30 26 8 / 0.6);
-      -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 80%, transparent 100%);
-      mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 80%, transparent 100%);
+        radial-gradient(ellipse 60% 40% at 70% 10%, rgb(255 236 170 / 0.35), rgb(255 236 170 / 0) 100%),
+        linear-gradient(180deg, rgb(150 196 150 / 0.62) 0%, rgb(88 146 104 / 0.72) 55%, rgb(46 98 64 / 0.85) 100%);
+    }
+    .pecera-grava {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 14%;
+      background:
+        radial-gradient(circle at 12% 60%, #c9b27a 0 18%, transparent 20%) 0 0 / 14% 100%,
+        radial-gradient(circle at 60% 40%, #8f7a4a 0 16%, transparent 18%) 0 0 / 11% 100%,
+        linear-gradient(180deg, #a48c55, #6f5c33);
     }
     .animal-tilapias {
       left: 0;
       right: 0;
-      top: 26%;
+      top: 9%;
       bottom: auto;
-      height: 60%;
-      width: calc(var(--ancho) * 0.126 * var(--prop));
+      z-index: 1;
+      height: 72%;
+      width: auto;
+      aspect-ratio: var(--prop);
       margin-inline: auto;
-      opacity: 0.38;
     }
-    .animal-tilapias img {
-      filter: sepia(0.5) saturate(0.6) brightness(0.7) blur(0.6px);
+    .animal-tilapias .animal-lienzo {
+      filter: saturate(0.85) brightness(0.92);
     }
-    /* Superficie: ondas finas y brillo del sol encima de los peces */
-    .estanque-reflejo {
+    .pecera-brillo {
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 14% 4% at 40% 52%, rgb(255 236 180 / 0.45), rgb(255 236 180 / 0) 100%),
-        radial-gradient(ellipse 18% 4% at 70% 62%, rgb(255 236 180 / 0.4), rgb(255 236 180 / 0) 100%),
-        radial-gradient(ellipse 10% 3% at 55% 74%, rgb(255 236 180 / 0.35), rgb(255 236 180 / 0) 100%),
-        radial-gradient(ellipse 14% 6% at 61% 31%, rgb(255 252 236 / 0.7), rgb(255 252 236 / 0) 100%);
+        linear-gradient(100deg, rgb(255 255 255 / 0) 8%, rgb(255 255 255 / 0.32) 12%, rgb(255 255 255 / 0) 18%),
+        linear-gradient(100deg, rgb(255 255 255 / 0) 80%, rgb(255 255 255 / 0.18) 84%, rgb(255 255 255 / 0) 88%);
       pointer-events: none;
     }
-    /* Hierba de la orilla cercana, por delante del agua */
-    .estanque-hierba {
+    .pecera-base {
       position: absolute;
-      left: -2%;
-      bottom: -12%;
-      height: 50%;
-      z-index: 1;
-      width: 104%;
-      overflow: visible;
-      filter: blur(0.3px);
+      left: -3%;
+      right: -3%;
+      bottom: 0;
+      height: 11%;
+      border-radius: 3px;
+      background: linear-gradient(180deg, #a87a4a 0%, #7a5530 60%, #5b3d22 100%);
+      box-shadow: 0 2px 4px rgb(16 30 8 / 0.4);
     }
   }
 
@@ -672,10 +530,10 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
      pies. Apagada con reduced motion, con la pausa del sitio y en cuanto
      animacion-interaccion pone html[data-escena-gsap]. */
   @media (prefers-reduced-motion: no-preference) {
-    :global(html:not([data-movimiento='pausado']):not([data-escena-gsap])) .animal:not(.animal-tilapias) picture {
+    :global(html:not([data-movimiento='pausado']):not([data-escena-gsap])) .animal:not(.animal-tilapias) .animal-cuerpo {
       animation: animal-respira 4.2s ease-in-out calc(var(--fase, 0) * -4.2s) infinite;
     }
-    :global(html:not([data-movimiento='pausado']):not([data-escena-gsap])) .animal-tilapias picture {
+    :global(html:not([data-movimiento='pausado']):not([data-escena-gsap])) .animal-tilapias .animal-cuerpo {
       animation: tilapia-flota 5s ease-in-out calc(var(--fase, 0) * -5s) infinite;
     }
   }
@@ -698,7 +556,7 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
     }
   }
 
-  /* ---------- Columna de texto ---------- */
+  /* ---------- Columna de texto (sin tarjeta) ---------- */
   .inicio-columna {
     position: relative;
     z-index: 2;
@@ -706,77 +564,27 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
     grid-column: 1;
     display: flex;
     min-height: 0;
-    align-items: safe center;
+    align-items: flex-start;
     justify-content: center;
-    padding: 0.5rem 0.5rem;
+    padding: calc(var(--hueco) * 0.5 + 0.5rem) 0.5rem 0.5rem;
   }
-  /* Panel bosque (.tema-oscuro): foco maiz, texto crema.
-     Vidrio esmerilado (2026-10-17): bosque-noche translucido + desenfoque
-     del fondo; la foto se intuye detras. Opacidad elegida midiendo el
-     fondo REAL mas claro detras del panel (ver informe del bloque 22).
-     Sin backdrop-filter o con prefers-reduced-transparency: opaco como antes
-     (crema >= 7.8:1, maiz 4.9:1, borde hoja 3.9:1). El blur no se anima. */
-  .inicio-panel {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
+  /* Foco maiz como en .tema-oscuro (5.44 sobre bosque), texto crema */
+  .inicio-texto {
+    --color-foco: var(--color-foco-oscuro);
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
     max-width: 34rem;
-    padding: calc(var(--hueco) * 0.5 + 0.75rem) 0.75rem calc(var(--hueco) * 0.6 + 0.25rem);
-    border-radius: var(--radius-tarjeta-grande);
-    /* Movil 0.82: detras queda el cielo mas claro (medido); >= 48rem 0.74 */
-    --vidrio: 0.82;
-    background:
-      radial-gradient(ellipse 80% 60% at 50% 30%, rgb(27 77 43 / calc(var(--vidrio) - 0.02)) 0%, rgb(16 48 27 / var(--vidrio)) 100%);
-    -webkit-backdrop-filter: blur(16px) saturate(1.1);
-    backdrop-filter: blur(16px) saturate(1.1);
-    /* Borde fino crema como sombra interior: no suma ancho (un border de
-       1 px hacia saltar los accesos a 2 filas en 360) */
-    box-shadow:
-      inset 0 0 0 1px rgb(246 241 228 / 0.2),
-      0 24px 48px -16px rgb(16 30 8 / 0.45);
+    color: var(--color-crema);
     text-align: center;
-  }
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .inicio-panel {
-      background: radial-gradient(ellipse 80% 60% at 50% 30%, rgb(27 77 43 / 0.96) 0%, rgb(16 48 27 / 0.96) 100%);
-    }
-  }
-  @media (prefers-reduced-transparency: reduce) {
-    .inicio-panel {
-      background: radial-gradient(ellipse 80% 60% at 50% 30%, rgb(27 77 43 / 0.96) 0%, rgb(16 48 27 / 0.96) 100%);
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-    }
-  }
-  .inicio-marco {
-    position: relative;
-    display: grid;
-    place-items: center;
-  }
-  /* Marca de agua del trebol (I7): hoja al 6 %, centrada detras; recortada
-     por el panel */
-  .inicio-marca-agua {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    z-index: -1;
-    width: 60dvh;
-    height: 60dvh;
-    translate: -50% -50%;
-    color: var(--color-hoja);
-    opacity: 0.06;
-    pointer-events: none;
   }
   /* Insignia: interior blanco y aro triple (I6): maiz 4, bosque-noche 6,
      horizonte-fuerte 2 */
   .inicio-insignia {
     display: grid;
     place-items: center;
-    width: min(76vw, 23dvh * 1.6, 30rem);
+    width: min(74vw, 23.5dvh * 1.6, 30rem);
     aspect-ratio: 1.6;
     border-radius: 50%;
     background: var(--color-blanco);
@@ -784,18 +592,28 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
       0 0 0 4px var(--color-maiz),
       0 0 0 10px var(--color-bosque-noche),
       0 0 0 12px var(--color-horizonte-fuerte),
-      var(--shadow-elevada);
+      0 18px 40px -10px rgb(16 30 8 / 0.6);
   }
   .inicio-logo {
     width: 74%;
     height: auto;
+  }
+  /* Sombra discreta: ayuda sobre los cuadros mas claros (no se cuenta en
+     el contraste medido). Corta a proposito: Chrome mide el texto candidato
+     a LCP con su sombra, y una sombra ancha hacia que el acento (283 x 76)
+     superara al logo en movil. */
+  .inicio-acento,
+  .inicio-subtitulo {
+    text-shadow:
+      0 1px 2px rgb(16 48 27 / 0.9),
+      0 0 5px rgb(16 48 27 / 0.55);
   }
   .inicio-acento {
     margin-top: calc(var(--hueco) + 0.5rem); /* deja libre el aro de 12 px */
     font-family: 'Caveat Brush', 'Acento respaldo', 'Acento respaldo android', cursive;
     font-size: var(--text-acento);
     line-height: var(--text-acento--line-height);
-    color: var(--color-maiz); /* 5.4 sobre bosque, 7.98 sobre bosque-noche */
+    color: var(--color-maiz);
     text-wrap: balance;
   }
   .inicio-subtitulo {
@@ -807,7 +625,7 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
     text-wrap: balance;
   }
 
-  /* Botones (I3): CTA oro principal + "Como llegar" secundario */
+  /* Botones (I3): CTA oro principal + "Como llegar" bosque opaco */
   .inicio-botones {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -824,12 +642,18 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
     height: 1.25em;
     flex-shrink: 0;
   }
+  .inicio-boton-oro {
+    box-shadow: 0 8px 20px -8px rgb(16 30 8 / 0.7);
+  }
   .inicio-boton-secundario {
     border: 2px solid var(--color-crema); /* 8.7 sobre bosque */
+    background-color: var(--color-bosque);
     color: var(--color-crema);
+    box-shadow: 0 8px 20px -8px rgb(16 30 8 / 0.7);
   }
 
-  /* Accesos por categoria (I3): chips-enlace de 44 px */
+  /* Accesos por categoria (I3): chips-enlace de 44 px, fondo bosque-noche
+     translucido y borde crema */
   .inicio-accesos {
     display: flex;
     flex-wrap: wrap;
@@ -842,10 +666,13 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
     min-height: var(--spacing-objetivo);
     align-items: center;
     padding-inline: 0.625rem;
-    border: 1.5px solid var(--color-hoja); /* 4.36 sobre bosque (borde, >= 3:1) */
+    border: 1.5px solid rgb(246 241 228 / 0.85);
     border-radius: var(--radius-chip);
-    /* Relleno crema que entra desde la izquierda (hover y foco) */
-    background: linear-gradient(var(--color-crema), var(--color-crema)) no-repeat 0 0 / 0% 100%;
+    /* Relleno crema que entra desde la izquierda (hover y foco) sobre el
+       fondo translucido */
+    background:
+      linear-gradient(var(--color-crema), var(--color-crema)) no-repeat 0 0 / 0% 100%,
+      rgb(16 48 27 / var(--fondo-acceso, 0.85));
     font-size: var(--text-etiqueta);
     font-weight: 800;
     line-height: var(--text-etiqueta--line-height);
@@ -855,7 +682,7 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
 
   /* ---------- Hover y foco (PLAN 0-C "Botones de Inicio") ----------
      Mismo estado pintado con el raton (solo hover real) y con el foco de
-     teclado; el anillo maiz de .tema-oscuro se mantiene siempre.
+     teclado; el anillo maiz se mantiene siempre.
        Ver productos: maiz -> maiz-oscuro (tinta 6.02) y sube 2 px
        Como llegar:   se rellena de crema, texto bosque (8.69)
        Accesos:       relleno crema desde la izquierda, texto bosque (8.69) */
@@ -916,10 +743,6 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
   }
 
   @media (min-width: 48rem) {
-    .inicio-panel {
-      --vidrio: 0.74;
-      padding-inline: 1.5rem;
-    }
     .inicio-insignia {
       width: min(30rem, 27dvh * 1.6);
     }
@@ -937,20 +760,21 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
       gap: 0.5rem;
     }
     .inicio-acceso {
+      --fondo-acceso: 0.72;
       padding-inline: 1rem;
     }
   }
 
-  /* Escritorio: columna pegada a la izquierda, la granja llena el resto */
+  /* Escritorio: columna pegada a la izquierda y centrada en alto */
   @media (min-width: 64rem) {
     .inicio-columna {
+      align-items: safe center;
       justify-content: flex-start;
       padding: 0.75rem var(--spacing-vista);
     }
-    .inicio-panel {
+    .inicio-texto {
       width: var(--columna);
       max-width: none;
-      padding-inline: 1.125rem;
     }
   }
 
@@ -976,8 +800,8 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
      Cascada una sola vez: acento 0, subtitulo 80, botones 160 y accesos
      240 ms (400 ms, translateY 12 px). El logo no se anima.
      fill-mode both: si el script fallara, todo termina visible. Al llegar
-     desde otra vista NO se repite (data-cascada-hecha; entra el panel con
-     [data-entra], vistas.ts). */
+     desde otra vista NO se repite (data-cascada-hecha; entra el bloque de
+     texto con [data-entra], vistas.ts). */
   @media (prefers-reduced-motion: no-preference) {
     :global(html.js:not([data-movimiento='pausado'])) :global(#inicio:not([data-cascada-hecha])) [data-cascada] {
       animation: inicio-cascada 400ms var(--ease-vista) calc(var(--paso, 0) * 80ms) both;
@@ -995,7 +819,7 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
   }
 
   /* ---------- Franja de Canela ----------
-     Sin fondo propio: Canela corre sobre el cesped del paisaje. */
+     Sin fondo propio: Canela corre sobre el cesped, por delante del grupo. */
   .franja-canela {
     position: relative;
     z-index: 1;
@@ -1086,7 +910,8 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
 <script>
   import { alCambiarVista, vistaActual } from '../../lib/router';
 
-  // Paralaje, carrera de Canela y escena (nubes y animales): modulos aparte, pedidos con import() (M-1
+  // Paralaje, carrera de Canela, escena (idle de los animales) y lienzos
+  // (video de fondo y animales): modulos aparte, pedidos con import() (M-1
   // del QA). Se esperan `load`, el primer candidato a LCP ya pintado y un
   // hueco libre. Sin PerformanceObserver de LCP (Safari, Firefox) se usa un
   // margen de 1,2 s tras `load` (y 3 s como tope si no llega el LCP).
@@ -1111,12 +936,12 @@ const trebol = 'M48.7 16.4Q50 16.7 51.3 16.4Q52.7 16 54.2 15.1Q55.7 14.1 57.5 12
   });
   void Promise.all([trasLoad, trasPintarLcp]).then(() => {
     const pedir = () => {
+      // Video de fondo y animales en <canvas> (no compiten por el LCP)
+      void import('../../lib/escena-lienzos');
       void import('../../lib/animacion/paralaje');
       void import('../../lib/animacion/canela-carrera');
-      // Nubes e idle de los animales (GSAP por gsap-carga.ts, bloque 22)
+      // Idle de los animales (GSAP por gsap-carga.ts)
       void import('../../lib/animacion/escena-inicio');
-      // Foto del fondo en <canvas> (no compite por el LCP): escena-foto.ts
-      void import('../../lib/escena-foto');
     };
     if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(pedir, { timeout: 1500 });
     else setTimeout(pedir, 200);

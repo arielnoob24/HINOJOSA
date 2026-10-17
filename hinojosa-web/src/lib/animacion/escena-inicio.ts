@@ -1,34 +1,17 @@
-// Escena de granja de Inicio (rediseno 0-C, bloque 22): nubes a la deriva e
-// idle de los 9 animales con GSAP (cargador comun gsap-carga.ts).
+// Escena de granja de Inicio (rediseno 0-C, bloque 22): idle de los
+// animales de la foto de familia con GSAP (cargador comun gsap-carga.ts).
+// Las nubes y el cielo ya no se animan aqui: el fondo es un video
+// (escena-lienzos.ts, ajustes del 2026-10-17 tarde), con su propio ciclo de
+// vida (se pausa fuera de Inicio, con la pausa y con reduced motion).
 //
 // Marcado (VistaInicio.astro):
 //   [data-escena="inicio"]          raiz
-//   [data-nube]                     cada nube (svg). La deriva va en su
-//                                   `transform` (x); la propiedad `translate`
-//                                   de la capa [data-capa="nubes-*"] es del
-//                                   paralaje (paralaje.ts): no se pisan.
 //   [data-animal="<slug>"]          contenedor con --fase (0..0,9)
 //     [data-animal-cuerpo]          lo que se anima (origen abajo al centro)
 //     [data-sombra]                 sombra: solo se encoge en los saltitos
 //   html[data-escena-gsap]          GSAP tiene el control: el CSS apaga la
 //                                   respiracion de respaldo (@keyframes
 //                                   animal-respira / tilapia-flota)
-//
-// Cielo de la foto (canvas[data-cielo], escena-foto.ts): vaiven muy lento
-// xPercent -5 <-> +5 (CIELO_TRAMO s por tramo, sine.inOut, yoyo) y una
-// "respiracion" de escala 1 <-> 1,02 aun mas lenta, con el origen en la
-// linea del horizonte (88,5 % del alto del lienzo) para que la linea de
-// arboles no suba ni baje. El lienzo mide el 115 % de la foto: con 5 % de
-// su ancho + 1 % de la escala no se ve ningun borde. Empieza en x = 0 (la
-// composicion de frontend). El fundido de opacidad (data-lista) es CSS y no
-// se toca: el vaiven corre desde el arranque, se pinte la foto antes o
-// despues. Su envoltorio .inicio-cielo-capa usa `translate` (paralaje).
-//
-// Nubes: cruzan de izquierda a derecha y reaparecen por la izquierda sin
-// salto (el tramo va de "toda fuera a la izquierda" a "toda fuera a la
-// derecha" y el paisaje la recorta). Cruce de la anchura de la escena:
-// lejos 140 s, medio 110 s, cerca 80 s, +-8 % segun --fase. Arrancan en su
-// sitio del diseno (x = 0), asi que la composicion inicial no cambia.
 //
 // Animales: respiracion continua (scaleX/scaleY desde los pies, periodo y
 // fase propios) y GESTOS ocasionales por especie (rotation, y, x; nunca
@@ -44,9 +27,9 @@
 //     los transforms. El ticker de GSAP se duerme solo (autoSleep): 0
 //     requestAnimationFrame fuera de Inicio (salvo el carrusel mientras gira).
 //   - Con la pausa o reduced motion: detenida al instante, animales en
-//     reposo, nubes en su sitio (escena estatica) y sin respiracion CSS.
-//   - Movil (< 64rem): solo los animales visibles ([data-movil]) y las nubes
-//     visibles (3 por debajo de 48rem): se filtra por getClientRects().
+//     reposo (escena estatica) y sin respiracion CSS.
+//   - Movil (< 64rem): solo los animales visibles ([data-movil], 5): se
+//     filtra por getClientRects().
 import { alCambiarVista, vistaActual } from '../router';
 import { cargarGsap, vigilarMovimiento, type Gsap } from './gsap-carga';
 
@@ -55,12 +38,6 @@ type Anim = ReturnType<Gsap['to']> | ReturnType<Gsap['timeline']>;
 const html = document.documentElement;
 const seccion = document.getElementById('inicio');
 const escena = document.querySelector<HTMLElement>('[data-escena="inicio"]');
-
-/** Segundos por cruce de la anchura de la escena, por capa. */
-const CRUCE: Record<string, number> = { 'nubes-lejos': 140, 'nubes-medio': 110, 'nubes-cerca': 80 };
-
-/** px fuera de la escena en el salto (sombra de la nube + paralaje). */
-const MARGEN_NUBE = 32;
 
 const azar = (a: number, b: number) => a + Math.random() * (b - a);
 const visible = (el: Element) => el.getClientRects().length > 0;
@@ -196,7 +173,6 @@ let estadoEscena: 'parada' | 'activa' | 'congelada' = 'parada';
 let permitido = false;
 /** Todo lo vivo de la escena: bucles, gestos y llamadas diferidas. */
 const vivas = new Set<Anim>();
-let nubes: { el: SVGElement; tween: Anim }[] = [];
 let limpiar: Element[] = [];
 
 function registrar<T extends Anim>(a: T): T {
@@ -220,51 +196,6 @@ function programarGesto(g: Gsap, a: Cuerpo, esp: Especie, primera = false) {
     });
   });
   registrar(llamada);
-}
-
-const CIELO_TRAMO = 75;
-const CIELO_X = 5;
-
-function crearCielo(g: Gsap) {
-  const cielo = escena?.querySelector<HTMLCanvasElement>('canvas[data-cielo]');
-  if (!cielo || !visible(cielo)) return;
-  g.set(cielo, { transformOrigin: '50% 88.5%' });
-  const vaiven = g.fromTo(
-    cielo,
-    { xPercent: -CIELO_X },
-    { xPercent: CIELO_X, duration: CIELO_TRAMO, ease: 'sine.inOut', yoyo: true, repeat: -1 },
-  );
-  vaiven.progress(0.5); // x = 0: su sitio del diseno
-  registrar(vaiven);
-  registrar(g.to(cielo, { scale: 1.02, duration: CIELO_TRAMO * 1.45, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
-  limpiar.push(cielo);
-}
-
-function crearNubes(g: Gsap) {
-  if (!escena) return;
-  nubes = [];
-  for (const el of escena.querySelectorAll<SVGElement>('[data-nube]')) {
-    if (!visible(el)) continue;
-    const capa = el.parentElement as HTMLElement | null;
-    const ancho = capa?.clientWidth ?? 0;
-    if (!capa || ancho <= 0) continue;
-    // `left` calculado (px): no le afecta el transform de la deriva ni el
-    // `translate` del paralaje de la capa
-    const izquierda = parseFloat(getComputedStyle(el).left) || 0;
-    const w = el.getBoundingClientRect().width;
-    const fase = parseFloat(el.style.getPropertyValue('--fase')) || 0;
-    const cruce = (CRUCE[capa.dataset.capa ?? ''] ?? 110) * (0.92 + 0.16 * fase);
-    // Toda fuera por la izquierda -> toda fuera por la derecha, con margen
-    // para la sombra (drop-shadow) y el paralaje de la capa (<= 2,4 px)
-    const desde = -(izquierda + w + MARGEN_NUBE);
-    const hasta = ancho - izquierda + MARGEN_NUBE;
-    const recorrido = hasta - desde;
-    const tween = g
-      .fromTo(el, { x: desde }, { x: hasta, duration: (cruce * recorrido) / ancho, ease: 'none', repeat: -1 })
-      .progress(-desde / recorrido); // empieza en su sitio (x = 0)
-    nubes.push({ el, tween: registrar(tween) });
-    limpiar.push(el);
-  }
 }
 
 function crearAnimales(g: Gsap) {
@@ -302,8 +233,6 @@ function crearAnimales(g: Gsap) {
 
 function arrancar(g: Gsap) {
   limpiar = [];
-  crearCielo(g);
-  crearNubes(g);
   crearAnimales(g);
   estadoEscena = 'activa';
   html.setAttribute('data-escena-gsap', '');
@@ -322,7 +251,6 @@ function reanudar() {
 function detener() {
   for (const a of vivas) a.kill();
   vivas.clear();
-  nubes = [];
   if (gsap && limpiar.length) gsap.set(limpiar, { clearProps: 'transform,opacity' });
   limpiar = [];
   estadoEscena = 'parada';
@@ -348,23 +276,6 @@ function actualizar() {
   detener();
 }
 
-/** Recalcula los tramos de las nubes conservando su avance (resize). */
-function rehacerNubes() {
-  const g = gsap;
-  if (!g || estadoEscena === 'parada') return;
-  const avances = new Map(nubes.map((n) => [n.el, n.tween.progress()]));
-  for (const n of nubes) {
-    n.tween.kill();
-    vivas.delete(n.tween);
-  }
-  crearNubes(g);
-  for (const n of nubes) {
-    const p = avances.get(n.el);
-    if (p !== undefined) n.tween.progress(p);
-    if (estadoEscena === 'congelada') n.tween.pause();
-  }
-}
-
 if (escena && seccion) {
   void cargarGsap()
     .then((g) => {
@@ -376,26 +287,17 @@ if (escena && seccion) {
       alCambiarVista(actualizar);
       // El router oculta #inicio al terminar la transicion de salida
       new MutationObserver(actualizar).observe(seccion, { attributes: true, attributeFilter: ['hidden'] });
-      // Cambio de disposicion (64rem: animales; 48rem: nubes): de cero
-      const rehacerTodo = () => {
+      // Cambio de disposicion (64rem: otros animales visibles): de cero
+      window.matchMedia('(min-width: 64rem)').addEventListener('change', () => {
         if (estadoEscena === 'parada') return;
         const congelada = estadoEscena === 'congelada';
         detener();
         if (gsap) arrancar(gsap);
         if (congelada) congelar();
-      };
-      window.matchMedia('(min-width: 64rem)').addEventListener('change', rehacerTodo);
-      window.matchMedia('(min-width: 48rem)').addEventListener('change', rehacerTodo);
-      let anchoPrevio = escena.clientWidth;
-      new ResizeObserver(() => {
-        const w = escena.clientWidth;
-        if (Math.abs(w - anchoPrevio) < 1) return;
-        anchoPrevio = w;
-        rehacerNubes();
-      }).observe(escena);
+      });
     })
     .catch(() => {
-      /* sin GSAP: se queda la respiracion CSS de respaldo y nubes quietas */
+      /* sin GSAP: se queda la respiracion CSS de respaldo */
     });
 }
 
