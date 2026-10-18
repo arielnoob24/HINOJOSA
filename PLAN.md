@@ -63,7 +63,7 @@ La auditoría completa está en [`auditoria.md`](auditoria.md). Estas son las de
 
 ## 0-C. Rediseño de Inicio, Productos y Nosotros + GSAP y Blender MCP (2026-10-17)
 
-Pedido del usuario el 2026-10-17, ya en la rama **`HinoV2`** (a partir de ahora se trabaja ahí; `main` y `Ariel` no se tocan sin pedirlo). **Manda sobre 0-B y sobre las especificaciones de la sección 4** en todo lo que contradiga. Se implementa por los bloques 21–26 (sección 11).
+Pedido del usuario el 2026-10-17, ya en la rama **`HinoV2`** (a partir de ahora se trabaja ahí; `Ariel` no se toca; `main` solo recibe `HinoV2` cuando el usuario lo pide — primera vez el 2026-10-17). **Manda sobre 0-B y sobre las especificaciones de la sección 4** en todo lo que contradiga. Se implementa por los bloques 21–26 (sección 11).
 
 ### Activos nuevos recibidos (2026-10-17)
 
@@ -297,6 +297,8 @@ Hoy la vista saliente se oculta antes del primer pintado y se ve un destello del
 
 ### Vista 1 — Inicio (decisión 0-B: vitrina lateral)
 
+> ⚠️ **Estado real (2026-10-17, tarde):** fondo en **video** (time-lapse en canvas), **sin tarjeta verde**, animales **en foto de familia** y tilapias en pecera; ver la tabla "Ajustes del 2026-10-17 (tarde)" de 0-C, que manda sobre este aviso.
+>
 > ⚠️ **Rediseño 0-C (2026-10-17) manda sobre todo lo de esta vista:** sin vitrina de costales; texto en columna **izquierda**; escena de granja (cielo con nubes en movimiento, colinas y césped) en la paleta de marca; 9 animales de `Nuevos Req/Animales/` con movimiento en el espacio sobrante de la izquierda; Canela con mejor render en la franja inferior; botones y accesos que se pintan o subrayan al hover. Lo que sigue (logo LCP, acento, botones, accesos, fila de animales, carrera de Canela) se conserva salvo la vitrina y el fondo verde.
 
 ```
@@ -393,6 +395,8 @@ Los clips se piden con Canela **corriendo en el sitio, cámara fija y fondo azul
 
 ### Vista 2 — Productos (rediseño 2026-10-16: ficha del producto)
 
+> ⚠️ **Estado real (2026-10-17, noche, bloque 23b):** carrusel en la parte izquierda y el centro (68 %), categorías en fila encima con hover verde, buscador encima de la tarjeta, descripción corta en la ficha, desvanecido verde, sin texto legal y fondo de huellas y hojas; ver "Ajustes de Productos del 2026-10-17 (noche)" en 0-C.
+>
 > ⚠️ **Rediseño 0-C (2026-10-17) manda sobre lo siguiente:** carrusel **grande y centrado** (a todo el ancho; ya no el 60 % izquierdo); producto seleccionado más grande y anterior/siguiente sombreados; **tarjeta nueva** crema con hojas y huellas (maqueta en `Nuevos Req/tarjeta/`) que sigue conteniendo Detalle y Lista (la ficha bosque del bloque 18 queda anulada); enlace **"Cómo llegar"** vistoso; sal en grano con su PNG recortado. El buscador, las pestañas Detalle / Lista, la hoja de detalle móvil, C1–C8 y la regla M5 se conservan.
 
 **Pantalla partida: carrusel 3D a la izquierda (60 %), buscador + ficha del producto al frente a la derecha (40 %).** La lista completa sigue existiendo, en una ventana.
@@ -745,7 +749,7 @@ En `.claude/skills/` del proyecto:
 | 4. Animación | Carrusel sincronizado, transiciones, Canela, fallbacks | ✅ versión 1 |
 | 5. SEO y QA | Metadatos, Lighthouse > 90, axe 0, router 41/41 | ✅ |
 | **5-B. Mejoras de la auditoría** | Implementar la sección 0-B por bloques (ver orden abajo) | ✅ 2026-10-14: bloques 1–9, 12, 13 y 4-B + cierre de QA (`docs/qa-informe.md`). ⏳ Bloques 10 y 11 bloqueados (textos y WhatsApp de la dueña) |
-| **5-C. Rediseño 0-C** | Bloques 21–26 (Inicio granja, Productos centrado y tarjeta nueva, Nosotros, GSAP, Blender) | ⏳ Pedido el 2026-10-17, sin implementar |
+| **5-C. Rediseño 0-C** | Bloques 21–26 (Inicio granja, Productos centrado y tarjeta nueva, Nosotros, GSAP, Blender) | ⏳ 2026-10-17: 21–25 hechos (con los ajustes de la tarde y la noche); 26 a medias en la rama `wip/bloque26-transicion`; falta el cierre de QA |
 | 6. Publicación | Corregir workflow, `site`/`base`, GitHub Pages, enlaces verificados | ⏳ Bloqueada por datos |
 
 ### Orden de implementación de la fase 5-B
@@ -772,12 +776,12 @@ En `.claude/skills/` del proyecto:
 | 18 | **Ajustes 2026-10-16 (2):** hover de la barra con el trazo de pincel maíz que se dibuja (sustituye al fondo hoja-claro) y ficha de Productos en verde bosque | direccion-arte (guía), frontend, animacion-interaccion | ✅ Hecho 2026-10-16 (la guía de estilo aún no lo recoge) |
 | 19 | **Ajustes 2026-10-16 (3):** Productos: compra como línea en el pie (1A) y pestañas Detalle / Lista por categoría en lugar de la ventana (2A); barra: trazo a todo el ancho del rótulo, 400 / 250 ms | frontend, animacion-interaccion | ✅ Hecho 2026-10-16 (Lighthouse móvil Productos 96–97, axe 0) |
 | 20 | **Ajustes 2026-10-16 (4):** ficha compacta sin scroll (sin Categoría, Marca/Presentación lado a lado, tabla del tilapero en pastillas, selector Detalle \| Lista dentro del cuadro, notas en una línea) y transición suave entre pestañas | frontend, animacion-interaccion | ✅ Hecho 2026-10-16 (37/37 sin scroll a 1440×900 y 1366×650; Lighthouse móvil 96; axe 0) |
-| 21 | **Base de herramientas (2026-10-17):** ✅ Blender 4.5 LTS + `uv` + MCP for Blender instalados, registrados y probados; ✅ derivados de los 9 animales (480 y 240 px) y de la sal en grano. ⏳ Falta: cargador común de GSAP tras `load` (`gsap-carga.ts`) con fallback CSS, y la primera prueba de `generate_3d` con `Canela.png` (necesita clave) | animacion-interaccion, activos-3d-video | Clave de Hyper3D/fal/Tencent o prueba gratuita; permiso de la dueña para subir sus imágenes |
-| 22 | ✅ **Hecho 2026-10-17** (falta decidir charca/abrevadero y tamaño de aves y pato en móvil; Canela con Blender pendiente de clave). **Inicio: escena de granja:** quitar vitrina, texto a la izquierda, fondo con cielo, nubes y césped en la paleta (con estanque para las tilapias), los 9 animales con idle, hover en botones y accesos, Canela con mejor render | direccion-arte (retícula y paleta), activos-3d-video, frontend, animacion-interaccion | No |
-| 23 | ✅ **Hecho 2026-10-17** (retícula 23/47/30; frente ×1,3 y vecinos oscurecidos por distancia al frente; en móvil el carrusel no se agranda por M5). **Productos: carrusel grande y centrado** con frente más grande y vecinos sombreados | direccion-arte, frontend, animacion-interaccion | No |
+| 21 | **Base de herramientas (2026-10-17):** ✅ Blender 4.5 LTS + `uv` + MCP for Blender instalados, registrados y probados; ✅ derivados de los 9 animales (480 y 240 px) y de la sal en grano. ✅ cargador común de GSAP tras `load` (`gsap-carga.ts`), usado por la escena de Inicio y el carrusel. ⏳ Falta: la primera prueba de `generate_3d` con `Canela.png` (necesita clave) y la Canela mejor renderizada | animacion-interaccion, activos-3d-video | Clave de Hyper3D/fal/Tencent o prueba gratuita; permiso de la dueña para subir sus imágenes |
+| 22 | ✅ **Hecho 2026-10-17**, con los ajustes de la tarde (video de fondo en canvas, sin tarjeta verde, animales en foto de familia, tilapias en pecera dibujada). Pendiente: el usuario dejó `Nuevos Req/Animales/pecera.jpg` (pecera de vidrio sobre azul, JPG sin alfa) para sustituir la pecera dibujada; decisiones pospuestas del velo en móvil y del color del agua; Canela con Blender pendiente de clave. **Inicio: escena de granja:** quitar vitrina, texto a la izquierda, fondo con cielo, nubes y césped en la paleta (con estanque para las tilapias), los 9 animales con idle, hover en botones y accesos, Canela con mejor render | direccion-arte (retícula y paleta), activos-3d-video, frontend, animacion-interaccion | No |
+| 23 | ✅ **Hecho 2026-10-17**; sustituido esa noche por el 23b (retícula 68/32, categorías en fila encima del carrusel, frente ×1,4; vecinos oscurecidos por distancia al frente; en móvil el carrusel no se agranda por M5). **Productos: carrusel grande y centrado** con frente más grande y vecinos sombreados | direccion-arte, frontend, animacion-interaccion | No |
 | 24 | ✅ **Hecho 2026-10-17** (tarjeta crema con hojas y huellas, Detalle/Lista dentro, 37/37 sin scroll; píldora "Cómo llegar"). **Productos: tarjeta nueva** (maqueta `Nuevos Req/tarjeta/`) con Detalle y Lista, enlace "Cómo llegar" vistoso, sal en grano en el carrusel | direccion-arte, frontend, activos-3d-video | No |
 | 25 | ✅ **Hecho 2026-10-17.** **Nosotros:** banda inferior solo con iconos de animales | frontend | No |
-| 26 | **Transición entre vistas con timeline de GSAP** (más fluida, interrumpible, escena de Inicio compartida), actualizar `vistas-hinojosa` y las pruebas 13–16 | animacion-interaccion, qa-rendimiento | No |
+| 26 | ⏳ **A medias (2026-10-17):** implementación en la rama `wip/bloque26-transicion` (commit `883426f`: `vistas.ts`, `router.ts`, `gsap-carga.ts`, `escena-lienzos.ts`); el agente se cortó por el límite de uso mientras comparaba Lighthouse con la versión base. Falta verificarla entera antes de llevarla a `HinoV2`. **Transición entre vistas con timeline de GSAP** (más fluida, interrumpible, escena de Inicio compartida), actualizar `vistas-hinojosa` y las pruebas 13–16 | animacion-interaccion, qa-rendimiento | No |
 | Cierre | Lighthouse móvil (Inicio ≥ 99, Productos ≥ 93), pruebas del router de `vistas-hinojosa`, axe 0, capturas comparativas. Tras los bloques 15–17 y **21–26** hay que repetir el cierre completo (Inicio con GSAP y escena: el logo debe seguir siendo el LCP) | qa-rendimiento | ⏳ |
 
 ---
@@ -796,7 +800,7 @@ En `.claude/skills/` del proyecto:
 10. **Mantenimiento:** definir quién actualiza precios y catálogo.
 11. **Sin botones de pausa (decisión del usuario, 2026-10-15):** Canela corriendo en Inicio y el video de Nosotros se mueven en bucle durante más de 5 s sin control para pausarlos. **Incumple WCAG 2.2.2 (nivel A)**: una auditoría de accesibilidad lo marcará como fallo, y puede molestar a personas con déficit de atención o sensibilidad al movimiento. Mitigación parcial: con `prefers-reduced-motion` no hay movimiento. Alternativas descartadas por ahora: un solo control global "Pausar animaciones", o que el movimiento se detenga solo antes de 5 s.
 12. **Video con alfa en Safari/iOS:** no se reproduce; se ve el póster de Canela sentada. No probado en un Safari real.
-13. **Ramas:** se trabaja solo en `Ariel`; `main` no se toca (decisión del usuario, 2026-10-16). Cada push a `main` dispara el workflow de Pages.
+13. **Ramas:** desde el 2026-10-17 se trabaja en `HinoV2`; `Ariel` ya no se usa; `main` recibe `HinoV2` solo cuando el usuario lo pide (primer envío el 2026-10-17). Cada push a `main` dispara el workflow de Pages, **que sigue roto** (sube `sitio-web/`): falla y Pages sigue con la versión vieja. El trabajo sin verificar va en ramas `wip/…`.
 14. **Escena de Inicio vs. LCP y peso:** nubes, césped y 9 animales. Derivados ya hechos (AVIF ≈ 300 KB a 480 px, ≈ 115 KB a 240 px), cargados tras `load`; el logo sigue siendo el LCP; presupuesto de Inicio < 1,5 MB; medir Lighthouse móvil (hoy 99). En móvil, menos animales o ninguno si no caben.
 15. **Logo sobre fondo claro:** el logo se diseñó para verde oscuro. Si el cielo claro lo apaga, la columna de texto lleva un panel bosque. Comprobar contraste y legibilidad.
 16. **GSAP en toda la página:** más JS en Inicio y en cada cambio de vista; vigilar INP, el cargador diferido, la regla M5 de Productos y las pruebas de 0 `requestAnimationFrame` fuera de las vistas que lo usan. Con la pausa y `prefers-reduced-motion` no puede haber bucles.
@@ -831,7 +835,11 @@ En `.claude/skills/` del proyecto:
 - [x] Instalar Blender 4.5 LTS, `uv` y registrar Blender MCP en `.mcp.json` (2026-10-17, probado con `get_scene_info`)
 - [x] Reducir los 9 animales y regenerar la sal en grano (2026-10-17)
 - [ ] Clave para `generate_3d` (o prueba gratuita de Rodin) y permiso de la dueña para subir imágenes; primera prueba con `Canela.png`
-- [ ] Bloques 21–26 (sección 11): Inicio granja, Productos centrado y tarjeta nueva, Nosotros, transición con GSAP
-- [ ] Confirmar con el usuario: Blender solo para renders (0-C), cielo sin azul (cuyes ✅)
+- [x] Bloques 21–25 (2026-10-17): Inicio con video y animales, Productos (23b), tarjeta nueva con descripciones, Nosotros
+- [ ] Bloque 26: terminar y verificar la transición de `wip/bloque26-transicion`
+- [ ] Aprobar las 37 descripciones cortas de productos (en propuesta) y los casos dudosos
+- [ ] Usar `Nuevos Req/Animales/pecera.jpg` en lugar de la pecera dibujada de Inicio
+- [ ] Decidir dónde va el aviso de precios referenciales y marcas (riesgo 20)
+- [ ] Confirmar con el usuario: Blender solo para renders (0-C). (Cielo sin azul: ya no aplica, el fondo es un video; cuyes ✅)
 - [ ] Repetir el cierre de QA tras los bloques 21–26
 - [ ] **Decidir al final (pospuesto por el usuario, 2026-10-17):** (1) en móvil, el velo que hace legible el texto de Inicio oscurece bastante el cielo del atardecer; para ver más cielo habría que bajar el bloque de texto o agrandar el acento. (2) El agua de la pecera de las tilapias es verdosa porque la paleta no tiene azul; agua azul = color nuevo con aprobación

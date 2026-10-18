@@ -1,6 +1,42 @@
 # Handoff: sitio web de Comercial Hinojosa
 
-Última actualización: **2026-10-17**. Rama de trabajo: **`HinoV2`** (hasta el 2026-10-16, `Ariel`; ver la sesión del 2026-10-17). **Desde el 2026-10-16 el usuario quiere trabajar solo en `Ariel` y no tocar `main`** (ni push, ni merge): `main` se quedó en el commit del 2026-10-15 (`35976cb`). Cada push a `main` dispara el workflow de GitHub Pages. Los commits de esta sesión están en `Ariel` local; **no se han subido** (`git push origin Ariel` cuando el usuario lo pida).
+Última actualización: **2026-10-17 (cierre)**. Rama de trabajo: **`HinoV2`** (subida a `origin/HinoV2` y `origin/main` el 2026-10-17; `Ariel` ya no se usa). **Para retomar, lee primero la sección "Estado al cierre del 2026-10-17"**; las secciones de sesiones son el historial.
+
+## Estado al cierre del 2026-10-17 (para retomar)
+
+**Rama de trabajo: `HinoV2`.** Subida a `origin/HinoV2` y a `origin/main` a petición del usuario el 2026-10-17 (avance rápido desde `1db934f`). `Ariel` ya no se usa. El push a `main` dispara el workflow de Pages, que **sigue roto** (sube `sitio-web/`): falla y Pages sigue mostrando la versión vieja.
+
+### Qué está hecho (bloques del rediseño 0-C, `PLAN.md` §0-C y §11)
+| Bloque | Estado | Commit |
+|---|---|---|
+| 21 Herramientas | ✅ Blender 4.5 LTS + MCP for Blender (`.mcp.json`), derivados de animales, cargador común de GSAP (`gsap-carga.ts`) | `fbc7cb7`, `a952cf6` |
+| 22 Inicio | ✅ video de fondo en canvas (`escena-lienzos.ts`), sin tarjeta, logo/lema/botones sobre velo, 9 animales en foto de familia con idle GSAP (`escena-inicio.ts`), tilapias en pecera dibujada | `ca8a299` |
+| 23/24 Productos | ✅ bloque 23b: carrusel 68 % con frente ×1,4 y vecinos oscurecidos, categorías en fila con hover, buscador sobre la tarjeta crema con desvanecido verde, descripción corta, sin texto legal, fondo de huellas | `ed3747e`, `9f21f6e` |
+| 25 Nosotros | ✅ banda solo con iconos de animales | `7075874` |
+| 26 Transición GSAP | ⏳ **a medias** en la rama **`wip/bloque26-transicion`** (`883426f`) | — |
+
+### En qué se quedaron los agentes
+- **`animacion-interaccion` (bloque 26):** cortado por el límite de uso. Implementó el timeline de GSAP en `src/lib/animacion/vistas.ts` (+351 líneas), cambios en `router.ts`, `gsap-carga.ts` y `escena-lienzos.ts`, y capturas en `capturas/bloque26/`. Su último paso fue **comparar Lighthouse con la versión base** (5 pasadas cada una, base servida en el puerto 4330). **No se sabe si pasó las pruebas**: el trabajo está en la rama `wip/bloque26-transicion`, no en `HinoV2`. Para retomarlo: `git switch wip/bloque26-transicion`, pedir a `animacion-interaccion` que termine la verificación del bloque 26 (pruebas 1–18 y 25–26 de `vistas-hinojosa`, clics rápidos, sin destello, Lighthouse de Inicio y `#productos`, 0 rAF residual) y actualice la skill y §3 del plan; si pasa, fusionar en `HinoV2`.
+- **`frontend`, `contenido-estrategia`:** terminaron sus tareas (bloques 22–25 y descripciones); nada a medias.
+- **`direccion-arte`, `qa-rendimiento`, `seo-negocio-local`, `despliegue`:** no se usaron en esta sesión.
+
+### Próximas tareas (en orden)
+1. **Bloque 26:** terminar y verificar la transición (ver arriba) y fusionarla en `HinoV2`.
+2. **Pecera real:** el usuario dejó `Nuevos Req/Animales/pecera.jpg` (pecera de vidrio vacía sobre fondo azul, 2752×1536, JPG sin alfa). Sustituir la pecera dibujada de Inicio: hay que recortarla (el vidrio deja ver el azul: quitar el fondo y teñir el vidrio, o generarla con alfa), meter agua y las tilapias. Tarea de `activos-3d-video` + `frontend`.
+3. **Cierre de QA completo** (`qa-rendimiento`) de los bloques 21–26: router, axe, Lighthouse (Inicio, `#productos`, `#nosotros`), móvil, sin JS.
+4. **`direccion-arte`:** llevar a `docs/guia-estilo.md` y a los storyboards el estado nuevo (Inicio con video y sin tarjeta, Productos 23b, tarjeta crema, Nosotros sin sellos; la guía aún cita la vitrina, los sellos de costal (línea 115) y `--color-velo-costal`).
+5. **Canela mejor renderizada** con Blender MCP (necesita clave de Hyper3D/fal/Tencent o la prueba gratuita de Rodin, y permiso de la dueña para subir la imagen).
+6. Arreglar el **workflow de despliegue** (`despliegue`) cuando el usuario quiera publicar.
+
+### Decisiones pendientes del usuario (nuevas de hoy)
+- **Para el final (pospuestas):** velo de Inicio en móvil (oscurece el cielo) y color del agua de la pecera (verdosa por la paleta; azul = color nuevo).
+- **Aprobar las 37 descripciones** de productos (en propuesta; casos dudosos: saco de 30–40 kg en la línea Premium, especie de melaza/sal/maíz/trigo/arrocillo/afrecho, "comedero doble", porcentajes en el tilapero).
+- **Aviso legal** de precios referenciales y marcas: quitado de Productos; decidir si va a Visítanos (riesgo 20).
+- **Hover dorado de los iconos de Nosotros** (añadido por `frontend` sin pedirse): confirmar o quitar.
+- **Blender solo para renders** (sin 3D en la página): confirmar.
+
+### Medidas al cierre (de los informes de los agentes)
+Lighthouse móvil: Inicio 97–98 (LCP = logo), `#productos` 93–97 (mediana 94, LCP = tarjeta provisional), `#nosotros` 97. axe 0 en las vistas tocadas. Peso de Inicio ≈ 1,2 MB escritorio / 1,0 MB móvil.
 
 ## Sesión del 2026-10-17 (planificación, sin código)
 
