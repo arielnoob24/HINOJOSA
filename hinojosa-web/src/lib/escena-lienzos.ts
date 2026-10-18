@@ -1,6 +1,7 @@
-// Lienzos de la escena de Inicio (bloque 22, ajustes del 2026-10-17 tarde):
-// el VIDEO de fondo (time-lapse del campo, public/video/campo*) y los
-// ANIMALES de la foto de familia (public/img/animales).
+// Lienzos de la escena de Inicio (bloque 22, ajustes del 2026-10-17 tarde y
+// bloque 27): el CIELO en video (public/video/cielo*), el CESPED fijo
+// (public/img/escena/suelo*), los ANIMALES de la foto de familia
+// (public/img/animales) y el vidrio de la pecera (public/img/escena/pecera).
 //
 // Por que <canvas>: el logo debe seguir siendo el LCP. Chrome cuenta como
 // candidato a LCP un <video> (su poster o su primer cuadro) y cualquier <img>
@@ -16,8 +17,15 @@
 //     nuevo se copia al canvas[data-video-lienzo] con
 //     requestVideoFrameCallback (24 fps; sin rVFC, requestAnimationFrame
 //     solo mientras se reproduce). Encaje tipo object-fit: cover, centrado.
-//   - Variante: vertical (orientation: portrait) -> campo-movil (432x768);
-//     si no -> campo (1280x720). WebM VP9 si se puede; si no, MP4 H.264.
+//   - Variante: vertical (orientation: portrait) -> cielo-movil (432x384);
+//     si no -> cielo (1280x360). WebM VP9 si se puede; si no, MP4 H.264.
+//     El lienzo del cielo ocupa la mitad de arriba de la caja .inicio-campo
+//     (encaje cover en CSS) y tiene la misma proporcion que el video.
+//
+// Cesped: canvas[data-suelo-lienzo] (suelo 1281x427 o suelo-movil 432x455,
+// con alfa en su borde de arriba), encima de la parte baja del cielo. Se
+// pinta UNA vez cuando se ve Inicio (y al cambiar de tamano o de variante):
+// es fijo, asi que la hierba no se mueve ni se ve doble en el bucle.
 //   - Primero se pinta el poster (primer cuadro del bucle, AVIF o WebP),
 //     solo cuando se ve Inicio.
 //   - Se reproduce solo con #inicio activa, la pestana visible, movimiento
@@ -29,8 +37,8 @@
 //     en el lienzo: lo hace el CSS) para que copiar cada cuadro cueste poco.
 //
 // Animales: canvas[data-animal-lienzo][data-slug] dentro de cada
-// [data-animal-cuerpo]. Se pintan una vez con la variante justa (-240 o 480,
-// AVIF o WebP) y se repintan al cambiar de tamano; los ocultos (display:
+// [data-animal-cuerpo] (o con data-ruta + data-alto-chico: el vidrio de la
+// pecera). Se pintan una vez con la variante justa (-240 o 480, AVIF o WebP) y se repintan al cambiar de tamano; los ocultos (display:
 // none en movil) no se piden hasta que se ven (ResizeObserver).
 //
 // Al pintar se pone data-lista (fundido CSS). Mientras tanto, y sin JS
@@ -265,6 +273,61 @@ if (lienzo && video) {
 }
 
 // ---------------------------------------------------------------------
+// Cesped fijo
+// ---------------------------------------------------------------------
+const suelo = document.querySelector<HTMLCanvasElement>('canvas[data-suelo-lienzo]');
+let imgSuelo: HTMLImageElement | null = null;
+let sueloDe: Variante | null = null;
+let sueloPedido: Variante | null = null;
+
+function pintarSuelo() {
+  if (!suelo || !imgSuelo) return;
+  const caja = suelo.getBoundingClientRect();
+  if (caja.width < 1 || caja.height < 1) return; // Inicio oculta
+  const img = imgSuelo;
+  const w = Math.max(1, Math.round(Math.min(caja.width * dpr(), img.naturalWidth)));
+  const h = Math.max(1, Math.round((w * caja.height) / caja.width));
+  if (suelo.width !== w || suelo.height !== h) {
+    suelo.width = w;
+    suelo.height = h;
+  }
+  const x = suelo.getContext('2d');
+  if (!x) return;
+  x.imageSmoothingEnabled = true;
+  x.imageSmoothingQuality = 'high';
+  x.clearRect(0, 0, w, h);
+  const c = cubrir(img.naturalWidth, img.naturalHeight, w, h);
+  x.drawImage(img, c.sx, c.sy, c.sw, c.sh, 0, 0, w, h);
+  if (!suelo.hasAttribute('data-lista')) suelo.setAttribute('data-lista', '');
+}
+
+async function cargarSuelo() {
+  if (!suelo || vistaActual() !== 'inicio' || sueloPedido === variante) return;
+  const v = variante;
+  sueloPedido = v;
+  const ruta = v === 'movil' ? suelo.dataset.fuenteMovil : suelo.dataset.fuenteEscritorio;
+  if (!ruta) return;
+  try {
+    const img = await imagen(ruta);
+    if (v !== variante) return;
+    imgSuelo = img;
+    sueloDe = v;
+    pintarSuelo();
+  } catch {
+    sueloPedido = null; /* queda el cielo y el degradado */
+  }
+}
+
+if (suelo) {
+  void cargarSuelo();
+  alCambiarVista(() => void cargarSuelo());
+  new ResizeObserver(() => {
+    if (sueloDe === variante) pintarSuelo();
+  }).observe(suelo);
+  mqVertical.addEventListener('change', () => void cargarSuelo());
+}
+
+// ---------------------------------------------------------------------
 // Animales
 // ---------------------------------------------------------------------
 const lienzosAnimales = Array.from(document.querySelectorAll<HTMLCanvasElement>('canvas[data-animal-lienzo]'));
@@ -274,12 +337,14 @@ async function pintarAnimal(c: HTMLCanvasElement) {
   const caja = c.getBoundingClientRect();
   if (caja.width < 1 || caja.height < 1) return; // oculto
   const alto = caja.height * dpr();
-  const slug = c.dataset.slug ?? '';
-  const nombre = alto <= 250 ? `${slug}-240` : slug;
+  // Animal: /img/animales/<slug>[-240]; pecera: data-ruta[-<data-alto-chico>]
+  const chico = Number(c.dataset.altoChico ?? 240);
+  const ruta = c.dataset.ruta ?? `/img/animales/${c.dataset.slug ?? ''}`;
+  const nombre = alto <= chico + 10 ? `${ruta}-${chico}` : ruta;
   let img = imagenesAnimal.get(c);
-  if (!img || !img.src.includes(`/${nombre}.`)) {
+  if (!img || !img.src.includes(`${nombre}.`)) {
     try {
-      img = await imagen(`/img/animales/${nombre}`);
+      img = await imagen(nombre);
     } catch {
       return;
     }

@@ -1,20 +1,28 @@
 ---
 // Vista 1 - Inicio, rediseno 0-C (bloque 22; PLAN.md 0-C, "Ajustes del
-// 2026-10-17 (tarde)"). Fondo en VIDEO (time-lapse del campo al atardecer,
-// public/video/campo*.{webm,mp4}, bucle de 8,5 s) volcado en un <canvas>;
-// sin tarjeta: logo, acento, subtitulo, botones y accesos van directamente
-// sobre el video con un velo oscuro que se funde con la escena. Los animales
-// posan como una FOTO DE FAMILIA a la derecha (atras vaca y cerdo; en medio
-// aves y perro; delante conejos, cuyes, gato, pato y la pecera de las
-// tilapias). Abajo, la franja de Canela como SEGUNDA FILA del grid: corre
-// por delante del grupo.
+// 2026-10-17 (tarde)" y "(cierre, bloque 27)"). Fondo en DOS CAPAS sobre el
+// encuadre 1920x1080 del time-lapse original: el CIELO en video
+// (public/video/cielo*.{webm,mp4}, filas 0-540, bucle de 8,5 s) y el CESPED
+// fijo (public/img/escena/suelo*, filas 440-1080, alfa fundida arriba), los
+// dos volcados en <canvas>. Solo el cielo se mueve: la hierba ya no "hierve"
+// por la compresion ni se ve doble en el empalme del bucle.
+// Sin tarjeta: logo, acento, subtitulo, botones y accesos van directamente
+// sobre el fondo con un velo oscuro que se funde con la escena. Los animales
+// posan como una FOTO DE FAMILIA a la derecha (bloque 27): atras la vaca en
+// el centro con el cerdo y el perro a los lados; en medio pato y gato; en la
+// fila de delante conejos, aves (gallo, gallina y pollitos, grandes), cuyes y
+// la pecera de vidrio con agua y las tilapias. Abajo, la franja de Canela
+// como SEGUNDA FILA del grid: corre por delante del grupo.
 //
 // Ganchos:
 //   [data-escena="inicio"]                  raiz de la escena (grid de 2 filas)
 //   .inicio-paisaje [data-paisaje]          fondo decorativo (aria-hidden), ocupa
 //                                           las 2 filas
-//     canvas[data-video-lienzo]             fondo: poster y cuadros del video
+//     .inicio-campo                         caja 16:9 (9:16 aprox. en vertical)
+//                                           con encaje tipo cover
+//       canvas[data-video-lienzo]           cielo: poster y cuadros del video
 //                                           (src/lib/escena-lienzos.ts)
+//       canvas[data-suelo-lienzo]           cesped fijo, pintado una vez
 //     video[data-video-fondo]               fuente del lienzo (no se ve; muted,
 //                                           playsinline, loop, preload="none")
 //     .inicio-velo [data-velo]              velo oscuro para el texto (no se mueve)
@@ -25,10 +33,12 @@
 //         [data-animal-cuerpo]              lo que se anima (idle). Origen abajo
 //           canvas[data-animal-lienzo]      el animal, pintado tras el LCP
 //         [data-sombra]                     sombra de contacto
-//       [data-movil]                        los que se ven por debajo de 64rem (5)
-//       [data-capa="pecera"]                pecera de vidrio de las tilapias
-//                                           (solo escritorio); dentro
-//                                           [data-animal="tilapias"]
+//       [data-movil]                        los que se ven por debajo de 64rem (6)
+//       [data-capa="pecera"]                pecera de las tilapias (solo
+//                                           escritorio): agua (SVG), volumen
+//                                           recortado con [data-animal="tilapias"]
+//                                           dentro y el vidrio en un canvas
+//                                           (img/escena/pecera)
 //   html[data-escena-gsap]                  lo pone escena-inicio.ts mientras GSAP
 //                                           anima la escena (se apaga la
 //                                           respiracion CSS de respaldo)
@@ -68,21 +78,26 @@ interface Animal {
   e: Pose;
   m: Pose | null;
 }
+// Foto de familia (bloque 27): ancho del grupo 2,64 u en escritorio y 2,35 u
+// en movil (alli las aves, delante, casi tan altas como la vaca), simetrico
+// alrededor de la vaca. z = orden de apilado por profundidad (los de delante
+// encima).
 const animales: Animal[] = [
-  // Fila de atras (pies a 0,42)
-  { slug: 'vaca', ancho: 675, fase: 0.0, e: { x: 0.92, y: 0.42, h: 1, z: 1 }, m: { x: 0.86, y: 0.3, h: 1, z: 1 } },
-  { slug: 'cerdo', ancho: 555, fase: 0.55, e: { x: 0.3, y: 0.42, h: 0.6, z: 2 }, m: { x: 0.24, y: 0.3, h: 0.6, z: 2 } },
-  // Fila del medio (pies a 0,2)
-  { slug: 'aves', ancho: 959, fase: 0.3, e: { x: 0.06, y: 0.2, h: 0.42, z: 3 }, m: { x: 0, y: 0, h: 0.42, z: 3 } },
-  { slug: 'perro', ancho: 367, fase: 0.15, e: { x: 1.3, y: 0.2, h: 0.62, z: 4 }, m: { x: 0.92, y: 0, h: 0.6, z: 4 } },
-  // Fila de delante (pies en la base)
-  { slug: 'conejos', ancho: 802, fase: 0.8, e: { x: 0, y: 0, h: 0.3, z: 6 }, m: null },
-  { slug: 'cuyes', ancho: 902, fase: 0.4, e: { x: 0.46, y: 0, h: 0.28, z: 7 }, m: null },
-  { slug: 'gato', ancho: 465, fase: 0.65, e: { x: 1.0, y: 0, h: 0.4, z: 8 }, m: null },
-  { slug: 'pato', ancho: 498, fase: 0.9, e: { x: 1.4, y: 0, h: 0.36, z: 7 }, m: { x: 1.5, y: 0, h: 0.38, z: 5 } },
+  // Fila de atras: vaca en el centro, cerdo y perro a sus lados
+  { slug: 'vaca', ancho: 675, fase: 0.0, e: { x: 0.6, y: 0.46, h: 1, z: 1 }, m: { x: 0.52, y: 0.4, h: 0.92, z: 1 } },
+  { slug: 'cerdo', ancho: 555, fase: 0.55, e: { x: 0.02, y: 0.38, h: 0.6, z: 2 }, m: { x: 0, y: 0.34, h: 0.54, z: 2 } },
+  { slug: 'perro', ancho: 367, fase: 0.15, e: { x: 1.98, y: 0.38, h: 0.64, z: 2 }, m: { x: 1.84, y: 0.3, h: 0.58, z: 2 } },
+  // Fila del medio (gato bajo la vaca, pato delante de sus patas)
+  { slug: 'pato', ancho: 498, fase: 0.9, e: { x: 1.64, y: 0.22, h: 0.34, z: 4 }, m: { x: 1.98, y: 0, h: 0.36, z: 6 } },
+  { slug: 'gato', ancho: 465, fase: 0.65, e: { x: 1.1, y: 0.25, h: 0.42, z: 4 }, m: { x: 1.58, y: 0.02, h: 0.42, z: 5 } },
+  // Fila de delante (pies en la base): aves grandes para que se vean los pollitos
+  { slug: 'conejos', ancho: 802, fase: 0.8, e: { x: 0, y: 0, h: 0.3, z: 7 }, m: null },
+  { slug: 'aves', ancho: 959, fase: 0.3, e: { x: 0.44, y: 0, h: 0.52, z: 6 }, m: { x: 0, y: 0, h: 0.8, z: 4 } },
+  { slug: 'cuyes', ancho: 902, fase: 0.4, e: { x: 1.45, y: 0, h: 0.28, z: 7 }, m: null },
 ];
-// Pecera de vidrio con las tilapias, en la fila de delante (escritorio)
-const pecera = { x: 1.8, y: 0, w: 0.53, h: 0.32, z: 6 };
+// Pecera de vidrio con las tilapias, al final de la fila de delante
+// (escritorio). Proporcion del vidrio: 621 x 400.
+const pecera = { x: 1.96, y: 0, h: 0.44, z: 6 };
 const tilapias = { slug: 'tilapias', ancho: 1352, fase: 0.25 };
 
 const estilo = (a: Animal) =>
@@ -98,14 +113,37 @@ const estilo = (a: Animal) =>
 ---
 <Vista id="inicio" nombre={textos.navegacion.find((n) => n.id === 'inicio')!.texto} class="vista-inicio" cuerpo="inicio-cuerpo">
   <div class="inicio-escena" data-escena="inicio">
-    <!-- Escena (decorativa): video del campo en un lienzo + velo + animales -->
+    <!-- Escena (decorativa): cielo en video + cesped fijo (lienzos), velo y animales -->
     <div class="inicio-paisaje" aria-hidden="true" data-paisaje>
-      <canvas class="inicio-fondo" data-video-lienzo width="0" height="0"></canvas>
+      <div class="inicio-campo">
+        <canvas class="inicio-fondo inicio-cielo" data-video-lienzo width="0" height="0"></canvas>
+        <canvas
+          class="inicio-fondo inicio-suelo"
+          data-suelo-lienzo
+          data-fuente-escritorio="/img/escena/suelo"
+          data-fuente-movil="/img/escena/suelo-movil"
+          width="0"
+          height="0"></canvas>
+        <noscript>
+          <picture>
+            <source type="image/avif" media="(orientation: portrait)" srcset="/video/cielo-movil-poster.avif" />
+            <source type="image/webp" media="(orientation: portrait)" srcset="/video/cielo-movil-poster.webp" />
+            <source type="image/avif" srcset="/video/cielo-poster.avif" />
+            <img class="inicio-cielo inicio-fondo-sinjs" src="/video/cielo-poster.webp" alt="" width="1280" height="360" />
+          </picture>
+          <picture>
+            <source type="image/avif" media="(orientation: portrait)" srcset="/img/escena/suelo-movil.avif" />
+            <source type="image/webp" media="(orientation: portrait)" srcset="/img/escena/suelo-movil.webp" />
+            <source type="image/avif" srcset="/img/escena/suelo.avif" />
+            <img class="inicio-suelo inicio-fondo-sinjs" src="/img/escena/suelo.webp" alt="" width="1281" height="427" />
+          </picture>
+        </noscript>
+      </div>
       <video
         class="inicio-video"
         data-video-fondo
-        data-fuente-escritorio="/video/campo"
-        data-fuente-movil="/video/campo-movil"
+        data-fuente-escritorio="/video/cielo"
+        data-fuente-movil="/video/cielo-movil"
         muted
         playsinline
         loop
@@ -114,14 +152,6 @@ const estilo = (a: Animal) =>
         disableRemotePlayback
         tabindex="-1"
         aria-hidden="true"></video>
-      <noscript>
-        <picture>
-          <source type="image/avif" media="(orientation: portrait)" srcset="/video/campo-movil-poster.avif" />
-          <source type="image/webp" media="(orientation: portrait)" srcset="/video/campo-movil-poster.webp" />
-          <source type="image/avif" srcset="/video/campo-poster.avif" />
-          <img class="inicio-fondo-sinjs" src="/video/campo-poster.webp" alt="" width="1280" height="720" />
-        </picture>
-      </noscript>
       <div class="inicio-velo" data-velo></div>
 
       <!-- Granja: foto de familia de los animales, a la derecha de la columna -->
@@ -142,21 +172,55 @@ const estilo = (a: Animal) =>
             </div>
           ))}
 
-          <div class="pecera solo-escritorio" data-capa="pecera" style={`--x:${pecera.x};--y:${pecera.y};--w:${pecera.w};--h:${pecera.h};--z:${pecera.z}`}>
+          <!-- Pecera: coordenadas del SVG = pixeles del vidrio (621 x 400).
+               Agua: frente (10,94)-(493,82), costado (493,82)-(610,90),
+               fondo del vidrio (10,328)-(493,384)-(610,334). -->
+          <div class="pecera solo-escritorio" data-capa="pecera" style={`--x:${pecera.x};--y:${pecera.y};--h:${pecera.h};--z:${pecera.z}`}>
             <span class="pecera-sombra"></span>
-            <div class="pecera-vidrio">
-              <div class="pecera-agua">
-                <div class="animal animal-tilapias" data-animal={tilapias.slug} style={`--fase:${tilapias.fase};--prop:${(tilapias.ancho / 480).toFixed(3)}`}>
-                  <div class="animal-cuerpo" data-animal-cuerpo>
-                    <canvas class="animal-lienzo" data-animal-lienzo data-slug={tilapias.slug} width="0" height="0"></canvas>
-                    <noscript><img class="animal-sinjs" src={`/img/animales/${tilapias.slug}-240.webp`} width={Math.round(tilapias.ancho / 2)} height="240" alt="" /></noscript>
-                  </div>
+            <svg class="pecera-capa" viewBox="0 0 621 400" preserveAspectRatio="none" focusable="false">
+              <defs>
+                <linearGradient id="pecera-agua-fondo" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#dfe9e2" stop-opacity="0.16" />
+                  <stop offset="0.55" stop-color="#9fb5aa" stop-opacity="0.2" />
+                  <stop offset="1" stop-color="#5f786c" stop-opacity="0.32" />
+                </linearGradient>
+                <pattern id="pecera-grava" width="22" height="12" patternUnits="userSpaceOnUse">
+                  <rect width="22" height="12" fill="#a99572" />
+                  <ellipse cx="5" cy="4" rx="4.5" ry="3" fill="#cdbb92" />
+                  <ellipse cx="15" cy="3" rx="3.5" ry="2.5" fill="#8b7656" />
+                  <ellipse cx="11" cy="9" rx="4" ry="2.6" fill="#e0d2ad" />
+                  <ellipse cx="20" cy="9.5" rx="3" ry="2.2" fill="#76664a" />
+                  <ellipse cx="1" cy="10" rx="2.5" ry="1.8" fill="#bca77c" />
+                </pattern>
+              </defs>
+              <polygon points="10,94 493,82 610,90 610,334 493,384 10,328" fill="url(#pecera-agua-fondo)" />
+              <polygon points="10,304 173,294 610,316 610,334 493,384 10,328" fill="url(#pecera-grava)" opacity="0.92" />
+              <polygon points="10,304 173,294 610,316 610,322 173,300 10,310" fill="#5d4d34" opacity="0.25" />
+            </svg>
+            <div class="pecera-volumen">
+              <div class="animal animal-tilapias" data-animal={tilapias.slug} style={`--fase:${tilapias.fase};--prop:${(tilapias.ancho / 480).toFixed(3)}`}>
+                <div class="animal-cuerpo" data-animal-cuerpo>
+                  <canvas class="animal-lienzo" data-animal-lienzo data-slug={tilapias.slug} width="0" height="0"></canvas>
+                  <noscript><img class="animal-sinjs" src={`/img/animales/${tilapias.slug}-240.webp`} width={Math.round(tilapias.ancho / 2)} height="240" alt="" /></noscript>
                 </div>
-                <span class="pecera-grava"></span>
               </div>
-              <span class="pecera-brillo"></span>
+              <span class="pecera-velo-agua"></span>
             </div>
-            <span class="pecera-base"></span>
+            <svg class="pecera-capa" viewBox="0 0 621 400" preserveAspectRatio="none" focusable="false">
+              <!-- Superficie: menisco claro y linea de brillo -->
+              <polygon points="10,94 493,82 610,90 610,97 493,90 10,102" fill="#ffffff" opacity="0.16" />
+              <polyline points="10,94 493,82 610,90" fill="none" stroke="#ffffff" stroke-opacity="0.8" stroke-width="2.5" />
+              <polyline points="40,99 300,92" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="1.5" stroke-linecap="round" />
+              <!-- Burbujas sutiles -->
+              <g fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="1.5">
+                <circle cx="448" cy="150" r="5" />
+                <circle cx="438" cy="122" r="3.5" />
+                <circle cx="452" cy="104" r="2.5" />
+                <circle cx="118" cy="132" r="3" />
+              </g>
+            </svg>
+            <canvas class="pecera-vidrio" data-animal-lienzo data-ruta="/img/escena/pecera" data-alto-chico="200" width="0" height="0"></canvas>
+            <noscript><img class="pecera-vidrio" src="/img/escena/pecera-200.webp" width="310" height="200" alt="" /></noscript>
           </div>
         </div>
       </div>
@@ -267,15 +331,41 @@ const estilo = (a: Animal) =>
     pointer-events: none;
     container-type: size;
   }
-  /* Lienzo del video: cubre el paisaje (el encuadre tipo cover lo hace el
-     script). Aparece con un fundido cuando tiene el poster pintado. */
+  /* Caja del campo: el cuadro 1920x1080 del time-lapse original (en
+     vertical, la columna 656-1264: 608x1080) con encaje tipo cover,
+     centrada. Dentro, el cielo (filas 0-540: top 0, alto 50 %) y el cesped
+     (filas 440-1080: top 40,74 %, alto 59,26 %; sus 40 primeras filas
+     funden con el cielo por alfa). */
+  .inicio-campo {
+    --campo-ar: calc(16 / 9);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100cqw, 100cqh * var(--campo-ar));
+    height: max(100cqh, 100cqw / var(--campo-ar));
+    translate: -50% -50%;
+  }
+  @media (orientation: portrait) {
+    .inicio-campo {
+      --campo-ar: calc(608 / 1080);
+    }
+  }
+  /* Lienzos del cielo y del cesped. Aparecen con un fundido cuando tienen
+     algo pintado. */
   .inicio-fondo {
     position: absolute;
-    inset: 0;
+    left: 0;
     display: block;
     width: 100%;
-    height: 100%;
     opacity: 0;
+  }
+  .inicio-cielo {
+    top: 0;
+    height: 50%;
+  }
+  .inicio-suelo {
+    top: 40.7407%;
+    height: 59.2593%;
   }
   .inicio-fondo[data-lista] {
     opacity: 1;
@@ -292,11 +382,18 @@ const estilo = (a: Animal) =>
   }
   :global(.inicio-fondo-sinjs) {
     position: absolute;
-    inset: 0;
+    left: 0;
+    display: block;
     width: 100%;
-    height: 100%;
     max-width: none;
-    object-fit: cover;
+  }
+  :global(.inicio-fondo-sinjs.inicio-cielo) {
+    top: 0;
+    height: 50%;
+  }
+  :global(.inicio-fondo-sinjs.inicio-suelo) {
+    top: 40.7407%;
+    height: 59.2593%;
   }
 
   /* Velo oscuro (sin bordes de tarjeta): bosque-noche detras del texto que
@@ -332,13 +429,14 @@ const estilo = (a: Animal) =>
     container-type: size;
   }
   .inicio-familia {
-    --u: min(20.5cqh, 41cqw);
+    --u: min(20.5cqh, 31cqw);
     position: absolute;
     left: 0;
-    right: 0;
     bottom: 0.5cqh;
-    width: calc(var(--u) * 2.28);
-    height: calc(var(--u) * 1.3);
+    /* A la izquierda de Canela sentada (su hueco a la derecha queda libre) */
+    right: calc(var(--spacing-vista) + var(--canela-alto) * var(--canela-proporcion));
+    width: calc(var(--u) * 2.35);
+    height: calc(var(--u) * 1.32);
     margin-inline: auto;
   }
   .animal {
@@ -374,7 +472,8 @@ const estilo = (a: Animal) =>
   }
   @media (prefers-reduced-motion: no-preference) {
     .inicio-fondo,
-    .animal-lienzo {
+    .animal-lienzo,
+    canvas.pecera-vidrio {
       transition: opacity 600ms ease-out;
     }
   }
@@ -426,10 +525,11 @@ const estilo = (a: Animal) =>
       inset: 0 var(--spacing-vista) 0 calc(var(--spacing-vista) + var(--columna) + 1.5rem);
     }
     .inicio-familia {
-      --u: min(42cqh, 42.5cqw);
+      --u: min(42cqh, 38cqw);
       bottom: 12cqh;
-      width: calc(var(--u) * 2.33);
-      height: calc(var(--u) * 1.42);
+      right: 0;
+      width: calc(var(--u) * 2.64);
+      height: calc(var(--u) * 1.46);
     }
     .animal {
       --ax: var(--x);
@@ -441,88 +541,70 @@ const estilo = (a: Animal) =>
       filter: blur(3px);
     }
 
-    /* Pecera de vidrio de las tilapias: agua verdosa (sin azul), grava,
-       brillo del cristal y base de madera */
+    /* Pecera real (img/escena/pecera, vidrio con alfa: solo aristas y
+       reflejos, 621 x 400) con agua casi neutra que deja ver la escena,
+       grava y las tilapias dentro. Capas: agua del fondo y grava (SVG) ->
+       volumen del agua recortado (tilapias + velo del agua) -> superficie
+       y burbujas (SVG) -> vidrio (canvas, encima de todo). */
     .pecera {
       position: absolute;
       left: calc(var(--x) * var(--u));
       bottom: calc(var(--y) * var(--u));
       z-index: var(--z);
-      width: calc(var(--w) * var(--u));
+      width: calc(var(--h) * var(--u) * 621 / 400);
       height: calc(var(--h) * var(--u));
     }
-    .pecera-sombra {
-      position: absolute;
-      left: 2%;
-      right: 2%;
-      bottom: -7%;
-      height: 16%;
-      border-radius: 50%;
-      background: radial-gradient(ellipse 50% 50% at 50% 50%, rgb(16 30 8 / 0.55), rgb(16 30 8 / 0) 100%);
-      filter: blur(3px);
-    }
-    .pecera-vidrio {
-      position: absolute;
-      inset: 0 0 9%;
-      overflow: hidden;
-      border-radius: 9% 9% 6% 6% / 14% 14% 8% 8%;
-      background: linear-gradient(180deg, rgb(255 255 255 / 0.16) 0%, rgb(255 255 255 / 0.08) 100%);
-      box-shadow:
-        inset 0 0 0 2px rgb(246 241 228 / 0.7),
-        inset 0 0 14px rgb(246 241 228 / 0.35),
-        0 6px 14px -6px rgb(16 30 8 / 0.5);
-    }
-    .pecera-agua {
-      position: absolute;
-      inset: 16% 3px 3px;
-      overflow: hidden;
-      border-top: 2px solid rgb(234 244 220 / 0.85);
-      background:
-        radial-gradient(ellipse 60% 40% at 70% 10%, rgb(255 236 170 / 0.35), rgb(255 236 170 / 0) 100%),
-        linear-gradient(180deg, rgb(150 196 150 / 0.62) 0%, rgb(88 146 104 / 0.72) 55%, rgb(46 98 64 / 0.85) 100%);
-    }
-    .pecera-grava {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 14%;
-      background:
-        radial-gradient(circle at 12% 60%, #c9b27a 0 18%, transparent 20%) 0 0 / 14% 100%,
-        radial-gradient(circle at 60% 40%, #8f7a4a 0 16%, transparent 18%) 0 0 / 11% 100%,
-        linear-gradient(180deg, #a48c55, #6f5c33);
-    }
-    .animal-tilapias {
-      left: 0;
-      right: 0;
-      top: 9%;
-      bottom: auto;
-      z-index: 1;
-      height: 72%;
-      width: auto;
-      aspect-ratio: var(--prop);
-      margin-inline: auto;
-    }
-    .animal-tilapias .animal-lienzo {
-      filter: saturate(0.85) brightness(0.92);
-    }
-    .pecera-brillo {
+    .pecera > * {
       position: absolute;
       inset: 0;
-      background:
-        linear-gradient(100deg, rgb(255 255 255 / 0) 8%, rgb(255 255 255 / 0.32) 12%, rgb(255 255 255 / 0) 18%),
-        linear-gradient(100deg, rgb(255 255 255 / 0) 80%, rgb(255 255 255 / 0.18) 84%, rgb(255 255 255 / 0) 88%);
-      pointer-events: none;
+      width: 100%;
+      height: 100%;
     }
-    .pecera-base {
+    .pecera > .pecera-sombra {
+      inset: auto 0 -4% 0;
+      height: 12%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse 50% 50% at 50% 50%, rgb(16 30 8 / 0.5), rgb(16 30 8 / 0) 100%);
+      filter: blur(3px);
+    }
+    .pecera-capa {
+      overflow: visible;
+    }
+    /* Volumen del agua: el mismo poligono que el SVG, en % de 621 x 400 */
+    .pecera-volumen {
+      overflow: hidden;
+      clip-path: polygon(1.61% 23.5%, 79.39% 20.5%, 98.23% 22.5%, 98.23% 83.5%, 79.39% 96%, 1.61% 82%);
+    }
+    /* Las tilapias nadan en la cara frontal, entre la superficie y la grava */
+    .pecera .animal-tilapias {
+      left: 7%;
+      top: 37%;
+      bottom: auto;
+      z-index: auto;
+      width: 64%;
+      height: auto;
+      aspect-ratio: var(--prop);
+    }
+    .animal-tilapias .animal-lienzo {
+      filter: saturate(0.8) brightness(0.93) contrast(0.96);
+    }
+    /* Velo del agua por delante de los peces: tinte casi neutro, un poco
+       mas denso hacia el fondo */
+    .pecera-velo-agua {
       position: absolute;
-      left: -3%;
-      right: -3%;
-      bottom: 0;
-      height: 11%;
-      border-radius: 3px;
-      background: linear-gradient(180deg, #a87a4a 0%, #7a5530 60%, #5b3d22 100%);
-      box-shadow: 0 2px 4px rgb(16 30 8 / 0.4);
+      inset: 0;
+      background: linear-gradient(180deg, rgb(214 226 219 / 0.1) 20%, rgb(150 172 160 / 0.14) 60%, rgb(96 122 110 / 0.2) 100%);
+    }
+    canvas.pecera-vidrio {
+      opacity: 0;
+    }
+    canvas.pecera-vidrio[data-lista] {
+      opacity: 1;
+    }
+    .pecera :global(img.pecera-vidrio) {
+      display: block;
+      width: 100%;
+      height: 100%;
     }
   }
 

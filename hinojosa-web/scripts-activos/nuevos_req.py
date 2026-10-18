@@ -25,8 +25,10 @@ temporal y deja la version web en `hinojosa-web/public/`:
         solo cuadros 1-69 en ida y vuelta (ver ALFA_ULTIMO_CUADRO)
     img/animales/<slug>[-240].webp|.avif   480 / 240 px de alto, escena de Inicio (2026-10-17)
     img/escena/cielo[-280], campo[-320]     fondo en dos capas (Animales/fondo.jpg; ya no se usa en el sitio)
-    video/campo[-movil].webm|.mp4 + -poster  fondo de Inicio en video (Animales/videofondo.mp4)
-    Uso: python nuevos_req.py [imagenes] [video | video-alfa] [animales] [fondo] [videofondo] [producto <slug>...]
+    video/cielo[-movil].webm|.mp4 + -poster  cielo de Inicio en video (Animales/videofondo.mp4)
+    img/escena/suelo[-movil]               cesped fijo de Inicio (mismo video, cuadro inicial)
+    img/escena/pecera[-200]                pecera de vidrio con alfa (Animales/pecera.jpg)
+    Uso: python nuevos_req.py [imagenes] [video | video-alfa] [animales] [fondo] [videofondo] [pecera] [producto <slug>...]
 """
 import json
 import multiprocessing as mp
@@ -289,32 +291,87 @@ _BUCLE = ("[0:v]fps=24,split[a][b];"
           "[cuerpo][ini]xfade=transition=fade:duration=1.5:offset=7[v]")
 
 
+# Horizonte del video en la fila ~481 de 1080 (fijo: la camara no se mueve). Solo el cielo
+# va en video; el cesped es una imagen fija: comprimido, el cesped "hervia" y en el
+# empalme del bucle se veia doble (glitch reportado el 2026-10-17).
+CIELO_FILAS = 540            # filas 0-540 del original: cielo + arboles del horizonte
+SUELO_DESDE, FUNDIDO = 440, 60  # el suelo empieza en 440 y se funde en sus primeras 60 filas
+
+
 def videofondo() -> None:
-    """Fondo de Inicio en video (2026-10-17): sustituye a la deriva del cielo de fondo.jpg.
-    Escritorio 1280x720 y movil vertical 432x768 (recorte central), WebM VP9 + MP4 H.264,
-    sin audio, y poster (primer cuadro del bucle) en AVIF/WebP."""
-    d = PUB / "video"
-    d.mkdir(parents=True, exist_ok=True)
-    variantes = {"campo": "scale=1280:-2", "campo-movil": "crop=608:1080:656:0,scale=432:768"}
+    """Fondo de Inicio (2026-10-17) en dos capas alineadas sobre el 1920x1080 original:
+    - video/cielo[-movil].webm|.mp4 (+ -poster): filas 0-540, bucle de 8,5 s sin salto;
+    - img/escena/suelo[-movil].avif|webp: filas 440-1080 del cuadro inicial del bucle (t=1,5 s),
+      con alfa que se funde en las primeras 60 filas para empalmar con el cielo.
+    Escritorio a 2/3 de escala (1280 de ancho); movil = recorte central de 608 columnas."""
+    dv, di = PUB / "video", PUB / "img" / "escena"
+    dv.mkdir(parents=True, exist_ok=True)
+    di.mkdir(parents=True, exist_ok=True)
+    variantes = {  # nombre: (recorte de columnas, ancho final)
+        "": ("", 1280),
+        "-movil": ("crop=608:ih:656:0,", 432),
+    }
     with tempfile.TemporaryDirectory(prefix="hino-videofondo-") as t:
         tmp = Path(t)
         trabajos = []
-        for nombre, esc in variantes.items():
-            filtro = f"{_BUCLE};[v]{esc}[o]"
+        cuadro = tmp / "cuadro.png"
+        ff("-ss", "1.5", "-i", str(VIDEO_FONDO), "-frames:v", "1", str(cuadro))
+        for suf, (col, ancho) in variantes.items():
+            filtro = f"{_BUCLE};[v]{col}crop=iw:{CIELO_FILAS}:0:0,scale={ancho}:-2[o]"
             ff("-i", str(VIDEO_FONDO), "-filter_complex", filtro, "-map", "[o]", "-an",
-               "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "47", "-row-mt", "1",
-               "-deadline", "good", "-cpu-used", "2", str(d / f"{nombre}.webm"))
+               "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "40", "-row-mt", "1",
+               "-deadline", "good", "-cpu-used", "2", str(dv / f"cielo{suf}.webm"))
             ff("-i", str(VIDEO_FONDO), "-filter_complex", filtro, "-map", "[o]", "-an",
-               "-c:v", "libx264", "-crf", "32", "-preset", "slow", "-pix_fmt", "yuv420p",
-               "-movflags", "+faststart", str(d / f"{nombre}.mp4"))
-            png = tmp / f"{nombre}-poster.png"
-            ff("-i", str(d / f"{nombre}.mp4"), "-frames:v", "1", str(png))
-            alto = 720 if nombre == "campo" else 768
-            trabajos.append({"in": str(png), "out": str(d / f"{nombre}-poster"), "alto": alto,
-                             "avif": True, "q": 72})
+               "-c:v", "libx264", "-crf", "28", "-preset", "slow", "-pix_fmt", "yuv420p",
+               "-movflags", "+faststart", str(dv / f"cielo{suf}.mp4"))
+            png = tmp / f"cielo{suf}-poster.png"
+            ff("-i", str(dv / f"cielo{suf}.mp4"), "-frames:v", "1", str(png))
+            alto_cielo = round(CIELO_FILAS * ancho / (1920 if not suf else 608) / 2) * 2
+            trabajos.append({"in": str(png), "out": str(dv / f"cielo{suf}-poster"),
+                             "alto": alto_cielo, "avif": True, "q": 72})
+            # suelo fijo con el borde superior fundido
+            im = Image.open(cuadro).convert("RGBA")
+            if suf:
+                im = im.crop((656, 0, 656 + 608, im.height))
+            im = im.crop((0, SUELO_DESDE, im.width, im.height))
+            a = np.full((im.height, im.width), 255, np.float32)
+            a[:FUNDIDO] *= np.linspace(0, 1, FUNDIDO)[:, None]
+            im.putalpha(Image.fromarray(a.astype(np.uint8)))
+            m = tmp / f"suelo{suf}.png"
+            im.save(m, compress_level=1)
+            alto_suelo = round(im.height * ancho / im.width)
+            trabajos.append({"in": str(m), "out": str(di / f"suelo{suf}"), "alto": alto_suelo,
+                             "avif": True, "q": 80})
         codificar(trabajos, tmp)
-    for f in sorted(d.glob("campo*")):
+    for f in sorted([*dv.glob("cielo*"), *di.glob("suelo*")]):
         print(f"{f.stat().st_size / 1024:8.1f} KB  {f}")
+
+
+def pecera() -> None:
+    """Pecera de vidrio de Inicio (2026-10-17) desde Animales/pecera.jpg (vidrio sobre fondo
+    azul, sin alfa). Modelo de vidrio: obs = a*F + (1-a)*fondo con F negro (aristas) o blanco
+    (reflejos); lo que se parece al fondo queda transparente. El agua y los peces los pone la
+    pagina dentro de la pecera."""
+    rgb = np.asarray(Image.open(ANIMALES / "pecera.jpg").convert("RGB")).astype(np.float32)
+    bg = np.clip(modelo_fondo(rgb, borde=40), 1, 254)
+    lum = lambda x: 0.299 * x[..., 0] + 0.587 * x[..., 1] + 0.114 * x[..., 2]
+    lo, lb = lum(rgb), lum(bg)
+    ruido = 0.10
+    a_osc = np.clip((np.clip(1 - lo / lb, 0, 1) - ruido) / (1 - ruido), 0, 1)
+    a_cla = np.clip((np.clip((lo - lb) / (255 - lb), 0, 1) - ruido) / (1 - ruido), 0, 1)
+    oscuro = a_osc >= a_cla
+    alfa = np.where(oscuro, a_osc, a_cla)
+    color = np.where(oscuro[..., None], 12.0, 255.0) * np.ones_like(rgb)
+    rgba = np.dstack([color, alfa * 255]).astype(np.uint8)
+    im = Image.fromarray(rgba, "RGBA").crop((462, 236, 2256, 1392))  # caja de la pecera + 12 px
+    dest = PUB / "img" / "escena"
+    with tempfile.TemporaryDirectory(prefix="hino-pecera-") as t:
+        tmp = Path(t)
+        m = tmp / "pecera.png"
+        im.save(m, compress_level=1)
+        codificar([{"in": str(m), "out": str(dest / "pecera"), "alto": 400, "avif": True},
+                   {"in": str(m), "out": str(dest / "pecera-200"), "alto": 200, "avif": True}],
+                  tmp)
 
 
 def animales() -> None:
@@ -450,7 +507,7 @@ def _video_alfa(base: Path) -> None:
 
 
 if __name__ == "__main__":
-    que = sys.argv[1:] or ["imagenes", "video", "animales", "fondo", "videofondo"]
+    que = sys.argv[1:] or ["imagenes", "video", "animales", "fondo", "videofondo", "pecera"]
     if "imagenes" in que:
         imagenes()
     if "video" in que:
@@ -463,5 +520,7 @@ if __name__ == "__main__":
         fondo()
     if "videofondo" in que:
         videofondo()
+    if "pecera" in que:
+        pecera()
     if "producto" in que:  # python nuevos_req.py producto sal-en-grano
         un_producto(que[que.index("producto") + 1:])
