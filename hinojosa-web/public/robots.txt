@@ -1,7 +1,11 @@
 User-agent: *
 Allow: /
 
-# Cuando se defina `site` en astro.config.mjs, el build genera /sitemap.xml
-# (una sola URL: la portada). Descomentar con la URL publica real, igual que
-# la que salga en <loc> de dist/sitemap.xml (ver docs/seo.md):
-# Sitemap: https://DOMINIO-POR-CONFIRMAR/sitemap.xml
+# Sitemap generado por el build (una sola URL: la portada). Debe coincidir
+# con <loc> de dist/sitemap.xml (ver docs/seo.md).
+# OJO: publicado en GitHub Pages de proyecto este archivo queda en
+# /HINOJOSA/robots.txt y los buscadores solo leen el de la raiz del host
+# (arielnoob24.github.io/robots.txt): aqui no tiene efecto. Sirve tal cual
+# el dia que haya dominio propio; mientras, el sitemap se envia a mano en
+# Google Search Console (y el <head> ya lo enlaza con rel="sitemap").
+Sitemap: https://arielnoob24.github.io/HINOJOSA/sitemap.xml

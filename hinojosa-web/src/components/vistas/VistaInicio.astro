@@ -54,6 +54,7 @@
 // candidato a LCP (un <video> o un <img> grande pintado despues del logo
 // pasaria a ser el LCP: medido, ver informe). Todo se pide despues de `load`
 // y del primer LCP. Sin JS: <noscript> con el poster y los animales en <img>.
+import { ruta, rutaSrcset } from '../../lib/ruta';
 import Vista from '../Vista.astro';
 import Icono from '../Icono.astro';
 import { textos, altDe } from '../../lib/negocio';
@@ -120,30 +121,30 @@ const estilo = (a: Animal) =>
         <canvas
           class="inicio-fondo inicio-suelo"
           data-suelo-lienzo
-          data-fuente-escritorio="/img/escena/suelo"
-          data-fuente-movil="/img/escena/suelo-movil"
+          data-fuente-escritorio={ruta('/img/escena/suelo')}
+          data-fuente-movil={ruta('/img/escena/suelo-movil')}
           width="0"
           height="0"></canvas>
         <noscript>
           <picture>
-            <source type="image/avif" media="(orientation: portrait)" srcset="/video/cielo-movil-poster.avif" />
-            <source type="image/webp" media="(orientation: portrait)" srcset="/video/cielo-movil-poster.webp" />
-            <source type="image/avif" srcset="/video/cielo-poster.avif" />
-            <img class="inicio-cielo inicio-fondo-sinjs" src="/video/cielo-poster.webp" alt="" width="1280" height="360" />
+            <source type="image/avif" media="(orientation: portrait)" srcset={rutaSrcset('/video/cielo-movil-poster.avif')} />
+            <source type="image/webp" media="(orientation: portrait)" srcset={rutaSrcset('/video/cielo-movil-poster.webp')} />
+            <source type="image/avif" srcset={rutaSrcset('/video/cielo-poster.avif')} />
+            <img class="inicio-cielo inicio-fondo-sinjs" src={ruta('/video/cielo-poster.webp')} alt="" width="1280" height="360" />
           </picture>
           <picture>
-            <source type="image/avif" media="(orientation: portrait)" srcset="/img/escena/suelo-movil.avif" />
-            <source type="image/webp" media="(orientation: portrait)" srcset="/img/escena/suelo-movil.webp" />
-            <source type="image/avif" srcset="/img/escena/suelo.avif" />
-            <img class="inicio-suelo inicio-fondo-sinjs" src="/img/escena/suelo.webp" alt="" width="1281" height="427" />
+            <source type="image/avif" media="(orientation: portrait)" srcset={rutaSrcset('/img/escena/suelo-movil.avif')} />
+            <source type="image/webp" media="(orientation: portrait)" srcset={rutaSrcset('/img/escena/suelo-movil.webp')} />
+            <source type="image/avif" srcset={rutaSrcset('/img/escena/suelo.avif')} />
+            <img class="inicio-suelo inicio-fondo-sinjs" src={ruta('/img/escena/suelo.webp')} alt="" width="1281" height="427" />
           </picture>
         </noscript>
       </div>
       <video
         class="inicio-video"
         data-video-fondo
-        data-fuente-escritorio="/video/cielo"
-        data-fuente-movil="/video/cielo-movil"
+        data-fuente-escritorio={ruta('/video/cielo')}
+        data-fuente-movil={ruta('/video/cielo-movil')}
         muted
         playsinline
         loop
@@ -167,7 +168,7 @@ const estilo = (a: Animal) =>
               <span class="animal-sombra" data-sombra></span>
               <div class="animal-cuerpo" data-animal-cuerpo>
                 <canvas class="animal-lienzo" data-animal-lienzo data-slug={a.slug} width="0" height="0"></canvas>
-                <noscript><img class="animal-sinjs" src={`/img/animales/${a.slug}-240.webp`} width={Math.round(a.ancho / 2)} height="240" alt="" /></noscript>
+                <noscript><img class="animal-sinjs" src={ruta(`/img/animales/${a.slug}-240.webp`)} width={Math.round(a.ancho / 2)} height="240" alt="" /></noscript>
               </div>
             </div>
           ))}
@@ -201,7 +202,7 @@ const estilo = (a: Animal) =>
               <div class="animal animal-tilapias" data-animal={tilapias.slug} style={`--fase:${tilapias.fase};--prop:${(tilapias.ancho / 480).toFixed(3)}`}>
                 <div class="animal-cuerpo" data-animal-cuerpo>
                   <canvas class="animal-lienzo" data-animal-lienzo data-slug={tilapias.slug} width="0" height="0"></canvas>
-                  <noscript><img class="animal-sinjs" src={`/img/animales/${tilapias.slug}-240.webp`} width={Math.round(tilapias.ancho / 2)} height="240" alt="" /></noscript>
+                  <noscript><img class="animal-sinjs" src={ruta(`/img/animales/${tilapias.slug}-240.webp`)} width={Math.round(tilapias.ancho / 2)} height="240" alt="" /></noscript>
                 </div>
               </div>
               <span class="pecera-velo-agua"></span>
@@ -219,8 +220,8 @@ const estilo = (a: Animal) =>
                 <circle cx="118" cy="132" r="3" />
               </g>
             </svg>
-            <canvas class="pecera-vidrio" data-animal-lienzo data-ruta="/img/escena/pecera" data-alto-chico="200" width="0" height="0"></canvas>
-            <noscript><img class="pecera-vidrio" src="/img/escena/pecera-200.webp" width="310" height="200" alt="" /></noscript>
+            <canvas class="pecera-vidrio" data-animal-lienzo data-ruta={ruta('/img/escena/pecera')} data-alto-chico="200" width="0" height="0"></canvas>
+            <noscript><img class="pecera-vidrio" src={ruta('/img/escena/pecera-200.webp')} width="310" height="200" alt="" /></noscript>
           </div>
         </div>
       </div>
@@ -231,8 +232,8 @@ const estilo = (a: Animal) =>
       <div class="inicio-texto" data-entra style="--orden: 0">
         <h1 id="titulo-inicio" tabindex="-1" data-titulo-vista class="inicio-insignia">
           <img
-            src="/img/marca/logo.webp"
-            srcset="/img/marca/logo-480.webp 480w, /img/marca/logo.webp 929w"
+            src={ruta('/img/marca/logo.webp')}
+            srcset={rutaSrcset('/img/marca/logo-480.webp 480w, /img/marca/logo.webp 929w')}
             sizes="(min-width: 48rem) 400px, 60vw"
             width="929"
             height="489"
@@ -263,10 +264,10 @@ const estilo = (a: Animal) =>
       <div class="canela-cruce" aria-hidden="true" data-perrito>
         <span class="canela-sombra canela-sombra-reposo"></span>
         <picture data-perrito-reposo>
-          <source type="image/avif" srcset="/img/canela/canela-franja.avif 1x, /img/canela/canela-franja@2x.avif 2x" />
+          <source type="image/avif" srcset={rutaSrcset('/img/canela/canela-franja.avif 1x, /img/canela/canela-franja@2x.avif 2x')} />
           <img
-            src="/img/canela/canela-franja.webp"
-            srcset="/img/canela/canela-franja.webp 1x, /img/canela/canela-franja@2x.webp 2x"
+            src={ruta('/img/canela/canela-franja.webp')}
+            srcset={rutaSrcset('/img/canela/canela-franja.webp 1x, /img/canela/canela-franja@2x.webp 2x')}
             width="153"
             height="200"
             alt=""

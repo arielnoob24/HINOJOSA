@@ -1,5 +1,10 @@
 name: Deploy website to GitHub Pages
 
+# Compila el sitio Astro de hinojosa-web/ y publica hinojosa-web/dist en
+# https://arielnoob24.github.io/HINOJOSA/ (site y base en astro.config.mjs).
+# Cada push a main publica en produccion. Pages debe tener "GitHub Actions"
+# como fuente (Settings -> Pages).
+
 on:
   push:
     branches: [main]
@@ -21,18 +26,35 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hinojosa-web
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          # package.json exige node >= 22.12.0; "22" toma la ultima 22.x
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: hinojosa-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
 
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload website
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
-          path: sitio-web
+          path: hinojosa-web/dist
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

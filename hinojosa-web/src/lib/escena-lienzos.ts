@@ -45,6 +45,7 @@
 // (<noscript>), se ve el degradado de respaldo o el poster.
 import { alCambiarVista, vistaActual } from './router';
 import { movimientoPermitido, mqReducido } from './animacion/movimiento';
+import { ruta as rutaPublica } from './ruta';
 
 const html = document.documentElement;
 const dpr = () => Math.min(window.devicePixelRatio || 1, 2);
@@ -339,7 +340,8 @@ async function pintarAnimal(c: HTMLCanvasElement) {
   const alto = caja.height * dpr();
   // Animal: /img/animales/<slug>[-240]; pecera: data-ruta[-<data-alto-chico>]
   const chico = Number(c.dataset.altoChico ?? 240);
-  const ruta = c.dataset.ruta ?? `/img/animales/${c.dataset.slug ?? ''}`;
+  // data-ruta ya trae la base (VistaInicio.astro); el respaldo por slug la pone aqui
+  const ruta = c.dataset.ruta ?? rutaPublica(`/img/animales/${c.dataset.slug ?? ''}`);
   const nombre = alto <= chico + 10 ? `${ruta}-${chico}` : ruta;
   let img = imagenesAnimal.get(c);
   if (!img || !img.src.includes(`${nombre}.`)) {

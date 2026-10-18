@@ -11,6 +11,7 @@
 // eleccion del navegador con `sizes` = ancho de la tarjeta es correcta.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { sinBase } from './ruta';
 
 // El build de Astro se ejecuta desde la raiz del proyecto (import.meta.url
 // apunta al chunk empaquetado, no a src/lib, asi que no sirve aqui).
@@ -18,7 +19,8 @@ const PUBLIC = join(process.cwd(), 'public') + '/';
 
 /** Ancho y alto de un WebP leyendo su cabecera (VP8X, VP8 o VP8L). */
 function medidasWebp(ruta: string): { w: number; h: number } | null {
-  const archivo = PUBLIC + ruta.replace(/^\//, '');
+  // Las rutas llegan con la base (/HINOJOSA/...): en disco no la llevan
+  const archivo = PUBLIC + sinBase(ruta).replace(/^\//, '');
   if (!existsSync(archivo)) return null;
   const b = readFileSync(archivo);
   if (b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WEBP') return null;
@@ -60,7 +62,7 @@ export function srcsetProducto(imagen: string | null): SrcsetProducto | null {
   const chicaAvif = imagen.replace(/\.webp$/, '-400.avif');
   const mGrande = medidasWebp(imagen);
   const mChica = medidasWebp(chica);
-  if (!mGrande || !mChica || !existsSync(PUBLIC + chicaAvif.replace(/^\//, ''))) return { webp: imagen, avif };
+  if (!mGrande || !mChica || !existsSync(PUBLIC + sinBase(chicaAvif).replace(/^\//, ''))) return { webp: imagen, avif };
   const wG = declarado(mGrande);
   const wC = declarado(mChica);
   return {

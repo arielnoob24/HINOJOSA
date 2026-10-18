@@ -19,7 +19,8 @@ El sitio es **una sola página** (`src/pages/index.astro`) con 5 vistas (`#inici
 | `<head>` (metadatos y `<script type="application/ld+json">`) | `src/layouts/Layout.astro` |
 | Regla de "dato confirmado" | `src/lib/negocio.ts` (`datoConfirmado`, `horarioConfirmado`, `coordenadasConfirmadas`) |
 | Textos `alt` de marca | `src/data/imagenes.json` (se leen con `altDe`); productos con `altProducto` |
-| Dominio (`site`) | `astro.config.mjs` (línea comentada) |
+| Dominio (`site`) y subruta (`base`) | `astro.config.mjs`: `site: 'https://arielnoob24.github.io'`, `base: '/HINOJOSA'` (desde 2026-10-17) |
+| Rutas a `public/` con la base | `src/lib/ruta.ts` (`ruta()`, `rutaSrcset()`, `sinBase()`) |
 | Sitemap | `src/pages/[mapa].xml.ts` (genera `/sitemap.xml` solo cuando hay `site`) |
 | Robots | `public/robots.txt` |
 | Imagen para redes | `public/og-imagen.jpg` (1200×630, logo sobre crema) |
@@ -32,8 +33,8 @@ El sitio es **una sola página** (`src/pages/index.astro`) con 5 vistas (`#inici
 - [x] Meta description desde `negocio.json`: "Comercial Hinojosa: venta de balanceados, alimentos y productos para aves, cerdos, conejos, cuyes, vacas, perros, gatos y tilapias. Nutrición que da vida." (154 caracteres; revisar si cambia `animalesAtendidos`).
 - [x] `theme-color` `#1b4d2b` (verde bosque).
 - [x] Open Graph: `og:type`, `og:locale` (`es`; pasa a `es_EC` solo con país confirmado "Ecuador"), `og:site_name`, `og:title`, `og:description`. Twitter `summary_large_image` con título y descripción.
-- [x] Canonical (siempre la portada, nunca la ruta o el hash), `og:url`, `og:image` (+ `type`, `width`, `height`, `alt`), `twitter:image` y `<link rel="sitemap">`: se generan solos cuando `site` está definido. Hoy se omiten: Open Graph y canonical exigen URL absoluta.
-- [x] Las URLs absolutas respetan `base` (`import.meta.env.BASE_URL`), por si se publica en una subruta.
+- [x] Canonical (siempre la portada, nunca la ruta o el hash), `og:url`, `og:image` (+ `type`, `width`, `height`, `alt`), `twitter:image` y `<link rel="sitemap">`: se generan solos cuando `site` está definido (lo está desde el 2026-10-17): canonical y `og:url` = `https://arielnoob24.github.io/HINOJOSA/`, `og:image` = `…/HINOJOSA/og-imagen.jpg`.
+- [x] Las URLs absolutas respetan `base`: `urlAbsoluta()` pasa por `ruta()` de `src/lib/ruta.ts`, que pone la base una sola vez (las imágenes del catálogo ya la traen desde `negocio.ts`).
 - [x] Imagen social revisada: `og-imagen.jpg` (logo completo con lema sobre crema, 1200×630) sigue siendo válida y coherente con la marca. Hay una variante opcional con Canela (ver pendientes).
 
 ### JSON-LD (`@graph`)
@@ -62,20 +63,17 @@ El sitio es **una sola página** (`src/pages/index.astro`) con 5 vistas (`#inici
 - [x] Decorativas: Canela de la franja (`alt=""` dentro de `.canela-cruce[aria-hidden="true"]`), granos de maíz (SVG en contenedor `aria-hidden`), video de Canela en Quiénes somos (`aria-hidden`), isotipo de la barra (`alt=""`, el enlace tiene texto `sr-only`), iconos (`Icono.astro`, siempre `aria-hidden`).
 
 ### Rastreo
-- [x] `robots.txt`: permite todo; la línea `Sitemap:` queda comentada hasta tener dominio.
-- [x] Sitemap con **una sola URL** (la portada) generado por `src/pages/[mapa].xml.ts`. Sin `site`, `getStaticPaths` devuelve `[]` y no se genera (un sitemap con URLs relativas es inválido). No se usa `@astrojs/sitemap`: para una página no aporta nada y es una dependencia más.
+- [x] `robots.txt`: permite todo, con `Sitemap: https://arielnoob24.github.io/HINOJOSA/sitemap.xml`. **En GitHub Pages de proyecto no tiene efecto**: queda en `/HINOJOSA/robots.txt` y los buscadores solo leen el de la raíz del host (`arielnoob24.github.io/robots.txt`, fuera de este repo). El sitemap hay que enviarlo a mano en Search Console; el `<head>` lo enlaza con `rel="sitemap"`.
+- [x] Sitemap con **una sola URL** (la portada) generado por `src/pages/[mapa].xml.ts`. Sin `site`, `getStaticPaths` devuelve `[]` y no se genera (un sitemap con URLs relativas es inválido). Con la configuración actual el build genera `dist/sitemap.xml` con `<loc>https://arielnoob24.github.io/HINOJOSA/</loc>`. No se usa `@astrojs/sitemap`: para una página no aporta nada y es una dependencia más.
 
 ## Pendientes
 
-1. **Dominio (`site`).** Hoy no hay. Suposición documentada: sin dominio propio, el sitio iría en GitHub Pages del repo `arielnoob24/HINOJOSA`, es decir `https://arielnoob24.github.io/HINOJOSA/`. **No se activó** porque:
-   - Una subruta exige `base: '/HINOJOSA'` y que todas las rutas fijas (`/img/...`, `/video/...`, `/favicon...`) usen `import.meta.env.BASE_URL`; hoy no lo hacen y el sitio se vería roto. El código SEO ya respeta `base`.
-   - El workflow `.github/workflows/deploy-pages.yml` publica la carpeta `sitio-web` (el sitio viejo), no `hinojosa-web/dist`. Un canonical apuntando a una URL que sirve otro sitio es peor que ninguno.
-   - En una subruta, `robots.txt` no sirve: los buscadores solo leen el de la raíz del host (`arielnoob24.github.io/robots.txt`).
-   **Recomendación:** dominio propio (con `CNAME` en Pages), que evita `base` y deja `robots.txt` en la raíz. Al decidirlo: `site: 'https://<dominio>'` en `astro.config.mjs` (y `base` si es subruta), `npm run build`, comprobar `dist/sitemap.xml` y el canonical, y descomentar `Sitemap: https://<dominio>/sitemap.xml` en `public/robots.txt`.
+1. **Dominio (`site`).** Desde el 2026-10-17 el sitio se prepara para GitHub Pages de proyecto: `site: 'https://arielnoob24.github.io'` y `base: '/HINOJOSA'`, URL pública **https://arielnoob24.github.io/HINOJOSA/**. Todas las rutas a `public/` (imágenes, video, sprites de Canela, favicons) pasan por `src/lib/ruta.ts`, y el workflow `.github/workflows/deploy-pages.yml` compila `hinojosa-web/` y sube `hinojosa-web/dist`. Límite de la subruta: `robots.txt` no lo leen los buscadores (ver "Rastreo").
+   **Recomendación a futuro:** dominio propio (con `CNAME` en Pages), que deja `robots.txt` en la raíz. Al decidirlo: `site: 'https://<dominio>'` y quitar `base` en `astro.config.mjs` (las rutas se ajustan solas por `ruta.ts`), `npm run build`, comprobar `dist/sitemap.xml` y el canonical, y cambiar la línea `Sitemap:` de `public/robots.txt`.
 2. **Datos de contacto** (en `negocio.json`, `confirmado: true`): dirección exacta y su ortografía ("Av. del Chofer y Rubén Lerson" sale de los afiches y varía), ciudad, país, teléfono, horario en tramos, coordenadas, enlace de Google Maps y de Facebook. WhatsApp no entra en el JSON-LD (se usa en la página); si es el mismo número que el teléfono, conviene confirmarlo también como `telefono`.
 3. **País y `og:locale`.** USD y la dirección sugieren Ecuador, sin confirmar. Al confirmar `pais: "Ecuador"` pasan solos `og:locale es_EC` y `addressCountry EC`.
 4. **Imagen social con Canela (opcional).** La actual es válida. Si la dueña prefiere una con Canela, hay un script `sharp` (logo a la izquierda, Canela a la derecha, sobre crema, 1200×630) que sobrescribe `public/og-imagen.jpg`; al usarlo, cambiar `IMAGEN_SOCIAL.alt` en `src/lib/seo.ts` a algo como "Logo de Comercial Hinojosa junto a Canela, su perrita mascota". Debe pesar menos de 300 KB.
-5. **Validar** tras publicar con dominio: [Prueba de resultados enriquecidos](https://search.google.com/test/rich-results), [Validador de schema.org](https://validator.schema.org/), [Depurador de Facebook](https://developers.facebook.com/tools/debug/) y Google Search Console (propiedad del dominio, enviar `sitemap.xml`, inspeccionar la URL y revisar que el HTML renderizado contenga las 5 vistas).
+5. **Validar** tras publicar (con la URL de GitHub Pages o con dominio): [Prueba de resultados enriquecidos](https://search.google.com/test/rich-results), [Validador de schema.org](https://validator.schema.org/), [Depurador de Facebook](https://developers.facebook.com/tools/debug/) y Google Search Console (en GitHub Pages, propiedad de prefijo de URL `https://arielnoob24.github.io/HINOJOSA/`; con dominio, propiedad del dominio; enviar `sitemap.xml`, inspeccionar la URL y revisar que el HTML renderizado contenga las 5 vistas).
 6. **Precios.** Son de los afiches; al actualizarlos en `productos.json` se actualiza solo el JSON-LD.
 
 ## Guía para la dueña: Perfil de Empresa de Google

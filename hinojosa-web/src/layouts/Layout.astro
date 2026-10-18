@@ -3,6 +3,7 @@
 // src/styles/tokens.css). Baloo 2 se retiro: Nunito 800 hace de titulo.
 // Caveat Brush NO viene de @fontsource: es un subconjunto propio de ~9 kB
 // (src/assets/fonts/caveat-brush-acento.woff2, @font-face en global.css).
+import { ruta } from '../lib/ruta';
 import '@fontsource/nunito/latin-400.css';
 import '@fontsource/nunito/latin-800.css';
 import '@fontsource/cormorant-garamond/latin-700.css';
@@ -110,9 +111,9 @@ const arranque = `(function () {
     <!-- Datos estructurados (schema.org): solo datos confirmados de negocio.json -->
     <script is:inline type="application/ld+json" set:html={esquema} />
 
-    <link rel="icon" href="/favicon.ico" sizes="48x48" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" href={ruta('/favicon.ico')} sizes="48x48" />
+    <link rel="icon" type="image/svg+xml" href={ruta('/favicon.svg')} />
+    <link rel="apple-touch-icon" href={ruta('/apple-touch-icon.png')} />
 
     <!-- Estado inicial, antes del primer pintado:
          - .js y la preferencia "Pausar animacion" guardada;

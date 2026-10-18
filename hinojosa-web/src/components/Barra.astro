@@ -10,6 +10,7 @@
 //   va en sr-only: nombre accesible completo sin romper 2.5.3 (G5).
 // - < 48rem con router: barra superior de 44 px e isotipo de 32 px (G5).
 // Gancho de animacion: [data-barra], a[data-nav-vista], [aria-current].
+import { ruta, rutaSrcset } from '../lib/ruta';
 import Icono from './Icono.astro';
 import { negocio, textos } from '../lib/negocio';
 
@@ -28,8 +29,8 @@ const extra: Record<string, { corto: string; icono: string }> = {
       <!-- 36-40 px en pantalla: la variante de 98 px cubre hasta DPR 2,4;
            la de 263 px solo se pide en pantallas de mas densidad (QA M7) -->
       <img
-        src="/img/marca/isotipo-96.webp"
-        srcset="/img/marca/isotipo-96.webp 98w, /img/marca/isotipo.webp 263w"
+        src={ruta('/img/marca/isotipo-96.webp')}
+        srcset={rutaSrcset('/img/marca/isotipo-96.webp 98w, /img/marca/isotipo.webp 263w')}
         sizes="(min-width: 48rem) 2.5rem, 2rem"
         alt=""
         width="98"

@@ -25,6 +25,7 @@
 // Ganchos: [data-escenario], video[data-video-vista][data-alfa],
 //          [data-icono-animado="razon-N" | "animal-<icono>"] (entradas.ts),
 //          a[data-abrir-animal], [data-banda="animales"].
+import { ruta } from '../../lib/ruta';
 import Vista from '../Vista.astro';
 import Icono from '../Icono.astro';
 import FondoHuellas from '../FondoHuellas.astro';
@@ -35,7 +36,7 @@ const p = negocio.pantalla;
 const [antes, despues] = t.frase.includes('familia') ? t.frase.split('familia') : [t.frase, null];
 // Poster con alfa diferido (QA M4): data-poster -> poster al entrar en la
 // vista (video-vista.ts). Sin JS se pinta como fondo del escenario.
-const poster = '/video/canela-jugando-alfa-poster.webp';
+const poster = ruta('/video/canela-jugando-alfa-poster.webp');
 
 // Palabra visible -> icono y clave del campo `animales` de productos.json
 const animal: Record<string, { icono: string; clave: string }> = {
@@ -78,7 +79,7 @@ const animal: Record<string, { icono: string; clave: string }> = {
         data-video-vista="nosotros"
         data-alfa
       >
-        <source src="/video/canela-jugando-alfa.webm" type="video/webm" />
+        <source src={ruta('/video/canela-jugando-alfa.webm')} type="video/webm" />
       </video>
       </div>
     </div>

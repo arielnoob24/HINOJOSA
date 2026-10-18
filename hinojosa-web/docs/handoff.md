@@ -4,7 +4,9 @@
 
 ## Estado al cierre del 2026-10-17 (para retomar)
 
-**Rama de trabajo: `HinoV2`.** Subida a `origin/HinoV2` y a `origin/main` a petición del usuario el 2026-10-17 (avance rápido desde `1db934f`). `Ariel` ya no se usa. El push a `main` dispara el workflow de Pages, que **sigue roto** (sube `sitio-web/`): falla y Pages sigue mostrando la versión vieja.
+**Rama de trabajo: `HinoV2`.** Subida a `origin/HinoV2` y a `origin/main` a petición del usuario el 2026-10-17 (avance rápido desde `1db934f`). `Ariel` ya no se usa. El push a `main` dispara el workflow de Pages.
+
+**Despliegue preparado (2026-10-17, agente `despliegue`, sin commit ni push):** el workflow `.github/workflows/deploy-pages.yml` ya compila (Node 22 con caché npm, `npm ci`, `npm run build` en `hinojosa-web/`) y sube `hinojosa-web/dist`; `astro.config.mjs` tiene `site: 'https://arielnoob24.github.io'` y `base: '/HINOJOSA'`; todas las rutas a `public/` pasan por `src/lib/ruta.ts`. **URL pública: https://arielnoob24.github.io/HINOJOSA/** (Pages con `build_type: workflow`, HTTPS forzado). Verificado con `astro preview` bajo `/HINOJOSA/`: 0 respuestas 404 ni peticiones fallidas en las 4 vistas a 1440×900 y 360×640; Lighthouse móvil Inicio 96–97, `#productos` 93–95. **El próximo push a `main` publica en producción**, con los datos pendientes como «Muy pronto publicaremos este dato».
 
 ### Qué está hecho (bloques del rediseño 0-C, `PLAN.md` §0-C y §11)
 | Bloque | Estado | Commit |
@@ -27,7 +29,7 @@
 3. **Cierre de QA completo** (`qa-rendimiento`) de los bloques 21–26: router, axe, Lighthouse (Inicio, `#productos`, `#nosotros`), móvil, sin JS.
 4. **`direccion-arte`:** llevar a `docs/guia-estilo.md` y a los storyboards el estado nuevo (Inicio con video y sin tarjeta, Productos 23b, tarjeta crema, Nosotros sin sellos; la guía aún cita la vitrina, los sellos de costal (línea 115) y `--color-velo-costal`).
 5. **Canela mejor renderizada** con Blender MCP (necesita clave de Hyper3D/fal/Tencent o la prueba gratuita de Rodin, y permiso de la dueña para subir la imagen).
-6. Arreglar el **workflow de despliegue** (`despliegue`) cuando el usuario quiera publicar.
+6. ~~Workflow de despliegue~~ ✅ preparado (2026-10-17). Falta el push a `main` (lo hace el usuario) y, después, comprobar el sitio publicado (4 vistas, activos, enlaces `tel:`/`mailto:`, HTTPS).
 
 ### Decisiones pendientes del usuario (nuevas de hoy)
 - **Bloque 27:** aprobar el tono salvia `#B4C99D` (nuevo, de la familia hoja/bosque); el antetítulo NOSOTROS pasó de canela oscuro a bosque por contraste sobre el verde; la vaca de Inicio mide ~2,8× el área del logo (no le quita el LCP porque va en canvas); burbujas de la pecera estáticas (se pueden animar).
@@ -247,10 +249,10 @@ M-5 unidad de precio · M-6 "Mascotas" repetido en Inicio · M-8 con 5 productos
 - **Productos blancos sobre blanco:** recortar con `quitar_fondo_blanco`, no con `quitar_fondo_liso` (este vacía el sombreado neutro creyendo que es sombra).
 - Para regenerar un solo producto sin recodificar todo, ver cómo se hizo con el bebedero: `nr.maestros(tmp)`, filtrar los trabajos por nombre y `nr.codificar(seleccion, tmp)`.
 
-## Bloqueantes para publicar (sin cambios)
+## Bloqueantes para publicar
 
 1. Datos que faltan en `negocio.json` con `confirmado: true`: ciudad, horario, WhatsApp, enlace de Facebook, coordenadas (dirección, teléfonos y correo ya están).
-2. **Despliegue roto:** `.github/workflows/deploy-pages.yml` sube `sitio-web/`, que ya no existe. Hay que compilar `hinojosa-web/` y subir `hinojosa-web/dist`, definir `site` (y `base` si no hay dominio propio) y descomentar `Sitemap:` en `public/robots.txt`. Le corresponde al agente `despliegue`.
+2. ~~Despliegue roto~~ ✅ resuelto el 2026-10-17: workflow que compila y sube `hinojosa-web/dist`, `site` + `base: '/HINOJOSA'`, `Sitemap:` en `public/robots.txt` (sin efecto en una subruta; enviar el sitemap en Search Console).
 
 ## Cómo arrancar
 

@@ -55,6 +55,7 @@
 // franja.dataset.canelaDir = -1|1.
 import { alCambiarVista, vistaActual } from '../router';
 import { alCambiarMovimiento, movimientoPermitido } from './movimiento';
+import { ruta } from '../ruta';
 
 type NombrePieza = 'arranque' | 'izq' | 'giro' | 'der';
 type Estado = 'sentada' | 'arranque' | 'corre' | 'giro';
@@ -173,7 +174,7 @@ function cargar(): Promise<boolean> {
     const dpr = window.devicePixelRatio || 1;
     const altoR = reposo?.offsetHeight ?? 0;
     const pequeno = altoR > 0 && altoR * dpr <= ALTO_JUEGO_PEQUENO;
-    const resp = await fetch(pequeno ? '/img/canela/carrera-160.json' : '/img/canela/carrera.json');
+    const resp = await fetch(ruta(pequeno ? '/img/canela/carrera-160.json' : '/img/canela/carrera.json'));
     if (!resp.ok) throw new Error('carrera.json');
     const d = (await resp.json()) as DatosCarrera;
     const nombres: NombrePieza[] = ['arranque', 'izq', 'giro', 'der'];
@@ -184,7 +185,7 @@ function cargar(): Promise<boolean> {
         img.alt = '';
         img.decoding = 'async';
         img.draggable = false;
-        img.src = p.src;
+        img.src = ruta(p.src); // carrera.json guarda /img/canela/... sin base
         await img.decode();
         img.dataset.pieza = n;
         img.style.visibility = 'hidden';

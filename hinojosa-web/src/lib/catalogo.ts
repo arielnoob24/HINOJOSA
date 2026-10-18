@@ -51,6 +51,7 @@
 import { alCambiarVista, alEntrarEnVista } from './router';
 import { indexar, prepararConsulta, buscar, type Indexado } from './busqueda';
 import { movimientoPermitido, token } from './animacion/movimiento';
+import { ruta } from './ruta';
 
 export interface ProductoDatos {
   id: string;
@@ -72,7 +73,7 @@ export interface ProductoDatos {
 }
 
 /** Costal generico para productos sin imagen (guia-estilo 7.3, P5). */
-export const IMAGEN_GENERICA = '/img/productos/costal-generico.svg';
+export const IMAGEN_GENERICA = ruta('/img/productos/costal-generico.svg');
 export interface CategoriaDatos {
   id: string;
   nombre: string;

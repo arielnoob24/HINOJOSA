@@ -615,7 +615,7 @@ Contenido de referencia de los afiches (agrupado por categoría del cliente):
 | Contacto | `tel:` (2 números), `mailto:`, `wa.me` y Facebook cuando estén | Sin backend ni formulario |
 | SEO local | JSON-LD `LocalBusiness` / `PetStore`, Open Graph, sitemap | Aparecer en Google |
 | Calidad | **Lighthouse**, **Playwright**, **axe-core** | Rendimiento, pruebas, accesibilidad |
-| Hosting | **GitHub Pages** (workflow por corregir) | Gratis, HTTPS |
+| Hosting | **GitHub Pages** de proyecto: **https://arielnoob24.github.io/HINOJOSA/** (`site` + `base: '/HINOJOSA'`; rutas a `public/` por `src/lib/ruta.ts`). Workflow corregido el 2026-10-17: Node 22 + `npm ci` + `npm run build` en `hinojosa-web/` → sube `hinojosa-web/dist` | Gratis, HTTPS (`https_enforced`) |
 
 Retirado respecto al plan original: Three.js, Lottie, Lenis y Spline, y los `.glb` **en el navegador**. Blender vuelve el 2026-10-17 solo como **herramienta de producción** (renders), no como parte del sitio.
 
@@ -757,7 +757,7 @@ En `.claude/skills/` del proyecto:
 | 5. SEO y QA | Metadatos, Lighthouse > 90, axe 0, router 41/41 | ✅ |
 | **5-B. Mejoras de la auditoría** | Implementar la sección 0-B por bloques (ver orden abajo) | ✅ 2026-10-14: bloques 1–9, 12, 13 y 4-B + cierre de QA (`docs/qa-informe.md`). ⏳ Bloques 10 y 11 bloqueados (textos y WhatsApp de la dueña) |
 | **5-C. Rediseño 0-C** | Bloques 21–26 (Inicio granja, Productos centrado y tarjeta nueva, Nosotros, GSAP, Blender) | ⏳ 2026-10-17: 21–25 hechos (con los ajustes de la tarde y la noche); 26 a medias en la rama `wip/bloque26-transicion`; falta el cierre de QA |
-| 6. Publicación | Corregir workflow, `site`/`base`, GitHub Pages, enlaces verificados | ⏳ Bloqueada por datos |
+| 6. Publicación | Corregir workflow, `site`/`base`, GitHub Pages, enlaces verificados | ✅ 2026-10-17 preparado (workflow, `site`/`base`, rutas con base, 0 respuestas 404 bajo `/HINOJOSA/`). Se publica con el próximo push a `main` (lo decide el usuario); los datos pendientes salen como «Muy pronto publicaremos este dato» |
 
 ### Orden de implementación de la fase 5-B
 | Bloque | Contenido | Agentes | ¿Necesita a la dueña? |
@@ -808,7 +808,7 @@ En `.claude/skills/` del proyecto:
 10. **Mantenimiento:** definir quién actualiza precios y catálogo.
 11. **Sin botones de pausa (decisión del usuario, 2026-10-15):** Canela corriendo en Inicio y el video de Nosotros se mueven en bucle durante más de 5 s sin control para pausarlos. **Incumple WCAG 2.2.2 (nivel A)**: una auditoría de accesibilidad lo marcará como fallo, y puede molestar a personas con déficit de atención o sensibilidad al movimiento. Mitigación parcial: con `prefers-reduced-motion` no hay movimiento. Alternativas descartadas por ahora: un solo control global "Pausar animaciones", o que el movimiento se detenga solo antes de 5 s.
 12. **Video con alfa en Safari/iOS:** no se reproduce; se ve el póster de Canela sentada. No probado en un Safari real.
-13. **Ramas:** desde el 2026-10-17 se trabaja en `HinoV2`; `Ariel` ya no se usa; `main` recibe `HinoV2` solo cuando el usuario lo pide (primer envío el 2026-10-17). Cada push a `main` dispara el workflow de Pages, **que sigue roto** (sube `sitio-web/`): falla y Pages sigue con la versión vieja. El trabajo sin verificar va en ramas `wip/…`.
+13. **Ramas:** desde el 2026-10-17 se trabaja en `HinoV2`; `Ariel` ya no se usa; `main` recibe `HinoV2` solo cuando el usuario lo pide (primer envío el 2026-10-17). Cada push a `main` dispara el workflow de Pages, **corregido el 2026-10-17** (compila `hinojosa-web/` y sube `hinojosa-web/dist`): desde ahora **cada push a `main` publica en producción** en https://arielnoob24.github.io/HINOJOSA/ (también se puede lanzar a mano con `workflow_dispatch`, solo desde `main`). El trabajo sin verificar va en ramas `wip/…`.
 14. **Escena de Inicio vs. LCP y peso:** nubes, césped y 9 animales. Derivados ya hechos (AVIF ≈ 300 KB a 480 px, ≈ 115 KB a 240 px), cargados tras `load`; el logo sigue siendo el LCP; presupuesto de Inicio < 1,5 MB; medir Lighthouse móvil (hoy 99). En móvil, menos animales o ninguno si no caben.
 15. **Logo sobre fondo claro:** el logo se diseñó para verde oscuro. Si el cielo claro lo apaga, la columna de texto lleva un panel bosque. Comprobar contraste y legibilidad.
 16. **GSAP en toda la página:** más JS en Inicio y en cada cambio de vista; vigilar INP, el cargador diferido, la regla M5 de Productos y las pruebas de 0 `requestAnimationFrame` fuera de las vistas que lo usan. Con la pausa y `prefers-reduced-motion` no puede haber bucles.
@@ -838,7 +838,7 @@ En `.claude/skills/` del proyecto:
 - [x] Bloque 14: quitar botones de pausa, iconos en "Ver productos" y "Cómo llegar", y nuevo orden de la barra (2026-10-15)
 - [x] Vista Nosotros (bloque 15) y ficha de Productos (bloque 16), 2026-10-16
 - [ ] Repetir el cierre de QA tras los bloques 15–17
-- [ ] Corregir el workflow de despliegue (sin publicar desde `main` por ahora)
+- [x] Corregir el workflow de despliegue y preparar `site`/`base` para GitHub Pages (2026-10-17; sin push a `main`: lo hace el usuario)
 - [x] Plan, agentes y skills actualizados con el rediseño 0-C (2026-10-17)
 - [x] Instalar Blender 4.5 LTS, `uv` y registrar Blender MCP en `.mcp.json` (2026-10-17, probado con `get_scene_info`)
 - [x] Reducir los 9 animales y regenerar la sal en grano (2026-10-17)

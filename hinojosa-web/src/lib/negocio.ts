@@ -1,9 +1,21 @@
 // Acceso a los datos del negocio con la regla de "dato confirmado":
 // si un dato no esta confirmado (o es null) NO se publica ni se enlaza.
 import negocio from '../data/negocio.json';
-import catalogo from '../data/productos.json';
+import catalogoDatos from '../data/productos.json';
 import textos from '../data/textos.json';
 import alts from '../data/imagenes.json';
+import { ruta, sinBase } from './ruta';
+
+/**
+ * Catalogo con las imagenes ya resueltas contra `base` (src/lib/ruta.ts):
+ * productos.json guarda "/img/productos/..." desde la raiz de public/ y aqui
+ * pasa a "/HINOJOSA/img/productos/..." en GitHub Pages. Todo lo que deriva
+ * de `imagen` (avif, miniatura, srcset, precarga) hereda la base.
+ */
+const catalogo = {
+  ...catalogoDatos,
+  productos: catalogoDatos.productos.map((p) => ({ ...p, imagen: ruta(p.imagen) })),
+};
 
 export { negocio, catalogo, textos };
 
@@ -108,8 +120,8 @@ export function avifDe(imagen: string | null): string | null {
   return imagen ? imagen.replace(/\.webp$/, '.avif') : null;
 }
 
-export function altDe(ruta: string): string {
-  return (alts as Record<string, string>)[ruta] ?? '';
+export function altDe(rutaImagen: string): string {
+  return (alts as Record<string, string>)[sinBase(rutaImagen)] ?? '';
 }
 
 /** Sustituye {clave} en una plantilla de textos.json. */

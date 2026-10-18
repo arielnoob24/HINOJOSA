@@ -5,15 +5,19 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  // Dominio publico (fase de despliegue). Mientras este comentado, el <head>
-  // omite canonical, og:url y og:image, y el JSON-LD omite url, image y logo,
-  // porque todos exigen URL absoluta. Al descomentarlo con el dominio real
-  // (con https:// y sin ruta) aparecen solos, y el build genera
-  // dist/sitemap.xml (src/pages/[mapa].xml.ts). Ver docs/seo.md.
-  // Sin dominio propio, GitHub Pages del repo arielnoob24/HINOJOSA seria
-  // https://arielnoob24.github.io/HINOJOSA/ : eso exige ademas
-  // base: '/HINOJOSA' y rutas de imagenes con BASE_URL (decision de despliegue).
-  // site: 'https://DOMINIO-POR-CONFIRMAR',
+  // Publicacion en GitHub Pages de proyecto (repo arielnoob24/HINOJOSA, sin
+  // dominio propio): https://arielnoob24.github.io/HINOJOSA/
+  //   - site: origen publico (con https:// y sin ruta). Con el, el <head>
+  //     lleva canonical, og:url y og:image, el JSON-LD url, image y logo, y
+  //     el build genera dist/sitemap.xml (src/pages/[mapa].xml.ts).
+  //   - base: subruta del proyecto. Todas las rutas hacia public/ pasan por
+  //     src/lib/ruta.ts (ruta(), rutaSrcset()), que antepone
+  //     import.meta.env.BASE_URL; las URL absolutas de SEO tambien
+  //     (seo.ts -> urlAbsoluta). Los chunks y CSS de Vite ya respetan base.
+  // Si algun dia hay dominio propio: site: 'https://DOMINIO' y quitar base
+  // (o base: '/'); no hay que tocar ninguna ruta. Ver docs/seo.md.
+  site: 'https://arielnoob24.github.io',
+  base: '/HINOJOSA',
   build: {
     // CSS incrustado en el HTML (~11 kB gzip): evita el viaje de red del
     // CSS bloqueante, que retrasaba FCP y LCP en movil 4G (QA, hallazgo A1).

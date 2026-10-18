@@ -20,6 +20,7 @@ import {
   coordenadasConfirmadas,
   formatoPrecio,
 } from './negocio';
+import { ruta as rutaPublica } from './ruta';
 
 export const IMAGEN_SOCIAL = {
   ruta: '/og-imagen.jpg',
@@ -46,8 +47,8 @@ export const DESCRIPCION = `${negocio.nombre}: venta de balanceados, alimentos y
  */
 export function urlAbsoluta(ruta: string, site: URL | undefined): string | null {
   if (!site) return null;
-  const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
-  return new URL(base + ruta.replace(/^\//, ''), site).href;
+  // ruta() pone la base una sola vez (las imagenes del catalogo ya la traen)
+  return new URL(rutaPublica(ruta.startsWith('/') ? ruta : `/${ruta}`), site).href;
 }
 
 /** Canonical: siempre la portada, sea cual sea el hash o la ruta. */
