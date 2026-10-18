@@ -362,6 +362,56 @@ const animal: Record<string, { icono: string; clave: string }> = {
     text-decoration-color: var(--color-maiz);
   }
 
+  /* ---------- Movil (bloque 28c): cada animal en su ficha ----------
+     Recuadro redondeado con fondo bosque + 10 % crema (#315E3D), borde
+     1 px maiz (5.44 contra la banda: es lo que delimita la ficha; el fondo
+     solo da 1.2-1.4:1) e icono y nombre crema (6.65). Las 8 iguales: filas
+     de alto 1fr y el enlace ocupa toda la celda. Al tocar se hunde
+     (scale 0.96, 90 ms) y el borde se ilumina; sin movimiento con reduced
+     motion o la pausa (solo el borde). */
+  @media (max-width: 47.999rem) {
+    .nos-animales {
+      padding-bottom: 1rem;
+    }
+    .nos-lista-animales {
+      grid-auto-rows: 1fr;
+      gap: 0.5rem;
+    }
+    .nos-lista-animales > li {
+      display: flex;
+    }
+    .nos-animal {
+      width: 100%;
+      justify-content: center;
+      border: 1px solid var(--color-maiz);
+      border-radius: var(--radius-tarjeta);
+      background: color-mix(in srgb, var(--color-bosque) 90%, var(--color-crema));
+      padding: 0.5rem 0.125rem 0.4375rem;
+      color: var(--color-crema);
+    }
+    .nos-animal-icono {
+      width: 2.125rem;
+      height: 2.125rem;
+    }
+    .nos-animal-nombre {
+      font-size: 0.8125rem;
+      white-space: nowrap;
+    }
+    .nos-animal:active {
+      box-shadow: 0 0 0 1px var(--color-maiz), 0 0 10px -2px rgb(242 184 35 / 0.55);
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      :global(html:not([data-movimiento='pausado'])) .nos-animal {
+        transition:
+          transform var(--duracion-presion, 90ms) ease-out,
+          box-shadow var(--duracion-presion, 90ms) ease-out;
+      }
+      :global(html:not([data-movimiento='pausado'])) .nos-animal:active {
+        transform: scale(0.96);
+      }
+    }
+  }
+
   /* ---------- Escritorio: Canela a la izquierda, texto a la derecha ---------- */
   @media (min-width: 48rem) {
     .nos-marco {

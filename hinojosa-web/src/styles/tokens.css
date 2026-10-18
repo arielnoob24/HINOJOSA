@@ -174,7 +174,7 @@
   --spacing-mosaico: clamp(0.625rem, 0.3rem + 1.2vw, 1.5rem); /* gap de tarjetas: 22 / 10 px */
   --spacing-bloque: clamp(1rem, 0.5rem + 1.8vw, 2rem);
   --spacing-barra: 4rem;          /* alto barra superior escritorio (h-barra). Movil: ver :root */
-  --spacing-barra-movil: 4rem;    /* alto barra inferior de 5 iconos (sin safe-area) */
+  --spacing-barra-movil: 4rem;    /* SIN USO desde el bloque 28a (ya no hay barra inferior en movil) */
   --spacing-objetivo: 2.75rem;    /* 44 px: objetivo tactil real (WCAG 2.5.8 pide 24) */
 
   --container-contenido: 80rem;   /* 1280 px: max-w-contenido */
@@ -294,10 +294,12 @@
   --z-barra: 50;
 }
 
-/* Movil: barra superior compacta + barra inferior de 5 iconos */
+/* Movil: encabezado con hamburguesa (bloque 28; sin barra inferior) */
 @media (max-width: 47.999rem) {
   :root {
-    --spacing-barra: 2.75rem;         /* 44 px (G5): las dos barras pasan de 116 a 108 px de 640 */
+    /* Bloque 28b: encabezado de 56 px (aire sobre "COMERCIAL") + la zona
+       segura superior. Sin barra inferior (28a): 56 de 640 en lugar de 108 */
+    --spacing-barra: calc(3.5rem + env(safe-area-inset-top, 0px));
     --canela-alto: clamp(4rem, 11dvh, 5.5rem); /* 70 px en 360x640 (13 % de la vista util) */
     --carrusel-perspectiva: 600px;
     --carrusel-ancho: 7.25rem;        /* 116 px -> 155 px de alto */

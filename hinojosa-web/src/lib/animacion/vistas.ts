@@ -443,9 +443,10 @@ function medir(): Caja | null {
   if (!nav) return null;
   const activo = nav.querySelector<HTMLElement>('a[data-nav-vista][aria-current="page"]');
   if (!activo) return null;
-  // Con el router en movil, la pastilla rodea el icono; si no, todo el enlace
-  const objetivo =
-    html.dataset.router && mqMovil.matches ? activo.querySelector<HTMLElement>('.barra-icono') ?? activo : activo;
+  // Bloque 28a: en movil ya no hay barra inferior (la pastilla va oculta
+  // con CSS y el menu marca la activa con su propio fondo); se mide el
+  // enlace, como en escritorio.
+  const objetivo = activo;
   const rn = nav.getBoundingClientRect();
   const ro = objetivo.getBoundingClientRect();
   if (!ro.width) return null;
@@ -532,7 +533,9 @@ function colocar(animar: boolean) {
   if (!nav || !pastilla) return;
   const destino = medir();
   if (!destino) return;
-  if (animar && movimientoPermitido()) {
+  // Bloque 28a: en movil con router la pastilla va oculta (display: none);
+  // no se lanza una animacion que nadie ve, solo se fija su sitio.
+  if (animar && movimientoPermitido() && !(html.dataset.router && mqMovil.matches)) {
     const desde = estadoActual(); // antes de tocar nada: incluye la animacion en curso
     animacion?.cancel();
     fijarVariables(destino);
@@ -551,29 +554,13 @@ function colocar(animar: boolean) {
   html.classList.add('pastilla-lista');
 }
 
-// Movil: "pop" del icono activo al llegar la pastilla (CSS, icono-pop)
-function pop(vista: string) {
-  if (!nav || !mqMovil.matches || !html.dataset.router || !movimientoPermitido()) return;
-  for (const a of nav.querySelectorAll<HTMLElement>('a[data-pop]')) a.removeAttribute('data-pop');
-  const a = nav.querySelector<HTMLElement>(`a[data-nav-vista="${vista}"]`);
-  if (!a) return;
-  void a.offsetWidth;
-  a.setAttribute('data-pop', '');
-  const fin = (ev: AnimationEvent) => {
-    if (ev.animationName !== 'icono-pop') return;
-    a.removeAttribute('data-pop');
-    a.removeEventListener('animationend', fin);
-    a.removeEventListener('animationcancel', fin);
-  };
-  a.addEventListener('animationend', fin);
-  a.addEventListener('animationcancel', fin);
-}
+// Bloque 28a: el "pop" del icono activo era de la barra inferior movil,
+// que ya no existe (en escritorio nunca se aplicaba).
 
 if (nav && pastilla) {
   colocar(false);
   alCambiarVista((d) => {
     colocar(!d.inicial);
-    if (!d.inicial) pop(d.vista);
   });
   // Cambios de ancho (fuentes, etiquetas cortas/largas, giro del movil):
   // se recoloca sin animar. Con el ancho en negrita reservado (B1), activar

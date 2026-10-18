@@ -2,6 +2,12 @@
 
 Última actualización: **2026-10-17, tras la primera publicación**. Rama de trabajo: **`HinoV2`**; sitio publicado en https://arielnoob24.github.io/HINOJOSA/. **Lee solo "Estado actual"**; lo que hay debajo de "Historial" es el registro de sesiones anteriores y no rige.
 
+## Rama `Ariel` — bloque 28, solo móvil (2026-10-17, noche; NO publicado)
+Ariel (usuario) trabaja en **`Ariel`**, que recibió `main` por avance rápido (`22689cc`); el compañero sigue en `HinoV2`. **Escritorio congelado**; los cambios de móvil van solo a `origin Ariel` y **no se despliegan**. Hecho y verificado en local (`PLAN.md` §0-D):
+- **28a** hamburguesa arriba a la derecha con menú desplegable corto (`Barra.astro`, `src/lib/menu-movil.ts`); sin barra inferior. **28b** encabezado móvil de 56 px con aire sobre "COMERCIAL". **28c** animales de Nosotros en fichas (borde maíz). **28d** Visítanos compacto (sin burbuja del mapa, tarjeta con margen, Horario + Referencias en una línea, teléfonos lado a lado con el primero en oro) + arreglo de axe del correo. **28e** pie de 13 px (en móvil sin el lema "siempre a tu lado").
+- QA: Lighthouse móvil igual que la base (Inicio 96–97, `#productos` 93–97 con M5, `#nosotros` 95–96, `#visitanos` 97–98; medir con servidor gzip, `servir.mjs` sin compresión da números falsos), router y prueba 27 OK, axe 0, escritorio 0 px de diferencia. Capturas en `capturas/bloque28/`.
+- **Pendiente del usuario:** aprobar el pie sin lema; A4 (etiqueta "HORARIO Y REFERENCIAS" en crema en vez de maíz). Mejoras previas (no del bloque 28): respaldo CSS de la transición con doble imagen 0.19 > 0.1 si no carga GSAP; `.catch()` en la importación dinámica de `escena-inicio`.
+
 ## Estado actual (2026-10-17, publicado) — lo único que rige
 
 ### En una línea
