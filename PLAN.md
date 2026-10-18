@@ -263,18 +263,17 @@ Las frases salen de los eslóganes reales del negocio. "Calidad, confianza y com
   - Con movimiento reducido o pausa: la pastilla salta, sin pop.
 - En móvil, la barra superior baja a 44 px y el isotipo a 32 px (G5).
 
-### Transición entre vistas (decidida, T1–T2)
+### Transición entre vistas (timeline de GSAP, bloque 26)
 
-> ⚠️ **Rediseño 0-C (2026-10-17):** la versión de abajo (dos capas en CSS, ≈ 440 ms) se **sustituye por un timeline de GSAP** más fluido (capas solapadas, ≈ 550–650 ms, interrumpible, escena de Inicio compartida). Detalle en 0-C y, cuando se implemente, en `vistas-hinojosa`. Hasta entonces rige lo siguiente.
-Hoy la vista saliente se oculta antes del primer pintado y se ve un destello del fondo crema; además la curva llega al 87 % en 156 ms y se percibe como un corte.
+> ✅ **Rediseño 0-C hecho (2026-10-17, bloque 26):** el fundido CSS en dos capas (≈ 440 ms) se sustituyó por un **timeline de GSAP** (`src/lib/animacion/vistas.ts`). Especificación completa y pruebas en `vistas-hinojosa` ("Transición entre vistas", pruebas 13–16).
 
-- **Fundido cruzado direccional en dos capas:**
-  - Saliente: opacidad 1 → 0 y `translateX(-dir · 1rem)`, **160 ms**, `--ease-salida`, `pointer-events: none`, por debajo de la entrante.
-  - Entrante: `translateX(dir · 2.5rem)` → 0 y opacidad 0 → 1, **380 ms** con **60 ms** de retraso, `cubic-bezier(0.25, 1, 0.5, 1)`. Total ≈ 440 ms.
-  - `src/lib/animacion/vistas.ts` devuelve una `Promise` que se resuelve con el `animationend` de la saliente (tope 200 ms); el router ya la espera y ya gestiona los clics rápidos.
-- **Entrada escalonada (A+):** dentro de la vista entrante, 2–3 bloques marcados con `[data-entra]` (título, bloque principal, bloque secundario) entran desde `dir · 1.5rem` con opacidad, 300 ms, 50 ms entre bloques. En Productos el anillo cuenta como un bloque sin animación propia. Los iconos de las razones y los animales de Nosotros empiezan a los 400 ms.
-- El **foco** va al título **antes** de cualquier animación.
-- Con `prefers-reduced-motion` o pausa: cambio instantáneo.
+- **Capas solapadas (60 %):** la saliente se aparta `-dir · 1.25rem` y baja a escala 0,98 (400 ms, `power2.out`) y se funde en 260 ms (`power1.out`), por debajo; la entrante llega desde `dir · 3rem` (500 ms, `power3.out`; opacidad en 320 ms, `power2.out`) arrancando a los 96 ms, por encima; los bloques `[data-entra]` entran desde `dir · 1.5rem` con 60 ms entre órdenes (420 ms, `power3.out`). Total ≈ 640 ms. Solo `translate`, `scale` y `opacity`.
+- **Variante elegida** de dos medidas (solape 60 % frente a 40 %): la de 40 % dejaba ver el fondo crema al 82 % entre vistas y daba pasos mayores por fotograma; la de 60 % deja la doble imagen en 0,076 y el paso máximo en 6 px / 0,15 de opacidad.
+- **Contrato sin cambios:** `vistas.ts` devuelve una `Promise` (se resuelve con la saliente invisible y la entrante ≥ 0,64; el router oculta entonces la saliente), foco al título antes de animar, `inert`/`hidden` correctos, sin destello (prueba 13), barra y pastilla iguales.
+- **Interrumpible:** cada clic o flecha nuevos arrancan otro timeline desde el estado real de cada elemento; las vistas que aún se iban pasan al router como `previas` y se siguen fundiendo por debajo (sin vista en blanco ni duplicada).
+- **Sin tirones a mitad:** el timeline arranca al tercer fotograma (rasterizar la vista que entra cuesta hasta ~170 ms en Inicio) y la entrante parte de opacidad 0,002; durante la transición GSAP trata un fotograma de más de 60 ms como uno solo. Al volver a Inicio el video de fondo se reanuda a los 650 ms.
+- **Respaldo:** sin GSAP todavía (o si falla su descarga), el fundido CSS anterior (keyframes `vista-sale` / `vista-entra` / `bloque-entra`). Con `prefers-reduced-motion` o la pausa, cambio instantáneo (y si llegan a mitad, todo salta al final).
+- Los iconos de las razones, los animales y el video de Nosotros empiezan a los 400 ms.
 - **Mejora futura:** View Transitions API como implementación de lo mismo, con respaldo.
 
 ### Navegación por teclado
@@ -781,7 +780,7 @@ En `.claude/skills/` del proyecto:
 | 23 | ✅ **Hecho 2026-10-17**; sustituido esa noche por el 23b (retícula 68/32, categorías en fila encima del carrusel, frente ×1,4; vecinos oscurecidos por distancia al frente; en móvil el carrusel no se agranda por M5). **Productos: carrusel grande y centrado** con frente más grande y vecinos sombreados | direccion-arte, frontend, animacion-interaccion | No |
 | 24 | ✅ **Hecho 2026-10-17** (tarjeta crema con hojas y huellas, Detalle/Lista dentro, 37/37 sin scroll; píldora "Cómo llegar"). **Productos: tarjeta nueva** (maqueta `Nuevos Req/tarjeta/`) con Detalle y Lista, enlace "Cómo llegar" vistoso, sal en grano en el carrusel | direccion-arte, frontend, activos-3d-video | No |
 | 25 | ✅ **Hecho 2026-10-17.** **Nosotros:** banda inferior solo con iconos de animales | frontend | No |
-| 26 | ⏳ **A medias (2026-10-17):** implementación en la rama `wip/bloque26-transicion` (commit `883426f`: `vistas.ts`, `router.ts`, `gsap-carga.ts`, `escena-lienzos.ts`); el agente se cortó por el límite de uso mientras comparaba Lighthouse con la versión base. Falta verificarla entera antes de llevarla a `HinoV2`. **Transición entre vistas con timeline de GSAP** (más fluida, interrumpible, escena de Inicio compartida), actualizar `vistas-hinojosa` y las pruebas 13–16 | animacion-interaccion, qa-rendimiento | No |
+| 26 | ✅ **Hecho (2026-10-17):** transición entre vistas con **timeline de GSAP** (`vistas.ts`, `router.ts` con `previas`, `gsap-carga.ts` con `gsapListo()`, `escena-lienzos.ts`): solape 60 %, ≈ 640 ms, interrumpible, respaldo CSS sin GSAP, instantánea con pausa o reduced motion. Pruebas 1–5, 11, 13–16, 25 y clics rápidos en verde; Lighthouse móvil igual que la base (Inicio 97–98, `#productos` 94–97, LCP intacto). `vistas-hinojosa` actualizada (Transición, pruebas 13–16). En la rama `wip/bloque26-transicion`, pendiente de llevar a `HinoV2` | animacion-interaccion, qa-rendimiento | No |
 | Cierre | Lighthouse móvil (Inicio ≥ 99, Productos ≥ 93), pruebas del router de `vistas-hinojosa`, axe 0, capturas comparativas. Tras los bloques 15–17 y **21–26** hay que repetir el cierre completo (Inicio con GSAP y escena: el logo debe seguir siendo el LCP) | qa-rendimiento | ⏳ |
 
 ---

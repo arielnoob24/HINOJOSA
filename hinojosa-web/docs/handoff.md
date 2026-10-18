@@ -13,7 +13,7 @@
 | 22 Inicio | ✅ video de fondo en canvas (`escena-lienzos.ts`), sin tarjeta, logo/lema/botones sobre velo, 9 animales en foto de familia con idle GSAP (`escena-inicio.ts`), tilapias en pecera dibujada | `ca8a299` |
 | 23/24 Productos | ✅ bloque 23b: carrusel 68 % con frente ×1,4 y vecinos oscurecidos, categorías en fila con hover, buscador sobre la tarjeta crema con desvanecido verde, descripción corta, sin texto legal, fondo de huellas | `ed3747e`, `9f21f6e` |
 | 25 Nosotros | ✅ banda solo con iconos de animales | `7075874` |
-| 26 Transición GSAP | ⏳ **a medias** en la rama **`wip/bloque26-transicion`** (`883426f`) | — |
+| 26 Transición GSAP | ✅ timeline de GSAP (saliente 400 ms con escala 0,98, entrante a los 96 ms desde 3rem, bloques escalonados, ≈ 600 ms, interrumpible; respaldo CSS sin GSAP). Verificado el 2026-10-17: 0 destellos, clics rápidos, Lighthouse igual que la base | rama `wip/bloque26-transicion` fusionada en `HinoV2` |
 
 ### En qué se quedaron los agentes
 - **`animacion-interaccion` (bloque 26):** cortado por el límite de uso. Implementó el timeline de GSAP en `src/lib/animacion/vistas.ts` (+351 líneas), cambios en `router.ts`, `gsap-carga.ts` y `escena-lienzos.ts`, y capturas en `capturas/bloque26/`. Su último paso fue **comparar Lighthouse con la versión base** (5 pasadas cada una, base servida en el puerto 4330). **No se sabe si pasó las pruebas**: el trabajo está en la rama `wip/bloque26-transicion`, no en `HinoV2`. Para retomarlo: `git switch wip/bloque26-transicion`, pedir a `animacion-interaccion` que termine la verificación del bloque 26 (pruebas 1–18 y 25–26 de `vistas-hinojosa`, clics rápidos, sin destello, Lighthouse de Inicio y `#productos`, 0 rAF residual) y actualice la skill y §3 del plan; si pasa, fusionar en `HinoV2`.
@@ -21,7 +21,7 @@
 - **`direccion-arte`, `qa-rendimiento`, `seo-negocio-local`, `despliegue`:** no se usaron en esta sesión.
 
 ### Próximas tareas (en orden)
-1. **Bloque 26:** terminar y verificar la transición (ver arriba) y fusionarla en `HinoV2`.
+1. ~~Bloque 26~~ ✅ hecho y fusionado (2026-10-17). Sin probar en Safari/Firefox ni móvil real.
 2. **Pecera real:** el usuario dejó `Nuevos Req/Animales/pecera.jpg` (pecera de vidrio vacía sobre fondo azul, 2752×1536, JPG sin alfa). Sustituir la pecera dibujada de Inicio: hay que recortarla (el vidrio deja ver el azul: quitar el fondo y teñir el vidrio, o generarla con alfa), meter agua y las tilapias. Tarea de `activos-3d-video` + `frontend`.
 3. **Cierre de QA completo** (`qa-rendimiento`) de los bloques 21–26: router, axe, Lighthouse (Inicio, `#productos`, `#nosotros`), móvil, sin JS.
 4. **`direccion-arte`:** llevar a `docs/guia-estilo.md` y a los storyboards el estado nuevo (Inicio con video y sin tarjeta, Productos 23b, tarjeta crema, Nosotros sin sellos; la guía aún cita la vitrina, los sellos de costal (línea 115) y `--color-velo-costal`).
