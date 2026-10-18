@@ -1,6 +1,6 @@
 # Plan del proyecto: Sitio web de Comercial Hinojosa
 
-> Página publicitaria estática **manejada por vistas** (4 pantallas sin scroll de página desde 2026-10-16), con carrusel 3D de productos, imágenes animadas y video. **Rama de trabajo: `HinoV2`.** Rediseño vigente: sección 0-C. **Publicada desde el 2026-10-17 en https://arielnoob24.github.io/HINOJOSA/** (cada push a `main` publica). Estado vivo: `hinojosa-web/docs/handoff.md`.
+> Página publicitaria estática **manejada por vistas** (4 pantallas sin scroll de página desde 2026-10-16), con carrusel 3D de productos, imágenes animadas y video. **Rama de trabajo del usuario: `Ariel`** (el compañero usa `HinoV2`). Rediseño vigente: sección 0-C; **en móvil manda además la sección 0-D (escritorio congelado)**. **Publicada desde el 2026-10-17 en https://arielnoob24.github.io/HINOJOSA/** (cada push a `main` publica). Estado vivo: `hinojosa-web/docs/handoff.md`.
 > Negocio: **Comercial Hinojosa** · Lema: **"Nutrición que da vida"** · Giro: venta de balanceados, alimentos y productos para animales.
 
 **Orden de precedencia:** sección 0-B (decisiones de la auditoría, 2026-10-13) → sección 0 (activos del cliente, 2026-10-12) → resto del plan. Detalle de cada hallazgo en [`auditoria.md`](auditoria.md); los códigos (I1, N1, P1, C1…) remiten a ese archivo.
@@ -140,6 +140,34 @@ Pedido del usuario el 2026-10-17, ya en la rama **`HinoV2`** (a partir de ahora 
 
 ---
 
+## 0-D. Ajustes SOLO de móvil (2026-10-17, noche) — bloque 28
+
+Pedido del usuario el 2026-10-17 tras jalar `main` a la rama **`Ariel`**. **Manda sobre todo lo anterior en móvil.**
+
+**Reglas de este bloque (no negociables):**
+1. **La versión de escritorio (≥ 48rem) está terminada y congelada:** no cambia ni un píxel ni un comportamiento. Todo el CSS nuevo va dentro de `@media (max-width: 47.999rem)` (o el equivalente que ya usa cada componente) y todo el JS nuevo se condiciona a móvil. **Prueba obligatoria:** capturas de las 4 vistas a 1440×900 y 1366×650 antes y después, comparadas píxel a píxel (diferencia 0 salvo animaciones en curso).
+2. **Rama `Ariel`.** Commit y push solo a `origin Ariel`. **No se despliega en GitHub Pages** (nada a `main`, no se lanza `deploy-pages.yml`). La verificación se hace en local (`npm run dev` / `npx astro preview` bajo `/HINOJOSA/`).
+3. Tamaños de prueba en móvil: **360×640, 390×844 y 412×915** (y 768×1024 para confirmar que a 48rem ya manda el escritorio).
+
+### Decisiones
+
+| Tema | Decisión (móvil, < 48rem) | Descartado |
+|---|---|---|
+| **28a. Navegación: hamburguesa arriba a la derecha** | **Se quita la barra inferior de 4 ítems** (ocupaba ≈ 64 px, el 8 % de la pantalla, y tapaba la banda de animales de Nosotros). El encabezado superior queda con el logo a la izquierda y un **botón hamburguesa a la derecha** (44×44 px, tres líneas `bosque` que se convierten en ✕ al abrir). Al tocarlo baja un **menú desplegable corto**: una tarjeta `crema` pequeña con sombra, anclada bajo el encabezado y alineada a la derecha, con las **4 vistas en lista** (icono + palabra, cada fila ≥ 44 px de alto). La vista activa lleva `aria-current="page"` y se marca sin depender solo del color: pastilla `bosque` con texto crema y peso 800, como hoy. Las vistas recuperan el alto de la barra inferior. | Panel verde a pantalla completa; panel lateral desde la derecha; mantener la barra inferior |
+| **28a. Comportamiento del menú** | Patrón *disclosure* (no modal): `<button aria-expanded aria-controls>` con nombre accesible "Menú" (o "Abrir menú" / "Cerrar menú"). **Se cierra** al elegir una vista (antes de que el router cambie de vista), con `Escape` (el foco vuelve al botón), al tocar fuera, al salir con `Tab` del menú y si la ventana pasa a ≥ 48rem. Los enlaces siguen siendo `<a href="#vista" data-nav-vista>` (router, historial y sin JS intactos). **Sin JS** hay que poder navegar igual (p. ej. `<details>`/`<summary>` o la lista visible). Despliegue de 180–220 ms (opacidad + `translateY` corto con origen arriba a la derecha, `--ease-vista`) y cierre de 150 ms; **instantáneo** con `prefers-reduced-motion` o `html[data-movimiento="pausado"]`. El menú queda por encima de las vistas (`--z-barra`) y nunca tapa el foco (2.4.11). Las flechas `←`/`→` siguen cambiando de vista. | Menú modal con foco atrapado |
+| **28b. Encabezado: "COMERCIAL" más abajo** | Hoy el encabezado móvil mide 44 px y la palabra "COMERCIAL" queda casi tocando el borde superior. Se le da **aire arriba** (≥ 6–8 px entre el borde y "COMERCIAL"), con un encabezado de unos 52–56 px y `env(safe-area-inset-top)` sumado al padding. El isotipo sigue a 32 px y el bloque logo + texto queda centrado en vertical. El alto de las vistas se recalcula con el nuevo encabezado (sin barra inferior el resultado neto es más espacio que hoy). | — |
+| **28c. Nosotros: animales que se vean tocables** | Se mantiene la banda `bosque` con los 8 animales (icono + nombre, 2 filas de 4), pero **cada animal va en su ficha**: un recuadro redondeado (`--radius-tarjeta` o similar) con fondo verde un poco más claro que la banda (`bosque` mezclado con `hoja` o crema al 8–15 %) y **borde fino `maiz`**, padding interno parejo y las 8 fichas del mismo tamaño. Al tocar, la ficha se hunde (`scale(0.96)`, 90 ms) y se ilumina el borde (sin movimiento con reduced motion o la pausa). Foco visible de siempre. Contraste: icono y nombre crema sobre el fondo de la ficha ≥ 4.5:1 (medirlo). Debe caber a 360 px sin cortar nombres ("Tilapias", "Conejos"). | Frase guía; flecha en cada animal |
+| **28d. Visítanos compacto (opción A)** | La tarjeta verde ya no ocupa casi toda la pantalla (hoy ≈ 490 px de alto a 390×844, de borde a borde). En móvil: (1) **se oculta la burbuja café "Muy pronto, el mapa"** y el pin grande de arriba (vuelven cuando haya coordenadas); el **pin H pasa pequeño a la esquina superior derecha** de la tarjeta (decorativo, `aria-hidden`). (2) La tarjeta **deja de ir de borde a borde**: margen lateral de 16 px y esquinas redondeadas completas, para que se vea el fondo de huellas arriba y abajo. (3) **Dirección** en una línea con icono de pin. (4) **Horario y Referencias se juntan en una sola línea** ("Horario y referencias: muy pronto", texto en `textos.json`) **mientras falten los dos**; si llega uno, vuelve su fila propia. (5) **Los dos teléfonos lado a lado**: el primero (099 708 5015) es el **botón principal**, relleno `oro` con texto `tinta`; el segundo con borde crema como hoy; ambos ≥ 44 px. Si a 360 px no caben, se apilan. (6) Correo en una línea. Objetivo: tarjeta de **≈ 330 px o menos a 390×844** y la vista sin scroll a 390×844. | Datos sobre el fondo y solo las acciones en verde (opción B); mapa dibujado (opción C) |
+| **28d. Arreglo de axe de paso** | Se corrige el fallo `label-content-name-mismatch` del enlace del correo (el nombre accesible de `textos.visitanos.nombreAccesibleCorreo` debe **empezar** con el texto visible). Cambia solo el atributo, no los píxeles, así que vale también en escritorio. | — |
+| **28e. Pie más ligero** | El pie oscuro de Visítanos ("Comercial Hinojosa siempre a tu lado · © 2026 · Marcas registradas…") ocupa 2 líneas grandes. En móvil: **texto de 13 px** (el mínimo del sitio, G4), padding vertical mínimo y como mucho 2 líneas cortas a 360 px. Se conserva la mención de marcas (es el único aviso que queda, riesgo 20). | Quitar el pie |
+
+### Qué cambia en el plan por esto
+- Sección 3 ("Barra superior"): en móvil ya **no hay barra inferior**; manda 28a.
+- Sección 11: bloque 28 (28a–28e). Sección 12: riesgo 13 al día (ramas) y riesgo 21 (navegación móvil con un toque más). Sección 13: checklist.
+- **No cambia:** nada de escritorio; router, hashes, teclado, transición GSAP, Productos, Inicio y la hoja de detalle móvil.
+
+---
+
 ## 1. Resumen del negocio (extraído del material recibido)
 
 | Dato | Valor |
@@ -259,6 +287,8 @@ Cálido, familiar, confiable, cercano. Textos **cortos**, en español, orientado
 Las frases salen de los eslóganes reales del negocio. "Calidad, confianza y compromiso" y "Siempre a tu lado" quedan libres (eran de Quiénes somos y Por qué).
 
 ### Barra superior
+> ⚠️ **Móvil (0-D, 2026-10-17):** ya no hay barra inferior: encabezado con logo a la izquierda y hamburguesa a la derecha con menú desplegable corto (bloque 28a). Lo de abajo sobre la barra móvil queda solo como historial; el escritorio no cambia.
+
 - **Orden (2026-10-16):** Inicio · Productos · Nosotros · Visítanos. En móvil, 4 ítems con icono + palabra.
 - Vista activa con `aria-current="page"` **y** pastilla de fondo que se desliza (no solo color, WCAG 1.4.1).
 - En móvil, barra inferior de 4 ítems con icono + palabra; objetivos táctiles de 44×44 px.
@@ -790,6 +820,7 @@ En `.claude/skills/` del proyecto:
 | 25 | ✅ **Hecho 2026-10-17.** **Nosotros:** banda inferior solo con iconos de animales | frontend | No |
 | 26 | ✅ **Hecho (2026-10-17):** transición entre vistas con **timeline de GSAP** (`vistas.ts`, `router.ts` con `previas`, `gsap-carga.ts` con `gsapListo()`, `escena-lienzos.ts`): solape 60 %, ≈ 640 ms, interrumpible, respaldo CSS sin GSAP, instantánea con pausa o reduced motion. Pruebas 1–5, 11, 13–16, 25 y clics rápidos en verde; Lighthouse móvil igual que la base (Inicio 97–98, `#productos` 94–97, LCP intacto). `vistas-hinojosa` actualizada (Transición, pruebas 13–16). En la rama `wip/bloque26-transicion`, pendiente de llevar a `HinoV2` | animacion-interaccion, qa-rendimiento | No |
 | 27 | ✅ **Hecho 2026-10-17** (Inicio `f3e4fa5`; fondos con `FondoHuellas.astro` y tono nuevo `--color-salvia #B4C99D`, pendiente de aprobar). **Ajustes de cierre (2026-10-17):** fondo de Inicio en dos capas (cielo en video + césped fijo), reparto de animales, pecera real con agua y tilapias, fondo común de huellas sobre verde opaco en Productos, Nosotros y Visítanos | frontend, animacion-interaccion | No |
+| 28 | ⏳ **Ajustes SOLO de móvil (2026-10-17, noche, sección 0-D)**, rama `Ariel`, sin desplegar: **28a** hamburguesa arriba a la derecha con menú desplegable corto (sin barra inferior); **28b** aire sobre "COMERCIAL" en el encabezado; **28c** animales de Nosotros en fichas tocables; **28d** Visítanos compacto (opción A: sin burbuja del mapa, tarjeta con margen, Horario y Referencias en una línea, teléfonos lado a lado con el primero en oro) + arreglo de axe del correo; **28e** pie ligero. **Escritorio sin cambios (comparación píxel a píxel)** | direccion-arte (validación), frontend, animacion-interaccion, qa-rendimiento | No |
 | Cierre | Lighthouse móvil (Inicio ≥ 99, Productos ≥ 93), pruebas del router de `vistas-hinojosa`, axe 0, capturas comparativas. Tras los bloques 15–17 y **21–26** hay que repetir el cierre completo (Inicio con GSAP y escena: el logo debe seguir siendo el LCP) | qa-rendimiento | ⏳ |
 
 ---
@@ -808,7 +839,7 @@ En `.claude/skills/` del proyecto:
 10. **Mantenimiento:** definir quién actualiza precios y catálogo.
 11. **Sin botones de pausa (decisión del usuario, 2026-10-15):** Canela corriendo en Inicio y el video de Nosotros se mueven en bucle durante más de 5 s sin control para pausarlos. **Incumple WCAG 2.2.2 (nivel A)**: una auditoría de accesibilidad lo marcará como fallo, y puede molestar a personas con déficit de atención o sensibilidad al movimiento. Mitigación parcial: con `prefers-reduced-motion` no hay movimiento. Alternativas descartadas por ahora: un solo control global "Pausar animaciones", o que el movimiento se detenga solo antes de 5 s.
 12. **Video con alfa en Safari/iOS:** no se reproduce; se ve el póster de Canela sentada. No probado en un Safari real.
-13. **Ramas:** desde el 2026-10-17 se trabaja en `HinoV2`; `Ariel` ya no se usa; `main` recibe `HinoV2` solo cuando el usuario lo pide (primer envío el 2026-10-17). Cada push a `main` dispara el workflow de Pages, **corregido el 2026-10-17** (compila `hinojosa-web/` y sube `hinojosa-web/dist`): desde ahora **cada push a `main` publica en producción** en https://arielnoob24.github.io/HINOJOSA/ (también se puede lanzar a mano con `workflow_dispatch`, solo desde `main`). El trabajo sin verificar va en ramas `wip/…`.
+13. **Ramas:** el compañero trabaja en `HinoV2`; **el usuario (Ariel) trabaja en `Ariel`**, que el 2026-10-17 recibió todo `main` por avance rápido (`22689cc`). Los ajustes de móvil (0-D) van **solo a `origin Ariel` y no se despliegan**. Antes: `main` recibe `HinoV2` solo cuando el usuario lo pide (primer envío el 2026-10-17). Cada push a `main` dispara el workflow de Pages, **corregido el 2026-10-17** (compila `hinojosa-web/` y sube `hinojosa-web/dist`): desde ahora **cada push a `main` publica en producción** en https://arielnoob24.github.io/HINOJOSA/ (también se puede lanzar a mano con `workflow_dispatch`, solo desde `main`). El trabajo sin verificar va en ramas `wip/…`.
 14. **Escena de Inicio vs. LCP y peso:** nubes, césped y 9 animales. Derivados ya hechos (AVIF ≈ 300 KB a 480 px, ≈ 115 KB a 240 px), cargados tras `load`; el logo sigue siendo el LCP; presupuesto de Inicio < 1,5 MB; medir Lighthouse móvil (hoy 99). En móvil, menos animales o ninguno si no caben.
 15. **Logo sobre fondo claro:** el logo se diseñó para verde oscuro. Si el cielo claro lo apaga, la columna de texto lleva un panel bosque. Comprobar contraste y legibilidad.
 16. **GSAP en toda la página:** más JS en Inicio y en cada cambio de vista; vigilar INP, el cargador diferido, la regla M5 de Productos y las pruebas de 0 `requestAnimationFrame` fuera de las vistas que lo usan. Con la pausa y `prefers-reduced-motion` no puede haber bucles.
@@ -817,6 +848,7 @@ En `.claude/skills/` del proyecto:
 19. ~~Cuyes sin imagen~~: ✅ añadidos el 2026-10-17 (`Animales/cuyes.png`).
 
 20. **Sin aviso legal en Productos (decisión del usuario, 2026-10-17):** ya no se muestra "Precios referenciales — consulta disponibilidad" ni "Marcas registradas de sus respectivos propietarios". Los precios de los afiches pueden estar desactualizados y las marcas son de terceros; si se quiere cubrir, se puede mover a una línea del pie de Visítanos o al texto de la hoja de detalle (pendiente de decidir).
+21. **Navegación móvil con hamburguesa (0-D, 2026-10-17):** cambiar de vista cuesta un toque más que con la barra inferior y la navegación queda menos a la vista. Mitigación: los botones de Inicio ("Ver productos", "Cómo llegar"), las flechas y los enlaces internos. Vigilar en pruebas con usuarios.
 ---
 
 ## 13. Checklist
@@ -855,4 +887,6 @@ En `.claude/skills/` del proyecto:
 - [ ] Decidir dónde va el aviso de precios referenciales y marcas (riesgo 20)
 - [ ] Confirmar con el usuario: Blender solo para renders (0-C). (Cielo sin azul: ya no aplica, el fondo es un video; cuyes ✅)
 - [ ] Repetir el cierre de QA tras los bloques 21–27 (sobre el sitio publicado)
+- [x] Plan, agentes y skills al día con 0-D (solo móvil, 2026-10-17)
+- [ ] Bloque 28 (solo móvil): hamburguesa, encabezado, fichas de animales, Visítanos compacto, pie; escritorio idéntico; push a `Ariel` sin desplegar
 - [ ] **Decidir al final (pospuesto por el usuario, 2026-10-17):** (1) en móvil, el velo que hace legible el texto de Inicio oscurece bastante el cielo del atardecer; para ver más cielo habría que bajar el bloque de texto o agrandar el acento. (2) El agua de la pecera de las tilapias es verdosa porque la paleta no tiene azul; agua azul = color nuevo con aprobación

@@ -286,10 +286,11 @@ html[data-vista-inicial="visitanos"] .vista:not(#visitanos) {
   }
 }
 
-/* Barra inferior en movil: la vista reserva su alto */
+/* Movil (bloque 28a): ya no hay barra inferior; la vista llega al borde
+   de abajo y solo respeta la zona segura del sistema */
 @media (max-width: 47.999rem) {
   html[data-router] .vista {
-    padding-bottom: calc(var(--spacing-barra-movil) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   /* Senal de "hay mas abajo" (QA M8, src/lib/indicador-scroll.ts): sombra
@@ -301,7 +302,7 @@ html[data-vista-inicial="visitanos"] .vista:not(#visitanos) {
     display: block;
     position: absolute;
     right: 0;
-    bottom: calc(var(--spacing-barra-movil) + env(safe-area-inset-bottom, 0px));
+    bottom: env(safe-area-inset-bottom, 0px);
     left: 0;
     z-index: var(--z-control);
     height: 2.75rem;

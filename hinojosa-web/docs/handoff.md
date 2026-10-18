@@ -1,6 +1,21 @@
 # Handoff: sitio web de Comercial Hinojosa
 
-Última actualización: **2026-10-17, tras la primera publicación**. Rama de trabajo: **`HinoV2`**; sitio publicado en https://arielnoob24.github.io/HINOJOSA/. **Lee solo "Estado actual"**; lo que hay debajo de "Historial" es el registro de sesiones anteriores y no rige.
+Última actualización: **2026-10-18, bloque 28 (solo móvil) terminado en la rama `Ariel` y propuesto a `main` con un pull request**. Ramas: el compañero trabaja en **`HinoV2`**, Ariel en **`Ariel`**; sitio publicado en https://arielnoob24.github.io/HINOJOSA/ (aún sin el bloque 28). **Lee solo "Estado actual"**; lo que hay debajo de "Historial" es el registro de sesiones anteriores y no rige.
+
+## Rama `Ariel` — bloque 28, solo móvil (2026-10-17 noche y 2026-10-18; NO publicado)
+
+**Para el compañero:** `Ariel` va por delante de `main` con 2 commits (`1bce58a` plan/agentes/skills del bloque 28, `1161a08` código del bloque 28) y **no tiene conflictos** (`main` no ha cambiado desde `22689cc`, se fusiona por avance rápido). Está abierto un **pull request `Ariel` → `main`**: revísalo y, si te parece bien, fusiónalo. **Ojo: al fusionarlo en `main` se publica en GitHub Pages** (workflow `deploy-pages.yml`). Para seguir trabajando en `HinoV2` después: `git checkout HinoV2 && git pull origin main` (o `git merge origin/main`).
+
+**Qué cambia y qué no:** solo móvil (< 48rem). El escritorio se comparó píxel a píxel con la base (4 vistas a 1440×900, 1366×650 y 768×1024): 0 px de diferencia (salvo 6 px de ruido de renderizado en Productos 1440, que la base también da contra sí misma). El único cambio que vale también en escritorio es el nombre accesible del correo (no se ve).
+
+**Archivos:** `src/components/Barra.astro` (botón hamburguesa + CSS del menú), `src/lib/menu-movil.ts` (nuevo: abrir/cerrar), `src/lib/animacion/vistas.ts` (sin el "pop" ni la pastilla de la barra inferior en móvil), `src/styles/tokens.css` (`--spacing-barra` móvil 56 px + zona segura), `src/styles/global.css` (la vista ya no reserva la barra inferior), `src/components/vistas/VistaNosotros.astro` (fichas), `src/components/vistas/VistaVisitanos.astro` (tarjeta compacta, pie), `src/data/textos.json` (`comunes.menu`, `etiquetaHorarioReferencias`, `horarioReferenciasPendiente`, `nombreAccesibleCorreo` empieza por el correo).
+
+**Medidas finales (360, 390 y 412 de ancho):** encabezado 56 px; ≈ 10 px de aire sobre "COMERCIAL"; centro del logo y=29 frente a 28 de la hamburguesa (1 px); menú a 16 px del borde derecho, filas de 48 px; fichas de animales iguales (76×71 a 360); tarjeta de Visítanos 307 px a 390×844 (357 a 360×640 con teléfonos apilados), centrada con un poco de subida óptica; Visítanos sin scroll a 360×640, 390×844 y 412×915.
+
+Ariel (usuario) trabaja en **`Ariel`**, que recibió `main` por avance rápido (`22689cc`); el compañero sigue en `HinoV2`. **Escritorio congelado**; los cambios de móvil van solo a `origin Ariel` y **no se despliegan**. Hecho y verificado en local (`PLAN.md` §0-D):
+- **28a** hamburguesa arriba a la derecha con menú desplegable corto (`Barra.astro`, `src/lib/menu-movil.ts`); sin barra inferior. **28b** encabezado móvil de 56 px con aire sobre "COMERCIAL". **28c** animales de Nosotros en fichas (borde maíz). **28d** Visítanos compacto (sin burbuja del mapa, tarjeta con margen, Horario + Referencias en una línea, teléfonos lado a lado con el primero en oro) + arreglo de axe del correo. **28e** pie de 13 px (en móvil sin el lema "siempre a tu lado").
+- QA: Lighthouse móvil igual que la base (Inicio 96–97, `#productos` 93–97 con M5, `#nosotros` 95–96, `#visitanos` 97–98; medir con servidor gzip, `servir.mjs` sin compresión da números falsos), router y prueba 27 OK, axe 0, escritorio 0 px de diferencia. Capturas en `capturas/bloque28/`.
+- **Pendiente del usuario:** aprobar el pie sin lema; A4 (etiqueta "HORARIO Y REFERENCIAS" en crema en vez de maíz). Mejoras previas (no del bloque 28): respaldo CSS de la transición con doble imagen 0.19 > 0.1 si no carga GSAP; `.catch()` en la importación dinámica de `escena-inicio`.
 
 ## Estado actual (2026-10-17, publicado) — lo único que rige
 
@@ -8,7 +23,7 @@
 El sitio está **publicado en https://arielnoob24.github.io/HINOJOSA/** con el rediseño 0-C completo (bloques 21–27): Inicio con cielo en video, césped fijo y 9 animales en foto de familia; Productos con carrusel grande a la izquierda, tarjeta crema con descripción y fondo de huellas; Nosotros y Visítanos con el mismo fondo; transición entre vistas con GSAP. Faltan los datos de la dueña, el cierre de QA y poner la guía de estilo al día.
 
 ### Ramas y publicación
-- **Rama de trabajo: `HinoV2`.** `main` recibe `HinoV2` (avance rápido, `git push origin HinoV2:main`) **solo cuando el usuario lo pide**. `Ariel` ya no se usa. `wip/bloque26-transicion` ya está fusionada (se puede borrar).
+- **Ramas: `HinoV2` (compañero) y `Ariel` (Ariel, bloque 28 móvil).** `main` recibe una de ellas **solo cuando el usuario lo pide**; el bloque 28 va por pull request `Ariel` → `main` (2026-10-18). `wip/bloque26-transicion` ya está fusionada (se puede borrar).
 - **Cada push a `main` publica** con `.github/workflows/deploy-pages.yml` (Node 22, `npm ci`, `npm run build` en `hinojosa-web`, sube `hinojosa-web/dist`). Primer despliegue en verde: commit `83c7a79`, run `39089026189`; recorrido del sitio publicado (4 vistas, 1440 y 360): **0 fallos de red y 0 errores JS**.
 - **Base `/HINOJOSA`:** `astro.config.mjs` tiene `site: 'https://arielnoob24.github.io'` y `base: '/HINOJOSA'`. **Toda ruta nueva a `public/` debe pasar por `src/lib/ruta.ts`** (`ruta()`, `rutaSrcset()`, `sinBase()`); si no, da 404 en Pages aunque en `astro dev` funcione.
 - Aviso de GitHub: `ubuntu-latest` pasa a Ubuntu 26 desde el 2026-10-19; vigilar el primer despliegue posterior.
@@ -33,7 +48,7 @@ Ninguno tiene trabajo a medias. Todos los archivos de `.claude/agents/` están a
 
 ### Próximas tareas (en orden)
 1. **Cierre de QA completo** (`qa-rendimiento`) sobre el sitio publicado: router (pruebas 1–26 de `vistas-hinojosa`), axe en las 4 vistas, Lighthouse, móvil, sin JS, recorrido sin 404 bajo `/HINOJOSA/`.
-2. **Arreglar el fallo de axe de Visítanos** (`label-content-name-mismatch` en el enlace del correo: el nombre accesible de `textos.visitanos.nombreAccesibleCorreo` debe empezar con el texto visible) (`frontend`).
+2. ~~Arreglar el fallo de axe de Visítanos~~ **hecho en `Ariel` (bloque 28d)**; llega a `main` con el pull request.
 3. **Guía de estilo y storyboards al día** (`direccion-arte`): la guía aún describe la vitrina, la ficha bosque, los sellos de costal y `--color-velo-costal`.
 4. **Canela mejor renderizada** con Blender MCP (clave de Hyper3D/fal/Tencent o prueba gratuita de Rodin + permiso de la dueña para subir la imagen).
 5. **Search Console:** enviar `https://arielnoob24.github.io/HINOJOSA/sitemap.xml` a mano (en una subruta no se lee `robots.txt`).

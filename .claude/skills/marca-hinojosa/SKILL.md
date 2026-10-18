@@ -112,6 +112,14 @@ Ratios adicionales del mapa de color (2026-10-14): ver `hinojosa-web/docs/guia-e
 
 ---
 
+### Móvil, bloque 28 (2026-10-17, solo < 48rem; medido con la fórmula WCAG)
+| Frente | Fondo | Ratio | Uso |
+|---|---|---|---|
+| `#F6F1E4` crema | `#315E3D` (bosque + 10 % crema) | **6.65** | Nombre e icono de las **fichas de animales** de Nosotros (no bajar de 8–12 % de mezcla: 12 % da 6.34) |
+| `#F2B823` maíz (borde 1 px) | `#1B4D2B` bosque (banda) | **5.44** | Borde de la ficha contra la banda (≥ 3:1, 1.4.11) |
+| `#14301D` tinta | `#F2B823` oro | **7.93** | **Botón principal "Llamar"** de Visítanos en móvil |
+El fondo de la ficha frente a la banda es solo 1.2–1.4:1: **el borde maíz es lo que la delimita**, no lo quites. No hay colores nuevos: solo mezclas de tokens existentes (`color-mix(in srgb, var(--color-bosque) 90%, var(--color-crema))`).
+
 ## 3. Tipografía
 
 | Rol | Familia | Nota |

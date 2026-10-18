@@ -56,7 +56,7 @@ const canales = [
   { href: whatsapp, texto: t.ctaWhatsapp, nombre: t.nombreAccesibleWhatsapp, icono: 'whatsapp', variante: 'invertido' as const, ancho: false, pestana: true },
   // Un boton por telefono, con el numero a la vista (2026-10-16: dos)
   ...(telefonos.length
-    ? telefonos.map((tel) => ({
+    ? telefonos.map((tel, i) => ({
         href: tel.href,
         texto: tel.texto,
         nombre: t.nombreAccesibleLlamar.replace('{numero}', tel.texto),
@@ -64,6 +64,8 @@ const canales = [
         variante: 'invertido' as const,
         ancho: true, // el numero entero en una linea
         pestana: false,
+        // Bloque 28d (solo movil): telefonos lado a lado, el primero en oro
+        extra: i === 0 ? 'vis-accion-telefono vis-accion-principal' : 'vis-accion-telefono',
       }))
     : [{ href: null, texto: t.ctaLlamar, nombre: t.nombreAccesibleLlamar, icono: 'telefono', variante: 'invertido' as const, ancho: false, pestana: false }]),
   { href: enlaceCorreo(), texto: correo ?? t.ctaCorreo, nombre: t.nombreAccesibleCorreo.replace('{correo}', correo ?? ''), icono: 'correo', variante: 'enlace' as const, ancho: true, pestana: false },
@@ -73,6 +75,9 @@ const confirmados = canales.filter((c) => c.href);
 const pendientes = canales.filter((c) => !c.href);
 const textoPendientes = confirmados.length ? t.contactoPendienteParcial : t.contactoPendiente;
 const anio = new Date().getFullYear();
+// Bloque 28d (solo movil): mientras falten horario y referencias, una sola
+// linea "Horario y referencias: muy pronto"; si llega uno, vuelven sus filas.
+const juntarPendientes = !horario && !referencias;
 
 // Textura del fondo sin mapa: hojas y granos al 8 % (tesela de 160 px,
 // ~1 kB en linea). Decorativa: sin calles ni manzanas que se lean como
@@ -130,6 +135,12 @@ const trebol =
     </div>
 
     <article class="vis-tarjeta tema-oscuro" aria-labelledby="titulo-visitanos" data-entra style="--orden: 0">
+      {/* Bloque 28d: pin H pequeno en la esquina (solo movil, decorativo) */}
+      <svg class="vis-pin-esquina" viewBox="0 0 64 84" aria-hidden="true" focusable="false">
+        <path d="M32 76S6 50 6 30a26 26 0 0 1 52 0c0 20-26 46-26 46z" fill="#f6f1e4" />
+        <circle cx="32" cy="30" r="17" fill="#fff" stroke="#f2b823" stroke-width="4" />
+        <path d="M26 21v18M38 21v18M26 30h12" stroke="#1b4d2b" stroke-width="5" stroke-linecap="round" />
+      </svg>
       <p class="vis-eyebrow">{t.titulo}</p>
       <h2 id="titulo-visitanos" tabindex="-1" data-titulo-vista class="vis-nombre titulo-vista">{negocio.nombre}</h2>
 
@@ -150,9 +161,10 @@ const trebol =
       )}
 
       <dl class="vis-datos">
-        <div>
+        <div class="vis-dato-direccion">
           <dt>{t.etiquetaDireccion}</dt>
           <dd>
+            <span class="vis-dato-icono" aria-hidden="true"><Icono nombre="pin" class="size-5" /></span>
             {direccion ? (
               <>{direccion}{ciudad && <>, {ciudad}</>}</>
             ) : (
@@ -160,11 +172,19 @@ const trebol =
             )}
           </dd>
         </div>
-        <div>
+        {/* Antes de Horario y no al final: el :last-child de la variante baja
+            de escritorio sigue siendo Referencias */}
+        {juntarPendientes && (
+          <div class="vis-dato-junto">
+            <dt>{t.etiquetaHorarioReferencias}<span aria-hidden="true">:</span></dt>
+            <dd><span class="vis-pendiente">{t.horarioReferenciasPendiente}</span></dd>
+          </div>
+        )}
+        <div class:list={[juntarPendientes && 'vis-dato-separado']}>
           <dt>{t.etiquetaHorario}</dt>
           <dd>{horario?.texto ?? <span class="vis-pendiente" data-dato-pendiente>{pendiente}</span>}</dd>
         </div>
-        <div>
+        <div class:list={[juntarPendientes && 'vis-dato-separado']}>
           <dt>{t.etiquetaReferencias}</dt>
           <dd>
             {referencias ? (
@@ -186,7 +206,7 @@ const trebol =
               icono={c.icono}
               variante={c.variante}
               pestanaNueva={c.pestana}
-              class={c.ancho ? 'vis-accion-ancha' : ''}
+              class={[c.ancho ? 'vis-accion-ancha' : '', 'extra' in c ? c.extra : ''].filter(Boolean).join(' ')}
             />
           ))}
         </div>
@@ -204,8 +224,8 @@ const trebol =
 
   <footer class="vis-pie">
     <p>
-      <span>{t.pie.lema}</span>
-      <span aria-hidden="true"> · </span>
+      <span class="vis-pie-lema">{t.pie.lema}</span>
+      <span class="vis-pie-lema" aria-hidden="true"> · </span>
       <span>{t.pie.copyright.replace('{anio}', String(anio))}</span>
       <span aria-hidden="true"> · </span>
       <span>{t.pie.avisoMarcas}</span>
@@ -448,6 +468,137 @@ const trebol =
   @media (max-width: 47.999rem) {
     .vis-escena {
       flex-shrink: 0;
+    }
+  }
+
+  /* Piezas solo de movil (bloque 28d): fuera de < 48rem no se pintan */
+  .vis-pin-esquina,
+  .vis-dato-icono,
+  .vis-dato-junto {
+    display: none;
+  }
+
+  /* ---------- Movil compacto (bloque 28d y 28e, opcion A) ----------
+     Sin burbuja "Muy pronto, el mapa" ni pin grande (vuelven con las
+     coordenadas); la tarjeta bosque flota con 16 px de margen y esquinas
+     redondeadas sobre el fondo de huellas, centrada en el alto libre.
+     Direccion en una linea con pin; Horario + Referencias en una sola
+     linea mientras falten los dos; telefonos lado a lado (el primero oro
+     con texto tinta, 7.93; el segundo con borde crema), que se apilan si
+     no caben (360 px); correo en una linea; pie de 13 px en 2 lineas. */
+  @media (max-width: 47.999rem) {
+    .vis-escena {
+      flex-grow: 1;
+      justify-content: center;
+      padding: 1rem 1rem 2.5rem; /* la tarjeta sube al centro optico */
+    }
+    .vis-mapa-sin-ubicacion {
+      display: none;
+    }
+    .vis-tarjeta {
+      margin: 0;
+      border-radius: var(--radius-tarjeta-grande);
+      padding: 1rem 1rem 1.125rem;
+    }
+    .vis-mapa:not(.vis-mapa-sin-ubicacion) + .vis-tarjeta {
+      margin-top: 1rem;
+    }
+    .vis-pin-esquina {
+      display: block;
+      position: absolute;
+      top: 0.875rem;
+      right: 1rem;
+      width: 1.625rem;
+      height: auto;
+      pointer-events: none;
+    }
+    .vis-eyebrow {
+      padding-right: 2.5rem;
+    }
+    .vis-nombre {
+      font-size: 1.5rem;
+    }
+    .vis-datos {
+      gap: 0.375rem;
+      margin-top: 0.625rem;
+    }
+    /* Direccion: el pin hace de etiqueta (la dt sigue para lectores) */
+    .vis-dato-direccion dt {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .vis-dato-direccion dd {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      line-height: 1.3;
+    }
+    .vis-dato-icono {
+      display: inline-flex;
+      flex: 0 0 auto;
+      color: var(--color-maiz);
+    }
+    .vis-dato-separado {
+      display: none;
+    }
+    .vis-dato-junto {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0 0.375rem;
+    }
+    .vis-dato-junto dd {
+      font-size: var(--text-chico);
+    }
+    .vis-acciones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.875rem;
+    }
+    .vis-acciones > :global(*) {
+      flex: 1 1 100%;
+    }
+    .vis-acciones :global(.contacto) {
+      min-height: 2.75rem;
+      white-space: nowrap;
+    }
+    .vis-acciones :global(.vis-accion-telefono) {
+      flex: 1 1 9.5rem;
+      gap: 0.375rem;
+      padding-inline: 0.5rem;
+    }
+    .vis-acciones :global(.vis-accion-principal) {
+      border-color: var(--color-cta-fondo);
+      background: var(--color-cta-fondo);
+      color: var(--color-cta-texto);
+    }
+    .vis-acciones :global(.vis-accion-principal:hover) {
+      border-color: var(--color-cta-hover);
+      background: var(--color-cta-hover);
+    }
+    .vis-contacto-pendiente,
+    .vis-acciones + .vis-contacto-pendiente {
+      gap: 0.5rem;
+      margin-top: 0.625rem;
+    }
+    .vis-contacto-iconos :global(svg) {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+    /* 28e: pie ligero (13 px, minimo del sitio). Sin el lema, que es un
+       eslogan: quedan el copyright y el aviso de marcas en 2 lineas */
+    .vis-pie {
+      padding: 0.3125rem 0.75rem;
+      font-size: 0.8125rem;
+      line-height: 1.3;
+    }
+    .vis-pie-lema {
+      display: none;
     }
   }
 
