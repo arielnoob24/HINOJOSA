@@ -55,6 +55,15 @@
      FONDO: blanco encima 5.88, crema 5.22, maiz 3.27 (solo iconos/puntos),
      hoja 2.62 (PROHIBIDO), bosque 1.66 (PROHIBIDO: el anillo de foco ahi es crema). */
   --color-kraft: #e3cfa6;
+  /* Salvia (bloque 27, 2026-10-17): fondo de Productos, Nosotros y
+     Visitanos (componente FondoHuellas). Tono intermedio calculado de la
+     familia hoja/bosque: bosque 18 % + hoja 22 % + crema 60 % = #B4C99D.
+     Encima: tinta 8.01, bosque 5.50 (titulos, enlaces subrayados, foco),
+     canela-oscuro 3.31 SOLO texto grande, tinta-suave 4.29 PROHIBIDO,
+     marca-fuerte 3.02 PROHIBIDO, maiz 1.01 (solo decorativo: el trazo del
+     h2 se distingue por el tono). Peor pixel del mosaico (hojas, hoja al
+     34 %: #A1C67B): tinta 7.40, bosque 5.08, canela-oscuro 3.05. */
+  --color-salvia: #b4c99d;
   --color-fila-activa-panel: #ffffff;              /* fila activa sobre el panel hoja-claro de la lista (+ barra bosque 4px): tinta encima 14.28 */
   --color-filete-canela: rgb(138 90 31 / 0.35);    /* filete de la tarima kraft y borde de los sellos de costal (decorativo) */
   --color-pendiente-oscuro: rgb(246 241 228 / 0.7); /* iconos de canales pendientes sobre la tarjeta bosque: 5.17 (solo iconos, el texto va en crema 8.69) */

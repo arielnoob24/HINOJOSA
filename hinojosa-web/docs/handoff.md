@@ -13,6 +13,7 @@
 | 22 Inicio | ✅ video de fondo en canvas (`escena-lienzos.ts`), sin tarjeta, logo/lema/botones sobre velo, 9 animales en foto de familia con idle GSAP (`escena-inicio.ts`), tilapias en pecera dibujada | `ca8a299` |
 | 23/24 Productos | ✅ bloque 23b: carrusel 68 % con frente ×1,4 y vecinos oscurecidos, categorías en fila con hover, buscador sobre la tarjeta crema con desvanecido verde, descripción corta, sin texto legal, fondo de huellas | `ed3747e`, `9f21f6e` |
 | 25 Nosotros | ✅ banda solo con iconos de animales | `7075874` |
+| 27 Ajustes de cierre | ✅ Inicio: solo el cielo en video (`video/cielo*`) y césped fijo (`img/escena/suelo*`) en canvas —la hierba ya no hierve—, animales en foto de familia equilibrada (pollitos visibles), pecera real (`img/escena/pecera*`) con agua y tilapias. Productos, Nosotros y Visítanos con el mismo fondo `FondoHuellas.astro` (huellas de perro, gato, vaca y pollo + hojas sobre salvia `#B4C99D`) | `f3e4fa5` y siguiente |
 | 26 Transición GSAP | ✅ timeline de GSAP (saliente 400 ms con escala 0,98, entrante a los 96 ms desde 3rem, bloques escalonados, ≈ 600 ms, interrumpible; respaldo CSS sin GSAP). Verificado el 2026-10-17: 0 destellos, clics rápidos, Lighthouse igual que la base | rama `wip/bloque26-transicion` fusionada en `HinoV2` |
 
 ### En qué se quedaron los agentes
@@ -29,6 +30,8 @@
 6. Arreglar el **workflow de despliegue** (`despliegue`) cuando el usuario quiera publicar.
 
 ### Decisiones pendientes del usuario (nuevas de hoy)
+- **Bloque 27:** aprobar el tono salvia `#B4C99D` (nuevo, de la familia hoja/bosque); el antetítulo NOSOTROS pasó de canela oscuro a bosque por contraste sobre el verde; la vaca de Inicio mide ~2,8× el área del logo (no le quita el LCP porque va en canvas); burbujas de la pecera estáticas (se pueden animar).
+- **Accesibilidad pendiente:** axe da 1 fallo en `#visitanos` (`label-content-name-mismatch` en el enlace del correo: el `aria-label` de `textos.visitanos.nombreAccesibleCorreo` no empieza con el texto visible). Ya existía antes del bloque 27.
 - **Para el final (pospuestas):** velo de Inicio en móvil (oscurece el cielo) y color del agua de la pecera (verdosa por la paleta; azul = color nuevo).
 - **Aprobar las 37 descripciones** de productos (en propuesta; casos dudosos: saco de 30–40 kg en la línea Premium, especie de melaza/sal/maíz/trigo/arrocillo/afrecho, "comedero doble", porcentajes en el tilapero).
 - **Aviso legal** de precios referenciales y marcas: quitado de Productos; decidir si va a Visítanos (riesgo 20).

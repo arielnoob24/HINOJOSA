@@ -2,10 +2,11 @@
 // Vista 3 - Nosotros (2026-10-16, opcion A "Canela presenta"). Absorbe lo
 // mejor de "Por que elegirnos", que deja de ser vista propia.
 //   - Escenario: Canela jugando, GRANDE y sin tarjeta (video con alfa) sobre
-//     un circulo crema-oscuro, en el crema de la vista.
+//     un circulo crema-oscuro. Fondo de la vista: FondoHuellas (salvia con
+//     huellas y hojas, bloque 27); el texto va en tinta y bosque.
 //   - Columna de texto: antetitulo NOSOTROS + h2 "Somos parte de tu
-//     familia" (sistema de titulos; "familia" en Caveat canela oscuro, 5.22
-//     sobre crema, siempre >= 24 px), la mision como parrafo y las 3
+//     familia" (sistema de titulos; "familia" en Caveat canela oscuro, 3.31
+//     sobre salvia, siempre >= 24 px), la mision como parrafo y las 3
 //     razones (icono en circulo con aro maiz: la UNICA familia con circulo,
 //     G2). Textos de las razones en propuesta (textos.json >
 //     _estadoRazones). El bloque de razones lleva id="por-que": los enlaces
@@ -26,6 +27,7 @@
 //          a[data-abrir-animal], [data-banda="animales"].
 import Vista from '../Vista.astro';
 import Icono from '../Icono.astro';
+import FondoHuellas from '../FondoHuellas.astro';
 import { negocio, textos } from '../../lib/negocio';
 
 const t = textos.nosotros;
@@ -129,6 +131,8 @@ const animal: Record<string, { icono: string; clave: string }> = {
       </div>
     </section>
   </div>
+  {/* Fondo comun de huellas y hojas sobre salvia (bloque 27), decorativo */}
+  <FondoHuellas id="nosotros" slot="fuera" />
 </Vista>
 
 <style>
@@ -152,13 +156,16 @@ const animal: Record<string, { icono: string; clave: string }> = {
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-canela-oscuro); /* 5.22 sobre crema */
+    /* Bosque sobre la salvia del fondo (bloque 27): 5.50 (5.08 sobre las
+       hojas). El canela oscuro daria 3.31: solo vale para texto grande */
+    color: var(--color-bosque);
   }
   .nos-titulo {
     font-size: clamp(1.75rem, min(3.6vw, 6.2dvh), 3.5rem);
     line-height: 1.05;
   }
-  /* Acento Caveat canela oscuro (5.22 sobre crema; >= 24 px siempre) */
+  /* Acento Caveat canela oscuro: texto grande (>= 24 px siempre), 3.31
+     sobre la salvia y 3.05 sobre las hojas del fondo (>= 3:1) */
   .nos-familia {
     font-family: var(--font-script);
     font-weight: 400;
@@ -235,7 +242,7 @@ const animal: Record<string, { icono: string; clave: string }> = {
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-bosque); /* 8.69 */
+    color: var(--color-bosque); /* 5.50 sobre la salvia */
   }
   .nos-lista-razones {
     display: flex;
@@ -280,21 +287,22 @@ const animal: Record<string, { icono: string; clave: string }> = {
   .nos-razon-texto {
     font-size: 0.9375rem;
     line-height: 1.35;
-    color: var(--color-tinta-suave); /* 6.78 */
+    color: var(--color-tinta); /* 8.01 sobre la salvia (tinta-suave daria 4.29) */
   }
-  /* Enlace de texto: marca-fuerte sobre crema (4.77), subrayado */
+  /* Enlace de texto: bosque subrayado sobre la salvia (5.50; 5.08 sobre
+     las hojas). marca-fuerte daria 3.02 */
   .nos-razon-enlace {
     align-self: flex-start;
     font-size: 0.9375rem;
     font-weight: 800;
     line-height: 1.35;
-    color: var(--color-marca-fuerte);
+    color: var(--color-bosque);
     text-decoration: underline;
     text-decoration-thickness: 2px;
     text-underline-offset: 3px;
   }
   .nos-razon-enlace:hover {
-    color: var(--color-bosque);
+    color: var(--color-tinta);
   }
 
   /* ---------- Banda bosque a sangre: animales ----------

@@ -1,0 +1,90 @@
+---
+// Fondo comun de Productos, Nosotros y Visitanos (bloque 27, 2026-10-17):
+// verde salvia (--color-salvia, #B4C99D) con un mosaico de huellas de
+// perro, gato, vaca (pezuna partida) y pollo (tres dedos) en crema al 55 %
+// y ramitas y hojas en hoja al 34 % (mosaico de 288 px). Las huellas son
+// MAS CLARAS que la salvia; las hojas, algo mas oscuras: son el peor pixel
+// (#A1C67B: tinta 7.40, bosque 5.08, canela-oscuro 3.05 solo texto
+// grande). Tabla en marca-hinojosa 5.
+//
+// Uso: <FondoHuellas id="..." slot="fuera" /> dentro de <Vista>. <svg>
+// inline y no background-image, porque Chrome tomaba un fondo CSS a
+// pantalla completa como candidato LCP
+// (regla M5 de Productos). Estatico (sin movimiento), decorativo y fuera
+// del arbol de accesibilidad. `id` distingue los <pattern> de cada vista
+// (las tres viven en el mismo documento).
+interface Props {
+  id: string;
+}
+const { id } = Astro.props;
+const p = `fh-${id}`;
+---
+<svg class="fondo-huellas" aria-hidden="true" focusable="false">
+  <defs>
+    <g id={`${p}-perro`}><ellipse cy="7" rx="11" ry="9" /><ellipse cx="-12" cy="-7" rx="4" ry="5.5" /><ellipse cx="-4.5" cy="-14" rx="4" ry="5.5" /><ellipse cx="4.5" cy="-14" rx="4" ry="5.5" /><ellipse cx="12" cy="-7" rx="4" ry="5.5" /></g>
+    <g id={`${p}-gato`}><path d="M-8 9c-3-6 3-13 8-13s11 7 8 13c-2 4-5 1-8 1s-6 3-8-1z" /><circle cx="-9" cy="-6" r="3" /><circle cx="-3.5" cy="-11" r="3" /><circle cx="3.5" cy="-11" r="3" /><circle cx="9" cy="-6" r="3" /></g>
+    <g id={`${p}-vaca`}><path d="M-1.5-13C-9-13-12-2-11 5c1 6 6 8 9.5 7z" /><path d="M1.5-13C9-13 12-2 11 5c-1 6-6 8-9.5 7z" /></g>
+    <path id={`${p}-ave`} d="M0 4V-16M0 4-12-8M0 4 12-8M0 4v8" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" />
+    <path id={`${p}-hoja`} d="M0 0C2-11 11-18 22-18 21-7 12 0 0 0z" />
+    <pattern id={`${p}-m`} width="240" height="240" patternUnits="userSpaceOnUse" patternTransform="scale(1.2)">
+      <g class="fondo-huellas-pisadas">
+        <use href={`#${p}-perro`} transform="translate(34 66) rotate(-24) scale(.85)" />
+        <use href={`#${p}-perro`} transform="translate(62 34) rotate(-14) scale(.85)" />
+        <use href={`#${p}-gato`} transform="translate(176 156) rotate(28)" />
+        <use href={`#${p}-gato`} transform="translate(204 130) rotate(18) scale(.9)" />
+        <use href={`#${p}-vaca`} transform="translate(160 36) rotate(16)" />
+        <use href={`#${p}-vaca`} transform="translate(112 214) rotate(-32) scale(.9)" />
+        <use href={`#${p}-ave`} transform="translate(104 118) rotate(12)" />
+        <use href={`#${p}-ave`} transform="translate(124 92) rotate(4) scale(.85)" />
+        <use href={`#${p}-ave`} transform="translate(222 214) rotate(-38) scale(.9)" />
+        <use href={`#${p}-perro`} transform="translate(30 196) rotate(36) scale(.7)" />
+      </g>
+      <g class="fondo-huellas-plantas">
+        <path d="M196 92c4-14 14-26 30-34M40 150c10-8 16-20 16-34" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+        <use href={`#${p}-hoja`} transform="translate(204 76) rotate(-30)" />
+        <use href={`#${p}-hoja`} transform="translate(212 70) rotate(150) scale(.8)" />
+        <use href={`#${p}-hoja`} transform="translate(52 128) rotate(-75) scale(.9)" />
+        <use href={`#${p}-hoja`} transform="translate(48 138) rotate(160) scale(.75)" />
+        <use href={`#${p}-hoja`} transform="translate(92 176) rotate(-10) scale(.7)" />
+        <use href={`#${p}-hoja`} transform="translate(6 18) rotate(40) scale(.8)" />
+        <use href={`#${p}-hoja`} transform="translate(150 196) rotate(200) scale(.6)" />
+      </g>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" class="fondo-huellas-base" />
+  <rect width="100%" height="100%" fill={`url(#${p}-m)`} />
+</svg>
+
+<style is:global>
+  /* Global (clases propias fondo-huellas*): sin los data-astro-cid en cada
+     forma, el <svg> pesa ~3 kB menos por vista.
+     Detras del contenido de la seccion y quieto (no se desplaza con el
+     scroll interno de la vista en movil) */
+  .fondo-huellas {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .fondo-huellas-base {
+    fill: var(--color-salvia);
+  }
+  /* opacity en el grupo (no fill-opacity): lo que se solapa no se oscurece */
+  .fondo-huellas-pisadas {
+    color: var(--color-crema);
+    fill: currentColor;
+    opacity: 0.55;
+  }
+  .fondo-huellas-plantas {
+    color: var(--color-hoja);
+    fill: currentColor;
+    opacity: 0.34;
+  }
+  @media (forced-colors: active) {
+    .fondo-huellas {
+      display: none;
+    }
+  }
+</style>

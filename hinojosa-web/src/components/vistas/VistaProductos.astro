@@ -22,7 +22,7 @@
 //   Derecha: buscador arriba, la tarjeta crema con desvanecido verde
 //   (Detalle | Lista; la ficha lleva la descripcion corta) y, al pie, la
 //   compra con "Como llegar" en pildora. Sin el aviso legal (riesgo 20).
-//   Fondo de la vista: huellas y hojas en <svg> inline (slot "fuera").
+//   Fondo de la vista: FondoHuellas (salvia con huellas y hojas, bloque 27).
 //   Entre 48 y 64rem sigue el 60/40 de arriba (mismas areas).
 // Logica en src/lib/catalogo.ts (puntos de enganche documentados alli).
 //
@@ -60,6 +60,7 @@
 import Vista from '../Vista.astro';
 import Icono from '../Icono.astro';
 import HojaDetalle from '../HojaDetalle.astro';
+import FondoHuellas from '../FondoHuellas.astro';
 import { catalogo, textos, formatoPrecio, miniaturaDe, avifDe } from '../../lib/negocio';
 import { altProducto } from '../../lib/seo';
 import { textoBusqueda } from '../../lib/busqueda';
@@ -536,23 +537,8 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     </div>
   </div>
 
-  {/* Fondo de huellas y hojas (bloque 23b), decorativo */}
-  <svg slot="fuera" class="prod-fondo" aria-hidden="true" focusable="false">
-    <defs>
-      <pattern id="prod-fondo-patron" width="260" height="260" x="30" y="10" patternUnits="userSpaceOnUse">
-        <g class="prod-fondo-huellas">
-          <g transform="translate(48 60) rotate(-18) scale(0.8)"><ellipse cx="0" cy="8" rx="13" ry="11" /><ellipse cx="-14" cy="-9" rx="5" ry="6.5" /><ellipse cx="-5" cy="-17" rx="5" ry="6.5" /><ellipse cx="6" cy="-17" rx="5" ry="6.5" /><ellipse cx="15" cy="-8" rx="5" ry="6.5" /></g>
-          <g transform="translate(78 30) rotate(-8) scale(0.7)"><ellipse cx="0" cy="8" rx="13" ry="11" /><ellipse cx="-14" cy="-9" rx="5" ry="6.5" /><ellipse cx="-5" cy="-17" rx="5" ry="6.5" /><ellipse cx="6" cy="-17" rx="5" ry="6.5" /><ellipse cx="15" cy="-8" rx="5" ry="6.5" /></g>
-          <g transform="translate(190 196) rotate(24) scale(0.75)"><ellipse cx="0" cy="8" rx="13" ry="11" /><ellipse cx="-14" cy="-9" rx="5" ry="6.5" /><ellipse cx="-5" cy="-17" rx="5" ry="6.5" /><ellipse cx="6" cy="-17" rx="5" ry="6.5" /><ellipse cx="15" cy="-8" rx="5" ry="6.5" /></g>
-        </g>
-        <g class="prod-fondo-hojas">
-          <path d="M176 30c-4 26-14 46-32 62M176 30c-20 2-30 14-30 30 16 0 28-12 30-30zM164 56c-18 6-24 20-20 34 14-4 22-16 20-34z" />
-          <path d="M40 238c10-22 26-36 46-42M58 222c-2-16 6-28 20-32 2 16-6 28-20 32zM72 204c8-14 22-18 34-12-8 12-20 16-34 12z" />
-        </g>
-      </pattern>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#prod-fondo-patron)" />
-  </svg>
+  {/* Fondo comun de huellas y hojas sobre salvia (bloque 27), decorativo */}
+  <FondoHuellas id="productos" slot="fuera" />
   <script type="application/json" id="datos-catalogo" set:html={datosJson} />
   <HojaDetalle />
 </Vista>
@@ -568,33 +554,6 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     max-width: var(--container-contenido);
     margin-inline: auto;
     padding: var(--spacing-vista) 1rem;
-  }
-  /* Fondo de la vista (bloque 23b): huellas kraft al 20 % y ramitas de
-     hoja al 12 % (trazo fino) en un <svg> inline con <pattern> (mosaico de
-     260 px, ~1 kB, decorativo). En la seccion, detras del contenido y sin
-     desplazarse con el scroll movil. Inline y no como background-image:
-     Chrome tomaba el fondo como candidato LCP y el LCP de #productos dejaba
-     de ser la tarjeta provisional (regla M5). Peor caso bajo texto: tinta
-     11.94, tinta-suave 6.39, bosque 8.19 (marca-fuerte daria 4.50 justo:
-     por eso "Ver los N" pasa a bosque). */
-  .prod-fondo {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-  }
-  .prod-fondo-huellas {
-    fill: var(--color-kraft);
-    fill-opacity: 0.2;
-  }
-  .prod-fondo-hojas {
-    fill: none;
-    stroke: var(--color-hoja);
-    stroke-opacity: 0.12;
-    stroke-width: 1.6;
-    stroke-linecap: round;
   }
   .prod-cabecera {
     min-width: 0;
@@ -927,7 +886,9 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     justify-content: center;
     gap: 0.25rem 0.5rem;
     margin-top: 0.25rem;
-    color: var(--color-tinta-suave);
+    /* Sobre la salvia del fondo (bloque 27): tinta 8.01 (7.40 sobre las
+       hojas); tinta-suave daria 4.29 */
+    color: var(--color-tinta);
   }
   /* C3: carrusel.ts anima su ancho al cambiar ("$2.25" / "Consulta
      precio"); nowrap + overflow para que el texto no salte de linea */
@@ -977,7 +938,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   }
 
   /* ---------- Buscador (combobox) ----------
-     Sin tarjeta propia: etiqueta tinta 800 sobre crema (12.67) y campo
+     Sin tarjeta propia: etiqueta tinta 800 sobre la salvia (8.01) y campo
      blanco con borde tinta-suave (6.78). Las sugerencias flotan encima de
      la ficha (z-index del buscador). */
   .prod-buscador {
@@ -1134,7 +1095,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   .prod-resultado-texto {
     font-size: var(--text-chico);
     line-height: var(--text-chico--line-height);
-    color: var(--color-tinta-suave); /* 6.78 sobre crema */
+    color: var(--color-tinta); /* sobre la salvia del fondo (bloque 27): 8.01, 7.40 sobre las hojas */
   }
   .prod-resultado-texto:not(:empty) {
     margin-top: 0.25rem;
@@ -1143,7 +1104,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     min-height: 1.5rem;
     font-size: var(--text-chico);
     font-weight: 800;
-    color: var(--color-bosque); /* 8.69 sobre crema, 8.19 sobre las huellas del fondo */
+    color: var(--color-bosque); /* sobre la salvia del fondo: 5.50, 5.08 sobre las hojas */
     text-decoration: underline;
     text-underline-offset: 3px;
   }
@@ -1329,12 +1290,13 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
   }
 
   /* ---------- Pie: compra (1A) + "Como llegar" en pildora (bloque 24) ----------
-     Frase tinta sobre crema (12.67). La pildora es un enlace con forma de
+     Frase tinta sobre la salvia del fondo (8.01; 7.40 sobre las hojas,
+     bloque 27). La pildora es un enlace con forma de
      boton: bosque con texto blanco (9.80), pin maiz (decorativo, 5.44) y
      flecha que se desplaza 4 px al pasar el raton; el texto se subraya con
      un trazo blanco que crece. Hover y foco: bosque-noche (blanco 14.38)
-     y, con raton, se eleva 1 px. Foco: anillo bosque por fuera (8.69
-     sobre crema). Alto 44 px en todas las anchuras. */
+     y, con raton, se eleva 1 px. Foco: anillo bosque por fuera (5.50
+     sobre la salvia). Alto 44 px en todas las anchuras. */
   .prod-pie {
     display: flex;
     min-width: 0;

@@ -6,8 +6,8 @@
 // cada dato pendiente dice textos.comunes.datoPendiente y los canales de
 // contacto pendientes se agrupan en UNA linea, sin forma de boton.
 //
-// Sin coordenadas (V2, V3): fondo crema con textura de hojas y granos al
-// 8 % (sin calles falsas), marca de agua del trebol en maiz al 15 %, pin
+// Sin coordenadas (V2, V3): el fondo comun de huellas y hojas sobre salvia
+// (FondoHuellas, bloque 27; sin calles falsas), marca de agua del trebol, pin
 // grande y aviso "Muy pronto, el mapa" en un bloque canela oscuro.
 // V4: el CTA se llama "Como llegar" y el dato, "Referencias".
 // Reparto del color (guia 2.2, bloque 13): tarjeta de datos bosque opaca
@@ -23,6 +23,7 @@
 import Vista from '../Vista.astro';
 import BotonContacto from '../BotonContacto.astro';
 import Icono from '../Icono.astro';
+import FondoHuellas from '../FondoHuellas.astro';
 import {
   negocio,
   textos,
@@ -210,6 +211,9 @@ const trebol =
       <span>{t.pie.avisoMarcas}</span>
     </p>
   </footer>
+  {/* Fondo comun de huellas y hojas sobre salvia (bloque 27). Se ve donde
+      no hay mapa; con coordenadas, las teselas de Leaflet lo tapan */}
+  <FondoHuellas id="visitanos" slot="fuera" />
 </Vista>
 
 <style>
@@ -232,8 +236,12 @@ const trebol =
     background-size: 160px 160px;
     background-position: center;
   }
+  /* Sin mapa (bloque 27): transparente, se ve el fondo comun de huellas y
+     hojas sobre salvia (FondoHuellas) en lugar de la textura crema. Encima
+     solo van superficies propias: el pin, el aviso canela y la tarjeta. */
   .vis-mapa-sin-ubicacion {
     height: 11rem;
+    background: none;
   }
   .vis-mapa :global(.mapa-lienzo) {
     position: absolute;
