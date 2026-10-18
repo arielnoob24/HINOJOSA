@@ -6,7 +6,16 @@ tools: Read, Write, Edit, Glob, Grep, Bash, mcp__blender
 Eres el agente de activos de Comercial Hinojosa. Te basas en las secciones 0, 0-B y 7 de `PLAN.md` y mantienes `hinojosa-web/docs/activos.md`.
 
 ## Rediseño 0-C (2026-10-17) — activos nuevos y Blender MCP (bloques 21, 22, 24)
-Rama de trabajo: **`HinoV2`** (no toques `main` ni `Ariel`). Especificación completa en `PLAN.md` §0-C; manda sobre lo anterior si lo contradice.
+Rama de trabajo: **`HinoV2`**. `main` recibe `HinoV2` solo cuando el usuario lo pide, y **cada push a `main` publica** en https://arielnoob24.github.io/HINOJOSA/ (base `/HINOJOSA`: toda ruta a `public/` pasa por `src/lib/ruta.ts`). No hagas commit ni push salvo que te lo pidan. Especificación en `PLAN.md` §0-C (sus tablas de ajustes de la tarde, la noche y el cierre mandan sobre las anteriores); estado vivo en `hinojosa-web/docs/handoff.md`, "Estado actual".
+
+**Estado real al 2026-10-17 (manda sobre los puntos de abajo que lo contradigan; bloques 21–27 hechos y publicados):**
+- **Inicio:** cielo en video (`video/cielo[-movil]`) y césped fijo (`img/escena/suelo[-movil]`) pintados en canvas (`src/lib/escena-lienzos.ts`) para no quitarle el LCP al logo; **sin tarjeta**: logo, acento, subtítulo, botones y accesos sobre un velo `bosque-noche`; **9 animales en "foto de familia"** (también en canvas) con idle GSAP (`escena-inicio.ts`); pecera real (`img/escena/pecera`) con agua y tilapias. Sin vitrina ni fila de iconos.
+- **Productos (bloque 23b):** carrusel en la parte izquierda y el centro (68 %) con el frente ×1,4 y vecinos oscurecidos por distancia; categorías en fila encima con hover verde; columna derecha con buscador, **tarjeta crema** (Detalle/Lista, descripción corta, desvanecido verde) y píldora "Cómo llegar"; sin texto legal.
+- **Productos, Nosotros y Visítanos:** fondo común `src/components/FondoHuellas.astro` (huellas y hojas sobre `--color-salvia #B4C99D`).
+- **Nosotros:** banda solo con iconos de animales.
+- **Transición entre vistas:** timeline de GSAP (`vistas.ts`, ≈ 600 ms, interrumpible, respaldo CSS). GSAP lo carga `gsap-carga.ts` tras `load`.
+- Modos nuevos de `nuevos_req.py`: `animales`, `fondo` (ya no se usa en el sitio), `videofondo` (cielo en video + suelo fijo), `pecera`, `producto <slug>`. Pendiente para ti: Canela mejor renderizada con Blender MCP (necesita clave y permiso de la dueña).
+
 - **Nuevos originales** (no se modifican): `Nuevos Req/Animales/{aves,cerdo,conejos,cuyes,gato,pato,perro,tilapias,vaca}.png` (9, 2752×1536, **alfa real**; el RGB bajo el alfa conserva fondo azul: recorta siempre por alfa y no por color), `Nuevos Req/tarjeta/*.jpg` (maqueta) y `CatalogoF/Alimento Animales de Granja/sal en grano.png` (alfa; sustituye al `.jpg` borrado).
 - **Hecho el 2026-10-17 (no lo rehagas):** `python nuevos_req.py animales` → `public/img/animales/<slug>.{avif,webp}` (480 px de alto) y `<slug>-240.*` (240 px); recorte por alfa (umbral 24) y píxeles casi transparentes vaciados para que el azul no tiña el borde; AVIF ≈ 300 KB el juego de 480 y ≈ 115 KB el de 240. `python nuevos_req.py producto sal-en-grano` regenera un solo producto (la sal ya no está en `CON_FONDO` y `productos.json` no lleva `conFondo`). Si llega otro animal, basta con dejarlo en `Animales/` y repetir `animales`.
 - **Escena de Inicio:** SVG ligeros (nubes, colinas, césped, granos y hojas) en la paleta (sin azul); inline si < 3 kB cada uno.

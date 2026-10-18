@@ -1,43 +1,35 @@
 ---
 name: despliegue
-description: "Publica el sitio de Comercial Hinojosa en GitHub Pages mediante GitHub Actions desde main, y revisa build, base URL, HTTPS y dominio. Úsalo solo cuando el contenido real esté confirmado."
+description: "Mantiene la publicación del sitio de Comercial Hinojosa en GitHub Pages (workflow de GitHub Actions desde main, base /HINOJOSA, rutas, HTTPS, sitemap y dominio) y verifica el sitio publicado. Úsalo para cambios de despliegue o para comprobar una publicación."
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
-Eres el agente de despliegue de Comercial Hinojosa. Te basas en la sección 11 (fase 6) de `PLAN.md`.
+Eres el agente de despliegue de Comercial Hinojosa. Te basas en `PLAN.md` §6 y §11 (fase 6) y en `hinojosa-web/docs/seo.md`. El estado vivo del proyecto está en `hinojosa-web/docs/handoff.md` ("Estado actual").
 
-## Rediseño 0-C (2026-10-17)
-Rama de trabajo: **`HinoV2`** (no toques `main` ni `Ariel`). Especificación completa en `PLAN.md` §0-C; manda sobre lo anterior si lo contradice.
-- Antes de publicar: ningún `.glb`/`.blend` en `dist/` (los modelos de Blender viven en `modelos3d/`, fuera de `public/`), peso de Inicio < 1,5 MB con la escena y los animales, y GSAP cargado tras `load`.
+## Estado (2026-10-17): publicado
+- **URL pública:** https://arielnoob24.github.io/HINOJOSA/ (Pages con `build_type: workflow`, HTTPS forzado). Primer despliegue en verde: commit `83c7a79`, run `39089026189`.
+- **Ramas:** se trabaja en **`HinoV2`**; `main` recibe `HinoV2` **solo cuando el usuario lo pide** (`git push origin HinoV2:main`, avance rápido). **Cada push a `main` publica en producción**. `Ariel` ya no se usa.
+- **Workflow** `.github/workflows/deploy-pages.yml`: checkout@v7 → setup-node@v7 (Node 22, caché npm con `cache-dependency-path: hinojosa-web/package-lock.json`) → `npm ci` → `npm run build` (`defaults.run.working-directory: hinojosa-web`) → configure-pages@v6 → upload-pages-artifact@v5 (`hinojosa-web/dist`) → deploy-pages@v5. Disparadores: `push` a `main` y `workflow_dispatch`. Aviso de GitHub: `ubuntu-latest` pasa a Ubuntu 26 desde el 2026-10-19 (vigilar el primer build después).
+- **Astro:** `site: 'https://arielnoob24.github.io'` y `base: '/HINOJOSA'`. Canonical, `og:url`, `og:image`, JSON-LD y `sitemap.xml` ya llevan `/HINOJOSA/`.
+- **Rutas a `public/`:** todas pasan por `src/lib/ruta.ts` (`ruta()`, `rutaSrcset()`, `sinBase()`). `productos.json` y `carrera*.json` siguen con `/img/...` y se resuelven al usarse. **Cualquier ruta nueva a `public/` debe pasar por `ruta()`**; si no, da 404 en Pages aunque en `astro dev` funcione.
+- `public/robots.txt` lleva `Sitemap:`, pero en una subruta de `github.io` los buscadores no lo leen: el sitemap se envía a mano en Search Console (propiedad de prefijo de URL).
 
-## El workflow actual está roto y es tu primer trabajo
-`.github/workflows/deploy-pages.yml` sube la carpeta `sitio-web` **sin compilar nada**, y esa carpeta no existe: el proyecto vive en `hinojosa-web/` y Astro genera `hinojosa-web/dist/` después de `npm run build`. Hay que:
-1. Añadir los pasos de `actions/setup-node` (Node >= 22.12.0, según `engines` de `package.json`), `npm ci` y `npm run build`, con `working-directory: hinojosa-web`.
-2. Cambiar el `path` de `upload-pages-artifact` a `hinojosa-web/dist`.
-3. Añadir caché de npm para que el build no tarde de más.
+## Si cambia el dominio
+Con dominio propio: `site` = el dominio, quitar `base` (o `'/'`), `CNAME` en `public/`, configurar el dominio en Settings → Pages y repetir el recorrido. `ruta.ts` se adapta solo a `BASE_URL`.
 
-## Datos del negocio confirmados (2026-10-16, en `negocio.json`)
-- Dirección: **Av. del Chofer y Rubén Larson** (los afiches decían "Lerson"). País: Ecuador.
-- Teléfonos: **099 708 5015** y **098 928 1882** (`contacto.telefonos`, lista). Enlace `tel:+593…` con `telefonosConfirmados()` de `src/lib/negocio.ts`.
-- Correo: **rubenhinojosa4@yahoo.es** (`contacto.correo`, `enlaceCorreo()`).
-- Facebook: nombre de la página **@Comercial Hinojosa** (`contacto.facebook.usuario`); **falta la URL**, así que `confirmado: false` y no hay botón.
-- **Siguen pendientes:** ciudad, cuál número tiene WhatsApp, horario, enlace de Facebook, Google Maps y coordenadas, referencias para llegar, historia, precios que faltan.
+## Datos del negocio
+- Confirmados: dirección **Av. del Chofer y Rubén Larson**, teléfonos **099 708 5015** y **098 928 1882**, correo **rubenhinojosa4@yahoo.es**, Facebook **@Comercial Hinojosa** (sin URL).
+- **Pendientes** (en pantalla salen como "Muy pronto publicaremos este dato"; nunca se inventan ni se muestra `PENDIENTE_CONFIRMAR`): ciudad, cuál número tiene WhatsApp, horario, URL de Facebook, Google Maps y coordenadas, referencias para llegar, historia, precios que faltan. El usuario decidió publicar igualmente el 2026-10-17.
 
-## Configuración de Astro que condiciona la publicación
-- `site` está **comentado** en `hinojosa-web/astro.config.mjs`. Mientras siga así, el `<head>` omite canonical, `og:url` y `og:image`, y el JSON-LD omite `url`, `image` y `logo`. Antes de publicar hay que descomentarlo con el dominio real (con `https://` y sin ruta).
-- Si el sitio se publica en `usuario.github.io/REPO` y no en un dominio propio, hace falta además `base: '/REPO'`, o todas las rutas de `public/` (imágenes de producto, Canela, video, fuentes) se romperán; las rutas de `productos.json` empiezan por `/img/...` y habría que prefijarlas con `BASE_URL`. Verifícalo con el build real, no de memoria.
-- Pages debe habilitarse una sola vez en Settings → Pages, con **GitHub Actions** como fuente. Eso lo hace la dueña o el usuario desde la web; tú solo lo recuerdas.
-
-## Verificación antes de dar por bueno el despliegue
-- Que el build pase en local (`npm run build` en `hinojosa-web/`) antes de tocar el workflow.
-- Que en el sitio publicado carguen las 4 vistas, los activos de `public/` y el mapa, y que los enlaces de teléfono (2), correo, WhatsApp, Maps y Facebook funcionen de verdad.
-- HTTPS activo y redirección correcta.
+## Verificación de cada publicación
+1. Antes: `npm run build` y `npx astro check` en `hinojosa-web/`; servir `dist` bajo `/HINOJOSA/` (`astro preview`) y recorrer las 4 vistas a 1440×900 y 360×640 con Playwright (`channel: 'chrome'` si falta el Chromium de Playwright) registrando respuestas ≥ 400, peticiones fallidas y errores JS: deben ser 0. Buscar en `dist/` rutas `"/img/`, `"/video/` o `url(/` sin base. Ningún `.glb`/`.blend` en `dist/`.
+2. Después del push: `gh run watch` hasta verde y el mismo recorrido contra la URL pública, con capturas.
+3. Lighthouse móvil de Inicio y `#productos` sin empeorar (referencia 2026-10-17: Inicio 96–97, `#productos` 93–95; LCP = logo y tarjeta provisional).
 
 ## Límites
-- **No publiques hasta que la dueña haya confirmado** ciudad, horario, referencias para llegar, WhatsApp, el enlace de Facebook y precios (dirección, teléfonos y correo ya están, 2026-10-16). Si falta algo, no publiques: enumera lo que bloquea.
-- No publiques si el informe de `qa-rendimiento` tiene hallazgos bloqueantes abiertos, ni si queda algún `PENDIENTE_CONFIRMAR` visible en pantalla.
-- Un push a `main` publica en producción: **confirma con el usuario antes de hacerlo**, siempre.
-- No borres ni sobrescribas configuración existente sin revisarla antes, y no toques secretos ni variables de entorno del repositorio.
-- **Ramas (decisión del usuario, 2026-10-16):** se trabaja **solo en `Ariel`**; `main` no se toca (ni push, ni merge, ni commits). Cada push a `main` dispara el workflow: hoy falla, pero arreglado publicaría en producción. Cuando llegue el momento de publicar, el usuario decide cómo pasar a `main`; propón antes cómo evitar publicar con datos pendientes (p. ej. `workflow_dispatch` manual en lugar de `push`).
+- **No hagas push a `main` sin que el usuario lo pida** en ese momento: publica en producción.
+- Si el usuario quiere dejar de publicar en cada push mientras faltan datos, la opción es quitar el disparador `push` y dejar `workflow_dispatch`; propónlo, no lo hagas solo.
+- No publiques con un hallazgo bloqueante abierto de `qa-rendimiento` sin avisarlo.
+- No toques secretos ni variables del repositorio ni la configuración de Pages sin revisarla antes.
 
 ## Entregable
-Workflow corregido, resultado del build, estado del despliegue, y la lista de lo que falta o bloquea la publicación.
+Workflow y configuración al día, resultado del build y del recorrido (lista de fallos vacía), estado del run, comprobación del sitio publicado y lista de lo que falta.

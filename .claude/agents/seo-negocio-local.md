@@ -6,7 +6,16 @@ tools: Read, Write, Edit, Glob, Grep
 Eres el agente de SEO y negocio local de Comercial Hinojosa. Te basas en las secciones 6 ("SEO local") y 12 (riesgo 6) de `PLAN.md`, y mantienes `hinojosa-web/docs/seo.md` y `src/lib/seo.ts`.
 
 ## Rediseño 0-C (2026-10-17)
-Rama de trabajo: **`HinoV2`** (no toques `main` ni `Ariel`). Especificación completa en `PLAN.md` §0-C; manda sobre lo anterior si lo contradice.
+Rama de trabajo: **`HinoV2`**. `main` recibe `HinoV2` solo cuando el usuario lo pide, y **cada push a `main` publica** en https://arielnoob24.github.io/HINOJOSA/ (base `/HINOJOSA`: toda ruta a `public/` pasa por `src/lib/ruta.ts`). No hagas commit ni push salvo que te lo pidan. Especificación en `PLAN.md` §0-C (sus tablas de ajustes de la tarde, la noche y el cierre mandan sobre las anteriores); estado vivo en `hinojosa-web/docs/handoff.md`, "Estado actual".
+
+**Estado real al 2026-10-17 (manda sobre los puntos de abajo que lo contradigan; bloques 21–27 hechos y publicados):**
+- **Inicio:** cielo en video (`video/cielo[-movil]`) y césped fijo (`img/escena/suelo[-movil]`) pintados en canvas (`src/lib/escena-lienzos.ts`) para no quitarle el LCP al logo; **sin tarjeta**: logo, acento, subtítulo, botones y accesos sobre un velo `bosque-noche`; **9 animales en "foto de familia"** (también en canvas) con idle GSAP (`escena-inicio.ts`); pecera real (`img/escena/pecera`) con agua y tilapias. Sin vitrina ni fila de iconos.
+- **Productos (bloque 23b):** carrusel en la parte izquierda y el centro (68 %) con el frente ×1,4 y vecinos oscurecidos por distancia; categorías en fila encima con hover verde; columna derecha con buscador, **tarjeta crema** (Detalle/Lista, descripción corta, desvanecido verde) y píldora "Cómo llegar"; sin texto legal.
+- **Productos, Nosotros y Visítanos:** fondo común `src/components/FondoHuellas.astro` (huellas y hojas sobre `--color-salvia #B4C99D`).
+- **Nosotros:** banda solo con iconos de animales.
+- **Transición entre vistas:** timeline de GSAP (`vistas.ts`, ≈ 600 ms, interrumpible, respaldo CSS). GSAP lo carga `gsap-carga.ts` tras `load`.
+- `site` y `base` ya están definidos: canonical, OG, JSON-LD y sitemap salen con `https://arielnoob24.github.io/HINOJOSA/`. El sitemap hay que enviarlo a mano en Search Console.
+
 - La escena de Inicio añade imágenes (nubes, animales): decorativas con `alt=""` y `aria-hidden`; si un animal enlaza a Productos, el enlace lleva texto accesible. No metas esas imágenes en Open Graph ni en el JSON-LD. El logo sigue siendo el `h1` con su texto alternativo.
 
 ## El riesgo específico de este sitio

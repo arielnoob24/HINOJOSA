@@ -1,47 +1,100 @@
 # Handoff: sitio web de Comercial Hinojosa
 
-Última actualización: **2026-10-17 (cierre)**. Rama de trabajo: **`HinoV2`** (subida a `origin/HinoV2` y `origin/main` el 2026-10-17; `Ariel` ya no se usa). **Para retomar, lee primero la sección "Estado al cierre del 2026-10-17"**; las secciones de sesiones son el historial.
+Última actualización: **2026-10-17, tras la primera publicación**. Rama de trabajo: **`HinoV2`**; sitio publicado en https://arielnoob24.github.io/HINOJOSA/. **Lee solo "Estado actual"**; lo que hay debajo de "Historial" es el registro de sesiones anteriores y no rige.
 
-## Estado al cierre del 2026-10-17 (para retomar)
+## Estado actual (2026-10-17, publicado) — lo único que rige
 
-**Rama de trabajo: `HinoV2`.** Subida a `origin/HinoV2` y a `origin/main` a petición del usuario el 2026-10-17 (avance rápido desde `1db934f`). `Ariel` ya no se usa. El push a `main` dispara el workflow de Pages.
+### En una línea
+El sitio está **publicado en https://arielnoob24.github.io/HINOJOSA/** con el rediseño 0-C completo (bloques 21–27): Inicio con cielo en video, césped fijo y 9 animales en foto de familia; Productos con carrusel grande a la izquierda, tarjeta crema con descripción y fondo de huellas; Nosotros y Visítanos con el mismo fondo; transición entre vistas con GSAP. Faltan los datos de la dueña, el cierre de QA y poner la guía de estilo al día.
 
-**Despliegue preparado (2026-10-17, agente `despliegue`, sin commit ni push):** el workflow `.github/workflows/deploy-pages.yml` ya compila (Node 22 con caché npm, `npm ci`, `npm run build` en `hinojosa-web/`) y sube `hinojosa-web/dist`; `astro.config.mjs` tiene `site: 'https://arielnoob24.github.io'` y `base: '/HINOJOSA'`; todas las rutas a `public/` pasan por `src/lib/ruta.ts`. **URL pública: https://arielnoob24.github.io/HINOJOSA/** (Pages con `build_type: workflow`, HTTPS forzado). Verificado con `astro preview` bajo `/HINOJOSA/`: 0 respuestas 404 ni peticiones fallidas en las 4 vistas a 1440×900 y 360×640; Lighthouse móvil Inicio 96–97, `#productos` 93–95. **El próximo push a `main` publica en producción**, con los datos pendientes como «Muy pronto publicaremos este dato».
+### Ramas y publicación
+- **Rama de trabajo: `HinoV2`.** `main` recibe `HinoV2` (avance rápido, `git push origin HinoV2:main`) **solo cuando el usuario lo pide**. `Ariel` ya no se usa. `wip/bloque26-transicion` ya está fusionada (se puede borrar).
+- **Cada push a `main` publica** con `.github/workflows/deploy-pages.yml` (Node 22, `npm ci`, `npm run build` en `hinojosa-web`, sube `hinojosa-web/dist`). Primer despliegue en verde: commit `83c7a79`, run `39089026189`; recorrido del sitio publicado (4 vistas, 1440 y 360): **0 fallos de red y 0 errores JS**.
+- **Base `/HINOJOSA`:** `astro.config.mjs` tiene `site: 'https://arielnoob24.github.io'` y `base: '/HINOJOSA'`. **Toda ruta nueva a `public/` debe pasar por `src/lib/ruta.ts`** (`ruta()`, `rutaSrcset()`, `sinBase()`); si no, da 404 en Pages aunque en `astro dev` funcione.
+- Aviso de GitHub: `ubuntu-latest` pasa a Ubuntu 26 desde el 2026-10-19; vigilar el primer despliegue posterior.
+- Si se quiere dejar de publicar en cada push mientras faltan datos: quitar el disparador `push` y dejar `workflow_dispatch` (decisión del usuario, no aplicada).
 
-### Qué está hecho (bloques del rediseño 0-C, `PLAN.md` §0-C y §11)
-| Bloque | Estado | Commit |
+### Qué está hecho (rediseño 0-C, `PLAN.md` §0-C y §11)
+| Bloque | Qué | Commit |
 |---|---|---|
-| 21 Herramientas | ✅ Blender 4.5 LTS + MCP for Blender (`.mcp.json`), derivados de animales, cargador común de GSAP (`gsap-carga.ts`) | `fbc7cb7`, `a952cf6` |
-| 22 Inicio | ✅ video de fondo en canvas (`escena-lienzos.ts`), sin tarjeta, logo/lema/botones sobre velo, 9 animales en foto de familia con idle GSAP (`escena-inicio.ts`), tilapias en pecera dibujada | `ca8a299` |
-| 23/24 Productos | ✅ bloque 23b: carrusel 68 % con frente ×1,4 y vecinos oscurecidos, categorías en fila con hover, buscador sobre la tarjeta crema con desvanecido verde, descripción corta, sin texto legal, fondo de huellas | `ed3747e`, `9f21f6e` |
-| 25 Nosotros | ✅ banda solo con iconos de animales | `7075874` |
-| 27 Ajustes de cierre | ✅ Inicio: solo el cielo en video (`video/cielo*`) y césped fijo (`img/escena/suelo*`) en canvas —la hierba ya no hierve—, animales en foto de familia equilibrada (pollitos visibles), pecera real (`img/escena/pecera*`) con agua y tilapias. Productos, Nosotros y Visítanos con el mismo fondo `FondoHuellas.astro` (huellas de perro, gato, vaca y pollo + hojas sobre salvia `#B4C99D`) | `f3e4fa5` y siguiente |
-| 26 Transición GSAP | ✅ timeline de GSAP (saliente 400 ms con escala 0,98, entrante a los 96 ms desde 3rem, bloques escalonados, ≈ 600 ms, interrumpible; respaldo CSS sin GSAP). Verificado el 2026-10-17: 0 destellos, clics rápidos, Lighthouse igual que la base | rama `wip/bloque26-transicion` fusionada en `HinoV2` |
+| 21 Herramientas | Blender 4.5 LTS + MCP for Blender (`.mcp.json`, `uvx mcp-for-blender==2.1.9`; solo funciona con Blender abierto), derivados de los 9 animales, cargador común de GSAP (`gsap-carga.ts`) | `fbc7cb7`, `a952cf6` |
+| 22 + 27 Inicio | Cielo en video (`video/cielo[-movil]`) y césped fijo (`img/escena/suelo[-movil]`) en canvas (`escena-lienzos.ts`); sin tarjeta, texto sobre velo; 9 animales en foto de familia en canvas con idle GSAP (`escena-inicio.ts`); pecera real (`img/escena/pecera`) con agua y tilapias | `ca8a299`, `f3e4fa5` |
+| 23b/24 Productos | Carrusel 68 % con frente ×1,4 y vecinos oscurecidos; categorías en fila con hover verde; buscador sobre la tarjeta crema (Detalle/Lista, descripción, desvanecido verde); píldora "Cómo llegar"; sin texto legal | `ed3747e`, `9f21f6e` |
+| 25 Nosotros | Banda solo con iconos de animales | `7075874` |
+| 26 Transición | Timeline de GSAP (≈ 600 ms, capas solapadas, interrumpible, respaldo CSS); el router mantiene visibles e `inert` las vistas que aún salen | `f0f3756` |
+| 27 Fondos | `FondoHuellas.astro` (perro, gato, vaca, pollo y hojas sobre `--color-salvia #B4C99D`) en Productos, Nosotros y Visítanos | `a60461a` |
+| Despliegue | Workflow, `site`/`base`, `ruta.ts`, sitemap | `83c7a79` |
 
-### En qué se quedaron los agentes
-- **`animacion-interaccion` (bloque 26):** cortado por el límite de uso. Implementó el timeline de GSAP en `src/lib/animacion/vistas.ts` (+351 líneas), cambios en `router.ts`, `gsap-carga.ts` y `escena-lienzos.ts`, y capturas en `capturas/bloque26/`. Su último paso fue **comparar Lighthouse con la versión base** (5 pasadas cada una, base servida en el puerto 4330). **No se sabe si pasó las pruebas**: el trabajo está en la rama `wip/bloque26-transicion`, no en `HinoV2`. Para retomarlo: `git switch wip/bloque26-transicion`, pedir a `animacion-interaccion` que termine la verificación del bloque 26 (pruebas 1–18 y 25–26 de `vistas-hinojosa`, clics rápidos, sin destello, Lighthouse de Inicio y `#productos`, 0 rAF residual) y actualice la skill y §3 del plan; si pasa, fusionar en `HinoV2`.
-- **`frontend`, `contenido-estrategia`:** terminaron sus tareas (bloques 22–25 y descripciones); nada a medias.
-- **`direccion-arte`, `qa-rendimiento`, `seo-negocio-local`, `despliegue`:** no se usaron en esta sesión.
+### Medidas (2026-10-17, informes de los agentes y recorrido propio)
+Lighthouse móvil: Inicio 96–97 (LCP = `img.inicio-logo`), `#productos` 93–95 (LCP = tarjeta provisional, regla M5), `#nosotros` 96–97. axe 0 en Inicio, Productos y Nosotros; **1 fallo en Visítanos** (ver abajo). Peso de Inicio ≈ 800 KB en escritorio. Prueba 23 (37/37 fichas sin scroll) pasa.
+
+### Agentes
+Ninguno tiene trabajo a medias. Todos los archivos de `.claude/agents/` están al día al 2026-10-17 (bloque "Estado real" al principio de cada uno; `despliegue` reescrito). Flujo pedido por el usuario: cambios → `PLAN.md` → agentes y skills → aplicar con los agentes del proyecto → commit en `HinoV2` → `main` cuando lo pida.
 
 ### Próximas tareas (en orden)
-1. ~~Bloque 26~~ ✅ hecho y fusionado (2026-10-17). Sin probar en Safari/Firefox ni móvil real.
-2. **Pecera real:** el usuario dejó `Nuevos Req/Animales/pecera.jpg` (pecera de vidrio vacía sobre fondo azul, 2752×1536, JPG sin alfa). Sustituir la pecera dibujada de Inicio: hay que recortarla (el vidrio deja ver el azul: quitar el fondo y teñir el vidrio, o generarla con alfa), meter agua y las tilapias. Tarea de `activos-3d-video` + `frontend`.
-3. **Cierre de QA completo** (`qa-rendimiento`) de los bloques 21–26: router, axe, Lighthouse (Inicio, `#productos`, `#nosotros`), móvil, sin JS.
-4. **`direccion-arte`:** llevar a `docs/guia-estilo.md` y a los storyboards el estado nuevo (Inicio con video y sin tarjeta, Productos 23b, tarjeta crema, Nosotros sin sellos; la guía aún cita la vitrina, los sellos de costal (línea 115) y `--color-velo-costal`).
-5. **Canela mejor renderizada** con Blender MCP (necesita clave de Hyper3D/fal/Tencent o la prueba gratuita de Rodin, y permiso de la dueña para subir la imagen).
-6. ~~Workflow de despliegue~~ ✅ preparado (2026-10-17). Falta el push a `main` (lo hace el usuario) y, después, comprobar el sitio publicado (4 vistas, activos, enlaces `tel:`/`mailto:`, HTTPS).
+1. **Cierre de QA completo** (`qa-rendimiento`) sobre el sitio publicado: router (pruebas 1–26 de `vistas-hinojosa`), axe en las 4 vistas, Lighthouse, móvil, sin JS, recorrido sin 404 bajo `/HINOJOSA/`.
+2. **Arreglar el fallo de axe de Visítanos** (`label-content-name-mismatch` en el enlace del correo: el nombre accesible de `textos.visitanos.nombreAccesibleCorreo` debe empezar con el texto visible) (`frontend`).
+3. **Guía de estilo y storyboards al día** (`direccion-arte`): la guía aún describe la vitrina, la ficha bosque, los sellos de costal y `--color-velo-costal`.
+4. **Canela mejor renderizada** con Blender MCP (clave de Hyper3D/fal/Tencent o prueba gratuita de Rodin + permiso de la dueña para subir la imagen).
+5. **Search Console:** enviar `https://arielnoob24.github.io/HINOJOSA/sitemap.xml` a mano (en una subruta no se lee `robots.txt`).
+6. Pruebas manuales: Safari iOS (video con alfa de Nosotros, transición, desenfoque de vecinos del carrusel), Firefox, móvil real, lector de pantalla.
+7. Bloques 10 y 11 cuando lleguen textos aprobados y el número de WhatsApp.
 
-### Decisiones pendientes del usuario (nuevas de hoy)
-- **Bloque 27:** aprobar el tono salvia `#B4C99D` (nuevo, de la familia hoja/bosque); el antetítulo NOSOTROS pasó de canela oscuro a bosque por contraste sobre el verde; la vaca de Inicio mide ~2,8× el área del logo (no le quita el LCP porque va en canvas); burbujas de la pecera estáticas (se pueden animar).
-- **Accesibilidad pendiente:** axe da 1 fallo en `#visitanos` (`label-content-name-mismatch` en el enlace del correo: el `aria-label` de `textos.visitanos.nombreAccesibleCorreo` no empieza con el texto visible). Ya existía antes del bloque 27.
-- **Para el final (pospuestas):** velo de Inicio en móvil (oscurece el cielo) y color del agua de la pecera (verdosa por la paleta; azul = color nuevo).
-- **Aprobar las 37 descripciones** de productos (en propuesta; casos dudosos: saco de 30–40 kg en la línea Premium, especie de melaza/sal/maíz/trigo/arrocillo/afrecho, "comedero doble", porcentajes en el tilapero).
-- **Aviso legal** de precios referenciales y marcas: quitado de Productos; decidir si va a Visítanos (riesgo 20).
-- **Hover dorado de los iconos de Nosotros** (añadido por `frontend` sin pedirse): confirmar o quitar.
-- **Blender solo para renders** (sin 3D en la página): confirmar.
+### Decisiones pendientes del usuario
+- **Aprobar:** el tono salvia `#B4C99D`; el antetítulo NOSOTROS en bosque (era canela oscuro, cambiado por contraste); las **37 descripciones** de productos (dudosas: saco de 30–40 kg de la línea Premium en Nutri Pollos/Vacas/Gallos, especie de melaza/sal/maíz/trigo/arrocillo/afrecho, "comedero doble", porcentajes del tilapero); el hover dorado de los iconos de Nosotros (añadido sin pedirse); Blender solo para renders.
+- **Decidir:** dónde va el aviso de precios referenciales y marcas de terceros (quitado de Productos; riesgo 20); si se publica en cada push o solo a mano; tamaño de la vaca (≈ 2,8× el área del logo, no le quita el LCP); burbujas de la pecera animadas o no.
+- **Pospuestas para el final:** el velo de Inicio en móvil oscurece el cielo (alternativa: bajar el texto); color del agua de la pecera (casi neutro; azul sería color nuevo).
+- **Textos en propuesta de antes:** las 3 razones de Nosotros y el título de Productos ("Lo que tenemos para tus animales").
 
-### Medidas al cierre (de los informes de los agentes)
-Lighthouse móvil: Inicio 97–98 (LCP = logo), `#productos` 93–97 (mediana 94, LCP = tarjeta provisional), `#nosotros` 97. axe 0 en las vistas tocadas. Peso de Inicio ≈ 1,2 MB escritorio / 1,0 MB móvil.
+### Pendiente de la dueña
+Ciudad, cuál número tiene WhatsApp, horario, URL de Facebook, Google Maps y coordenadas, referencias para llegar, año de apertura o una línea de historia, foto del local/fachada/equipo, logo vectorial, 21 precios sin dato, casos dudosos del campo `animales`, unidad de "Desde $1.00" en Pro-Can y derechos de uso de los renders. En pantalla los datos que faltan salen como "Muy pronto publicaremos este dato" (nunca `PENDIENTE_CONFIRMAR`). Ya dados: dirección, 2 teléfonos, correo y el nombre de Facebook.
+
+### Mejoras menores abiertas (de `qa-informe.md`)
+M-5 unidad de precio · M-8 con 5 productos los laterales del anillo tapan el frente · M-9 halo verdoso del bebedero. Ninguna bloquea.
+
+### Dónde está cada cosa
+| Qué | Dónde |
+|---|---|
+| Plan (precedencia: §0-C y sus tablas de ajustes → §0-B → §0 → resto) | `PLAN.md` (raíz) |
+| Auditoría de 2026-10-13 (códigos I/N/P/Q/V/G/T/B/C) | `auditoria.md` (raíz) |
+| Proyecto Astro | `hinojosa-web/` (Astro 7, Tailwind 4, GSAP 3.15 tras `load`, Leaflet 1.9.4) |
+| Originales del cliente (no se modifican) | `Nuevos Req/` (incluye `Animales/` con los 9 animales, `fondo.jpg`, `videofondo.mp4`, `pecera.jpg`; `tarjeta/`) |
+| Derivados | `hinojosa-web/scripts-activos/nuevos_req.py` — modos `imagenes`, `video`, `video-alfa`, `animales`, `fondo` (ya no se usa), `videofondo` (cielo en video + suelo fijo), `pecera`, `producto <slug>` |
+| Capturas por bloque | `hinojosa-web/capturas/bloque22…27/` |
+| Agentes y skills | `.claude/agents/`, `.claude/skills/marca-hinojosa` (paleta, contrastes, salvia) y `.claude/skills/vistas-hinojosa` (router, transición GSAP, pruebas 1–26) |
+| Blender MCP | `.mcp.json` (raíz); complemento en `%APPDATA%\Blender Foundation\Blender\4.5\scripts\addons\blender_mcp_addon.py` |
+
+### Herramientas en este equipo
+- **ffmpeg** no está en el PATH: `python -c "import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())"`.
+- Python con Pillow y numpy, **sin scipy** (utilidades en `scripts-activos/comun.py`).
+- Playwright: si falta el Chromium de Playwright, usar `chromium.launch({ channel: 'chrome' })`. axe-core en `devDependencies`.
+- Blender 4.5.10 LTS en `C:\Program Files\Blender Foundation\Blender 4.5\`; `uv`/`uvx` 0.13 (carpeta de WinGet añadida al PATH del usuario).
+- En Git Bash, las rutas `/c/...` dentro de código Python entre comillas no se convierten: pasar rutas de Windows. Algunos heredocs fallan: escribir el script en el scratchpad.
+- `gh` autenticado contra `arielnoob24/HINOJOSA` (para `gh run watch`).
+
+### Cuidado al implementar (no romper lo que ya funciona)
+- **Rutas:** todo lo que apunte a `public/` pasa por `ruta()` (base `/HINOJOSA`).
+- **LCP:** el logo es el LCP de Inicio y la tarjeta provisional el de `#productos`. Por eso el video, el césped y los animales de Inicio se pintan en `<canvas>` y el fondo de huellas va como `<svg>` inline (un `background-image` CSS a pantalla completa se volvía LCP). No metas imágenes grandes como `<img>` o fondo CSS en esas vistas sin medir.
+- **Regla M5:** en `#productos` la tarjeta provisional coincide al píxel con el frente del anillo (escala incluida, `translate` y no `transform`) hasta la primera interacción o 1,5 s; en móvil el carrusel no se agranda (lo rompía).
+- **Movimiento:** todo respeta `prefers-reduced-motion` y la pausa (`html[data-movimiento="pausado"]`), también las transiciones CSS. Fuera de Inicio, 0 rAF de la escena; fuera de Productos, 0 tweens del carrusel.
+- **Transición:** el router espera la `Promise` de `vistas.ts`; el foco va al título antes de animar; las vistas que salen siguen `inert` debajo hasta que acaba la última transición.
+- **Contraste sobre el fondo salvia:** solo tinta (≥ 7.3), bosque (≥ 5.0) o canela oscuro en texto grande; nada de tinta-suave ni marca-fuerte directamente sobre el fondo.
+- **Nunca mostrar `PENDIENTE_CONFIRMAR`**; vive solo en `negocio.json`.
+- El video de Nosotros depende de su encuadre (`--centro-canela`); el buscador no gira el carrusel al escribir; sin JS la lista de productos se ve entera.
+- Imágenes con IA: nunca pedir "fondo transparente" (pintan un damero); productos blancos sobre blanco con `quitar_fondo_blanco`.
+
+### Cómo arrancar
+```
+cd hinojosa-web
+npm ci
+npm run dev        # http://localhost:4321/HINOJOSA/  (ahora con base)
+npm run build && npx astro check
+npx astro preview  # sirve dist bajo /HINOJOSA/
+```
+
+---
+
+# Historial de sesiones (no rige; lo vigente está arriba)
 
 ## Sesión del 2026-10-17 (planificación, sin código)
 
@@ -98,10 +151,6 @@ Lighthouse móvil: Inicio 97–98 (LCP = logo), `#productos` 93–97 (mediana 94
 
 **Orden recomendado:** 21 (GSAP común, Blender, derivados) → 22 (Inicio) → 23–24 (Productos) → 25 (Nosotros) → 26 (transición) → cierre de QA.
 
-## Estado en una línea
-
-**El sitio tiene 4 vistas** (Inicio · Productos · Nosotros · Visítanos) desde el 2026-10-16: Quiénes somos y Por qué elegirnos se unieron en **Nosotros**, Productos cambió el panel de la lista por una **ficha del producto** con buscador de sugerencias, y Visítanos ya publica **dirección, dos teléfonos y correo**. Quedan los textos del bloque 10, WhatsApp (bloque 11), los datos que faltan (ciudad, horario, enlace de Facebook, coordenadas) y el despliegue.
-
 ## Sesión del 2026-10-16
 
 Commits en `Ariel` (sin subir): `0e86d50` (agentes, skills y plan alineados), `120eeae` (vista Nosotros), `39b18ad` (ficha de Productos) y el de los datos de contacto + documentación.
@@ -156,32 +205,6 @@ Commits en `Ariel` (sin subir): `0e86d50` (agentes, skills y plan alineados), `1
 - **Nuevo orden de la barra:** Inicio · Productos · Quiénes somos · Por qué elegirnos · Visítanos (también HTML, router, flechas y transiciones). Las vistas ahora buscan su etiqueta por `id` en `textos.navegacion`, no por posición.
 - **Pausa guardada:** como ya no hay botón, `Layout.astro` borra `localStorage['hinojosa-movimiento']` al arrancar para que nadie quede con la pausa activada para siempre.
 
-## Decisiones pendientes del usuario
-
-0. **Para el final (pospuesto el 2026-10-17):** velo de Inicio en móvil (oscurece el cielo; alternativa: bajar el texto) y color del agua de la pecera (verdosa por la paleta; azul sería color nuevo).
-1. **Textos de las 3 razones de Nosotros** (en propuesta) y los títulos de Productos ("Lo que tenemos para tus animales") y del bloque 10.
-2. **Datos que faltan:** ciudad, **cuál de los dos teléfonos tiene WhatsApp** (si alguno), horario, **enlace de Facebook** (la URL de "@Comercial Hinojosa"), Google Maps y coordenadas, referencias para llegar, año de apertura o una línea de historia.
-3. **Visítanos y Productos** fuera del reparto 55/30/15: falta medir de nuevo Productos (cambió) y Nosotros.
-4. **Para la dueña:** casos dudosos del campo `animales` (melaza, sal, maíz, trigo, arrocillo, afrecho, semillas, comedero doble), unidad de "Desde $1.00" en Pro-Can.
-5. **Descripciones cortas de producto** (campo `descripcion` en `productos.json`, 37, ≤ 110 caracteres, 2026-10-17): **en propuesta** hasta que las aprueben el usuario o la dueña. Las más dudosas: melaza, sal en grano, trigo, arrocillo, comedero doble, Nutri Pollos / Vacas / Gallos (sacos de 30 a 40 kg de la línea, no del producto suelto).
-
-## Mejoras menores abiertas (de `qa-informe.md`)
-M-5 unidad de precio · M-6 "Mascotas" repetido en Inicio · M-8 con 5 productos los laterales del anillo tapan el frente · M-9 halo verdoso del bebedero. Ninguna bloquea. (M-7 y M-11 dejan de aplicar: Nosotros ya no tiene caja gris y escribir ya no gira el carrusel.)
-
-## Dónde está cada cosa
-
-| Qué | Dónde |
-|---|---|
-| Plan que rige (orden de precedencia: §0-B → §0 → resto) | `PLAN.md` (raíz) |
-| Auditoría completa, con códigos I/N/P/Q/V/G/T/B/C por hallazgo | `auditoria.md` (raíz) |
-| Capturas "antes" de la auditoría (1440×900, 360×640, flujos) | `hinojosa-web/capturas/auditoria/` |
-| Prompts de Google Flow, primer cuadro de Canela y el video generado | `flow/` (raíz) |
-| Proyecto Astro | `hinojosa-web/` (Astro 7.3.8, Tailwind 4, GSAP 3.15 en diferido, Leaflet 1.9.4) |
-| Originales del cliente (no se modifican) | `Nuevos Req/` (raíz) |
-| Generación de derivados | `hinojosa-web/scripts-activos/nuevos_req.py` (+ `comun.py`) |
-| Agentes del proyecto (puestos al día en esta sesión) | `.claude/agents/` |
-| Skills del proyecto | `.claude/skills/marca-hinojosa` (paleta, contrastes, sistema visual, colores aprobados) y `.claude/skills/vistas-hinojosa` (router, transición entre vistas, barra, 18 pruebas) |
-
 ## Qué se hizo en la sesión del 2026-10-13 / 14
 
 1. **Pull de `main` a `Ariel`** (commits `b89aa60`, `8e7d444`, `f76254f`) y `npm install` (salieron `three` y `lenis`, entró `leaflet`).
@@ -211,54 +234,3 @@ M-5 unidad de precio · M-6 "Mascotas" repetido en Inicio · M-8 con 5 productos
 - **Fondo:** no es el azul plano pedido, sino azul medio (~`#2B73AA`) con viñeta y sombra de suelo. Recortar con `modelo_fondo` de `nuevos_req.py` + quitar el tinte azul del borde del pelaje. La sombra se descarta (el sitio pone la suya).
 - Salida: **sprite sheets WebP** (~12 fps, altura de franja ×2, ≤ 450 kB los tres), cargados **después de `load`** para que el logo siga siendo el LCP.
 - La página hace el bucle con una máquina de estados `sentada → arranque → corre(dir) → giro → corre(−dir)…` comparando `x` con `0` y `anchoFranja − anchoCanela` en cada fotograma. Prueba 18 de `vistas-hinojosa`.
-
-## Herramientas en este equipo
-
-- **ffmpeg no está en el PATH.** Se instaló el paquete de Python `imageio-ffmpeg` (2026-10-14). Ruta del binario: `python -c "import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())"`.
-- Python 3.14 con Pillow y numpy; **sin scipy** (usar las utilidades de `scripts-activos/comun.py`: `flood_desde_bordes`, `dilatar`).
-- Playwright (Chromium) vía caché de `npx`; axe-core en `devDependencies`.
-- En Git Bash, las rutas `/c/...` dentro de código Python entre comillas **no** se convierten: pasar rutas de Windows (`C:\...`) a los scripts.
-- Servidor de desarrollo: `cd hinojosa-web && npm run dev` → http://localhost:4321 (comprobar antes si ya hay uno: `npx astro dev status`).
-
-## Lo siguiente
-
-0. **Bloques 21–26 del rediseño 0-C** (`PLAN.md` §0-C y §11): Inicio granja, Productos centrado y tarjeta nueva, Nosotros, GSAP y Blender. Antes, confirmar los 4 supuestos de la sesión del 2026-10-17.
-1. Que el usuario apruebe (o cambie) las 3 razones de Nosotros y dé los datos que faltan (sobre todo WhatsApp, enlace de Facebook, ciudad y horario).
-2. Repetir el cierre de QA completo (`qa-rendimiento`) tras los bloques 14–17.
-3. Medir el reparto de color de Nosotros y Productos y llevar las dos vistas nuevas a `docs/guia-estilo.md` (`direccion-arte`).
-4. Bloques 10 y 11 cuando lleguen textos aprobados y WhatsApp.
-5. Despliegue (agente `despliegue`) cuando estén los datos; antes, decidir cómo publicar sin tocar `main` o con permiso del usuario.
-6. Pruebas manuales que no se pueden hacer aquí: Safari iOS (sobre todo el video de Nosotros), Firefox y lector de pantalla real.
-
-## Pendiente del usuario o de la dueña
-
-- **Usuario:** aprobar los textos de títulos y las 3 razones de Nosotros.
-- **Dueña:** ciudad, cuál número tiene WhatsApp, horario, enlace de Facebook, Google Maps/coordenadas, referencias; año de apertura o una línea de historia; foto del local, la fachada o el equipo; logo vectorial; 21 precios sin dato; derechos de uso de los renders. (Ya dados el 2026-10-16: dirección, teléfonos, correo y el nombre de Facebook.)
-
-## Cuidado al implementar (no romper lo que ya funciona)
-
-- **Regla M5:** en `#productos`, la tarjeta provisional del primer montaje del carrusel debe quedarse invisible bajo el anillo hasta la primera interacción o 1,5 s. Los fundidos nuevos (C1) no se aplican al primer montaje; si se rompe, Lighthouse móvil baja de 93–97 a 86.
-- **El logo debe seguir siendo el LCP de Inicio** al añadir la vitrina y los sprites de Canela.
-- **La pausa del sitio** (`html[data-movimiento="pausado"]`) hoy anula `animation` pero **no** `transition`: toda transición nueva debe condicionarse.
-- **`vistas.ts` debe devolver una `Promise`**: hoy no lo hace y por eso se ve el fondo crema entre vistas.
-- **Nunca mostrar `PENDIENTE_CONFIRMAR` en pantalla**; vive solo en `negocio.json`.
-- **El video de Nosotros depende de su encuadre:** si se regenera con otro tramo, recalcular `--centro-canela` (centro de Canela en el video) en `VistaNosotros.astro`.
-- **Productos:** el texto del buscador ya no gira el carrusel; solo elegir una sugerencia o llegar desde un animal de Nosotros (`abrirAnimal`). La lista completa vive en un `<dialog>` que sin JS se pinta en la página: no lo conviertas en algo que se genere por JS.
-- **Heredocs en Bash:** en esta máquina algunos `<<'EOF'` con comillas o caracteres especiales fallan ("unexpected EOF"); escribir el script en un archivo del scratchpad y ejecutarlo.
-- **Imágenes con IA:** nunca pedir "fondo transparente" (pintan un damero); pedir un color plano. Al quitar fondos a mano, guardar en PNG (en JPG la transparencia pasa a blanco).
-- **Productos blancos sobre blanco:** recortar con `quitar_fondo_blanco`, no con `quitar_fondo_liso` (este vacía el sombreado neutro creyendo que es sombra).
-- Para regenerar un solo producto sin recodificar todo, ver cómo se hizo con el bebedero: `nr.maestros(tmp)`, filtrar los trabajos por nombre y `nr.codificar(seleccion, tmp)`.
-
-## Bloqueantes para publicar
-
-1. Datos que faltan en `negocio.json` con `confirmado: true`: ciudad, horario, WhatsApp, enlace de Facebook, coordenadas (dirección, teléfonos y correo ya están).
-2. ~~Despliegue roto~~ ✅ resuelto el 2026-10-17: workflow que compila y sube `hinojosa-web/dist`, `site` + `base: '/HINOJOSA'`, `Sitemap:` en `public/robots.txt` (sin efecto en una subruta; enviar el sitemap en Search Console).
-
-## Cómo arrancar
-
-```
-cd hinojosa-web
-npm install
-npm run dev        # http://localhost:4321
-npm run build && npx astro check
-```

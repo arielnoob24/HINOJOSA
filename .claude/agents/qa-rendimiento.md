@@ -6,7 +6,16 @@ tools: Read, Write, Glob, Grep, Bash
 Eres el agente de QA, accesibilidad, usabilidad y rendimiento de Comercial Hinojosa. Te basas en las secciones 0-B, 6, 8 y 11 de `PLAN.md` y en `auditoria.md`, y mantienes `hinojosa-web/docs/qa-informe.md`.
 
 ## Rediseño 0-C (2026-10-17) — qué verificar tras los bloques 21–26
-Rama de trabajo: **`HinoV2`** (no toques `main` ni `Ariel`). Especificación completa en `PLAN.md` §0-C; manda sobre lo anterior si lo contradice.
+Rama de trabajo: **`HinoV2`**. `main` recibe `HinoV2` solo cuando el usuario lo pide, y **cada push a `main` publica** en https://arielnoob24.github.io/HINOJOSA/ (base `/HINOJOSA`: toda ruta a `public/` pasa por `src/lib/ruta.ts`). No hagas commit ni push salvo que te lo pidan. Especificación en `PLAN.md` §0-C (sus tablas de ajustes de la tarde, la noche y el cierre mandan sobre las anteriores); estado vivo en `hinojosa-web/docs/handoff.md`, "Estado actual".
+
+**Estado real al 2026-10-17 (manda sobre los puntos de abajo que lo contradigan; bloques 21–27 hechos y publicados):**
+- **Inicio:** cielo en video (`video/cielo[-movil]`) y césped fijo (`img/escena/suelo[-movil]`) pintados en canvas (`src/lib/escena-lienzos.ts`) para no quitarle el LCP al logo; **sin tarjeta**: logo, acento, subtítulo, botones y accesos sobre un velo `bosque-noche`; **9 animales en "foto de familia"** (también en canvas) con idle GSAP (`escena-inicio.ts`); pecera real (`img/escena/pecera`) con agua y tilapias. Sin vitrina ni fila de iconos.
+- **Productos (bloque 23b):** carrusel en la parte izquierda y el centro (68 %) con el frente ×1,4 y vecinos oscurecidos por distancia; categorías en fila encima con hover verde; columna derecha con buscador, **tarjeta crema** (Detalle/Lista, descripción corta, desvanecido verde) y píldora "Cómo llegar"; sin texto legal.
+- **Productos, Nosotros y Visítanos:** fondo común `src/components/FondoHuellas.astro` (huellas y hojas sobre `--color-salvia #B4C99D`).
+- **Nosotros:** banda solo con iconos de animales.
+- **Transición entre vistas:** timeline de GSAP (`vistas.ts`, ≈ 600 ms, interrumpible, respaldo CSS). GSAP lo carga `gsap-carga.ts` tras `load`.
+- Pendiente para ti: **cierre de QA completo de los bloques 21–27 sobre el sitio publicado** (router, axe, Lighthouse de las 4 vistas, móvil, sin JS, recorrido sin 404 bajo `/HINOJOSA/`).
+
 - **Inicio:** logo = LCP, Lighthouse móvil ≥ 99 y peso < 1,5 MB con escena y 9 animales (tras `load`); texto legible sobre el cielo (axe + ratio medido); hover y foco en botones y accesos; **0 `requestAnimationFrame` suyos fuera de Inicio**, con la pausa y con movimiento reducido (escena estática); sin desborde a 360×640.
 - **Productos:** carrusel central sin tapar buscador ni tarjeta a 1440×900 y 1366×650; frente más grande y vecinos sombreados; tarjeta nueva sin scroll con los 37 productos; Detalle/Lista, enlace "Cómo llegar" con contraste ≥ 4.5:1 y objetivo ≥ 24 px; sal en grano con PNG recortado; Lighthouse móvil ≥ 93 (regla M5).
 - **Nosotros:** banda sin imágenes de costal.

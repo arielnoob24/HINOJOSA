@@ -1,6 +1,6 @@
 # Plan del proyecto: Sitio web de Comercial Hinojosa
 
-> Página publicitaria estática **manejada por vistas** (4 pantallas sin scroll de página desde 2026-10-16), con carrusel 3D de productos, imágenes animadas y video. **Rama de trabajo desde 2026-10-17: `HinoV2`.** Rediseño vigente: sección 0-C.
+> Página publicitaria estática **manejada por vistas** (4 pantallas sin scroll de página desde 2026-10-16), con carrusel 3D de productos, imágenes animadas y video. **Rama de trabajo: `HinoV2`.** Rediseño vigente: sección 0-C. **Publicada desde el 2026-10-17 en https://arielnoob24.github.io/HINOJOSA/** (cada push a `main` publica). Estado vivo: `hinojosa-web/docs/handoff.md`.
 > Negocio: **Comercial Hinojosa** · Lema: **"Nutrición que da vida"** · Giro: venta de balanceados, alimentos y productos para animales.
 
 **Orden de precedencia:** sección 0-B (decisiones de la auditoría, 2026-10-13) → sección 0 (activos del cliente, 2026-10-12) → resto del plan. Detalle de cada hallazgo en [`auditoria.md`](auditoria.md); los códigos (I1, N1, P1, C1…) remiten a ese archivo.
@@ -756,8 +756,8 @@ En `.claude/skills/` del proyecto:
 | 4. Animación | Carrusel sincronizado, transiciones, Canela, fallbacks | ✅ versión 1 |
 | 5. SEO y QA | Metadatos, Lighthouse > 90, axe 0, router 41/41 | ✅ |
 | **5-B. Mejoras de la auditoría** | Implementar la sección 0-B por bloques (ver orden abajo) | ✅ 2026-10-14: bloques 1–9, 12, 13 y 4-B + cierre de QA (`docs/qa-informe.md`). ⏳ Bloques 10 y 11 bloqueados (textos y WhatsApp de la dueña) |
-| **5-C. Rediseño 0-C** | Bloques 21–26 (Inicio granja, Productos centrado y tarjeta nueva, Nosotros, GSAP, Blender) | ⏳ 2026-10-17: 21–25 hechos (con los ajustes de la tarde y la noche); 26 a medias en la rama `wip/bloque26-transicion`; falta el cierre de QA |
-| 6. Publicación | Corregir workflow, `site`/`base`, GitHub Pages, enlaces verificados | ✅ 2026-10-17 preparado (workflow, `site`/`base`, rutas con base, 0 respuestas 404 bajo `/HINOJOSA/`). Se publica con el próximo push a `main` (lo decide el usuario); los datos pendientes salen como «Muy pronto publicaremos este dato» |
+| **5-C. Rediseño 0-C** | Bloques 21–27 (Inicio con video y animales, Productos 23b y tarjeta nueva, Nosotros, transición GSAP, fondos de huellas, Blender) | ✅ 2026-10-17, publicado. Falta el cierre de QA completo |
+| 6. Publicación | Workflow, `site`/`base`, GitHub Pages, enlaces verificados | ✅ **Publicado el 2026-10-17** en https://arielnoob24.github.io/HINOJOSA/ (commit `83c7a79`, run `39089026189` en verde; recorrido del sitio publicado sin fallos). Datos de la dueña aún pendientes (publicado por decisión del usuario) |
 
 ### Orden de implementación de la fase 5-B
 | Bloque | Contenido | Agentes | ¿Necesita a la dueña? |
@@ -796,7 +796,7 @@ En `.claude/skills/` del proyecto:
 
 ## 12. Riesgos y decisiones abiertas
 
-1. **Datos faltantes:** ya hay dirección, teléfonos y correo (2026-10-16). Faltan ciudad, WhatsApp, horario, enlace de Facebook, coordenadas e historia. No se publica hasta confirmar al menos ciudad y horario.
+1. **Datos faltantes:** ya hay dirección, teléfonos y correo (2026-10-16). Faltan ciudad, WhatsApp, horario, enlace de Facebook, coordenadas e historia. El usuario decidió publicar igualmente el 2026-10-17: los datos que faltan salen como "Muy pronto publicaremos este dato".
 2. **Navegación solo por barra:** decidido no añadir rueda ni deslizamiento. Riesgo: usuarios que intenten bajar con la rueda. Vigilar en las pruebas con usuarios; si aparece el problema, reconsiderar los enlaces "Siguiente →".
 3. **LCP de Inicio con la vitrina:** si los costales superan al logo en área, cambia el LCP. Límite de 24dvh o inyección tras `load`.
 4. **Clips de Canela generados con IA:** riesgo de que la gorra, el collar o la cara cambien durante el giro, o de que Canela avance por el cuadro. Se generan varias variantes y se revisa con la lista de `flow/PROMPTS.md`. Si el giro no sale bien, alternativa: frenar → sprite del ciclo espejado con un fundido muy corto. Peso de los sprites: si superan 450 kB, se reduce la altura o los cuadros por segundo (12 fps es suficiente).
@@ -837,17 +837,22 @@ En `.claude/skills/` del proyecto:
 - [ ] Fase 5-B: bloque 10 (textos de títulos, pilares, diferenciales) y bloque 11 (WhatsApp)
 - [x] Bloque 14: quitar botones de pausa, iconos en "Ver productos" y "Cómo llegar", y nuevo orden de la barra (2026-10-15)
 - [x] Vista Nosotros (bloque 15) y ficha de Productos (bloque 16), 2026-10-16
-- [ ] Repetir el cierre de QA tras los bloques 15–17
 - [x] Corregir el workflow de despliegue y preparar `site`/`base` para GitHub Pages (2026-10-17; sin push a `main`: lo hace el usuario)
 - [x] Plan, agentes y skills actualizados con el rediseño 0-C (2026-10-17)
 - [x] Instalar Blender 4.5 LTS, `uv` y registrar Blender MCP en `.mcp.json` (2026-10-17, probado con `get_scene_info`)
 - [x] Reducir los 9 animales y regenerar la sal en grano (2026-10-17)
 - [ ] Clave para `generate_3d` (o prueba gratuita de Rodin) y permiso de la dueña para subir imágenes; primera prueba con `Canela.png`
 - [x] Bloques 21–25 (2026-10-17): Inicio con video y animales, Productos (23b), tarjeta nueva con descripciones, Nosotros
-- [ ] Bloque 26: terminar y verificar la transición de `wip/bloque26-transicion`
+- [x] Bloque 26: transición con GSAP (2026-10-17)
+- [x] Bloque 27: Inicio en dos capas, foto de familia, pecera real, fondo de huellas (2026-10-17)
+- [x] Despliegue en GitHub Pages (2026-10-17)
+- [ ] Enviar el sitemap en Search Console
+- [ ] Arreglar el fallo de axe del correo en Visítanos (`label-content-name-mismatch`)
+- [ ] Aprobar el tono salvia `#B4C99D` y el antetítulo NOSOTROS en bosque
+- [ ] Guía de estilo y storyboards al día (`direccion-arte`)
 - [ ] Aprobar las 37 descripciones cortas de productos (en propuesta) y los casos dudosos
-- [ ] Usar `Nuevos Req/Animales/pecera.jpg` en lugar de la pecera dibujada de Inicio
+- [x] Pecera real de `Nuevos Req/Animales/pecera.jpg` en Inicio (2026-10-17)
 - [ ] Decidir dónde va el aviso de precios referenciales y marcas (riesgo 20)
 - [ ] Confirmar con el usuario: Blender solo para renders (0-C). (Cielo sin azul: ya no aplica, el fondo es un video; cuyes ✅)
-- [ ] Repetir el cierre de QA tras los bloques 21–26
+- [ ] Repetir el cierre de QA tras los bloques 21–27 (sobre el sitio publicado)
 - [ ] **Decidir al final (pospuesto por el usuario, 2026-10-17):** (1) en móvil, el velo que hace legible el texto de Inicio oscurece bastante el cielo del atardecer; para ver más cielo habría que bajar el bloque de texto o agrandar el acento. (2) El agua de la pecera de las tilapias es verdosa porque la paleta no tiene azul; agua azul = color nuevo con aprobación
