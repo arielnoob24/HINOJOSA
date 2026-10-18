@@ -10,6 +10,7 @@
 //   - Sin peticion previa, se descarga sola DESPUES de `load` y en un hueco
 //     libre (requestIdleCallback, con 200 ms de respaldo): el logo sigue
 //     siendo el LCP de Inicio y GSAP nunca compite con el.
+//   - gsapListo(): la instancia si ya llego, o null (sin esperar).
 //   - vigilarMovimiento(cb): equivalente a gsap.matchMedia() para la regla
 //     comun del sitio: avisa con `true` solo si no hay prefers-reduced-motion
 //     NI la pausa del sitio (html[data-movimiento="pausado"]). La pausa se
@@ -24,12 +25,21 @@ import { movimientoPermitido, mqReducido } from './movimiento';
 export type Gsap = typeof import('gsap').gsap;
 
 let promesa: Promise<Gsap> | null = null;
+let listo: Gsap | null = null;
+
+/**
+ * GSAP si ya esta descargado, o null (sin esperar). Para quien no puede
+ * esperar a la promesa, como la transicion entre vistas, que debe pintar su
+ * estado de partida en la misma tarea del clic: si aun no hay GSAP, usa su
+ * respaldo CSS.
+ */
+export const gsapListo = (): Gsap | null => listo;
 
 /** GSAP (una sola instancia). Se descarga la primera vez que se pide. */
 export function cargarGsap(): Promise<Gsap> {
   if (!promesa) {
     promesa = import('gsap').then(
-      (m) => m.gsap,
+      (m) => (listo = m.gsap),
       (err: unknown) => {
         promesa = null;
         throw err;

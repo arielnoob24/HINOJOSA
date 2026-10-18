@@ -2,24 +2,46 @@
 // Contrato: skill `vistas-hinojosa` ("Transicion entre vistas", "Barra") y
 // docs/storyboard-hero.md seccion 4.
 //
-// TRANSICION (T1, T2, A+): fundido cruzado direccional en DOS capas.
-//   - Saliente: se aparta 1 rem hacia -dir y se funde (160 ms, ease-salida),
-//     por debajo de la entrante. La funcion devuelve una Promise que se
-//     resuelve con su animationend (tope 200 ms); el router la oculta
-//     entonces y nunca antes: asi no se ve el fondo del body entre vistas.
-//   - Entrante: llega desde dir x 2,5 rem (380 ms, 60 ms de retraso).
-//   - Bloques [data-entra] de la entrante (style="--orden: N"): desde
-//     dir x 1,5 rem, 300 ms, 60 ms + N x 50 ms.
-//   Solo CSS (keyframes vista-sale / vista-entra / bloque-entra de
-//   tokens.css); este modulo pone atributos y variables. Sin GSAP.
+// TRANSICION (bloque 26, rediseno 0-C): TIMELINE DE GSAP con capas
+// solapadas. Una sola metafora: desplazamiento horizontal en el orden de la
+// barra (dir = +1 avanza, -1 retrocede), con algo de profundidad.
+//   t (s)   0 ...... 0.096 ...... 0.14 .. 0.24 ...... 0.60 ... 0.64
+//   Saliente  se aparta -dir x 1,25 rem y baja a escala 0,98 (0-0,40,
+//             power2.out) y se funde 1 -> 0 en 0-0,24 (power1.out). Por
+//             DEBAJO. Las vistas no tienen fondo propio (salvo Inicio): si
+//             la saliente aguantara opaca se leerian dos maquetas a la vez.
+//   Entrante  desde dir x 3 rem a 0 (0,096-0,596, power3.out) y opacidad
+//             0 -> 1 (0,096-0,416, power2.out). Por ENCIMA. Arranca
+//             cuando la saliente lleva el 40 % de su fundido (solape 60 %).
+//   Bloques   [data-entra] de la entrante (--orden N): desde dir x 1,5 rem
+//             y opacidad 0, 400 ms power3.out, desde 0,14 + N x 0,05 s.
+//   Promesa   se resuelve a ~0,24 s (saliente invisible y entrante > 0,64):
+//             el router oculta entonces la saliente (prueba 13).
+//   Total ~640 ms (medido: 570-620 ms hasta el ultimo cambio visible). El
+//   timeline espera dos fotogramas antes de correr (ver transicionGsap).
+//   Se animan las propiedades `translate`, `scale` y
+//   `opacity` (no `transform`: no pisan los transform propios de cada
+//   bloque) sobre un objeto de estado por elemento; mientras dura,
+//   will-change las sube a su capa. Al terminar se limpian los estilos.
+//
+// INTERRUMPIBLE: un clic nuevo mata el timeline y arranca otro DESDE EL
+// ESTADO EN QUE ESTABA cada elemento (sin saltos): si se vuelve a la vista
+// que se iba, regresa desde donde estaba; si se va a una tercera, la que
+// entraba pasa a salir y la que ya se iba (`previas` del router) sigue
+// fundiendose por debajo hasta que esta termine.
+//
+// RESPALDO sin GSAP (los primeros instantes antes de que llegue tras
+// `load`, o si falla su descarga): el fundido CSS en dos capas de antes
+// (keyframes vista-sale / vista-entra / bloque-entra de tokens.css). No se
+// espera a GSAP: el estado de partida tiene que pintarse en la misma tarea.
 //
 // El foco NO espera: el router ya lo movio al titulo antes de llamar a la
 // transicion. Con prefers-reduced-motion o con la pausa del sitio el router
-// no llama a la transicion y el corte es seco (la pastilla tambien salta).
-// Clics rapidos: la saliente nueva parte del estado en que estaba (opacidad
-// y desplazamiento leidos en el momento), nunca de golpe a 1.
-import { registrarTransicion, alCambiarVista, vistaActual } from '../router';
+// no llama a la transicion y el corte es seco (la pastilla tambien salta);
+// si la pausa llega a mitad, todo salta a su estado final.
+import { registrarTransicion, alCambiarVista, vistaActual, type ContextoTransicion } from '../router';
 import { alCambiarMovimiento, cubicBezier, movimientoPermitido, ms, token } from './movimiento';
+import { cargarGsap, gsapListo, vigilarMovimiento, type Gsap } from './gsap-carga';
 
 const html = document.documentElement;
 
@@ -45,18 +67,275 @@ function translateX(valor: string): string {
   return !primero || primero === 'none' ? '0px' : primero;
 }
 
+// =====================================================================
+// Timeline de GSAP (motor principal)
+// =====================================================================
+interface Estado {
+  /** translate X en px */
+  x: number;
+  /** scale */
+  s: number;
+  /** opacity */
+  o: number;
+}
+
+/** Tiempos en segundos y desplazamientos en rem (ver cabecera). */
+interface Parametros {
+  saleMov: number; // la saliente se aparta (power2.out)
+  saleEscala: number;
+  saleFundido: number; // la saliente se funde 1 -> 0 (power1.out) desde 0
+  entra: number; // arranque de la entrante: fija el SOLAPE con el fundido
+  entraMov: number; // desplazamiento de la entrante (power3.out)
+  entraFundido: number; // opacidad de la entrante 0 -> 1 (power2.out)
+  bloquesDesde: number;
+  escalon: number;
+  bloqueDur: number;
+  despSale: number;
+  despEntra: number;
+  despBloque: number;
+}
+
+// Elegida tras medir dos variantes (bloque 26, 2026-10-17): solape del 60 %
+// (la entrante aparece cuando la saliente lleva el 40 % de su fundido)
+// frente a solape del 40 %. Con el 40 % el fondo crema llegaba a verse al
+// 82 % entre vistas (se lee como una vista en blanco) y los pasos por
+// fotograma eran mayores (hasta 10 px y 0,24 de opacidad); con el 60 % la
+// doble imagen se queda en 0,06 y el paso maximo en 6 px y 0,15.
+const P: Parametros = {
+  saleMov: 0.4,
+  saleEscala: 0.98,
+  saleFundido: 0.26,
+  entra: 0.096,
+  entraMov: 0.5,
+  entraFundido: 0.32,
+  bloquesDesde: 0.096,
+  escalon: 0.06,
+  bloqueDur: 0.42,
+  despSale: 1.25,
+  despEntra: 3,
+  despBloque: 1.5,
+};
+
+/**
+ * Opacidad de partida de la entrante y sus bloques: invisible, pero no 0.
+ * Chrome no pinta lo que tiene opacidad 0, asi que con 0 el rasterizado de
+ * toda la vista (en Inicio: video, lienzos de los animales, Canela) caia en
+ * el primer fotograma en que asomaba, a mitad de la animacion (medido: un
+ * fotograma de 130-170 ms a los ~150 ms). Con 0,002 se rasteriza durante
+ * los dos fotogramas de espera, antes de que el timeline corra.
+ */
+const CASI_CERO = 0.002;
+
+type Linea = ReturnType<Gsap['timeline']>;
+
+/** Elementos (vistas y bloques) cuyo translate/scale/opacity lleva GSAP. */
+const estados = new Map<HTMLElement, Estado>();
+let linea: Linea | null = null;
+let resolverPendiente: (() => void) | null = null;
+
+function pintar(el: HTMLElement, e: Estado) {
+  el.style.translate = `${e.x.toFixed(2)}px 0px`;
+  el.style.scale = e.s.toFixed(4);
+  el.style.opacity = e.o.toFixed(3);
+}
+
+function soltar(el: HTMLElement) {
+  for (const p of ['translate', 'scale', 'opacity', 'z-index', 'will-change']) el.style.removeProperty(p);
+  estados.delete(el);
+}
+
+function soltarTodo() {
+  for (const el of [...estados.keys()]) soltar(el);
+}
+
+/** Estado actual de un elemento a mitad de transicion, o null si esta en reposo. */
+function leerEstado(el: HTMLElement): Estado | null {
+  const e = estados.get(el);
+  if (e) return { ...e };
+  // A mitad del respaldo CSS (GSAP acaba de llegar): el valor animado
+  if (!el.matches('.vista[data-sale], .vista[data-entrando], .vista[data-entrando] [data-entra]')) return null;
+  const cs = getComputedStyle(el);
+  const t = (cs.translate || 'none').trim().split(/\s+/)[0];
+  const sc = (cs.scale || 'none').trim().split(/\s+/)[0];
+  return {
+    x: t && t !== 'none' ? parseFloat(t) || 0 : 0,
+    s: sc && sc !== 'none' ? parseFloat(sc) || 1 : 1,
+    o: Math.min(1, Math.max(0, parseFloat(cs.opacity))),
+  };
+}
+
+/**
+ * Suavizado de tirones de GSAP mientras dura la transicion: un fotograma de
+ * mas de 100 ms (rasterizado de la vista que entra, sobre todo Inicio con
+ * sus lienzos) cuenta como uno de 16,7 ms. Sin esto GSAP avanzaba el tiempo
+ * real perdido y la vista saltaba a media animacion (medido: de 0,87 a 0,07
+ * de opacidad en un fotograma); asi se congela un instante y sigue. Al
+ * terminar se restaura el valor por defecto de GSAP (500, 33).
+ */
+function suavizarTirones(g: Gsap | null, activo: boolean) {
+  g?.ticker.lagSmoothing(activo ? 60 : 500, activo ? 1000 / 60 : 33);
+}
+
+/** Mata el timeline en curso y resuelve su promesa (su generacion ya no cierra nada). */
+function cortarLinea() {
+  linea?.kill();
+  if (linea) suavizarTirones(gsapListo(), false);
+  linea = null;
+  const r = resolverPendiente;
+  resolverPendiente = null;
+  r?.();
+}
+
+function orden(el: HTMLElement): number {
+  const n = parseInt(getComputedStyle(el).getPropertyValue('--orden'), 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function transicionGsap(g: Gsap, { saliente, entrante, direccion: dir, previas }: ContextoTransicion): Promise<void> {
+  const rem = parseFloat(getComputedStyle(html).fontSize) || 16;
+  const bloquesEntrante = Array.from(entrante.querySelectorAll<HTMLElement>('[data-entra]'));
+  const bloquesSaliente = Array.from(saliente.querySelectorAll<HTMLElement>('[data-entra]'));
+
+  // 1. Fotografia del estado de cada elemento ANTES de tocar nada
+  const foto = new Map<HTMLElement, Estado | null>();
+  for (const el of [saliente, entrante, ...previas, ...bloquesEntrante, ...bloquesSaliente]) foto.set(el, leerEstado(el));
+
+  // 2. Corta lo anterior: timeline de GSAP y restos del respaldo CSS
+  cortarLinea();
+  window.clearTimeout(temporizadorLimpieza);
+  for (const v of document.querySelectorAll<HTMLElement>('.vista[data-sale], .vista[data-entrando]')) {
+    v.removeAttribute('data-sale');
+    v.removeAttribute('data-entrando');
+  }
+  // Lo que quedo en vistas ya ocultas vuelve a su estilo de reposo
+  for (const el of [...estados.keys()]) {
+    const vista = el.closest<HTMLElement>('.vista');
+    if (!vista || vista.hidden) soltar(el);
+  }
+
+  const fijar = (el: HTMLElement, e: Estado, z?: number): Estado => {
+    estados.set(el, e);
+    el.style.willChange = 'translate, scale, opacity';
+    if (z !== undefined) el.style.zIndex = String(z);
+    pintar(el, e);
+    return e;
+  };
+
+  // 3. Estados de partida (se pintan YA, en la misma tarea del clic: la
+  //    entrante nunca llega a pintarse opaca antes de empezar)
+  const salEnVuelo = foto.get(saliente) ?? null;
+  const sal = fijar(saliente, salEnVuelo ?? { x: 0, s: 1, o: 1 }, 1);
+  const enVuelo = foto.get(entrante) ?? null;
+  const ent = fijar(entrante, enVuelo ?? { x: dir * P.despEntra * rem, s: 1, o: CASI_CERO }, 2);
+  const prev = previas.map((p) => fijar(p, foto.get(p) ?? { x: 0, s: 1, o: 1 }, 0));
+  // Bloques de la saliente a medio entrar: se quedan donde estan
+  for (const b of bloquesSaliente) {
+    const f = foto.get(b);
+    if (f) fijar(b, f);
+  }
+  const bloques: Array<{ el: HTMLElement; e: Estado; n: number; enVuelo: boolean }> = [];
+  for (const b of bloquesEntrante) {
+    const f = foto.get(b) ?? null;
+    // Si la entrante volvia de irse (ya habia entrado), sus bloques estan
+    // en reposo: no se repite su entrada (seria un salto a opacidad 0)
+    if (!f && enVuelo) continue;
+    bloques.push({ el: b, e: fijar(b, f ?? { x: dir * P.despBloque * rem, s: 1, o: CASI_CERO }), n: orden(b), enVuelo: Boolean(f) });
+  }
+
+  // 4. Timeline, en pausa hasta que se haya pintado el primer fotograma
+  //    con la entrante montada (ver 6)
+  const tl = g.timeline({
+    paused: true,
+    onComplete: () => {
+      if (linea !== tl) return;
+      linea = null;
+      suavizarTirones(g, false);
+      // La saliente y las previas ya estan ocultas (o lo estaran en la
+      // microtarea de la promesa, antes del siguiente pintado)
+      soltarTodo();
+    },
+  });
+  linea = tl;
+  const pinta = (el: HTMLElement, e: Estado) => () => pintar(el, e);
+
+  // Saliente: se aparta poco hacia -dir y se encoge un poco (profundidad);
+  // se funde pronto para que no se lean dos maquetas a la vez
+  tl.to(sal, { x: -dir * P.despSale * rem, s: P.saleEscala, duration: P.saleMov, ease: 'power2.out', onUpdate: pinta(saliente, sal) }, 0);
+  // (si ya estaba a medio fundir, tarda en proporcion a lo que le queda)
+  const fundido = P.saleFundido * Math.max(0.4, sal.o);
+  tl.to(sal, { o: 0, duration: fundido, ease: 'power1.out', onUpdate: pinta(saliente, sal) }, 0);
+  // Previas: terminan de fundirse por debajo
+  previas.forEach((p, i) => {
+    tl.to(prev[i], { o: 0, duration: 0.2, ease: 'power1.out', onUpdate: pinta(p, prev[i]) }, 0);
+  });
+  // Entrante: por encima, desde dir. Sin esperar si volvia de irse o si la
+  // saliente ya estaba a medio camino (clics rapidos: no se ahonda el
+  // hueco de fondo crema entre las dos)
+  const t0 = enVuelo || salEnVuelo ? 0 : P.entra;
+  tl.to(ent, { x: 0, s: 1, duration: P.entraMov, ease: 'power3.out', onUpdate: pinta(entrante, ent) }, t0);
+  tl.to(ent, { o: 1, duration: P.entraFundido, ease: 'power2.out', onUpdate: pinta(entrante, ent) }, t0);
+  // Bloques [data-entra], escalonados por --orden
+  for (const b of bloques) {
+    const inicio = b.enVuelo ? 0 : P.bloquesDesde + b.n * P.escalon;
+    tl.to(b.e, { x: 0, s: 1, o: 1, duration: P.bloqueDur, ease: 'power3.out', onUpdate: pinta(b.el, b.e) }, inicio);
+  }
+
+  // 5. Promesa: el router oculta la saliente cuando ya es invisible Y la
+  //    entrante pasa de 0,64 de opacidad (40 % de su fundido): prueba 13
+  const fin = Math.max(fundido, t0 + 0.4 * P.entraFundido);
+  const promesa = new Promise<void>((resolver) => {
+    resolverPendiente = resolver;
+    tl.call(
+      () => {
+        if (resolverPendiente === resolver) resolverPendiente = null;
+        resolver();
+      },
+      [],
+      fin,
+    );
+  });
+
+  // 6. Arranque al TERCER fotograma. Montar la vista cuesta: estilo y
+  //    maquetacion en la tarea del router, y el rasterizado de la vista que
+  //    entra (con opacidad CASI_CERO ya se pinta) bloquea el envio del
+  //    fotograma siguiente: medido en Inicio, ~170 ms con la CPU x1 sin
+  //    aceleracion (mas en gama baja). Si el timeline corriera ya, ese
+  //    tiron caeria con la saliente a medio irse; esperando tres
+  //    fotogramas cae antes de que nada se mueva y la animacion sale
+  //    entera. Cuesta ~3 fotogramas de latencia (~50 ms) cuando no hay tiron;
+  //    el foco ya esta en el titulo desde el clic. Si la entrante ya estaba
+  //    montada (se vuelve a la vista que se iba), no hay nada que rasterizar:
+  //    arranca en el fotograma siguiente.
+  let esperas = enVuelo ? 1 : 3;
+  const arrancar = () => {
+    if (linea !== tl) return;
+    if (--esperas > 0) {
+      window.requestAnimationFrame(arrancar);
+      return;
+    }
+    suavizarTirones(g, true);
+    tl.play();
+  };
+  window.requestAnimationFrame(arrancar);
+  return promesa;
+}
+
+// =====================================================================
+// Respaldo CSS (sin GSAP): fundido en dos capas (keyframes de tokens.css)
+// =====================================================================
 let temporizadorLimpieza = 0;
 
-registrarTransicion(({ saliente, entrante, direccion }) => {
+function transicionCss({ saliente, entrante, direccion }: ContextoTransicion): Promise<void> {
   // 1. Estado de partida de la saliente. Si estaba entrando (clic rapido),
   //    sale desde la opacidad y el desplazamiento que tenia en este instante.
   const cs = getComputedStyle(saliente);
   const opacidad = Math.min(1, Math.max(0, parseFloat(cs.opacity) || 0));
   const x = translateX(cs.translate || 'none');
 
-  // 2. Limpia transiciones anteriores: solo una entrante y una saliente.
-  for (const v of document.querySelectorAll<HTMLElement>('.vista[data-sale], .vista[data-entrando]')) {
-    v.removeAttribute('data-sale');
+  // 2. Limpia transiciones anteriores: una sola entrante. Las que aun se
+  //    iban (`previas`) conservan data-sale y acaban su fundido por debajo.
+  entrante.removeAttribute('data-sale');
+  for (const v of document.querySelectorAll<HTMLElement>('.vista[data-entrando]')) {
     if (v !== entrante) v.removeAttribute('data-entrando');
   }
   window.clearTimeout(temporizadorLimpieza);
@@ -94,7 +373,43 @@ registrarTransicion(({ saliente, entrante, direccion }) => {
     saliente.addEventListener('animationcancel', fin);
     const tope = window.setTimeout(fin, TOPE_SALIDA);
   });
+}
+
+registrarTransicion((ctx) => {
+  const g = gsapListo();
+  if (g) return transicionGsap(g, ctx);
+  // GSAP aun no ha llegado (o fallo): respaldo CSS, y que llegue ya
+  void cargarGsap().catch(() => undefined);
+  return transicionCss(ctx);
 });
+
+// Cambio sin animar (pausa o reduced motion) con una transicion a medias:
+// nada se queda a opacidad parcial ni desplazado.
+alCambiarVista((d) => {
+  if (d.inicial || movimientoPermitido()) return;
+  cortarLinea();
+  soltarTodo();
+});
+// La pausa (o reduced motion) llega a mitad: todo salta a su estado final
+vigilarMovimiento((permitido) => {
+  if (!permitido && linea) linea.progress(1);
+});
+
+declare global {
+  interface Window {
+    /** Diagnostico (pruebas de vistas-hinojosa): motor y restos de la transicion. */
+    hinojosaTransicion?: {
+      motor: () => 'gsap' | 'css';
+      activa: () => boolean;
+      estilos: () => number;
+    };
+  }
+}
+window.hinojosaTransicion = {
+  motor: () => (gsapListo() ? 'gsap' : 'css'),
+  activa: () => Boolean(linea?.isActive()),
+  estilos: () => estados.size,
+};
 
 // ---------------------------------------------------------------------
 // Pastilla de la vista activa (B2-B4)

@@ -190,8 +190,16 @@ function cargarVideo() {
   hayCuadro = false;
 }
 
+/** Al volver a Inicio, el video espera a que acabe la transicion (ver abajo). */
+const RETENER_TRAS_TRANSICION = 650;
+let retenerHasta = 0;
+
 const debeReproducir = () =>
-  vistaActual() === 'inicio' && !document.hidden && movimientoPermitido() && !ahorroDatos();
+  vistaActual() === 'inicio' &&
+  !document.hidden &&
+  movimientoPermitido() &&
+  !ahorroDatos() &&
+  performance.now() >= retenerHasta;
 
 let estado: 'sin-cargar' | 'reproduciendo' | 'pausado' = 'sin-cargar';
 
@@ -220,7 +228,21 @@ if (lienzo && video) {
   video.addEventListener('playing', programar);
   video.addEventListener('pause', cancelar);
   sincronizar();
-  alCambiarVista(sincronizar);
+  // Al volver a Inicio desde otra vista, el video se reanuda cuando acaba la
+  // transicion (vistas.ts, ~640 ms): mientras tanto el lienzo conserva su
+  // ultimo cuadro (escena quieta, sin parpadeo) y la decodificacion no
+  // compite con los fotogramas del timeline (medido: un fotograma de ~60-75
+  // ms en mitad de la entrada). El poster, si hace falta, se pide ya.
+  let reanudar = 0;
+  alCambiarVista((d) => {
+    window.clearTimeout(reanudar);
+    retenerHasta = 0;
+    if (d.vista === 'inicio' && d.anterior && !d.inicial && movimientoPermitido()) {
+      retenerHasta = performance.now() + RETENER_TRAS_TRANSICION;
+      reanudar = window.setTimeout(sincronizar, RETENER_TRAS_TRANSICION + 10);
+    }
+    sincronizar();
+  });
   document.addEventListener('visibilitychange', sincronizar);
   window.addEventListener('hinojosa:movimiento', sincronizar);
   mqReducido.addEventListener('change', sincronizar);

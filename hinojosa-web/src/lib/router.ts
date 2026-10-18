@@ -39,13 +39,21 @@ export interface ContextoTransicion {
   saliente: HTMLElement;
   entrante: HTMLElement;
   direccion: 1 | -1;
+  /**
+   * Vistas que aun se estaban yendo por una transicion anterior (clics
+   * rapidos): siguen visibles e inert, por debajo, hasta que esta termine.
+   * Ocultarlas de golpe a mitad del fundido dejaba ver el fondo del body.
+   */
+  previas: HTMLElement[];
 }
 /**
  * Funcion de transicion. Se llama cuando el entrante YA es visible, ya no
- * es inert y ya tiene el foco; el saliente sigue visible pero inert. Al
- * resolverse la promesa (o a los 1200 ms como tope) el router oculta el
- * saliente con `hidden`. No se llama con prefers-reduced-motion ni con las
- * animaciones pausadas: el cambio es instantaneo.
+ * es inert y ya tiene el foco; el saliente (y las `previas`) siguen visibles
+ * pero inert. Al resolverse la promesa (o a los 1200 ms como tope) el router
+ * los oculta con `hidden`, salvo que entretanto haya empezado otra
+ * transicion (entonces los oculta esa). No se llama con
+ * prefers-reduced-motion ni con las animaciones pausadas: el cambio es
+ * instantaneo.
  */
 export type Transicion = (ctx: ContextoTransicion) => Promise<unknown> | void;
 
@@ -124,12 +132,17 @@ function activar(destino: Vista, { inicial = false, foco = true, elemento = null
   entrante.setAttribute('data-activa', '');
 
   // 2. El resto, inert al instante; oculto ya salvo el saliente si se anima
+  //    y las que aun se estan yendo de una transicion anterior (previas)
+  const previas: HTMLElement[] = [];
   for (const [nombre, el] of secciones) {
     if (nombre === destino) continue;
     el.removeAttribute('data-activa');
     if (animar && el === saliente) {
       el.inert = true;
       el.setAttribute('data-saliendo', '');
+    } else if (animar && !el.hidden && el.hasAttribute('data-saliendo')) {
+      el.inert = true;
+      previas.push(el);
     } else {
       ocultar(el);
     }
@@ -170,15 +183,15 @@ function activar(destino: Vista, { inicial = false, foco = true, elemento = null
     const cerrar = () => {
       if (terminado) return;
       terminado = true;
-      // Si mientras tanto se volvio a esa vista, sigue activa: no se oculta.
-      // Si otra transicion mas nueva la esta sacando, esa la cerrara.
-      if (actual !== saliente.id && (gen === generacion || !saliente.hasAttribute('data-saliendo'))) {
-        ocultar(saliente);
-      }
+      // Si entretanto empezo otra transicion, esa se queda con estas vistas
+      // (las recibe como `previas`) y las oculta al terminar; si fue un
+      // cambio sin animar, ya las oculto. Nunca se oculta la activa.
+      if (gen !== generacion) return;
+      for (const el of [saliente, ...previas]) if (el.id !== actual) ocultar(el);
     };
     window.setTimeout(cerrar, TOPE_TRANSICION);
     try {
-      Promise.resolve(transicion({ saliente, entrante, direccion: direccion as 1 | -1 })).then(cerrar, cerrar);
+      Promise.resolve(transicion({ saliente, entrante, direccion: direccion as 1 | -1, previas })).then(cerrar, cerrar);
     } catch {
       cerrar();
     }
