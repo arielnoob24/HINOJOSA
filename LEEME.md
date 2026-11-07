@@ -1,3 +1,5 @@
+> **Nota (2026-11-07):** este archivo describe el paquete de recursos del inicio del proyecto y **ya no refleja el estado del sitio**. Estado vivo del proyecto: `hinojosa-web/docs/handoff.md`; plan: `PLAN.md`.
+
 # Paquete de recursos – Comercial Hinojosa
 
 ## imagenes/

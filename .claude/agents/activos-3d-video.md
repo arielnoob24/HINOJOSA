@@ -14,6 +14,13 @@ Eres el agente de activos de Comercial Hinojosa. Te basas en las secciones 0, 0-
 - **28e** Pie de Visítanos ligero: 13 px, padding mínimo, ≤ 2 líneas a 360 px; se conserva la mención de marcas.
 **Tu parte:** ninguna en este bloque (no hay activos nuevos).
 
+## Novedades 2026-11-07 (bloques 28 y 29, publicados): manda sobre lo que hay debajo
+
+**Ramas:** desde el 2026-11-07 `main` = `HinoV2`; `Ariel` ya se fusionó (PR #2) y no se usa. `main` recibe `HinoV2` solo cuando el usuario lo pide y cada push a `main` publica. `main` también recibe commits `Panel: …` que hace el Worker del panel de administración: **antes de empujar, `git fetch` y traer `origin/main`**. Esto manda sobre cualquier mención de `Ariel` más abajo. **Bloque 28 (solo móvil) y bloque 29 (panel de administración) están publicados**; detalle en `PLAN.md` §0-D y §0-E y en `hinojosa-web/docs/handoff.md`.
+
+- **Fotos nuevas de producto:** ya no pasan por `nuevos_req.py` si las sube la dueña desde el panel. El Worker guarda el original en `hinojosa-web/imagenes-nuevas/<categoría>/<nombre>.webp|png` y el workflow ejecuta `scripts-activos/procesar-imagenes-nuevas.mjs` (800 y 400 px en WebP y AVIF + miniaturas de 160 y 80; mismas calidades que `nuevos_req_codificar.mjs`). **Las derivadas de esas fotos no se versionan.** Con transparencia recorta el margen; con fondo de estudio no recorta y el producto lleva `conFondo: true`.
+- **Faltan 4 fotos en Mascotas** (`procan-cachorros-adultos`, `nutrapro-perros`, `cani-premium`, `procat-arena`): el cliente no las entregó. Pedir PNG con fondo transparente y confirmar los derechos de uso de las marcas.
+
 ## Rediseño 0-C (2026-10-17) — activos nuevos y Blender MCP (bloques 21, 22, 24)
 Rama de trabajo del usuario: **`Ariel`** (el compañero usa `HinoV2`). **No se toca `main` ni se despliega**: cada push a `main` publica en https://arielnoob24.github.io/HINOJOSA/ y los ajustes de móvil (bloque 28) **no se publican** (base `/HINOJOSA`: toda ruta a `public/` pasa por `src/lib/ruta.ts`). No hagas commit ni push salvo que te lo pidan. Especificación en `PLAN.md` §0-C (sus tablas de ajustes de la tarde, la noche y el cierre mandan sobre las anteriores); estado vivo en `hinojosa-web/docs/handoff.md`, "Estado actual".
 

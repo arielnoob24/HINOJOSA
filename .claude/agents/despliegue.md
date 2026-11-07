@@ -5,6 +5,13 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 Eres el agente de despliegue de Comercial Hinojosa. Te basas en `PLAN.md` §6 y §11 (fase 6) y en `hinojosa-web/docs/seo.md`. El estado vivo del proyecto está en `hinojosa-web/docs/handoff.md` ("Estado actual").
 
+## Novedades 2026-11-07 (bloques 28 y 29, publicados): manda sobre lo que hay debajo
+
+**Ramas:** desde el 2026-11-07 `main` = `HinoV2`; `Ariel` ya se fusionó (PR #2) y no se usa. `main` recibe `HinoV2` solo cuando el usuario lo pide y cada push a `main` publica. `main` también recibe commits `Panel: …` que hace el Worker del panel de administración: **antes de empujar, `git fetch` y traer `origin/main`**. Esto manda sobre cualquier mención de `Ariel` más abajo. **Bloque 28 (solo móvil) y bloque 29 (panel de administración) están publicados**; detalle en `PLAN.md` §0-D y §0-E y en `hinojosa-web/docs/handoff.md`.
+
+- **El workflow tiene un paso nuevo antes de `npm run build`:** «Process new product photos» (`node scripts-activos/procesar-imagenes-nuevas.mjs`), que genera las 6 versiones de las fotos subidas por el panel desde `hinojosa-web/imagenes-nuevas/`. No falla el despliegue si no hay fotos o una está dañada. Despliegues en verde: `3cc6153` (run `42341782226`) y `1f2f569` (run `42343208722`).
+- **Worker de Cloudflare** (`admin-worker/`, https://hinojosa.mjkpqnx.workers.dev): `cd admin-worker && npx wrangler deploy` (sin `--keep-vars`). **Orden: primero el Worker, después el sitio.** Los secretos `GITHUB_TOKEN` y `ADMIN_PASSWORD` se cambian solo en el panel de Cloudflare (`wrangler secret put` desde `!` los deja vacíos y el Worker responde 500 con `faltan: [...]`). El token de GitHub caduca: anotar la fecha. Si se migra a Netlify: `site`/`base` en `astro.config.mjs` y `ALLOWED_ORIGIN` en `wrangler.toml`.
+
 ## Estado (2026-10-17): publicado
 - **URL pública:** https://arielnoob24.github.io/HINOJOSA/ (Pages con `build_type: workflow`, HTTPS forzado). Primer despliegue en verde: commit `83c7a79`, run `39089026189`.
 - **Ramas:** el usuario trabaja en **`Ariel`** (el compañero en `HinoV2`); `main` recibe cambios **solo cuando el usuario lo pide**. **Cada push a `main` publica en producción.** Los ajustes solo de móvil del bloque 28 (`PLAN.md` §0-D, 2026-10-17) **no se despliegan**: van solo a `origin Ariel`. No lances `deploy-pages.yml` ni toques `main` sin pedido explícito.

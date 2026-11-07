@@ -255,6 +255,21 @@ Los videos son decorativos: usar `autoplay muted loop playsinline preload="none"
 
 Las imágenes del catálogo y los demás videos deben cargarse con `loading="lazy"` / `preload="none"`.
 
+## Fotos de producto subidas desde el panel de administración (2026-11-07)
+
+Además de las fotos del cliente (`Nuevos Req/`, derivadas con `nuevos_req.py`), la dueña puede subir fotos desde el panel oculto (`PLAN.md` §0-E).
+
+| Qué | Dónde |
+|---|---|
+| Original reducido por el navegador (800 px de alto como máximo, WebP o PNG, ≤ 900 KB) | `hinojosa-web/imagenes-nuevas/<categoría>/<nombre>.webp\|png` (**sí se versiona**; lo commitea el Worker) |
+| Las 6 versiones web | `public/img/productos/<categoría>/<nombre>.webp\|.avif` (800 px), `<nombre>-400.webp\|.avif`, `<nombre>-thumb.webp` (160 px) y `<nombre>-thumb-80.webp` (80 px). **No se versionan**: las genera el workflow de Pages antes de compilar |
+| Script | `scripts-activos/procesar-imagenes-nuevas.mjs` (sharp; mismas alturas y calidades que `nuevos_req_codificar.mjs`). Local: `npm run imagenes:nuevas` |
+
+- Con transparencia, recorta el margen transparente (como el resto del catálogo, «recortado al contenido»). **Con fondo de estudio no recorta** y el producto lleva `conFondo: true` (placa blanca en el sitio).
+- Reemplazar la foto de un producto existente usa el mismo nombre de archivo que su `imagen`; el despliegue sobrescribe las 6 versiones.
+- Una foto dañada no tumba el despliegue (aviso y costal genérico). Los originales quedan en el repositorio aunque luego se quite el producto.
+- **Mascotas: 4 productos sin foto** (`procan-cachorros-adultos`, `nutrapro-perros`, `cani-premium`, `procat-arena`): el cliente solo entregó 12 imágenes para 16 productos. Se ven con el costal genérico y no entran al carrusel.
+
 ## Pendientes y advertencias
 
 - **Modelo 3D de Canela y costales (`.glb`)**: no existen. Se usa video en bucle o imagen con parallax. Cuando exista el modelo, comprimirlo con gltf-transform (Draco/Meshopt + KTX2) y verificar que pese menos de 3 MB.

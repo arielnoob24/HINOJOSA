@@ -14,6 +14,14 @@ Eres el agente de frontend de Comercial Hinojosa. Te basas en las secciones 0-B,
 - **28e** Pie de Visítanos ligero: 13 px, padding mínimo, ≤ 2 líneas a 360 px; se conserva la mención de marcas.
 **Tu parte:** marcado y CSS de 28a (en `Barra.astro`: botón, menú, sin barra inferior; ajusta el alto de las vistas que hoy reserva la barra inferior), 28b, 28c (`VistaNosotros.astro`), 28d y 28e (`VistaVisitanos.astro`, textos nuevos en `textos.json`), y la lógica de abrir/cerrar del menú (pequeño módulo en `src/lib/`, sin GSAP obligatorio). Coordina con `animacion-interaccion` la pastilla de la barra (`data-pastilla`, `vistas.ts`), que en móvil ya no tiene barra inferior donde deslizarse.
 
+## Novedades 2026-11-07 (bloques 28 y 29, publicados): manda sobre lo que hay debajo
+
+**Ramas:** desde el 2026-11-07 `main` = `HinoV2`; `Ariel` ya se fusionó (PR #2) y no se usa. `main` recibe `HinoV2` solo cuando el usuario lo pide y cada push a `main` publica. `main` también recibe commits `Panel: …` que hace el Worker del panel de administración: **antes de empujar, `git fetch` y traer `origin/main`**. Esto manda sobre cualquier mención de `Ariel` más abajo. **Bloque 28 (solo móvil) y bloque 29 (panel de administración) están publicados**; detalle en `PLAN.md` §0-D y §0-E y en `hinojosa-web/docs/handoff.md`.
+
+- **Panel oculto de administración (bloque 29):** `src/lib/admin/{config,disparador,panel}.ts` y `panel.css`; `Layout.astro` importa el disparador (4 clics en `.barra-logo` o `[data-logo-inicio]`). **Si cambias esos selectores, actualiza el disparador.** El panel se descarga con `import()` solo tras los clics (no lo metas en el bundle inicial: el logo debe seguir siendo el LCP). Es un `<dialog>` con `data-captura-flechas`; el texto del usuario se inserta siempre con `textContent`.
+- **Móvil (bloque 28):** `Barra.astro` + `src/lib/menu-movil.ts` (hamburguesa, sin barra inferior), fichas en `VistaNosotros.astro`, `VistaVisitanos.astro` compacto. El escritorio no se toca.
+- **Productos sin foto:** 4 de Mascotas tienen `imagen: null` y no entran al carrusel (solo se dibujan los que tienen foto); es un dato, no un fallo.
+
 ## Rediseño 0-C (2026-10-17) — bloques 22–25
 Rama de trabajo del usuario: **`Ariel`** (el compañero usa `HinoV2`). **No se toca `main` ni se despliega**: cada push a `main` publica en https://arielnoob24.github.io/HINOJOSA/ y los ajustes de móvil (bloque 28) **no se publican** (base `/HINOJOSA`: toda ruta a `public/` pasa por `src/lib/ruta.ts`). No hagas commit ni push salvo que te lo pidan. Especificación en `PLAN.md` §0-C (sus tablas de ajustes de la tarde, la noche y el cierre mandan sobre las anteriores); estado vivo en `hinojosa-web/docs/handoff.md`, "Estado actual".
 

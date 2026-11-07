@@ -1,29 +1,64 @@
 # Handoff: sitio web de Comercial Hinojosa
 
-Última actualización: **2026-10-18, bloque 28 (solo móvil) terminado en la rama `Ariel` y propuesto a `main` con un pull request**. Ramas: el compañero trabaja en **`HinoV2`**, Ariel en **`Ariel`**; sitio publicado en https://arielnoob24.github.io/HINOJOSA/ (aún sin el bloque 28). **Lee solo "Estado actual"**; lo que hay debajo de "Historial" es el registro de sesiones anteriores y no rige.
+Última actualización: **2026-11-07, tras publicar el bloque 29 (panel oculto de administración) y el bloque 28 (móvil)**. Rama de trabajo: **`HinoV2`** (igual a `main`); sitio publicado en https://arielnoob24.github.io/HINOJOSA/. **Lee solo "Estado actual (2026-11-07)"** y, debajo, "Estado del 2026-10-17" (base del rediseño 0-C, sigue vigente salvo lo que diga la sección nueva). Lo que hay bajo "Historial" es el registro de sesiones anteriores y no rige.
 
-## Rama `Ariel` — bloque 28, solo móvil (2026-10-17 noche y 2026-10-18; NO publicado)
+## Estado actual (2026-11-07, publicado) — lo único que rige
 
-**Para el compañero:** `Ariel` va por delante de `main` con 2 commits (`1bce58a` plan/agentes/skills del bloque 28, `1161a08` código del bloque 28) y **no tiene conflictos** (`main` no ha cambiado desde `22689cc`, se fusiona por avance rápido). Está abierto un **pull request `Ariel` → `main`**: revísalo y, si te parece bien, fusiónalo. **Ojo: al fusionarlo en `main` se publica en GitHub Pages** (workflow `deploy-pages.yml`). Para seguir trabajando en `HinoV2` después: `git checkout HinoV2 && git pull origin main` (o `git merge origin/main`).
+### En una línea
+El sitio está publicado con el rediseño 0-C (bloques 21–27), el **bloque 28 solo móvil** (hamburguesa, encabezado, fichas, Visítanos compacto; fusionado por el PR #2) y el **bloque 29: un panel oculto de administración** con el que la dueña edita precios, descripciones y demás campos de la tarjeta, agrega o quita productos y sube fotos, sin tocar código y sin servidor propio. Faltan los datos de la dueña, el cierre de QA y la guía de estilo al día.
 
-**Qué cambia y qué no:** solo móvil (< 48rem). El escritorio se comparó píxel a píxel con la base (4 vistas a 1440×900, 1366×650 y 768×1024): 0 px de diferencia (salvo 6 px de ruido de renderizado en Productos 1440, que la base también da contra sí misma). El único cambio que vale también en escritorio es el nombre accesible del correo (no se ve).
+### Ramas y publicación (cambió)
+- **`main` = `HinoV2` = `origin/HinoV2`** (último commit de código `1f2f569`). `Ariel` ya se fusionó (PR #2, `c73b18d`) y **no se usa más**; se trabaja en `HinoV2`. `main` recibe `HinoV2` por avance rápido **solo cuando el usuario lo pide** (`git push origin HinoV2:main`); cada push a `main` publica.
+- **`main` ahora también recibe commits automáticos del panel** (`Panel: edita <id>`, hechos por el Worker con el token de `arielnoob24`). **Antes de empujar a `main`: `git fetch origin` y traer `origin/main` (`git rebase origin/main` o `merge`)**; si no, se pisan las ediciones de la dueña. No edites `src/data/productos.json` a mano sin traer `main` primero.
+- El workflow `deploy-pages.yml` tiene un paso nuevo antes de compilar: **"Process new product photos"** (`node scripts-activos/procesar-imagenes-nuevas.mjs`). Despliegues en verde: `3cc6153` (run `42341782226`) y `1f2f569` (run `42343208722`, ~35 s).
+- **Orden obligatorio al cambiar el panel o el Worker: primero el Worker, después el sitio.** Un Worker viejo ignoraría `imagenes` y guardaría la ruta de una foto que no existe.
 
-**Archivos:** `src/components/Barra.astro` (botón hamburguesa + CSS del menú), `src/lib/menu-movil.ts` (nuevo: abrir/cerrar), `src/lib/animacion/vistas.ts` (sin el "pop" ni la pastilla de la barra inferior en móvil), `src/styles/tokens.css` (`--spacing-barra` móvil 56 px + zona segura), `src/styles/global.css` (la vista ya no reserva la barra inferior), `src/components/vistas/VistaNosotros.astro` (fichas), `src/components/vistas/VistaVisitanos.astro` (tarjeta compacta, pie), `src/data/textos.json` (`comunes.menu`, `etiquetaHorarioReferencias`, `horarioReferenciasPendiente`, `nombreAccesibleCorreo` empieza por el correo).
+### Qué se hizo (2026-10-18 → 2026-11-07)
+| Qué | Commits | Resultado |
+|---|---|---|
+| **Bloque 28 (solo móvil)**, `PLAN.md` §0-D | `1bce58a`, `1161a08`, `be68279`; PR #2 `c73b18d` | Publicado (run `39134964405`). Escritorio sin cambios (0 px de diferencia) |
+| **Bloque 29a/29b: Worker y validación** | `3cc6153` | `admin-worker/`: `GET/PUT /productos`, contraseña comprobada en el servidor, freno de intentos, CORS, un commit por guardado |
+| **Bloque 29c/29d: panel** | `3cc6153` | `hinojosa-web/src/lib/admin/`: 4 clics en el logo, lista con buscador, precio en la fila, «Editar más», agregar y quitar |
+| **Rediseño del panel + fotos** | `1f2f569` (antes `259d0f6`) | Estilo de Productos (salvia con huellas, tarjetas crema, chip de precio dorado, píldoras). Foto por producto, nuevo o existente |
+| Guardados de prueba hechos desde el panel por el usuario | `db90732`, `4b2f99c`, `d066da4` | `camperito-pollos` quedó en $30 y `semillas-hortalizas` pasó de «sin precio» a $10. **`d066da4` agregó un producto de prueba, `procan-prueba` («Procan prueba», Mascotas, $15, con foto)**: está publicado y visible en el sitio. **Confirmar con el usuario qué es real y quitar el de prueba desde el panel** |
 
-**Medidas finales (360, 390 y 412 de ancho):** encabezado 56 px; ≈ 10 px de aire sobre "COMERCIAL"; centro del logo y=29 frente a 28 de la hamburguesa (1 px); menú a 16 px del borde derecho, filas de 48 px; fichas de animales iguales (76×71 a 360); tarjeta de Visítanos 307 px a 390×844 (357 a 360×640 con teléfonos apilados), centrada con un poco de subida óptica; Visítanos sin scroll a 360×640, 390×844 y 412×915.
+El usuario probó el guardado y la subida de foto en el sitio publicado y dijo que funcionó (2026-11-07). **Verificado de punta a punta con `procan-prueba`:** el commit `d066da4` llevó `productos.json` + `imagenes-nuevas/mascotas/procan-prueba.webp` (73 KB), el log del despliegue dice «Fotos procesadas: 1 (con transparencia, recortada)» y las 6 versiones responden HTTP 200 en el sitio (`.webp` 44 KB, `.avif` 24 KB, `-400` 23/13 KB, miniaturas 7 y 2,7 KB).
 
-Ariel (usuario) trabaja en **`Ariel`**, que recibió `main` por avance rápido (`22689cc`); el compañero sigue en `HinoV2`. **Escritorio congelado**; los cambios de móvil van solo a `origin Ariel` y **no se despliegan**. Hecho y verificado en local (`PLAN.md` §0-D):
-- **28a** hamburguesa arriba a la derecha con menú desplegable corto (`Barra.astro`, `src/lib/menu-movil.ts`); sin barra inferior. **28b** encabezado móvil de 56 px con aire sobre "COMERCIAL". **28c** animales de Nosotros en fichas (borde maíz). **28d** Visítanos compacto (sin burbuja del mapa, tarjeta con margen, Horario + Referencias en una línea, teléfonos lado a lado con el primero en oro) + arreglo de axe del correo. **28e** pie de 13 px (en móvil sin el lema "siempre a tu lado").
-- QA: Lighthouse móvil igual que la base (Inicio 96–97, `#productos` 93–97 con M5, `#nosotros` 95–96, `#visitanos` 97–98; medir con servidor gzip, `servir.mjs` sin compresión da números falsos), router y prueba 27 OK, axe 0, escritorio 0 px de diferencia. Capturas en `capturas/bloque28/`.
-- **Pendiente del usuario:** aprobar el pie sin lema; A4 (etiqueta "HORARIO Y REFERENCIAS" en crema en vez de maíz). Mejoras previas (no del bloque 28): respaldo CSS de la transición con doble imagen 0.19 > 0.1 si no carga GSAP; `.catch()` en la importación dinámica de `escena-inicio`.
+### Panel de administración (bloque 29): cómo funciona
+- **Abrir:** 4 clics seguidos (< 2,5 s) en el logo de la barra (`.barra-logo`) o en el de Inicio (`[data-logo-inicio]`) → contraseña → lista de los 37 productos. La contraseña vive solo en memoria. Si cambias esos dos selectores, actualiza `src/lib/admin/disparador.ts`.
+- **Qué se edita:** nombre, descripción (≤ 110), marca, presentación, precio (o vacío), «desde», categoría, destacado, animales y **foto**. **Agregar** (el id sale del nombre) y **quitar** (máx. 10 por vez, con confirmación dentro del panel). Fuera de alcance: categorías y textos de las vistas.
+- **Código del sitio:** `src/lib/admin/config.ts` (URL del Worker), `disparador.ts` (cuenta clics, ~300 B, entra en el bundle), `panel.ts` + `panel.css` (se descargan con `import()` solo tras los 4 clics: 16 KB, no afectan al LCP). `Layout.astro` importa el disparador. El panel es un `<dialog>` con `data-captura-flechas`.
+- **Worker:** `admin-worker/` (`src/index.js`, `src/validar.js`, `wrangler.toml`, `README.md`) en https://hinojosa.mjkpqnx.workers.dev, plan gratuito de Cloudflare. **Secretos** (solo en Cloudflare): `GITHUB_TOKEN` (fine-grained, solo `Contents: Read and write` sobre `arielnoob24/HINOJOSA`) y `ADMIN_PASSWORD`. **Variables de texto** en `wrangler.toml` (`GITHUB_REPO`, `GITHUB_BRANCH`, `ALLOWED_ORIGIN`; si se migra el hosting, se cambia `ALLOWED_ORIGIN` y se redespliega).
+- **Guardado sin fotos:** un commit con `productos.json` (API de contents). **Con fotos:** un solo commit con `productos.json` + los originales (Git Data API) en `hinojosa-web/imagenes-nuevas/<categoría>/<nombre>.webp|png`. El navegador reduce la foto a 800 px de alto y la codifica en WebP (30–150 KB; PNG de respaldo; máx. 900 KB; máx. 4 fotos por guardado). El Worker valida ruta, categoría, firma del archivo y que la foto pertenezca a un producto de la lista.
+- **Las 6 versiones de cada foto** (800 y 400 px en WebP y AVIF + miniaturas de 160 y 80 px) las genera el workflow con `scripts-activos/procesar-imagenes-nuevas.mjs` (sharp, mismas calidades que `nuevos_req_codificar.mjs`). **Las derivadas no se versionan**: se regeneran en cada despliegue desde `imagenes-nuevas/` (en local: `npm run imagenes:nuevas`). Con transparencia recorta el margen; con fondo de estudio no recorta y el producto lleva `conFondo: true`. Una foto dañada no tumba el despliegue.
+- **Seguridad:** la contraseña se comprueba en el servidor y el token nunca llega al navegador; el gesto de 4 clics solo oculta el panel. Freno de intentos por IP (mejor esfuerzo, por instancia): la defensa de fondo es una contraseña larga. Un guardado por error publica de inmediato: se revierte con el commit `Panel: …` en el historial.
+- **Desplegar el Worker:** `cd admin-worker && npx wrangler deploy` (ya hay sesión de `wrangler login`; versión actual `1966355d`). **No usar `--keep-vars`** (no conservó las variables del panel de Cloudflare). **Los secretos no se pueden poner con `npx wrangler secret put` desde `!`** (no hay entrada interactiva y quedan **vacíos**, el Worker responde 500): se cambian en Cloudflare → Worker `hinojosa` → Settings → Variables and Secrets y se pulsa Deploy. Si el Worker responde 500, el cuerpo trae `faltan: [...]` con los nombres de lo que no está configurado.
+- **Pruebas (todas pasan):** `node admin-worker/prueba-validar.mjs` (reglas), `node admin-worker/prueba-worker.mjs` (21 pruebas con un GitHub simulado) y `python -I admin-worker/prueba-panel-navegador.py` (44 comprobaciones con Chrome y el Worker simulado; necesita `npm run build` y `npx astro preview --port 4321`; axe 0 en escritorio y móvil).
+- **Detalles que dieron guerra:** el panel reordenaba `animales` al guardar (corregido: conserva el orden original); el guardado normaliza `28.0` a `28` (equivalente); el `h2` del panel hereda color bosque del CSS global (se fuerza crema en la cabecera verde); en `panel.css` no poner `color: inherit` en los botones.
 
-## Estado actual (2026-10-17, publicado) — lo único que rige
+### Productos de Mascotas sin foto
+Mascotas tiene 16 productos y el cliente solo entregó 12 imágenes (todas ya usadas), así que 4 tienen `imagen: null`: `procan-cachorros-adultos`, `nutrapro-perros`, `cani-premium` y `procat-arena`. No es un fallo: se ven con el costal genérico en la lista y la ficha, y **no entran al carrusel** (solo se dibujan los productos con foto; por eso «Mascotas (16)» frente a 12 en el anillo). Se arregla subiendo la foto desde el panel (4 fotos caben justo en un guardado); conviene que la dueña confirme los derechos de uso de las marcas.
+
+### Próximas tareas (en orden)
+1. **Cierre del bloque 29 (29e):** Lighthouse móvil de Inicio y `#productos` tras el cambio (solo se añadió el disparador al bundle, no se midió); probar con lector de pantalla; probar en real el reemplazo de la foto de un producto existente (el alta de un producto nuevo con foto ya se verificó en real).
+2. **Fotos de los 4 productos de Mascotas** (ver arriba) y **quitar `procan-prueba`**; confirmar los precios de prueba (`camperito-pollos`, `semillas-hortalizas`). Al quitar un producto su original sigue en `imagenes-nuevas/` (ver decisiones pendientes).
+3. **Operación del panel:** anotar la fecha de caducidad del token de GitHub (el token caduca y entonces el panel deja de guardar; no quedó registrada aquí: GitHub → Settings → Developer settings → Fine-grained tokens) y definir quién guarda la contraseña de la dueña. `.env` local con datos sensibles está en `.gitignore`.
+4. Las tareas 1–7 de la sección siguiente (cierre de QA completo, guía de estilo al día, Search Console, pruebas manuales, bloques 10 y 11) siguen abiertas.
+
+### Decisiones pendientes del usuario (nuevas)
+- Aprobar el pie sin lema y la etiqueta «HORARIO Y REFERENCIAS» en crema (bloque 28, A4).
+- Si las fotos originales de `imagenes-nuevas/` deben borrarse del repositorio cuando se quite un producto (hoy quedan).
+- Si el Worker pasa a un dominio propio o se migra a Netlify (ver `ALLOWED_ORIGIN`).
+
+---
+
+## Estado del 2026-10-17 (rediseño 0-C) — sigue vigente salvo lo que diga la sección de arriba
 
 ### En una línea
 El sitio está **publicado en https://arielnoob24.github.io/HINOJOSA/** con el rediseño 0-C completo (bloques 21–27): Inicio con cielo en video, césped fijo y 9 animales en foto de familia; Productos con carrusel grande a la izquierda, tarjeta crema con descripción y fondo de huellas; Nosotros y Visítanos con el mismo fondo; transición entre vistas con GSAP. Faltan los datos de la dueña, el cierre de QA y poner la guía de estilo al día.
 
 ### Ramas y publicación
-- **Ramas: `HinoV2` (compañero) y `Ariel` (Ariel, bloque 28 móvil).** `main` recibe una de ellas **solo cuando el usuario lo pide**; el bloque 28 va por pull request `Ariel` → `main` (2026-10-18). `wip/bloque26-transicion` ya está fusionada (se puede borrar).
+- **Ramas:** ver «Ramas y publicación (cambió)» arriba: `main` = `HinoV2`, `Ariel` ya fusionada (PR #2). `wip/bloque26-transicion` ya está fusionada (se puede borrar).
 - **Cada push a `main` publica** con `.github/workflows/deploy-pages.yml` (Node 22, `npm ci`, `npm run build` en `hinojosa-web`, sube `hinojosa-web/dist`). Primer despliegue en verde: commit `83c7a79`, run `39089026189`; recorrido del sitio publicado (4 vistas, 1440 y 360): **0 fallos de red y 0 errores JS**.
 - **Base `/HINOJOSA`:** `astro.config.mjs` tiene `site: 'https://arielnoob24.github.io'` y `base: '/HINOJOSA'`. **Toda ruta nueva a `public/` debe pasar por `src/lib/ruta.ts`** (`ruta()`, `rutaSrcset()`, `sinBase()`); si no, da 404 en Pages aunque en `astro dev` funcione.
 - Aviso de GitHub: `ubuntu-latest` pasa a Ubuntu 26 desde el 2026-10-19; vigilar el primer despliegue posterior.
@@ -110,6 +145,20 @@ npx astro preview  # sirve dist bajo /HINOJOSA/
 ---
 
 # Historial de sesiones (no rige; lo vigente está arriba)
+
+## Bloque 28, solo móvil (2026-10-17 noche y 2026-10-18; fusionado por el PR #2 y publicado)
+
+Registro de lo que se hizo; el plan está en `PLAN.md` §0-D. Se hizo en la rama `Ariel`, que ya se fusionó en `main`.
+
+**Qué cambia y qué no:** solo móvil (< 48rem). El escritorio se comparó píxel a píxel con la base (4 vistas a 1440×900, 1366×650 y 768×1024): 0 px de diferencia (salvo 6 px de ruido de renderizado en Productos 1440, que la base también da contra sí misma). El único cambio que vale también en escritorio es el nombre accesible del correo (no se ve).
+
+**Archivos:** `src/components/Barra.astro` (botón hamburguesa + CSS del menú), `src/lib/menu-movil.ts` (nuevo: abrir/cerrar), `src/lib/animacion/vistas.ts` (sin el "pop" ni la pastilla de la barra inferior en móvil), `src/styles/tokens.css` (`--spacing-barra` móvil 56 px + zona segura), `src/styles/global.css` (la vista ya no reserva la barra inferior), `src/components/vistas/VistaNosotros.astro` (fichas), `src/components/vistas/VistaVisitanos.astro` (tarjeta compacta, pie), `src/data/textos.json` (`comunes.menu`, `etiquetaHorarioReferencias`, `horarioReferenciasPendiente`, `nombreAccesibleCorreo` empieza por el correo).
+
+**Medidas finales (360, 390 y 412 de ancho):** encabezado 56 px; ≈ 10 px de aire sobre "COMERCIAL"; centro del logo y=29 frente a 28 de la hamburguesa (1 px); menú a 16 px del borde derecho, filas de 48 px; fichas de animales iguales (76×71 a 360); tarjeta de Visítanos 307 px a 390×844 (357 a 360×640 con teléfonos apilados), centrada con un poco de subida óptica; Visítanos sin scroll a 360×640, 390×844 y 412×915.
+
+- **28a** hamburguesa arriba a la derecha con menú desplegable corto (`Barra.astro`, `src/lib/menu-movil.ts`); sin barra inferior. **28b** encabezado móvil de 56 px con aire sobre "COMERCIAL". **28c** animales de Nosotros en fichas (borde maíz). **28d** Visítanos compacto (sin burbuja del mapa, tarjeta con margen, Horario + Referencias en una línea, teléfonos lado a lado con el primero en oro) + arreglo de axe del correo. **28e** pie de 13 px (en móvil sin el lema "siempre a tu lado").
+- QA: Lighthouse móvil igual que la base (Inicio 96–97, `#productos` 93–97 con M5, `#nosotros` 95–96, `#visitanos` 97–98; medir con servidor gzip, `servir.mjs` sin compresión da números falsos), router y prueba 27 OK, axe 0, escritorio 0 px de diferencia. Capturas en `capturas/bloque28/`.
+- **Pendiente del usuario:** aprobar el pie sin lema; A4 (etiqueta "HORARIO Y REFERENCIAS" en crema en vez de maíz). Mejoras previas (no del bloque 28): respaldo CSS de la transición con doble imagen 0.19 > 0.1 si no carga GSAP; `.catch()` en la importación dinámica de `escena-inicio`.
 
 ## Sesión del 2026-10-17 (planificación, sin código)
 

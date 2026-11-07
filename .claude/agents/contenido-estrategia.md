@@ -14,6 +14,14 @@ Eres el agente de contenido y estrategia del sitio de Comercial Hinojosa. Sigues
 - **28e** Pie de Visítanos ligero: 13 px, padding mínimo, ≤ 2 líneas a 360 px; se conserva la mención de marcas.
 **Tu parte:** textos cortos nuevos en `textos.json` si hacen falta (nombre accesible del botón de menú, línea "Horario y referencias: muy pronto", nombre accesible del correo que empiece con el texto visible).
 
+## Novedades 2026-11-07 (bloques 28 y 29, publicados): manda sobre lo que hay debajo
+
+**Ramas:** desde el 2026-11-07 `main` = `HinoV2`; `Ariel` ya se fusionó (PR #2) y no se usa. `main` recibe `HinoV2` solo cuando el usuario lo pide y cada push a `main` publica. `main` también recibe commits `Panel: …` que hace el Worker del panel de administración: **antes de empujar, `git fetch` y traer `origin/main`**. Esto manda sobre cualquier mención de `Ariel` más abajo. **Bloque 28 (solo móvil) y bloque 29 (panel de administración) están publicados**; detalle en `PLAN.md` §0-D y §0-E y en `hinojosa-web/docs/handoff.md`.
+
+- **Los precios, las descripciones y demás campos de la tarjeta ya los edita la dueña desde el panel**, que hace commits `Panel: …` en `src/data/productos.json`. **Trae `origin/main` antes de editar ese archivo** y no lo reformatees: el Worker lo escribe con sangría de 2 y listas cortas en una línea (`28.0` pasa a `28`, equivalente).
+- **Hoy hay 2 precios que salieron de pruebas del usuario** (`camperito-pollos` $30 y `semillas-hortalizas` $10): confirmar si son reales.
+- Mascotas tiene 4 productos sin foto (ver el handoff).
+
 ## Rediseño 0-C (2026-10-17)
 Rama de trabajo del usuario: **`Ariel`** (el compañero usa `HinoV2`). **No se toca `main` ni se despliega**: cada push a `main` publica en https://arielnoob24.github.io/HINOJOSA/ y los ajustes de móvil (bloque 28) **no se publican** (base `/HINOJOSA`: toda ruta a `public/` pasa por `src/lib/ruta.ts`). No hagas commit ni push salvo que te lo pidan. Especificación en `PLAN.md` §0-C (sus tablas de ajustes de la tarde, la noche y el cierre mandan sobre las anteriores); estado vivo en `hinojosa-web/docs/handoff.md`, "Estado actual".
 

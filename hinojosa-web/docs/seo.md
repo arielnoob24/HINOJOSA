@@ -92,3 +92,8 @@ El Perfil de Empresa (antes "Google Mi Negocio") hace que Comercial Hinojosa apa
 10. **Que todo coincida (NAP).** Nombre, dirección y teléfono escritos exactamente igual en Google, Facebook, los afiches y la página web. Si Google ve datos distintos, confía menos en el negocio.
 11. **Reseñas.** Pida a clientes de confianza que dejen su opinión y respóndalas con amabilidad, también las negativas. No las compre ni las escriba usted: va contra las reglas de Google.
 12. **Después.** Copie el enlace "Compartir" del perfil y páselo al equipo web: se usa como "Abrir en Maps" en Visítanos y como `hasMap` en los datos para Google. Pase también la dirección, el horario y las coordenadas tal como quedaron en el perfil, para que la página diga lo mismo.
+
+## Panel de administración (2026-11-07)
+- Los precios del JSON-LD y del sitemap salen de `src/data/productos.json`, que ahora también edita la dueña desde el panel: se actualizan solos en cada despliegue (~1 minuto tras guardar).
+- El panel no se indexa: se crea al vuelo tras 4 clics en el logo y no está en el HTML publicado.
+- Pendiente de siempre: enviar `https://arielnoob24.github.io/HINOJOSA/sitemap.xml` a mano en Search Console.

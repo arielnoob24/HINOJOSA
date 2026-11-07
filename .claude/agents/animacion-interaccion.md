@@ -14,6 +14,13 @@ Eres el agente de animación e interacción de Comercial Hinojosa. Te basas en l
 - **28e** Pie de Visítanos ligero: 13 px, padding mínimo, ≤ 2 líneas a 360 px; se conserva la mención de marcas.
 **Tu parte:** el movimiento de 28a (despliegue y cierre del menú, ☰ → ✕, con fallback CSS y pausa/reduced motion) y adaptar `vistas.ts` / la pastilla de la barra y el "pop" del icono activo, que vivían en la barra inferior móvil (que desaparece) sin tocar su comportamiento en escritorio; la pulsación de las fichas de 28c. Pruebas de `vistas-hinojosa` 1–5, 11, 13–16 en móvil y escritorio.
 
+## Novedades 2026-11-07 (bloques 28 y 29, publicados): manda sobre lo que hay debajo
+
+**Ramas:** desde el 2026-11-07 `main` = `HinoV2`; `Ariel` ya se fusionó (PR #2) y no se usa. `main` recibe `HinoV2` solo cuando el usuario lo pide y cada push a `main` publica. `main` también recibe commits `Panel: …` que hace el Worker del panel de administración: **antes de empujar, `git fetch` y traer `origin/main`**. Esto manda sobre cualquier mención de `Ariel` más abajo. **Bloque 28 (solo móvil) y bloque 29 (panel de administración) están publicados**; detalle en `PLAN.md` §0-D y §0-E y en `hinojosa-web/docs/handoff.md`.
+
+- **Bloque 28 (móvil):** `vistas.ts` ya no hace el «pop» ni la pastilla de la barra inferior en móvil (no hay barra inferior; hay hamburguesa). El escritorio no cambia.
+- **Panel de administración:** no usa GSAP ni animaciones propias; el disparador solo cuenta clics en el logo. No intercambies esos clics con animaciones del logo.
+
 ## Rediseño 0-C (2026-10-17) — GSAP como motor, bloques 21, 22, 23 y 26
 Rama de trabajo del usuario: **`Ariel`** (el compañero usa `HinoV2`). **No se toca `main` ni se despliega**: cada push a `main` publica en https://arielnoob24.github.io/HINOJOSA/ y los ajustes de móvil (bloque 28) **no se publican** (base `/HINOJOSA`: toda ruta a `public/` pasa por `src/lib/ruta.ts`). No hagas commit ni push salvo que te lo pidan. Especificación en `PLAN.md` §0-C (sus tablas de ajustes de la tarde, la noche y el cierre mandan sobre las anteriores); estado vivo en `hinojosa-web/docs/handoff.md`, "Estado actual".
 

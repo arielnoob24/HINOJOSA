@@ -14,6 +14,13 @@ Eres el agente de dirección de arte de Comercial Hinojosa. Te basas en las secc
 - **28e** Pie de Visítanos ligero: 13 px, padding mínimo, ≤ 2 líneas a 360 px; se conserva la mención de marcas.
 **Tu parte:** antes de implementar, fija los valores exactos (alto del encabezado, sombra y radio del menú, color de fondo y borde de las fichas de 28c con su contraste medido, márgenes y radio de la tarjeta de Visítanos, botón oro) y revisa las capturas de móvil después. Nada de colores nuevos: solo tokens existentes y mezclas de ellos.
 
+## Novedades 2026-11-07 (bloques 28 y 29, publicados): manda sobre lo que hay debajo
+
+**Ramas:** desde el 2026-11-07 `main` = `HinoV2`; `Ariel` ya se fusionó (PR #2) y no se usa. `main` recibe `HinoV2` solo cuando el usuario lo pide y cada push a `main` publica. `main` también recibe commits `Panel: …` que hace el Worker del panel de administración: **antes de empujar, `git fetch` y traer `origin/main`**. Esto manda sobre cualquier mención de `Ariel` más abajo. **Bloque 28 (solo móvil) y bloque 29 (panel de administración) están publicados**; detalle en `PLAN.md` §0-D y §0-E y en `hinojosa-web/docs/handoff.md`.
+
+- **El panel de administración usa el lenguaje de Productos** (`src/lib/admin/panel.css`): salvia con huellas, tarjeta crema con marca de agua, nombre Nunito 800 bosque, chip de precio maíz, botones en píldora. Los rótulos directos sobre salvia van en bosque (nunca tinta-suave 4.29). Si cambian los tokens de Productos, revisa también ese archivo y la copia del mosaico de huellas en `panel.ts`.
+- **Bloque 28 (móvil):** hamburguesa, encabezado de 56 px, fichas de animales y Visítanos compacto (`PLAN.md` §0-D).
+
 ## Rediseño 0-C (2026-10-17) — Inicio, Productos y Nosotros
 Rama de trabajo del usuario: **`Ariel`** (el compañero usa `HinoV2`). **No se toca `main` ni se despliega**: cada push a `main` publica en https://arielnoob24.github.io/HINOJOSA/ y los ajustes de móvil (bloque 28) **no se publican** (base `/HINOJOSA`: toda ruta a `public/` pasa por `src/lib/ruta.ts`). No hagas commit ni push salvo que te lo pidan. Especificación en `PLAN.md` §0-C (sus tablas de ajustes de la tarde, la noche y el cierre mandan sobre las anteriores); estado vivo en `hinojosa-web/docs/handoff.md`, "Estado actual".
 

@@ -14,6 +14,13 @@ Eres el agente de QA, accesibilidad, usabilidad y rendimiento de Comercial Hinoj
 - **28e** Pie de Visítanos ligero: 13 px, padding mínimo, ≤ 2 líneas a 360 px; se conserva la mención de marcas.
 **Tu parte:** verificar el bloque 28 en local: (1) **escritorio idéntico** — capturas de las 4 vistas a 1440×900 y 1366×650 antes (commit `22689cc`) y después, diferencia 0; (2) móvil a 360×640, 390×844, 412×915: menú (teclado, `Escape`, foco, tocar fuera, `aria-expanded`, sin JS), sin barra inferior, vistas sin hueco abajo, fichas de animales, Visítanos sin scroll a 390×844; (3) axe 0 en las 4 vistas (incluido el correo) a 360 y 1440; (4) Lighthouse móvil en build local: Inicio y `#productos` sin bajar; (5) pruebas del router de `vistas-hinojosa`.
 
+## Novedades 2026-11-07 (bloques 28 y 29, publicados): manda sobre lo que hay debajo
+
+**Ramas:** desde el 2026-11-07 `main` = `HinoV2`; `Ariel` ya se fusionó (PR #2) y no se usa. `main` recibe `HinoV2` solo cuando el usuario lo pide y cada push a `main` publica. `main` también recibe commits `Panel: …` que hace el Worker del panel de administración: **antes de empujar, `git fetch` y traer `origin/main`**. Esto manda sobre cualquier mención de `Ariel` más abajo. **Bloque 28 (solo móvil) y bloque 29 (panel de administración) están publicados**; detalle en `PLAN.md` §0-D y §0-E y en `hinojosa-web/docs/handoff.md`.
+
+- **Pruebas del panel:** `node admin-worker/prueba-validar.mjs`, `node admin-worker/prueba-worker.mjs` (GitHub simulado) y `python -I admin-worker/prueba-panel-navegador.py` (Chrome con el Worker simulado; requiere `npm run build` y `npx astro preview --port 4321`; axe 0 en escritorio y móvil).
+- **Pendiente del bloque 29 (29e):** Lighthouse móvil de Inicio y `#productos` tras añadir el disparador (no se midió), lector de pantalla y la prueba real del reemplazo de la foto de un producto existente. Cuidado: una prueba con el Worker real hace un commit en `main` y republica.
+
 ## Rediseño 0-C (2026-10-17) — qué verificar tras los bloques 21–26
 Rama de trabajo del usuario: **`Ariel`** (el compañero usa `HinoV2`). **No se toca `main` ni se despliega**: cada push a `main` publica en https://arielnoob24.github.io/HINOJOSA/ y los ajustes de móvil (bloque 28) **no se publican** (base `/HINOJOSA`: toda ruta a `public/` pasa por `src/lib/ruta.ts`). No hagas commit ni push salvo que te lo pidan. Especificación en `PLAN.md` §0-C (sus tablas de ajustes de la tarde, la noche y el cierre mandan sobre las anteriores); estado vivo en `hinojosa-web/docs/handoff.md`, "Estado actual".
 

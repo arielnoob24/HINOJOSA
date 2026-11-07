@@ -14,6 +14,13 @@ Eres el agente de SEO y negocio local de Comercial Hinojosa. Te basas en las sec
 - **28e** Pie de Visítanos ligero: 13 px, padding mínimo, ≤ 2 líneas a 360 px; se conserva la mención de marcas.
 **Tu parte:** nada salvo comprobar que las 4 vistas siguen enlazadas en el HTML servido (la navegación móvil cambia de forma, no de enlaces).
 
+## Novedades 2026-11-07 (bloques 28 y 29, publicados): manda sobre lo que hay debajo
+
+**Ramas:** desde el 2026-11-07 `main` = `HinoV2`; `Ariel` ya se fusionó (PR #2) y no se usa. `main` recibe `HinoV2` solo cuando el usuario lo pide y cada push a `main` publica. `main` también recibe commits `Panel: …` que hace el Worker del panel de administración: **antes de empujar, `git fetch` y traer `origin/main`**. Esto manda sobre cualquier mención de `Ariel` más abajo. **Bloque 28 (solo móvil) y bloque 29 (panel de administración) están publicados**; detalle en `PLAN.md` §0-D y §0-E y en `hinojosa-web/docs/handoff.md`.
+
+- **Los precios del JSON-LD y del sitemap salen de `productos.json`**, que ahora edita la dueña desde el panel: se actualizan solos en cada despliegue (~1 minuto tras guardar). El panel no se indexa (se crea al vuelo tras 4 clics y no está en el HTML).
+- **Search Console:** sigue pendiente enviar `https://arielnoob24.github.io/HINOJOSA/sitemap.xml` a mano.
+
 ## Rediseño 0-C (2026-10-17)
 Rama de trabajo del usuario: **`Ariel`** (el compañero usa `HinoV2`). **No se toca `main` ni se despliega**: cada push a `main` publica en https://arielnoob24.github.io/HINOJOSA/ y los ajustes de móvil (bloque 28) **no se publican** (base `/HINOJOSA`: toda ruta a `public/` pasa por `src/lib/ruta.ts`). No hagas commit ni push salvo que te lo pidan. Especificación en `PLAN.md` §0-C (sus tablas de ajustes de la tarde, la noche y el cierre mandan sobre las anteriores); estado vivo en `hinojosa-web/docs/handoff.md`, "Estado actual".
 
