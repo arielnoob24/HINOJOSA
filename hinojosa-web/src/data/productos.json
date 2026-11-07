@@ -485,7 +485,7 @@
       "descripcion": "Para sembrar en tu huerta o tu finca. Pregunta por las variedades disponibles.",
       "marca": "Agrícola Santo Domingo",
       "presentacion": "Tomate, sandía, melón, pimiento, perejil, cebolla colorada, cebollín y pepino",
-      "precio": null,
+      "precio": 10,
       "precioDesde": false,
       "imagen": "/img/productos/granos/diferentes-tipos-de-semillas.webp",
       "destacado": false,
