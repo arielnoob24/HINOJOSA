@@ -113,6 +113,9 @@ let costalEl: HTMLElement;
 let costalSombra: HTMLElement;
 let costalTarjeta: HTMLElement;
 let costalNombre: HTMLElement;
+/** 0-G: resplandor y podio fijos bajo el frente (se funden con la escena). */
+let resplandor: HTMLElement;
+let podio: HTMLElement;
 /** Sin src hasta que se use: oculto no debe pedirse ni competir por el LCP (M5). */
 let costalImg: HTMLImageElement;
 
@@ -214,9 +217,11 @@ function realce(t: number) {
   const e = t < 1 ? (1 + Math.cos(Math.PI * t)) / 2 : 0;
   const f = 1 - e; // 0 al frente, 1 en anterior/siguiente
   const lejos = t - 1; // 0..1 entre vecino y resto
+  // 0-G: inactivos 0,75-0,8 del frente (nunca por encima de 1: no cambia el radio)
+  const base = Math.min(1, cfg.escala * 0.78);
   return {
     e,
-    escala: 1 + (cfg.escala - 1) * e,
+    escala: base + (cfg.escala - base) * e,
     oscuro: t <= 1 ? cfg.oscuroVecino * f : mezcla(cfg.oscuroVecino, cfg.oscuroMax, lejos),
     opacidad:
       t <= 1
@@ -293,6 +298,8 @@ function render() {
   // Tarima: se funde con los productos y sigue al radio interpolado (C5)
   const escala = (2 * r + cfg.ancho) / (2 * radioDestino + cfg.ancho);
   tarima.style.opacity = fase.a.toFixed(3);
+  const fa = fase.a.toFixed(3);
+  if (podio.style.opacity !== fa) podio.style.opacity = resplandor.style.opacity = fa;
   tarima.style.transform = `translate3d(0, 0, ${(-r).toFixed(1)}px) rotateX(90deg) scale(${escala.toFixed(4)})`;
 }
 
@@ -1046,7 +1053,11 @@ function montar() {
   tarima.className = 'anillo-tarima';
   crearCostal();
   escena3d.append(tarima, costalEl);
-  anillo.append(escena3d);
+  resplandor = document.createElement('div');
+  resplandor.className = 'anillo-resplandor';
+  podio = document.createElement('div');
+  podio.className = 'anillo-podio';
+  anillo.append(resplandor, podio, escena3d);
 
   // Error de carga (heuristica 9): fuera del aria-hidden para que se lea
   avisoError = document.createElement('div');

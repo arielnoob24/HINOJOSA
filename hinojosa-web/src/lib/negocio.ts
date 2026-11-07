@@ -104,10 +104,10 @@ export function enlaceCorreo(): string | null {
 }
 
 /** Precio en USD con dos decimales, como en los afiches ("$28.00"). */
-export function formatoPrecio(precio: number | null, desde: boolean): string {
+export function formatoPrecio(precio: number | null, _desde: boolean = false): string {
   if (precio === null) return textos.productos.sinPrecio;
-  const valor = `${negocio.moneda.simbolo}${precio.toFixed(2)}`;
-  return desde ? `${textos.productos.prefijoDesde} ${valor}` : valor;
+  // Sin prefijo "Desde" (decision del usuario 2026-11-07): solo el monto
+  return `${negocio.moneda.simbolo}${precio.toFixed(2)}`;
 }
 
 /** Miniatura de 160 px de alto derivada de la imagen del carrusel. */

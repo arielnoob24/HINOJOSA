@@ -152,6 +152,9 @@ function accionDe(p: FichaProducto, cfg: FichaConfig): FichaAccion | null {
   return null;
 }
 
+/** Sabores con comas naturales (sin punto y coma). */
+const sabor = (v: string | null | undefined) => (typeof v === 'string' ? v.replace(/\s*;\s*/g, ', ') : v);
+
 export function modeloFicha(p: FichaProducto, cfg: FichaConfig): FichaModelo {
   const t = { ...TEXTOS_FICHA_POR_DEFECTO, ...cfg.textos };
 
@@ -166,8 +169,8 @@ export function modeloFicha(p: FichaProducto, cfg: FichaConfig): FichaModelo {
 
   const candidatos: [FichaAtributo['clave'], string, string | null][] = [
     ['marca', t.marca, limpio(p.marca)],
-    ['sabor', t.sabor, limpio(p.sabor)],
     ['medida', t.medida, limpio(p.medida)],
+    ['sabor', t.sabor, limpio(sabor(p.sabor))],
     ['presentacion', t.presentacion, limpio(p.presentacion)],
   ];
   const vistos = new Set<string>();

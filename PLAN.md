@@ -253,6 +253,22 @@ Sin marca, sin precio, sin capacidad (no se ve en foto). Recorte transparente co
 - Sección 5: 48 productos; `productos.json` gana `etapa`, `sabor`, `medida`.
 - Sección 4, vista 2: la ficha se describe como arriba.
 
+## 0-G. Pulido de la ficha y del carrusel 3D (2026-11-07)
+
+Pedido del usuario tras 0-F. Rama **`auditoria-catalogo`**; sin push ni despliegue. **Levanta el congelado de PC solo para la ficha (Detalle) y para el aspecto del carrusel de Productos** (el usuario los pidió expresamente); el resto de escritorio no cambia.
+
+### Ficha / hoja de detalle (`FichaContenido.astro`, `ficha-*`, `HojaDetalle`)
+1. **Precio sin píldora amarilla**: texto tipográfico limpio, "Desde" pequeño/regular y el monto en negrita con el color de texto primario. **El amarillo queda reservado al botón principal** ("Llamar y consultar").
+2. **Etiquetas superiores sin chips**: una sola línea de metadato plano tipo breadcrumb (ej. "Perros • Adultos"), jerarquía secundaria, para no competir con el toggle "Detalle | Lista".
+3. **Cuadrícula de atributos**: Marca y Medida en la primera fila (50 % / 50 %); Sabor / receta ocupa la fila completa; cualquier combinación sin huecos huérfanos (un atributo suelto ocupa el ancho completo). En sabores, **comas naturales en vez de punto y coma** (datos y/o pintado).
+
+### Carrusel 3D de Productos (`carrusel.ts`, CSS de `VistaProductos.astro`)
+1. **Podio** elíptico bajo el producto activo (crema/blanco translúcido con `backdrop-filter: blur`, sombra de contacto difusa) y **resplandor radial** detrás de su silueta.
+2. **Profundidad**: inactivos ~50 % de opacidad, `blur(2px)`, escala 0.75–0.8; activo escala 1.05–1.1, opacidad 100 %, mayor `z-index`; transición `ease-out` 300–400 ms (GSAP, respetando `prefers-reduced-motion`).
+3. **Fondo limpio**: máscara/degradado radial sobre el patrón de patitas/hojas para atenuarlo detrás del producto activo.
+4. **Flechas** simétricas a los costados del carrusel, sin tapar productos.
+Presupuesto: sin pérdida de rendimiento (blur solo en inactivos, sin filtros en capas enormes); WCAG: flechas ≥ 44 px, contraste intacto.
+
 ---
 
 ## 1. Resumen del negocio (extraído del material recibido)
@@ -976,5 +992,6 @@ En `.claude/skills/` del proyecto:
 - [ ] Confirmar con el usuario: Blender solo para renders (0-C). (Cielo sin azul: ya no aplica, el fondo es un video; cuyes ✅)
 - [ ] Repetir el cierre de QA tras los bloques 21–27 (sobre el sitio publicado)
 - [x] Plan, agentes y skills al día con 0-D (solo móvil, 2026-10-17)
+- [ ] 0-G: pulido de ficha y carrusel 3D (2026-11-07)
 - [ ] Bloque 28 (solo móvil): hamburguesa, encabezado, fichas de animales, Visítanos compacto, pie; escritorio idéntico; push a `Ariel` sin desplegar
 - [ ] **Decidir al final (pospuesto por el usuario, 2026-10-17):** (1) en móvil, el velo que hace legible el texto de Inicio oscurece bastante el cielo del atardecer; para ver más cielo habría que bajar el bloque de texto o agrandar el acento. (2) El agua de la pecera de las tilapias es verdosa porque la paleta no tiene azul; agua azul = color nuevo con aprobación
