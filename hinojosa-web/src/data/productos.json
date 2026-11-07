@@ -17,7 +17,7 @@
       "descripcion": "Para que tus pollos crezcan y lleguen al engorde bien alimentados.",
       "marca": "Camperito",
       "presentacion": null,
-      "precio": 28.0,
+      "precio": 30,
       "precioDesde": false,
       "imagen": "/img/productos/granja/balanceado-camperito-crecimiento-y-engorde.webp",
       "destacado": true
@@ -30,7 +30,7 @@
       "descripcion": "Acompaña a tus pollos en cada etapa: inicial, crecimiento y engorde. Sacos de 30 a 40 kg.",
       "marca": "Nutritivos",
       "presentacion": "Inicial, crecimiento y engorde",
-      "precio": 31.0,
+      "precio": 31,
       "precioDesde": true,
       "imagen": "/img/productos/granja/pollos.webp",
       "destacado": false
@@ -43,7 +43,7 @@
       "descripcion": "Desde el inicio hasta el engorde, y también para tus cerdas gestantes y lactantes.",
       "marca": "Nutritivos",
       "presentacion": "Inicial, crecimiento, engorde, gestantes y lactantes",
-      "precio": 30.0,
+      "precio": 30,
       "precioDesde": true,
       "imagen": "/img/productos/granja/cerdos.webp",
       "destacado": false
@@ -69,7 +69,7 @@
       "descripcion": "Tus cuyes y conejos, bien alimentados en crecimiento y engorde.",
       "marca": "Nutritivos",
       "presentacion": "Cuyes y conejos · crecimiento y engorde",
-      "precio": 29.0,
+      "precio": 29,
       "precioDesde": false,
       "imagen": "/img/productos/granja/cuyes.webp",
       "destacado": false
@@ -126,7 +126,6 @@
       "imagen": "/img/productos/granja/sal-en-grano.webp",
       "destacado": false
     },
-
     {
       "id": "procan-adultos",
       "categoria": "mascotas",
@@ -135,7 +134,7 @@
       "descripcion": "Alimento para perros adultos de razas medianas y grandes.",
       "marca": "Pro-Can",
       "presentacion": null,
-      "precio": 1.0,
+      "precio": 1,
       "precioDesde": true,
       "imagen": "/img/productos/mascotas/procan-adultos.webp",
       "destacado": true
@@ -200,7 +199,7 @@
       "descripcion": "Ayuda a mantener limpio el arenero de tu gato.",
       "marca": "NutraPro",
       "presentacion": null,
-      "precio": 6.0,
+      "precio": 6,
       "precioDesde": false,
       "imagen": "/img/productos/mascotas/nutrapro.webp",
       "destacado": false
@@ -213,7 +212,7 @@
       "descripcion": "Absorbe la humedad del arenero para que tu gato tenga su rincón limpio.",
       "marca": "Freemiau",
       "presentacion": null,
-      "precio": 7.0,
+      "precio": 7,
       "precioDesde": false,
       "imagen": "/img/productos/mascotas/freemiau.webp",
       "destacado": false
@@ -304,7 +303,7 @@
       "descripcion": "Comida para cachorros y adultos, en presentaciones de 2 kg y 4 kg.",
       "marca": "NutraPro",
       "presentacion": "2 kg y 4 kg",
-      "precio": 8.0,
+      "precio": 8,
       "precioDesde": true,
       "imagen": null,
       "destacado": false
@@ -335,7 +334,6 @@
       "imagen": null,
       "destacado": false
     },
-
     {
       "id": "comedero-galvanizado",
       "categoria": "comederos",
@@ -401,7 +399,6 @@
       "imagen": "/img/productos/comederos/comedero-perro-gato-2.webp",
       "destacado": false
     },
-
     {
       "id": "maiz-en-grano",
       "categoria": "granos",
