@@ -195,6 +195,18 @@ Worker `hinojosa` en `https://hinojosa.mjkpqnx.workers.dev`. Secretos: `GITHUB_T
 | **29d** | Añadir (id desde el nombre, sin imagen) y quitar (confirmación dentro del panel) productos | hecho |
 | **29e** | QA: prueba con el Worker simulado (33 comprobaciones, Playwright, `scratchpad/prueba_panel.py`): gesto, guardado, nuevo, quitar, cierre con cambios, foco, axe 0 en escritorio y móvil. **Falta:** prueba con el Worker real desde el sitio publicado (el Worker solo acepta el origen de Pages: `ALLOWED_ORIGIN`) con un cambio de precio y su reversión; Lighthouse | pendiente |
 
+### Fotos y rediseño (2026-11-07)
+| Tema | Decisión |
+|---|---|
+| **Diseño del panel** | Mismo lenguaje que Productos: cuerpo en **salvia con huellas y hojas** (copia de `FondoHuellas.astro`), cada producto en una **tarjeta crema** con hojas y huellas en marca de agua, nombre en **Nunito 800 bosque**, **precio en chip dorado** (maíz), botones en **píldora** y animales como **pastillas** que se pintan de bosque. Solo colores de la paleta; los rótulos directos sobre salvia van en bosque (nunca tinta-suave, 4.29) |
+| **Foto de un producto** | En «Editar más» → «Foto del producto»: PNG, WebP o JPG (lo ideal, **PNG con fondo transparente**). El navegador la **reduce a 800 px de alto y la codifica en WebP** (30–150 KB; PNG de respaldo si el navegador no sabe WebP; máx. 900 KB). Sirve para productos nuevos **y para cambiar la foto de uno existente** (reemplaza su archivo) |
+| **Dónde se guarda** | El Worker hace **un solo commit** (Git Data API) con `productos.json` + el original en `hinojosa-web/imagenes-nuevas/<categoría>/<nombre>.webp\|png`. Máx. 4 fotos por guardado. Valida ruta, categoría, firma del archivo (WebP/PNG) y que la foto pertenezca a un producto de la lista |
+| **Las 6 versiones** | `scripts-activos/procesar-imagenes-nuevas.mjs` (sharp, mismas alturas y calidades que `nuevos_req_codificar.mjs`) las genera en el **workflow de Pages, antes de `npm run build`**: 800 y 400 px en WebP y AVIF + miniaturas de 160 y 80 px. **Las derivadas no se versionan**: se regeneran en cada despliegue desde `imagenes-nuevas/`. Con transparencia recorta el margen; con fondo de estudio **no recorta** y el producto lleva `conFondo: true` (placa blanca). Una foto dañada no tumba el despliegue (aviso y costal genérico) |
+| **Orden de despliegue** | **Primero el Worker, después el sitio.** Un Worker viejo ignoraría `imagenes` y guardaría la ruta de una foto que no existe |
+| **Límites conocidos** | Las originales quedan en el repo aunque luego se quite el producto; la foto nueva tarda ~2 min en verse (commit + despliegue); sin vista local de las derivadas salvo `npm run imagenes:nuevas` |
+
+**Pruebas (2026-11-07):** `node admin-worker/prueba-validar.mjs`, `node admin-worker/prueba-worker.mjs` (21 pruebas con GitHub simulado: un commit con foto y JSON, solo foto, rechazos, conflicto, camino sin fotos) y el recorrido de Playwright con el Worker simulado (foto con transparencia, con fondo, reemplazo y archivo que no es imagen; axe 0 en escritorio y móvil).
+
 **Hallazgo en la prueba:** al guardar, el panel reordenaba `animales` (`['cuy','conejo']` → `['conejo','cuy']`) en 4 productos sin tocarlos; corregido (conserva el orden original y añade los nuevos al final).
 
 ### Riesgos (nuevos)

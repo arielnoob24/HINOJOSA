@@ -1,9 +1,17 @@
-/* Panel de administracion (bloque 29c). Solo colores de la paleta; los
-   contrastes salen de tokens.css (tinta sobre crema 12.67, blanco sobre
-   bosque 9.80, tinta sobre maiz 7.93, canela-oscuro sobre crema 5.22). */
+/* Panel de administracion (bloque 29c, rediseno 2026-11-07).
+   Mismo lenguaje que Productos: fondo salvia con huellas y hojas, tarjetas
+   crema con marca de agua de hojas y huellas, nombre en Nunito 800 bosque,
+   chip de precio dorado y botones en pildora.
+
+   Contrastes (tokens.css / skill marca-hinojosa):
+     tinta sobre crema 12.67 · sobre blanco 14.28 · sobre salvia 8.01
+     bosque sobre crema 8.69 · sobre salvia 5.50 · blanco sobre bosque 9.80
+     tinta sobre maiz 7.93 · tinta-suave sobre crema 6.78
+     PROHIBIDO sobre salvia: tinta-suave (4.29), marca-fuerte (3.02).
+   Los textos que van DIRECTO sobre el fondo salvia usan tinta o bosque. */
 .adm {
   --adm-borde: var(--color-tinta-suave);
-  width: min(56rem, 100vw);
+  width: min(58rem, 100vw);
   max-width: 100vw;
   height: 100dvh;
   max-height: 100dvh;
@@ -12,7 +20,7 @@
   border: 0;
   background: var(--color-crema);
   color: var(--color-tinta);
-  font-family: inherit;
+  font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.45;
   overflow: hidden;
@@ -23,14 +31,14 @@
 }
 @media (min-width: 48rem) {
   .adm {
-    height: min(52rem, 94dvh);
+    height: min(54rem, 94dvh);
     margin: auto;
-    border-radius: 1rem;
-    box-shadow: 0 24px 60px -12px rgb(16 48 27 / 0.55);
+    border-radius: var(--radius-tarjeta-grande);
+    box-shadow: var(--shadow-flotante);
   }
 }
 .adm::backdrop {
-  background: rgb(16 48 27 / 0.65);
+  background: rgb(16 48 27 / 0.7);
 }
 .adm *,
 .adm *::before,
@@ -41,6 +49,8 @@
   outline: 3px solid var(--color-bosque);
   outline-offset: 2px;
 }
+
+/* ---------- cabecera ---------- */
 .adm-cabecera {
   display: flex;
   align-items: center;
@@ -51,26 +61,42 @@
   color: var(--color-crema);
 }
 .adm-cabecera :focus-visible {
-  outline-color: var(--color-crema);
+  outline-color: var(--color-maiz);
 }
-/* El h2 hereda color de bosque del CSS global del sitio: sobre la cabecera
-   verde habia que forzar crema (9.0 sobre bosque). */
+/* El h2 hereda bosque del CSS global del sitio: sobre la cabecera verde se
+   fuerza crema (9.0 sobre bosque). */
 .adm .adm-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   margin: 0;
   color: var(--color-crema);
-  font-family: inherit;
-  font-size: 1.25rem;
+  font-family: var(--font-sans);
+  font-size: 1.3rem;
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: normal;
 }
+.adm-titulo::before {
+  content: '';
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50% 0 50% 0;
+  background: var(--color-hoja);
+  transform: rotate(-12deg);
+}
 .adm-titulo:focus {
   outline: none;
 }
+
+/* ---------- cuerpo: salvia con huellas (como Productos) ---------- */
 .adm-cuerpo {
   flex: 1 1 auto;
   overflow-y: auto;
   padding: 1rem;
+  background-color: var(--color-salvia);
+  background-image: var(--adm-fondo);
+  background-size: 18rem 18rem;
 }
 .adm-pie {
   display: flex;
@@ -78,13 +104,13 @@
   align-items: center;
   gap: 0.5rem 1rem;
   padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
-  background: var(--color-crema-oscuro);
-  border-top: 2px solid var(--color-tinta-suave);
+  background: var(--color-crema);
+  box-shadow: 0 -10px 24px -12px rgb(20 48 29 / 0.45);
 }
 .adm-pie-texto {
   flex: 1 1 12rem;
   margin: 0;
-  font-weight: 700;
+  font-weight: 800;
 }
 .adm-pie-acciones {
   display: flex;
@@ -92,8 +118,12 @@
   gap: 0.5rem;
 }
 
-/* Botones y campos: objetivos de 44 px y 16 px para que iOS no haga zoom */
-.adm button,
+/* ---------- botones (pildora) y campos ---------- */
+/* `color: inherit` solo en los campos: en los botones pisaba el color de cada
+   variante (el texto blanco de "Editar mas" salia verde sobre verde). */
+.adm button {
+  font: inherit;
+}
 .adm input,
 .adm select,
 .adm textarea {
@@ -101,13 +131,18 @@
   color: inherit;
 }
 .adm-boton {
-  min-height: 2.75rem;
-  padding: 0.5rem 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: var(--spacing-objetivo);
+  padding: 0.5rem 1.25rem;
   border: 2px solid var(--color-bosque);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-boton);
   background: var(--color-blanco);
   color: var(--color-bosque);
   font-weight: 800;
+  line-height: 1.2;
   cursor: pointer;
 }
 .adm-boton:hover:not(:disabled) {
@@ -116,13 +151,18 @@
 .adm-boton-primario {
   background: var(--color-bosque);
   color: var(--color-blanco);
+  box-shadow: 0 6px 16px -8px rgb(20 48 29 / 0.55);
 }
 .adm-boton-primario:hover:not(:disabled) {
-  background: var(--color-boton-hover);
+  background: var(--color-bosque-noche);
+}
+.adm-boton:active:not(:disabled) {
+  transform: scale(0.97);
 }
 .adm-boton:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+  box-shadow: none;
 }
 .adm-cerrar {
   border-color: var(--color-crema);
@@ -130,29 +170,59 @@
   color: var(--color-crema);
 }
 .adm-cerrar:hover:not(:disabled) {
-  background: rgb(246 241 228 / 0.15);
+  background: rgb(246 241 228 / 0.16);
 }
+.adm-mas {
+  background: var(--color-bosque);
+  color: var(--color-blanco);
+}
+.adm-mas:hover:not(:disabled) {
+  background: var(--color-bosque-noche);
+}
+.adm-mas::after {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: -0.2rem;
+  border-right: 2px solid var(--color-maiz);
+  border-bottom: 2px solid var(--color-maiz);
+  transform: rotate(45deg);
+}
+.adm-mas[aria-expanded='true']::after {
+  margin-top: 0.15rem;
+  transform: rotate(-135deg);
+}
+
+/* Rotulo de campo: version pequena en mayusculas, como MARCA / PARA de la tarjeta */
 .adm-campo {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  font-weight: 700;
+  gap: 0.3rem;
+}
+.adm-campo > span,
+.adm-grupo legend,
+.adm-foto-titulo {
+  color: var(--color-tinta-suave);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .adm-campo > span small {
-  font-weight: 400;
-  color: var(--color-tinta-suave);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 .adm-campo input[type='text'],
 .adm-campo input[type='password'],
 .adm-campo input[type='search'],
-.adm-campo input[inputmode],
 .adm-campo select,
 .adm-campo textarea {
   width: 100%;
-  min-height: 2.75rem;
-  padding: 0.5rem 0.75rem;
+  min-height: var(--spacing-objetivo);
+  padding: 0.5rem 0.85rem;
   border: 2px solid var(--adm-borde);
-  border-radius: 0.6rem;
+  border-radius: 0.8rem;
   background: var(--color-blanco);
   font-size: 1rem;
   font-weight: 400;
@@ -161,30 +231,124 @@
   min-height: 5rem;
   resize: vertical;
 }
+
+/* Chip de precio dorado: el campo de precio ES el chip */
+.adm-precio {
+  flex: 0 0 auto;
+}
+.adm-chip-precio {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  min-height: var(--spacing-objetivo);
+  padding: 0 0.9rem;
+  border: 2px solid transparent;
+  border-radius: var(--radius-chip);
+  background: var(--color-maiz);
+  color: var(--color-tinta);
+  font-weight: 800;
+}
+.adm-chip-precio:focus-within {
+  outline: 3px solid var(--color-bosque);
+  outline-offset: 2px;
+}
+/* Mas especifico que `.adm-campo input[type='text']` (que pone fondo blanco y borde) */
+.adm .adm-chip-precio input[type='text'] {
+  width: 5.5rem;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: 0 0.2rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 1.15rem;
+  font-weight: 800;
+  outline: none;
+}
+.adm-chip-precio input::placeholder {
+  color: var(--color-tinta);
+  font-size: 0.9rem;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+/* Casillas */
 .adm-marca {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  min-height: 2.75rem;
+  min-height: var(--spacing-objetivo);
   font-weight: 700;
   cursor: pointer;
 }
 .adm-marca input {
   width: 1.4rem;
   height: 1.4rem;
-  accent-color: var(--color-bosque);
   flex: none;
+  accent-color: var(--color-bosque);
 }
 
-/* Avisos: nada de rojo (no esta en la paleta); borde y rotulo en canela oscuro */
+/* Animales: pastillas que se pintan al marcarlas (como PARA en la tarjeta) */
+.adm-grupo {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.adm-grupo legend {
+  padding: 0;
+  margin-bottom: 0.4rem;
+}
+.adm-grupo-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.adm-pastilla {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--spacing-objetivo);
+  padding: 0.35rem 1rem;
+  border: 2px solid var(--color-bosque);
+  border-radius: var(--radius-chip);
+  background: var(--color-blanco);
+  color: var(--color-bosque);
+  font-weight: 800;
+  cursor: pointer;
+}
+.adm-pastilla input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.adm-pastilla:has(input:checked) {
+  background: var(--color-bosque);
+  color: var(--color-blanco);
+}
+.adm-pastilla:has(input:checked)::before {
+  content: '✓';
+  margin-right: 0.35rem;
+  color: var(--color-maiz);
+}
+.adm-pastilla:has(input:focus-visible) {
+  outline: 3px solid var(--color-bosque);
+  outline-offset: 2px;
+}
+
+/* ---------- avisos ---------- */
 .adm-aviso {
   margin: 0 0 1rem;
   padding: 0.75rem 1rem;
   border: 2px solid var(--color-canela-oscuro);
-  border-radius: 0.75rem;
-  background: var(--color-blanco);
+  border-radius: var(--radius-tarjeta);
+  background: var(--color-crema);
   color: var(--color-tinta);
   font-weight: 700;
+  box-shadow: var(--shadow-elevada);
 }
 .adm-aviso strong {
   color: var(--color-canela-oscuro);
@@ -201,18 +365,22 @@
   color: var(--color-bosque);
 }
 
-/* Entrada */
+/* ---------- entrada ---------- */
 .adm-entrada {
   display: grid;
   gap: 1rem;
   max-width: 24rem;
   margin: 1.5rem auto;
+  padding: 1.5rem;
+  border-radius: var(--radius-tarjeta-grande);
+  background: var(--color-crema);
+  box-shadow: var(--shadow-elevada);
 }
 .adm-entrada p {
   margin: 0;
 }
 
-/* Barra de herramientas y lista */
+/* ---------- herramientas ---------- */
 .adm-herramientas {
   display: flex;
   flex-wrap: wrap;
@@ -223,65 +391,129 @@
 .adm-herramientas .adm-campo {
   flex: 1 1 14rem;
 }
+/* Rotulo directamente sobre salvia: bosque (5.50), nunca tinta-suave */
+.adm-herramientas .adm-campo > span {
+  color: var(--color-bosque);
+}
+.adm-vacio {
+  padding: 1.5rem 0;
+  text-align: center;
+  font-weight: 800;
+  color: var(--color-tinta);
+}
+
+/* ---------- tarjetas de producto (crema, hojas y huellas en marca de agua) ---------- */
 .adm-lista {
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .adm-fila {
-  border: 2px solid var(--color-filete-canela);
-  border-radius: 0.9rem;
-  background: var(--color-blanco);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: var(--radius-tarjeta);
+  background: var(--color-crema);
+  box-shadow: var(--shadow-elevada);
+}
+.adm-fila::before,
+.adm-fila::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+.adm-fila::before {
+  top: 0.35rem;
+  right: 0.25rem;
+  width: 5.5rem;
+  height: 6.8rem;
+  background-image: var(--adm-hojas);
+  opacity: 0.45;
+}
+.adm-fila::after {
+  right: 0.9rem;
+  bottom: 0.6rem;
+  width: 5rem;
+  height: 3.6rem;
+  background-image: var(--adm-huellas);
+  opacity: 0.7;
 }
 .adm-fila[data-cambiado] {
   border-color: var(--color-bosque);
-  background: var(--color-hoja-claro);
 }
 .adm-fila[data-nuevo] {
   border-style: dashed;
+  border-color: var(--color-bosque);
 }
 .adm-fila-cabecera {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 1rem;
-  padding: 0.75rem;
+  gap: 0.6rem 1rem;
+  padding: 0.85rem;
+}
+.adm-miniatura {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 5rem;
+  overflow: hidden;
+  border-radius: 0.9rem;
+  background: radial-gradient(ellipse 70% 75% at 50% 50%, var(--color-blanco), var(--color-crema-oscuro));
+}
+.adm-miniatura img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.adm-miniatura[data-placa] {
+  background: var(--color-blanco);
+  border: 1px solid var(--color-crema-oscuro);
 }
 .adm-fila-nombre {
-  flex: 1 1 14rem;
+  flex: 1 1 11rem;
   min-width: 0;
 }
 .adm-fila-nombre strong {
   display: block;
-  font-size: 1.05rem;
-  line-height: 1.25;
+  color: var(--color-bosque);
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.12;
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 .adm-fila-cat {
   color: var(--color-tinta-suave);
   font-size: 0.9rem;
+  font-weight: 700;
 }
 .adm-insignia {
   display: inline-block;
-  margin-left: 0.4rem;
-  padding: 0.05rem 0.5rem;
-  border-radius: 999px;
+  margin-left: 0.45rem;
+  padding: 0.05rem 0.6rem;
+  border-radius: var(--radius-chip);
   background: var(--color-maiz);
   color: var(--color-tinta);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 800;
-}
-.adm-precio {
-  flex: 0 0 9rem;
+  vertical-align: middle;
 }
 .adm-fila-mas {
   display: grid;
-  gap: 0.75rem;
-  padding: 0 0.75rem 0.75rem;
-  border-top: 1px solid var(--color-filete-canela);
-  padding-top: 0.75rem;
+  gap: 0.9rem;
+  padding: 0.85rem;
+  border-top: 2px solid var(--color-crema-oscuro);
 }
 @media (min-width: 40rem) {
   .adm-fila-mas {
@@ -291,27 +523,71 @@
     grid-column: 1 / -1;
   }
 }
-.adm-grupo {
-  margin: 0;
-  padding: 0;
-  border: 0;
+.adm-contador {
+  font-size: 0.8rem;
 }
-.adm-grupo legend {
-  padding: 0;
-  font-weight: 700;
-}
-.adm-grupo-opciones {
+
+/* ---------- foto ---------- */
+.adm-foto {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 1.25rem;
+  align-items: center;
+  gap: 0.85rem 1.25rem;
 }
-.adm-contador {
-  font-size: 0.85rem;
-  font-weight: 400;
+.adm-foto-vista {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 7rem;
+  height: 9rem;
+  overflow: hidden;
+  border-radius: var(--radius-tarjeta);
+  background: radial-gradient(ellipse 70% 75% at 50% 50%, var(--color-blanco), var(--color-crema-oscuro));
+}
+.adm-foto-vista[data-placa] {
+  background: var(--color-blanco);
+  border: 1px solid var(--color-crema-oscuro);
+}
+.adm-foto-vista img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.adm-foto-info {
+  display: grid;
+  flex: 1 1 14rem;
+  gap: 0.5rem;
+  justify-items: start;
+}
+.adm-foto-info p {
+  margin: 0;
+}
+.adm-foto-nota {
   color: var(--color-tinta-suave);
+  font-size: 0.92rem;
 }
-.adm-vacio {
-  padding: 1.5rem 0;
-  text-align: center;
-  font-weight: 700;
+.adm-foto-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.adm-foto-archivo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (forced-colors: active) {
+  .adm-fila::before,
+  .adm-fila::after {
+    display: none;
+  }
+  .adm-fila {
+    border-color: CanvasText;
+  }
 }

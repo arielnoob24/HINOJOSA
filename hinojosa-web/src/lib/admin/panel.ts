@@ -9,6 +9,7 @@
 // - Todo el texto del usuario se inserta con textContent (nunca innerHTML).
 import css from './panel.css?inline';
 import { API_PRODUCTOS } from './config';
+import { ruta } from '../ruta';
 
 type Producto = {
   id: string;
@@ -25,9 +26,19 @@ type Producto = {
   conFondo?: boolean;
 };
 type Categoria = { id: string; nombre: string; nombreCorto: string; orden: number };
+/** Foto elegida en el panel, ya reducida (800 px de alto como maximo). */
+type FotoNueva = {
+  base64: string;
+  ext: 'webp' | 'png'; // WebP si el navegador sabe codificarlo; si no, PNG
+  vista: string; // URL temporal para la vista previa
+  alfa: boolean; // false = trae fondo (se muestra sobre una placa blanca)
+  kb: number;
+};
 type Fila = {
   clave: number;
   base: Producto | null; // como esta publicado (null = producto nuevo)
+  foto: FotoNueva | null; // foto elegida y aun sin guardar
+  vistaTemporal: string | null; // vista previa de la ultima foto guardada, mientras el sitio la publica
   nombre: string;
   descripcion: string;
   marca: string;
@@ -52,6 +63,23 @@ const ANIMALES: [string, string][] = [
   ['vaca', 'Vacas'],
 ];
 const MAX_DESCRIPCION = 110;
+const FOTO_ALTO_MAX = 800; // lo mismo que la version grande del sitio
+const FOTO_ANCHO_MAX = 1200;
+const FOTO_BYTES_MAX = 900_000; // el Worker rechaza mas que esto
+const FOTOS_POR_GUARDADO = 4;
+
+// ---------- decoracion: mismo fondo y marcas de agua que Productos ----------
+// Copia de FondoHuellas.astro (mosaico de 240 px a escala 1,2) y de las hojas y
+// huellas de HojaDetalle.astro, con los colores de la paleta fijos porque van
+// como imagen de fondo (data URI). Decorativas: no entran al arbol de accesibilidad.
+const PISADAS = `<g id="p"><ellipse cy="7" rx="11" ry="9"/><ellipse cx="-12" cy="-7" rx="4" ry="5.5"/><ellipse cx="-4.5" cy="-14" rx="4" ry="5.5"/><ellipse cx="4.5" cy="-14" rx="4" ry="5.5"/><ellipse cx="12" cy="-7" rx="4" ry="5.5"/></g><g id="g"><path d="M-8 9c-3-6 3-13 8-13s11 7 8 13c-2 4-5 1-8 1s-6 3-8-1z"/><circle cx="-9" cy="-6" r="3"/><circle cx="-3.5" cy="-11" r="3"/><circle cx="3.5" cy="-11" r="3"/><circle cx="9" cy="-6" r="3"/></g><g id="v"><path d="M-1.5-13C-9-13-12-2-11 5c1 6 6 8 9.5 7z"/><path d="M1.5-13C9-13 12-2 11 5c-1 6-6 8-9.5 7z"/></g><path id="a" d="M0 4V-16M0 4-12-8M0 4 12-8M0 4v8" fill="none" stroke="#f6f1e4" stroke-width="3.2" stroke-linecap="round"/><path id="h" d="M0 0C2-11 11-18 22-18 21-7 12 0 0 0z"/>`;
+const TESELA =
+  `<svg xmlns="http://www.w3.org/2000/svg" width="288" height="288" viewBox="0 0 240 240"><defs>${PISADAS}</defs>` +
+  `<g fill="#f6f1e4" opacity=".55"><use href="#p" transform="translate(34 66) rotate(-24) scale(.85)"/><use href="#p" transform="translate(62 34) rotate(-14) scale(.85)"/><use href="#g" transform="translate(176 156) rotate(28)"/><use href="#g" transform="translate(204 130) rotate(18) scale(.9)"/><use href="#v" transform="translate(160 36) rotate(16)"/><use href="#v" transform="translate(112 214) rotate(-32) scale(.9)"/><use href="#a" transform="translate(104 118) rotate(12)"/><use href="#a" transform="translate(124 92) rotate(4) scale(.85)"/><use href="#a" transform="translate(222 214) rotate(-38) scale(.9)"/><use href="#p" transform="translate(30 196) rotate(36) scale(.7)"/></g>` +
+  `<g fill="#7bbf3a" opacity=".34"><path d="M196 92c4-14 14-26 30-34M40 150c10-8 16-20 16-34" fill="none" stroke="#7bbf3a" stroke-width="2.2" stroke-linecap="round"/><use href="#h" transform="translate(204 76) rotate(-30)"/><use href="#h" transform="translate(212 70) rotate(150) scale(.8)"/><use href="#h" transform="translate(52 128) rotate(-75) scale(.9)"/><use href="#h" transform="translate(48 138) rotate(160) scale(.75)"/><use href="#h" transform="translate(92 176) rotate(-10) scale(.7)"/><use href="#h" transform="translate(6 18) rotate(40) scale(.8)"/><use href="#h" transform="translate(150 196) rotate(200) scale(.6)"/></g></svg>`;
+const HOJAS = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150"><g fill="none" stroke="#7bbf3a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M118 2C92 30 70 70 58 148"/><path d="M100 22c-20-4-38 6-46 24 20 6 40-4 46-24zM100 22L54 46"/><path d="M92 44c20-8 30-26 26-44-18 6-28 24-26 44zM92 44l26-44"/><path d="M78 70c-22-2-40 10-46 30 22 4 42-8 46-30zM78 70l-46 30"/><path d="M74 80c22-6 36-24 34-46-20 6-34 24-34 46zM74 80l34-46"/><path d="M64 114c-18-2-34 8-40 26 18 4 36-6 40-26zM64 114l-40 26"/></g></svg>`;
+const HUELLAS = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 80"><g fill="#e3cfa6"><g transform="translate(26 50) rotate(-14)"><ellipse cx="0" cy="8" rx="13" ry="11"/><ellipse cx="-14" cy="-9" rx="5" ry="6.5"/><ellipse cx="-5" cy="-17" rx="5" ry="6.5"/><ellipse cx="6" cy="-17" rx="5" ry="6.5"/><ellipse cx="15" cy="-8" rx="5" ry="6.5"/></g><g transform="translate(84 34) rotate(12) scale(0.9)"><ellipse cx="0" cy="8" rx="13" ry="11"/><ellipse cx="-14" cy="-9" rx="5" ry="6.5"/><ellipse cx="-5" cy="-17" rx="5" ry="6.5"/><ellipse cx="6" cy="-17" rx="5" ry="6.5"/><ellipse cx="15" cy="-8" rx="5" ry="6.5"/></g></g></svg>`;
+const aUri = (svg: string) => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 
 let dialogo: HTMLDialogElement | null = null;
 let cuerpo: HTMLElement;
@@ -113,6 +141,8 @@ function aFila(p: Producto): Fila {
   return {
     clave: siguienteClave++,
     base: p,
+    foto: null,
+    vistaTemporal: null,
     nombre: p.nombre,
     descripcion: p.descripcion ?? '',
     marca: p.marca ?? '',
@@ -147,24 +177,48 @@ function aProducto(f: Fila, id: string): Producto {
     precioDesde: num === null ? false : f.precioDesde,
     destacado: f.destacado,
   };
-  if (f.base) return { ...f.base, ...editable };
-  return {
-    id,
-    categoria: editable.categoria,
-    animales: editable.animales,
-    nombre: editable.nombre,
-    descripcion: editable.descripcion,
-    marca: editable.marca,
-    presentacion: editable.presentacion,
-    precio: editable.precio,
-    precioDesde: editable.precioDesde,
-    imagen: null,
-    destacado: editable.destacado,
-  };
+  let p: Producto;
+  if (f.base) {
+    p = { ...f.base, ...editable };
+  } else {
+    p = {
+      id,
+      categoria: editable.categoria,
+      animales: editable.animales,
+      nombre: editable.nombre,
+      descripcion: editable.descripcion,
+      marca: editable.marca,
+      presentacion: editable.presentacion,
+      precio: editable.precio,
+      precioDesde: editable.precioDesde,
+      imagen: null,
+      destacado: editable.destacado,
+    };
+  }
+  if (f.foto) {
+    p.imagen = rutaImagen(f, id);
+    // Foto con fondo de estudio: el sitio la muestra sobre una placa blanca
+    if (f.foto.alfa) delete p.conFondo;
+    else p.conFondo = true;
+  }
+  return p;
+}
+
+/** Donde queda la foto en el sitio. Si el producto ya tenia una .webp, se reemplaza esa. */
+function rutaImagen(f: Fila, id: string): string {
+  const actual = f.base?.imagen;
+  return actual && actual.endsWith('.webp') ? actual : `/img/productos/${f.categoria}/${id}.webp`;
+}
+
+/** Donde guarda el Worker el original que subimos (lo procesa el despliegue). */
+function rutaSubida(f: Fila, id: string): string {
+  const relativa = rutaImagen(f, id).replace('/img/productos/', '').replace(/\.webp$/, '');
+  return `hinojosa-web/imagenes-nuevas/${relativa}.${f.foto!.ext}`;
 }
 
 function cambiada(f: Fila): boolean {
   if (!f.base) return true;
+  if (f.foto) return true;
   return JSON.stringify(aProducto(f, f.base.id)) !== JSON.stringify(f.base);
 }
 
@@ -240,6 +294,9 @@ function crearDialogo(): HTMLDialogElement {
     cuerpo,
     pie,
   );
+  d.style.setProperty('--adm-fondo', aUri(TESELA));
+  d.style.setProperty('--adm-hojas', aUri(HOJAS));
+  d.style.setProperty('--adm-huellas', aUri(HUELLAS));
   // Esc: pasa por pedirCierre para no perder cambios sin avisar
   d.addEventListener('cancel', (ev) => {
     ev.preventDefault();
@@ -327,6 +384,8 @@ function pintarLista() {
     const f: Fila = {
       clave: siguienteClave++,
       base: null,
+      foto: null,
+      vistaTemporal: null,
       nombre: '',
       descripcion: '',
       marca: '',
@@ -420,14 +479,14 @@ function campoTexto(f: Fila, etiqueta: string, campo: keyof Fila, opciones: { ma
 function filaDOM(f: Fila): HTMLElement {
   const li = h('li', { class: 'adm-fila', 'data-clave': String(f.clave) });
 
-  // Cabecera: nombre, precio y "Editar mas"
+  // Cabecera: miniatura, nombre, precio (chip dorado) y "Editar mas"
   const precio = h('input', { type: 'text', inputmode: 'decimal', id: `adm-precio-${f.clave}`, autocomplete: 'off', placeholder: 'Sin precio' });
   precio.value = f.precioTxt;
   precio.addEventListener('input', () => {
     f.precioTxt = precio.value;
     refrescarFila(f);
   });
-  const mas = h('button', { type: 'button', class: 'adm-boton', 'aria-expanded': String(f.abierta), 'aria-controls': `adm-mas-${f.clave}` });
+  const mas = h('button', { type: 'button', class: 'adm-boton adm-mas', 'aria-expanded': String(f.abierta), 'aria-controls': `adm-mas-${f.clave}` });
   const detalle = h('div', { class: 'adm-fila-mas', id: `adm-mas-${f.clave}`, hidden: !f.abierta });
   const rotuloMas = () => {
     mas.textContent = f.abierta ? 'Ocultar' : 'Editar más';
@@ -444,8 +503,14 @@ function filaDOM(f: Fila): HTMLElement {
     h(
       'div',
       { class: 'adm-fila-cabecera' },
+      h('div', { class: 'adm-miniatura', 'data-miniatura': '', 'aria-hidden': 'true' }),
       h('div', { class: 'adm-fila-nombre' }, h('strong', { 'data-rotulo': '' }), h('span', { class: 'adm-fila-cat', 'data-cat': '' })),
-      h('label', { class: 'adm-campo adm-precio', for: `adm-precio-${f.clave}` }, h('span', {}, 'Precio (USD)'), precio),
+      h(
+        'label',
+        { class: 'adm-campo adm-precio', for: `adm-precio-${f.clave}` },
+        h('span', {}, 'Precio (USD)'),
+        h('span', { class: 'adm-chip-precio' }, '$', precio),
+      ),
       mas,
     ),
     detalle,
@@ -453,6 +518,7 @@ function filaDOM(f: Fila): HTMLElement {
 
   // Detalle
   detalle.append(
+    bloqueFoto(f),
     campoTexto(f, 'Nombre', 'nombre', { max: 80, ancho: true }),
     campoTexto(f, 'Descripción (la que sale en la tarjeta)', 'descripcion', { max: MAX_DESCRIPCION, ancho: true, area: true }),
     campoTexto(f, 'Marca', 'marca', { max: 40 }),
@@ -481,7 +547,7 @@ function filaDOM(f: Fila): HTMLElement {
   const opciones = h('div', { class: 'adm-grupo-opciones' });
   for (const [valor, etiqueta] of ANIMALES) {
     opciones.append(
-      marca(f.animales.includes(valor), etiqueta, (v) => {
+      pastilla(f.animales.includes(valor), etiqueta, (v) => {
         f.animales = v ? [...f.animales, valor] : f.animales.filter((a) => a !== valor);
         refrescarFila(f);
       }),
@@ -513,6 +579,189 @@ function filaDOM(f: Fila): HTMLElement {
   return li;
 }
 
+/** Casilla en forma de pastilla (animales): se pinta de bosque al marcarla. */
+function pastilla(valor: boolean, texto: string, alCambiar: (v: boolean) => void): HTMLElement {
+  const input = h('input', { type: 'checkbox' });
+  input.checked = valor;
+  input.addEventListener('change', () => alCambiar(input.checked));
+  return h('label', { class: 'adm-pastilla' }, input, h('span', {}, texto));
+}
+
+// ---------- foto del producto ----------
+function blobABase64(blob: Blob): Promise<string> {
+  return new Promise((resolver, rechazar) => {
+    const lector = new FileReader();
+    lector.onload = () => resolver(String(lector.result).split(',')[1] ?? '');
+    lector.onerror = () => rechazar(new Error('No se pudo leer la foto.'));
+    lector.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Reduce la foto en el navegador (800 px de alto como maximo, igual que la
+ * version grande del sitio) y la codifica en WebP. Asi sube liviana: 30-150 KB
+ * en vez de varios MB. Las 6 versiones finales las genera el despliegue.
+ */
+async function prepararFoto(archivo: File): Promise<FotoNueva> {
+  if (archivo.size > 25 * 1024 * 1024) throw new Error('La foto pesa demasiado (máximo 25 MB).');
+  let bmp: ImageBitmap;
+  try {
+    bmp = await createImageBitmap(archivo);
+  } catch {
+    throw new Error('No se pudo leer esa imagen. Usa un archivo PNG, WebP o JPG.');
+  }
+  const escala = Math.min(1, FOTO_ALTO_MAX / bmp.height, FOTO_ANCHO_MAX / bmp.width);
+  const ancho = Math.max(1, Math.round(bmp.width * escala));
+  const alto = Math.max(1, Math.round(bmp.height * escala));
+  const lienzo = document.createElement('canvas');
+  lienzo.width = ancho;
+  lienzo.height = alto;
+  const ctx = lienzo.getContext('2d', { willReadFrequently: true });
+  if (!ctx) throw new Error('Tu navegador no puede preparar la foto.');
+  ctx.drawImage(bmp, 0, 0, ancho, alto);
+  bmp.close?.();
+
+  // ¿Tiene transparencia? (se revisa un pixel de cada cuatro)
+  const px = ctx.getImageData(0, 0, ancho, alto).data;
+  let alfa = false;
+  for (let i = 3; i < px.length; i += 16) {
+    if (px[i] < 250) {
+      alfa = true;
+      break;
+    }
+  }
+
+  let blob: Blob | null = null;
+  for (const calidad of [0.92, 0.85, 0.75, 0.6]) {
+    blob = await new Promise<Blob | null>((res) => lienzo.toBlob(res, 'image/webp', calidad));
+    // Si el navegador no sabe WebP, devuelve PNG: se sube como PNG, sin reintentar
+    if (!blob || blob.type !== 'image/webp' || blob.size <= FOTO_BYTES_MAX) break;
+  }
+  if (!blob) throw new Error('No se pudo preparar la foto. Prueba con otra imagen.');
+  if (blob.size > FOTO_BYTES_MAX) {
+    throw new Error('La foto sigue pesando demasiado. Prueba con una imagen más pequeña o con menos detalle.');
+  }
+  return {
+    base64: await blobABase64(blob),
+    ext: blob.type === 'image/webp' ? 'webp' : 'png',
+    vista: URL.createObjectURL(blob),
+    alfa,
+    kb: Math.max(1, Math.round(blob.size / 1024)),
+  };
+}
+
+const COSTAL = () => ruta('/img/productos/costal-generico.svg');
+
+/** Pinta una imagen con respaldo al costal generico (la foto recien guardada tarda ~1 min en publicarse). */
+function imagenConRespaldo(src: string, ancho: number, alto: number): HTMLImageElement {
+  const img = h('img', { src, alt: '', width: String(ancho), height: String(alto), decoding: 'async' });
+  img.addEventListener(
+    'error',
+    () => {
+      if (!img.src.endsWith('costal-generico.svg')) img.src = COSTAL();
+    },
+    { once: true },
+  );
+  return img;
+}
+
+function pintarMiniatura(f: Fila, caja: HTMLElement) {
+  let src = COSTAL();
+  let placa = false;
+  if (f.foto) {
+    src = f.foto.vista;
+    placa = !f.foto.alfa;
+  } else if (f.vistaTemporal) {
+    src = f.vistaTemporal;
+    placa = !!f.base?.conFondo;
+  } else if (f.base?.imagen) {
+    src = ruta(f.base.imagen.replace(/\.webp$/, '-thumb.webp'));
+    placa = !!f.base.conFondo;
+  }
+  caja.toggleAttribute('data-placa', placa);
+  caja.replaceChildren(imagenConRespaldo(src, 64, 80));
+}
+
+function bloqueFoto(f: Fila): HTMLElement {
+  const vista = h('div', { class: 'adm-foto-vista', 'aria-hidden': 'true' });
+  const estado = h('p', { role: 'status' });
+  const archivo = h('input', {
+    type: 'file',
+    accept: 'image/png,image/webp,image/jpeg',
+    hidden: true,
+    id: `adm-foto-${f.clave}`,
+    'aria-label': 'Elegir la foto del producto',
+  });
+  const elegir = boton('', () => archivo.click());
+  const quitarFoto = boton('Quitar la foto nueva', () => {
+    if (f.foto) URL.revokeObjectURL(f.foto.vista);
+    f.foto = null;
+    pintar();
+    refrescarFila(f);
+  });
+
+  const pintar = () => {
+    const nueva = f.foto;
+    vista.toggleAttribute('data-placa', nueva ? !nueva.alfa : !!f.base?.conFondo);
+    let src = COSTAL();
+    if (nueva) src = nueva.vista;
+    else if (f.vistaTemporal) src = f.vistaTemporal;
+    else if (f.base?.imagen) src = ruta(f.base.imagen.replace(/\.webp$/, '-thumb.webp'));
+    vista.replaceChildren(imagenConRespaldo(src, 112, 144));
+    elegir.textContent = nueva ? 'Elegir otra foto' : f.base?.imagen ? 'Cambiar la foto' : 'Elegir una foto';
+    quitarFoto.hidden = !nueva;
+    if (!nueva) {
+      estado.textContent = f.base?.imagen
+        ? 'Esta es la foto actual. Si eliges otra, la reemplaza al guardar.'
+        : 'Este producto no tiene foto: se ve con un costal genérico.';
+    } else if (nueva.alfa) {
+      estado.textContent = `Foto lista (${nueva.kb} KB), con fondo transparente. Se sube al guardar.`;
+    } else {
+      estado.textContent = `Foto lista (${nueva.kb} KB). Tiene fondo, así que se mostrará sobre una placa blanca. Se ve mejor con un PNG de fondo transparente.`;
+    }
+  };
+
+  archivo.addEventListener('change', async () => {
+    const elegido = archivo.files?.[0];
+    archivo.value = '';
+    if (!elegido) return;
+    estado.textContent = 'Preparando la foto…';
+    elegir.disabled = true;
+    try {
+      const nueva = await prepararFoto(elegido);
+      if (f.foto) URL.revokeObjectURL(f.foto.vista);
+      f.foto = nueva;
+      pintar();
+      refrescarFila(f);
+    } catch (e) {
+      pintar();
+      estado.textContent = (e as Error).message;
+    } finally {
+      elegir.disabled = false;
+    }
+  });
+
+  pintar();
+  return h(
+    'div',
+    { class: 'adm-ancho' },
+    h('p', { class: 'adm-foto-titulo' }, 'Foto del producto'),
+    h(
+      'div',
+      { class: 'adm-foto' },
+      vista,
+      h(
+        'div',
+        { class: 'adm-foto-info' },
+        estado,
+        h('p', { class: 'adm-foto-nota' }, 'Lo ideal: un PNG con el fondo transparente y el producto de frente.'),
+        h('div', { class: 'adm-foto-acciones' }, elegir, quitarFoto),
+        archivo,
+      ),
+    ),
+  );
+}
+
 function marca(valor: boolean, texto: string, alCambiar: (v: boolean) => void): HTMLElement {
   const input = h('input', { type: 'checkbox' });
   input.checked = valor;
@@ -535,6 +784,13 @@ function refrescarFila(f: Fila, li?: HTMLElement) {
   }
   const cat = el.querySelector<HTMLElement>('[data-cat]');
   if (cat) cat.textContent = nombreCategoria(f.categoria);
+  // La miniatura solo se vuelve a pintar si cambio la foto (no en cada tecla)
+  const mini = el.querySelector<HTMLElement>('[data-miniatura]');
+  const marcaFoto = f.foto?.vista ?? 'base';
+  if (mini && mini.dataset.foto !== marcaFoto) {
+    mini.dataset.foto = marcaFoto;
+    pintarMiniatura(f, mini);
+  }
   pintarPie(true);
 }
 
@@ -556,6 +812,10 @@ function revisar(): string[] {
     }
     if (f.descripcion.length > MAX_DESCRIPCION) errores.push(`«${nombre}»: la descripción es demasiado larga.`);
   }
+  const conFoto = filas.filter((f) => f.foto).length;
+  if (conFoto > FOTOS_POR_GUARDADO) {
+    errores.push(`Hay ${conFoto} fotos nuevas y solo caben ${FOTOS_POR_GUARDADO} por guardado. Guarda y sigue con las demás.`);
+  }
   return errores;
 }
 
@@ -566,26 +826,42 @@ async function guardar() {
     return pintarLista();
   }
   const usados = new Set<string>(filas.filter((f) => f.base).map((f) => f.base!.id));
+  const imagenes: { ruta: string; base64: string }[] = [];
   const productos = filas.map((f) => {
-    if (f.base) return aProducto(f, f.base.id);
-    const id = idNuevo(f, usados);
-    usados.add(id);
+    let id: string;
+    if (f.base) id = f.base.id;
+    else {
+      id = idNuevo(f, usados);
+      usados.add(id);
+    }
+    if (f.foto) imagenes.push({ ruta: rutaSubida(f, id), base64: f.foto.base64 });
     return aProducto(f, id);
   });
 
   pie.querySelectorAll('button').forEach((b) => ((b as HTMLButtonElement).disabled = true));
   const texto = pie.querySelector('.adm-pie-texto');
-  if (texto) texto.textContent = 'Guardando…';
+  if (texto) texto.textContent = imagenes.length ? 'Guardando y subiendo las fotos…' : 'Guardando…';
 
-  const r = await api('PUT', { sha, productos });
+  const r = await api('PUT', { sha, productos, ...(imagenes.length ? { imagenes } : {}) });
   if (r.estado === 200 && r.datos?.ok) {
     sha = r.datos.sha ?? sha;
-    // Lo guardado pasa a ser la nueva base
-    filas = filas.map((f, i) => ({ ...aFila(productos[i]), clave: f.clave, abierta: f.abierta }));
+    // Lo guardado pasa a ser la nueva base. La vista previa de la foto recien
+    // subida se conserva hasta que el sitio termine de publicarla.
+    filas = filas.map((f, i) => ({
+      ...aFila(productos[i]),
+      clave: f.clave,
+      abierta: f.abierta,
+      vistaTemporal: f.foto?.vista ?? f.vistaTemporal,
+    }));
     quitados = [];
     mensajeGuardado = r.datos.sinCambios
       ? { tipo: 'ok', titulo: 'No había nada nuevo que guardar.' }
-      : { tipo: 'ok', titulo: 'Guardado. Los cambios se verán en el sitio en aproximadamente 1 minuto.' };
+      : {
+          tipo: 'ok',
+          titulo: imagenes.length
+            ? 'Guardado. Los cambios y las fotos nuevas se verán en el sitio en aproximadamente 2 minutos.'
+            : 'Guardado. Los cambios se verán en el sitio en aproximadamente 1 minuto.',
+        };
     return pintarLista();
   }
   if (r.estado === 401) {

@@ -39,6 +39,63 @@ function textoOpcional(valor, campo, max, errores, ref) {
   if (RE_PROHIBIDO.test(valor)) errores.push(`${ref}: «${campo}» tiene caracteres no permitidos (< > o de control).`);
 }
 
+// ---------- fotos nuevas ----------
+// El panel manda la foto ya reducida (WebP, o PNG si el navegador no sabe
+// codificar WebP). El Worker la guarda tal cual en hinojosa-web/imagenes-nuevas/
+// y el workflow de Pages genera las 6 versiones (800/400 px en WebP y AVIF y las
+// dos miniaturas) con scripts-activos/procesar-imagenes-nuevas.mjs.
+export const IMAGENES = { maxPorGuardado: 4, maxBytes: 900_000 };
+const RE_RUTA_IMAGEN =
+  /^hinojosa-web\/imagenes-nuevas\/([a-z0-9]+(?:-[a-z0-9]+)*)\/([a-z0-9]+(?:-[a-z0-9]+)*)\.(webp|png)$/;
+const RE_BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
+
+/**
+ * @param {unknown} imagenes   [{ ruta, base64 }] o undefined
+ * @param {{imagen?: string|null}[]} productos  la lista nueva (cada foto debe pertenecer a un producto)
+ * @param {{id: string}[]} categorias
+ * @returns {string[]}
+ */
+export function validarImagenes(imagenes, productos, categorias) {
+  if (imagenes === undefined) return [];
+  if (!Array.isArray(imagenes)) return ['Las fotos no tienen un formato válido.'];
+  if (imagenes.length > IMAGENES.maxPorGuardado) {
+    return [`Máximo ${IMAGENES.maxPorGuardado} fotos por guardado. Guarda y sigue con las demás.`];
+  }
+  const errores = [];
+  const cats = new Set(categorias.map((c) => c.id));
+  const rutas = new Set();
+  const maxBase64 = Math.ceil((IMAGENES.maxBytes * 4) / 3) + 8;
+
+  imagenes.forEach((im, i) => {
+    const ref = `Foto ${i + 1}`;
+    if (!im || typeof im !== 'object' || typeof im.ruta !== 'string' || typeof im.base64 !== 'string') {
+      return errores.push(`${ref}: formato no válido.`);
+    }
+    const m = RE_RUTA_IMAGEN.exec(im.ruta);
+    if (!m) return errores.push(`${ref}: la ruta no es válida.`);
+    const [, categoria, nombre, ext] = m;
+    if (!cats.has(categoria)) errores.push(`${ref}: categoría desconocida.`);
+    if (rutas.has(im.ruta)) errores.push(`${ref}: foto repetida.`);
+    rutas.add(im.ruta);
+
+    if (im.base64.length < 16 || im.base64.length > maxBase64 || !RE_BASE64.test(im.base64)) {
+      return errores.push(`${ref}: el archivo está vacío, dañado o pesa más de ${Math.round(IMAGENES.maxBytes / 1000)} KB.`);
+    }
+    // Los primeros 16 caracteres de base64 son los primeros 12 bytes del archivo
+    const cabecera = atob(im.base64.slice(0, 16));
+    const esWebp = cabecera.startsWith('RIFF') && cabecera.slice(8, 12) === 'WEBP';
+    const esPng = cabecera.charCodeAt(0) === 0x89 && cabecera.slice(1, 4) === 'PNG';
+    if ((ext === 'webp' && !esWebp) || (ext === 'png' && !esPng)) {
+      errores.push(`${ref}: el archivo no es una imagen ${ext.toUpperCase()} válida.`);
+    }
+    const imagenEsperada = `/img/productos/${categoria}/${nombre}.webp`;
+    if (!productos.some((p) => p && p.imagen === imagenEsperada)) {
+      errores.push(`${ref}: no corresponde a ningún producto.`);
+    }
+  });
+  return errores;
+}
+
 /**
  * @param {unknown} lista        productos que propone el panel
  * @param {{categorias: {id: string}[], actuales?: {id: string}[]}} contexto

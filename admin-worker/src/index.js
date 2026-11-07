@@ -7,11 +7,14 @@
 // Cloudflare. Variables: secretos GITHUB_TOKEN y ADMIN_PASSWORD; texto GITHUB_REPO,
 // GITHUB_BRANCH y ALLOWED_ORIGIN (uno o varios origenes separados por coma).
 
-import { validarProductos } from './validar.js';
+import { validarProductos, validarImagenes } from './validar.js';
 
 const RUTA_ARCHIVO = 'hinojosa-web/src/data/productos.json';
 const API = 'https://api.github.com';
-const MAX_CUERPO = 400_000; // bytes; el catalogo real pesa ~25 KB
+// El catalogo real pesa ~25 KB; el resto es para hasta 4 fotos de ≤ 900 KB en base64.
+const MAX_CUERPO = 5_000_000;
+
+class Conflicto extends Error {}
 
 // Freno a la fuerza bruta: por IP y por instancia del Worker (mejor esfuerzo, no
 // compartido entre instancias). La proteccion de fondo es una contrasena larga.
@@ -109,6 +112,43 @@ async function leerCatalogo(env) {
   return { sha: meta.sha, datos: JSON.parse(base64AUtf8(meta.content)) };
 }
 
+async function jsonOk(r, estadoEsperado = 200) {
+  if (r.status !== estadoEsperado) throw new Error(`GitHub respondió ${r.status}.`);
+  return r.json();
+}
+
+const aJson = (cuerpo) => ({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) });
+
+/**
+ * Un solo commit con varios archivos (Git Data API): productos.json y las fotos
+ * nuevas se publican juntos. Si la rama avanzo mientras tanto, el ultimo paso
+ * (mover la referencia sin forzar) falla y se avisa como conflicto.
+ * @param {{ruta: string, contenido: string, codificacion: 'utf-8'|'base64'}[]} archivos
+ * @returns {Promise<Record<string, string>>} sha del blob de cada ruta
+ */
+async function commitVarios(env, mensaje, archivos) {
+  const ref = await jsonOk(await github(env, `/git/ref/heads/${encodeURIComponent(env.GITHUB_BRANCH)}`));
+  const base = ref.object.sha;
+  const commit = await jsonOk(await github(env, `/git/commits/${base}`));
+  const shas = {};
+  const entradas = [];
+  for (const a of archivos) {
+    const blob = await jsonOk(await github(env, '/git/blobs', aJson({ content: a.contenido, encoding: a.codificacion })), 201);
+    shas[a.ruta] = blob.sha;
+    entradas.push({ path: a.ruta, mode: '100644', type: 'blob', sha: blob.sha });
+  }
+  const arbol = await jsonOk(await github(env, '/git/trees', aJson({ base_tree: commit.tree.sha, tree: entradas })), 201);
+  const nuevo = await jsonOk(await github(env, '/git/commits', aJson({ message: mensaje, tree: arbol.sha, parents: [base] })), 201);
+  const mover = await github(env, `/git/refs/heads/${encodeURIComponent(env.GITHUB_BRANCH)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sha: nuevo.sha, force: false }),
+  });
+  if (mover.status === 409 || mover.status === 422) throw new Conflicto();
+  if (!mover.ok) throw new Error(`GitHub respondió ${mover.status} al publicar.`);
+  return shas;
+}
+
 function describirCambios(antes, despues) {
   const porId = new Map(antes.map((p) => [p.id, p]));
   const nuevos = new Set(despues.map((p) => p.id));
@@ -200,10 +240,28 @@ export default {
       });
       if (errores.length) return json(env, origin, 422, { error: 'Hay datos por corregir.', errores: errores.slice(0, 20) });
 
-      const cambios = describirCambios(datos.productos, cuerpo.productos);
+      const erroresFotos = validarImagenes(cuerpo.imagenes, cuerpo.productos, datos.categorias);
+      if (erroresFotos.length) {
+        return json(env, origin, 422, { error: 'Hay fotos por corregir.', errores: erroresFotos.slice(0, 20) });
+      }
+      const fotos = cuerpo.imagenes || [];
+
+      const cambiosJson = describirCambios(datos.productos, cuerpo.productos);
+      const cambios = [cambiosJson, fotos.length ? `sube ${fotos.length === 1 ? 'una foto' : `${fotos.length} fotos`}` : '']
+        .filter(Boolean)
+        .join('; ');
       if (!cambios) return json(env, origin, 200, { ok: true, sinCambios: true, sha });
 
       const nuevo = { ...datos, productos: cuerpo.productos };
+
+      // Con fotos: un solo commit con todo. Sin fotos: el camino simple de siempre.
+      if (fotos.length) {
+        const archivos = fotos.map((f) => ({ ruta: f.ruta, contenido: f.base64, codificacion: 'base64' }));
+        if (cambiosJson) archivos.push({ ruta: RUTA_ARCHIVO, contenido: serializar(nuevo), codificacion: 'utf-8' });
+        const shas = await commitVarios(env, `Panel: ${cambios}`.slice(0, 200), archivos);
+        return json(env, origin, 200, { ok: true, sha: shas[RUTA_ARCHIVO] ?? sha, cambios });
+      }
+
       const r = await github(env, `/contents/${RUTA_ARCHIVO}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -221,6 +279,9 @@ export default {
       const res = await r.json();
       return json(env, origin, 200, { ok: true, sha: res.content.sha, cambios });
     } catch (e) {
+      if (e instanceof Conflicto) {
+        return json(env, origin, 409, { error: 'Los datos cambiaron mientras guardabas. Recarga el panel.' });
+      }
       return json(env, origin, 502, { error: 'No se pudo hablar con GitHub. Intenta de nuevo.' });
     }
   },

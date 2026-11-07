@@ -44,6 +44,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Fotos que sube el panel de administracion (imagenes-nuevas/): genera
+      # las 6 versiones de cada una en public/img/productos/ antes de compilar.
+      # No falla el despliegue si no hay fotos o si una foto esta danada.
+      - name: Process new product photos
+        run: node scripts-activos/procesar-imagenes-nuevas.mjs
+
       - name: Build
         run: npm run build
 
