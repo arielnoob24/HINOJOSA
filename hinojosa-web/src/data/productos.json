@@ -472,7 +472,7 @@
       "descripcion": "Para tus cerdos, vacas, cuyes y conejos, en saco de 45 kg.",
       "marca": "Molinos Cordillera",
       "presentacion": "Saco de 45 kg",
-      "precio": null,
+      "precio": 1,
       "precioDesde": false,
       "imagen": "/img/productos/granos/afrecho-de-trigo.webp",
       "destacado": false
