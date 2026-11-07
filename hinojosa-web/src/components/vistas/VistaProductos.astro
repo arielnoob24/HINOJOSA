@@ -42,8 +42,11 @@
 //   [data-pestana-boton=detalle|lista] [data-pestana-lista-texto]
 //   [data-panel-lista][data-lista-catalogo] #lista-<cat> [data-producto-fila=<id>]
 //   [data-filtro-lista] [data-filtro-termino] [data-quitar-filtro]
-//   [data-ficha] [data-ficha-*]       ficha del producto al frente (>= 48rem);
-//     [data-ficha-descripcion] (hidden si el producto no tiene descripcion)
+//   [data-ficha]                      panel Detalle del producto al frente (>= 48rem).
+//     Su contenido es FichaContenido.astro (0-F): chips, titulo, precio,
+//     descripcion, atributos, proteina del tilapero y boton "Consultar
+//     disponibilidad" ([data-f-*]); lo pinta src/lib/ficha-pintar.ts con el
+//     modelo de src/lib/ficha-modelo.ts. Cada bloque se oculta si no hay dato.
 //   [data-ver-detalle]                abre la hoja de detalle (< 48rem)
 //   script#datos-catalogo             JSON con categorias y productos
 //   [data-buscador] (combobox) [data-sugerencias] (listbox)
@@ -61,7 +64,8 @@ import Vista from '../Vista.astro';
 import Icono from '../Icono.astro';
 import HojaDetalle from '../HojaDetalle.astro';
 import FondoHuellas from '../FondoHuellas.astro';
-import { catalogo, textos, formatoPrecio, miniaturaDe, avifDe } from '../../lib/negocio';
+import FichaContenido from '../FichaContenido.astro';
+import { catalogo, textos, formatoPrecio, miniaturaDe, avifDe, datoConfirmado, telefonosConfirmados } from '../../lib/negocio';
 import { altProducto } from '../../lib/seo';
 import { textoBusqueda } from '../../lib/busqueda';
 import { srcsetProducto, medidasImagen, miniaturaLista, SIZES_ANILLO, SIZES_REJILLA } from '../../lib/srcset-producto';
@@ -75,6 +79,11 @@ const animalesDe = (p: Producto): string[] => ('animales' in p && Array.isArray(
 // contenido-estrategia). Si falta, la ficha y la hoja no dejan hueco.
 const descripcionDe = (p: Producto): string | null =>
   'descripcion' in p && typeof p.descripcion === 'string' && p.descripcion.trim() ? p.descripcion.trim() : null;
+// Campos de la ficha 0-F (opcionales): etapa, sabor, medida
+const opcional = (p: Producto, clave: 'etapa' | 'sabor' | 'medida'): string | null => {
+  const v = (p as Record<string, unknown>)[clave];
+  return typeof v === 'string' && v.trim() ? v.trim() : null;
+};
 const textoConteo = (n: number) => (n === 1 ? t.conteoUno : t.conteo.replace('{n}', String(n)));
 const [vacioAntes, vacioDespues] = t.sinResultadosTitulo.split('{termino}');
 
@@ -123,6 +132,9 @@ const datos = {
     nombre: p.nombre,
     marca: p.marca,
     presentacion: p.presentacion,
+    sabor: opcional(p, 'sabor'),
+    medida: opcional(p, 'medida'),
+    etapa: opcional(p, 'etapa'),
     precioTexto: formatoPrecio(p.precio, p.precioDesde),
     imagen: p.imagen,
     avif: avifDe(p.imagen),
@@ -151,6 +163,26 @@ const datos = {
     pestanaLista: t.pestanaLista,
   },
   tablaTilapia: tabla.producto,
+  // Modelo de la ficha (src/lib/ficha-modelo.ts). El WhatsApp solo si esta
+  // confirmado; si no, el primer telefono en formato internacional.
+  ficha: {
+    categorias: Object.fromEntries(grupos.map((g) => [g.id, g.nombreCorto])),
+    animales: nombresAnimales,
+    whatsapp: datoConfirmado('whatsapp'),
+    telefono: telefonosConfirmados()[0]?.internacional ?? null,
+    textos: {
+      marca: t.fichaMarca,
+      sabor: t.fichaSabor,
+      medida: t.fichaMedida,
+      presentacion: t.fichaPresentacion,
+      etapa: t.fichaEtapa,
+      ctaConsulta: t.fichaCtaConsulta,
+      ctaLlamar: t.fichaCtaLlamar,
+      ctaMensaje: t.fichaCtaMensaje,
+      ctaConsultaNombre: t.fichaCtaConsultaNombre,
+      ctaLlamarNombre: t.fichaCtaLlamarNombre,
+    },
+  },
 };
 const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
 ---
@@ -406,39 +438,14 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
            cabe con cualquier producto del catalogo a 1440x900 y 1366x650. No es una region
            viva (el producto ya se anuncia en [data-carrusel-anuncio]). -->
       <div id="panel-detalle" class="prod-ficha" role="tabpanel" aria-labelledby="tab-detalle" tabindex="0" data-ficha data-solo-js>
-        <div class="prod-ficha-cuerpo" data-ficha-cuerpo>
-          <h3 id="ficha-nombre" class="prod-ficha-nombre" data-ficha-nombre></h3>
-          <p class="prod-ficha-precio"><span class="prod-chip prod-chip-grande cifra" data-ficha-precio></span></p>
-          <p class="prod-ficha-desc" data-ficha-descripcion hidden></p>
-          <dl class="prod-ficha-datos" data-ficha-datos>
-            <div data-ficha-fila="marca"><dt>{t.fichaMarca}</dt><dd data-ficha-marca></dd></div>
-            <div data-ficha-fila="presentacion"><dt>{t.fichaPresentacion}</dt><dd data-ficha-presentacion></dd></div>
-          </dl>
-          <dl class="prod-ficha-para" data-ficha-para hidden>
-            <dt>{t.fichaPara}</dt>
-            <dd>
-              <ul class="prod-ficha-animales">
-                {Object.entries(nombresAnimales).map(([clave, nombre]) => (
-                  <li data-ficha-animal={clave} hidden>
-                    <Icono nombre={iconoAnimal[clave] ?? 'hoja'} class="size-5 shrink-0" />
-                    <span>{nombre}</span>
-                  </li>
-                ))}
-              </ul>
-            </dd>
-          </dl>
-          {/* Solo el tilapero: proteina por etapa en 6 pastillas (2 filas de 3) */}
-          <div class="prod-ficha-proteina" data-ficha-tabla hidden>
-            <p id="ficha-proteina-titulo" class="prod-ficha-etiqueta">{t.tablaTilapia.tituloCorto}</p>
-            <ul class="prod-ficha-etapas" aria-labelledby="ficha-proteina-titulo">
-              {tabla.etapas.map((e) => (
-                <li>
-                  <span>{e.etapa}</span>{' '}<span class="prod-ficha-cifra cifra">{`${e.proteina} ${tabla.unidad}`}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        <FichaContenido
+          variante="panel"
+          tituloNivel="h3"
+          tituloAttrs={{ id: 'ficha-nombre' }}
+          tabla={{ tituloCorto: t.tablaTilapia.tituloCorto, unidad: tabla.unidad, etapas: tabla.etapas }}
+          animales={nombresAnimales}
+          iconoAnimal={iconoAnimal}
+        />
       </div>
 
       <!-- Lista (alternativa textual del carrusel). Con JS, catalogo.ts le
@@ -1112,181 +1119,13 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     display: none;
   }
 
-  /* ---------- Ficha del producto al frente: tarjeta crema (bloques 23-24) ----------
-     Maqueta: Nuevos Req/tarjeta. Anula la ficha bosque del bloque 18. SIN
-     scroll nunca (prueba 23: todos los productos caben a 1440x900 y
-     1366x650). Contrastes (sobre crema #F6F1E4 y, desde el bloque 23b,
-     sobre el peor punto del desvanecido verde de la base, hoja al 22 %
-     sobre crema = #DBE6BF): nombre bosque Nunito 800 (8.69 / 7.50),
-     etiquetas tinta 800 en mayusculas (12.67 / 10.94), valores y
-     descripcion tinta-suave (6.78 / 5.85), chip de precio maiz con tinta
-     (7.93, fondo propio), pastillas "Para" blancas con bosque (9.80, fondo
-     propio), etapas del tilapero crema-oscuro con tinta (11.27). Foco bosque (8.69). Letra y huecos escalan con el
-     alto (dvh). Es el tabpanel de la pestana Detalle. */
+  /* ---------- Ficha del producto al frente: tarjeta crema (bloques 23-24; 0-F) ----------
+     Solo el contenedor: el contenido (chips, titulo, precio, descripcion,
+     atributos, proteina y boton) es src/components/FichaContenido.astro, que
+     lleva sus estilos y contrastes. SIN scroll nunca en los casos exigidos
+     (prueba 23: 1440x900 y 1366x650). Es el tabpanel de la pestana Detalle. */
   .prod-ficha {
     display: none;
-  }
-  .prod-ficha-cuerpo {
-    display: flex;
-    min-height: 0;
-    flex-direction: column;
-    gap: var(--ficha-hueco);
-  }
-  /* Nada se encoge para caber (bloque 23b): con flex-shrink el nombre y la
-     descripcion se aplastaban en silencio y la prueba 23 no lo veia */
-  .prod-ficha-cuerpo > * {
-    flex-shrink: 0;
-  }
-  .prod-ficha-nombre {
-    /* Lo primero que se reduce si no cabe (bloque 20); hasta 3 lineas y,
-       si aun asi no cabe, "..." (el nombre entero esta en la lista, en el
-       anuncio del carrusel y en el alt) */
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    font-family: var(--font-sans);
-    font-weight: 800;
-    font-size: clamp(1.375rem, min(2.45vw, 4.6dvh), 2.625rem);
-    line-height: 1.1;
-    letter-spacing: -0.01em;
-    color: var(--color-bosque);
-    text-wrap: balance;
-  }
-  .prod-ficha-precio {
-    line-height: 1;
-  }
-  /* Descripcion corta (bloque 23b): 1-2 lineas en tinta-suave (6.78 sobre
-     crema, 5.85 sobre el verde mas intenso del desvanecido); si un texto
-     largo no cabe en 2 lineas, "..." (entero en la hoja de detalle movil) */
-  .prod-ficha-desc {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    max-width: 34rem;
-    font-size: clamp(0.875rem, 2.2dvh, 1.0625rem);
-    line-height: 1.35;
-    color: var(--color-tinta-suave);
-    text-wrap: pretty;
-  }
-  .prod-ficha-desc[hidden] {
-    display: none;
-  }
-  .prod-chip-grande {
-    display: inline-block;
-    line-height: 1.35;
-    padding: 0.1875rem 1rem;
-    font-size: clamp(1rem, min(1.4vw, 2.6dvh), 1.375rem);
-    box-shadow: 0 4px 12px -6px rgb(217 158 15 / 0.7);
-  }
-  /* Etiqueta en mayusculas (tinta 800), encima del valor */
-  .prod-ficha-datos dt,
-  .prod-ficha-para dt,
-  .prod-ficha-etiqueta {
-    margin-bottom: 0.125rem;
-    font-size: var(--text-etiqueta);
-    font-weight: 800;
-    line-height: 1.2;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--color-tinta);
-  }
-  /* Marca | Presentacion en dos columnas iguales; si falta una, la otra
-     ocupa el ancho (data-pares="1", lo pone catalogo.ts) */
-  .prod-ficha-datos {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--ficha-hueco) clamp(0.75rem, 1.5vw, 1.25rem);
-  }
-  .prod-ficha-datos[data-pares='1'] {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .prod-ficha-datos[data-pares='0'],
-  .prod-ficha-datos > div[hidden] {
-    display: none;
-  }
-  .prod-ficha-datos dd {
-    color: var(--color-tinta-suave);
-    font-size: clamp(0.9375rem, 2.5dvh, 1.125rem);
-    line-height: 1.3;
-    overflow-wrap: anywhere;
-  }
-  .prod-ficha-para[hidden],
-  .prod-ficha-proteina[hidden] {
-    display: none;
-  }
-  /* "Para": etiqueta a la izquierda de las pastillas (como la maqueta) */
-  .prod-ficha-para:not([hidden]) {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  .prod-ficha-para dt {
-    flex: none;
-    margin-bottom: 0;
-  }
-  .prod-ficha-para dd {
-    min-width: 0;
-    flex: 1 1 auto;
-  }
-  .prod-ficha-animales {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem 0.5rem;
-  }
-  .prod-ficha-animales li {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    /* Blanco con filete hoja (bloque 23b): sobre el desvanecido verde la
-       pastilla hoja-claro se perdia. Bosque sobre blanco 9.80 */
-    border: 1px solid rgb(123 191 58 / 0.55);
-    border-radius: var(--radius-chip);
-    background: var(--color-blanco);
-    padding: 0.125rem 0.875rem 0.125rem 0.5rem;
-    font-size: var(--text-chico);
-    font-weight: 800;
-    color: var(--color-bosque);
-  }
-  .prod-ficha-animales li :global(svg) {
-    color: var(--color-bosque);
-  }
-  .prod-ficha-animales li[hidden] {
-    display: none;
-  }
-  /* Tilapero: 6 pastillas en 2 filas de 3 */
-  .prod-ficha-etapas {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.375rem;
-  }
-  /* Cada etapa en dos lineas (nombre y cifra): en una sola no cabian
-     "Crecimiento 32 %" y vecinas en la columna de ~370 px */
-  .prod-ficha-etapas li {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    align-items: center;
-    border-radius: 0.625rem;
-    background: var(--color-crema-oscuro);
-    padding: 0.0625rem 0.25rem;
-    font-size: var(--text-chico);
-    line-height: 1.15;
-    color: var(--color-tinta);
-    text-align: center;
-  }
-  .prod-ficha-etapas li > span:first-child {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .prod-ficha-cifra {
-    font-weight: 800;
-    white-space: nowrap;
   }
 
   /* ---------- Pie: compra (1A) + "Como llegar" en pildora (bloque 24) ----------
@@ -2027,9 +1866,6 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
         --ficha-hueco: clamp(0.3125rem, 0.9dvh, 0.625rem);
         padding-bottom: clamp(0.5rem, 1.4dvh, 1rem);
       }
-      .prod-ficha-nombre {
-        font-size: clamp(1.375rem, min(2.45vw, 4dvh), 2.625rem);
-      }
       .prod-franja {
         padding-top: 0.25rem;
         padding-bottom: 0;
@@ -2193,24 +2029,6 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
     }
   }
 
-  /* Tarjeta ancha (>= 24rem, p. ej. 1366 px): cada etapa del tilapero en
-     una sola linea ("Alevin 45 %"); asi la ficha con descripcion cabe sin
-     scroll a 1366x650 (bloque 23b) */
-  @container tarjeta (min-width: 24rem) {
-    /* Columnas al ancho de su contenido (la de "Crecimiento" es la mas
-       ancha): ninguna etiqueta se corta con "..." */
-    .prod-ficha-etapas {
-      grid-template-columns: repeat(3, auto);
-    }
-    .prod-ficha-etapas li {
-      flex-direction: row;
-      justify-content: center;
-      gap: 0.3em;
-      padding-block: 0.1875rem;
-      white-space: nowrap;
-    }
-  }
-
   /* Tarjeta estrecha (p. ej. 1024 px de ancho: ~270 px): la franja pone
      el selector arriba y "Categoria · N" debajo, y en la Lista el precio
      pasa bajo el nombre para que ninguno se corte. Consulta de contenedor
@@ -2242,19 +2060,6 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       grid-column: 2;
       text-align: left;
       font-size: var(--text-chico);
-    }
-    .prod-ficha-datos {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    /* Etapas en 3 columnas con letra algo menor (cabe "Crecimiento") */
-    .prod-ficha-etapas li {
-      font-size: 0.8125rem;
-    }
-    /* La descripcion admite una linea mas en la tarjeta estrecha */
-    .prod-ficha-desc {
-      -webkit-line-clamp: 4;
-      line-clamp: 4;
-      font-size: 0.9375rem;
     }
   }
 

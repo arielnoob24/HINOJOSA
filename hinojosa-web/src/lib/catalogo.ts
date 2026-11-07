@@ -26,8 +26,11 @@
 //     "Resultados para «...» · Quitar filtro", atajos sin resultados).
 //     Escribir no gira el carrusel solo: solo al elegir (o al llegar desde
 //     un animal de Nosotros, abrirAnimal()).
-//   - Ficha del producto al frente (>= 48rem): pintarFicha(), con cada
-//     seleccion.
+//   - Panel Detalle del producto al frente (>= 48rem): pintarFicha(), con
+//     cada seleccion. Modular y condicional (0-F): el modelo
+//     (chips, titulo, precio, descripcion, atributos, accion) sale de
+//     ficha-modelo.ts y se pinta con ficha-pintar.ts; la hoja movil usa lo
+//     mismo (configFicha() / idTablaProteina()).
 //   - Pestanas Detalle / Lista (bloque 19, 2A): elegirPestana(). La Lista
 //     ([data-lista-catalogo], tabpanel con scroll propio) muestra solo el
 //     grupo de la categoria activa (modoLista 'categoria') o los resultados
@@ -52,6 +55,8 @@ import { alCambiarVista, alEntrarEnVista } from './router';
 import { indexar, prepararConsulta, buscar, type Indexado } from './busqueda';
 import { movimientoPermitido, token } from './animacion/movimiento';
 import { ruta } from './ruta';
+import { pintarFichaEn } from './ficha-pintar';
+import type { FichaConfig } from './ficha-modelo';
 
 export interface ProductoDatos {
   id: string;
@@ -59,6 +64,10 @@ export interface ProductoDatos {
   nombre: string;
   marca: string | null;
   presentacion: string | null;
+  /** 0-F, opcionales: sabor/receta/variedad, peso/tamano/unidades y etapa (chip). */
+  sabor?: string | null;
+  medida?: string | null;
+  etapa?: string | null;
   precioTexto: string;
   imagen: string | null;
   avif: string | null;
@@ -107,6 +116,7 @@ const datos = datosEl
       sizesAnillo?: string;
       textos: Record<string, string>;
       tablaTilapia?: string;
+      ficha?: FichaConfig;
     })
   : null;
 
@@ -152,6 +162,11 @@ export function estado() {
     sinImagen: p ? !p.imagen : false,
   };
 }
+
+/** Configuracion del modelo de la ficha (textos, categorias, contacto). La usa tambien la hoja movil. */
+export const configFicha = (): FichaConfig | undefined => datos?.ficha;
+/** Id del producto con tabla de proteina (el tilapero). */
+export const idTablaProteina = (): string | undefined => datos?.tablaTilapia;
 
 /** Datos de un producto por id (hoja de detalle, carrusel). */
 export const producto = (id: string): ProductoDatos | undefined => porId.get(id);
@@ -221,34 +236,9 @@ function pintarSeleccion() {
 /** Ficha del producto al frente (>= 48rem). `dir` orienta el fundido. */
 function pintarFicha(p: ProductoDatos, dir: number, animar: boolean) {
   const ficha = q('[data-ficha]');
-  if (!ficha) return;
-  const poner = (sel: string, texto: string) => {
-    const el = q(sel, ficha);
-    if (el) el.textContent = texto;
-  };
-  poner('[data-ficha-nombre]', p.nombre);
-  poner('[data-ficha-precio]', p.precioTexto);
-  // Descripcion corta: si falta, el parrafo se oculta (sin hueco)
-  const desc = q('[data-ficha-descripcion]', ficha);
-  if (desc) {
-    desc.textContent = p.descripcion ?? '';
-    desc.hidden = !p.descripcion;
-  }
-  poner('[data-ficha-marca]', p.marca ?? '');
-  poner('[data-ficha-presentacion]', p.presentacion ?? '');
-  // Marca | Presentacion lado a lado; si falta una, la otra a todo el ancho
-  let pares = 0;
-  for (const fila of qa('[data-ficha-fila="marca"], [data-ficha-fila="presentacion"]', ficha)) {
-    fila.hidden = !q('dd', fila)?.textContent;
-    if (!fila.hidden) pares++;
-  }
-  const datosFicha = q('[data-ficha-datos]', ficha);
-  if (datosFicha) datosFicha.dataset.pares = String(pares);
-  for (const li of qa('[data-ficha-animal]', ficha)) li.hidden = !p.animales.includes(li.dataset.fichaAnimal!);
-  const para = q('[data-ficha-para]', ficha);
-  if (para) para.hidden = p.animales.length === 0;
-  const tabla = q('[data-ficha-tabla]', ficha);
-  if (tabla) tabla.hidden = p.id !== datos?.tablaTilapia;
+  if (!ficha || !datos?.ficha) return;
+  // Una sola funcion para ficha y hoja movil (ficha-modelo.ts / ficha-pintar.ts)
+  pintarFichaEn(ficha, p, datos.ficha, datos.tablaTilapia);
   // Mismo gesto que el rotulo (C2), mas corto: entra desde el sentido del giro
   if (animar && movimientoPermitido() && ficha.offsetParent !== null) {
     const contenido = Array.from(ficha.children) as HTMLElement[];

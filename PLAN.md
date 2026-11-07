@@ -132,6 +132,9 @@ Pedido del usuario el 2026-10-17, ya en la rama **`HinoV2`** (a partir de ahora 
   - Revisión obligatoria de cada render: gorra, collar y "H" de Canela correctos, sin extremidades fusionadas ni artefactos de malla; si falla, se descarta.
   - Derechos: los modelos derivan de imágenes que parecen generadas con IA: se suman al aviso de derechos de uso de la dueña.
 
+### Estado de la implementación del panel (2026-11-07, hecho)
+Aplicado en ficha (≥ 48rem) y hoja de detalle móvil con UNA función pura: `src/lib/ficha-modelo.ts` (`modeloFicha`: chips, título, precio, descripción, atributos, acción), pintado en `src/lib/ficha-pintar.ts` y marcado común `src/components/FichaContenido.astro` (variantes `panel` y `hoja`). Sin WhatsApp confirmado el botón es `tel:` al primer teléfono ("Llamar y consultar"); con número confirmado pasa solo a `wa.me`. Verificado: 48 productos sin scroll en la ficha a 1440×900, 1366×650 y 1280×720; axe 0; consola limpia; carrusel, lista, barra y otras vistas sin cambios.
+
 ### Qué cambia en el plan por esto
 - Sección 4, vistas 1, 2 y 3: ver los avisos "Rediseño 0-C" al inicio de cada una.
 - Sección 6: GSAP en toda la página y Blender MCP como herramienta de producción.
@@ -214,6 +217,43 @@ Precios y stock de lo nuevo; peso real del hueso Pro-can; modelo del bebedero #1
 ---
 
 **Tope de 12 del carrusel quitado (2026-11-07):** Mascotas pasó a 24 productos (22 con foto) y el anillo solo mostraba 12 (rótulo "1 de 12 con foto"; los productos fuera del anillo no movían el carrusel). Se quitó el tope en `VistaProductos.astro` (rejilla) y `catalogo.ts` (`arrancar`); el anillo lleva todos los productos con foto y el radio ya crecía con N. En `carrusel.ts` `render()` las tarjetas a más de 6 pasos del frente se ocultan (`visibility`) para no cargar el compositor con 22; con N ≤ 12 no cambia nada (Granja, Comederos y Granos idénticos a 1440×900 y 1366×650, 0 píxeles de diferencia).
+
+## 0-F. Panel "Detalle" modular + 2 bebederos nuevos (2026-11-07)
+
+Pedido del usuario tras 0-E. Rama **`auditoria-catalogo`**; sin push ni despliegue. **El usuario pidió expresamente tocar el panel Detalle, que existe también en escritorio**: esto levanta el congelado de PC **solo para ese panel** (ficha ≥ 48rem) y se aplica igual a la hoja de detalle móvil (< 48rem) para que ambas muestren lo mismo. Nada más de escritorio cambia (carrusel, barra, lista, otras vistas: 0 px de diferencia).
+
+### Productos nuevos (2)
+Fotos que el usuario confirmó como bebederos: #30 y #31 de `sorted(glob('hinojsa/*.jpeg'))`.
+
+| id | Nombre | Cat. | Animal | Foto |
+|---|---|---|---|---|
+| `bebedero-aves-grande` | Bebedero plástico grande para aves | comederos | ave | #30 |
+| `bebedero-aves-grande-asas` | Bebedero plástico para aves con asas | comederos | ave | #31 |
+Sin marca, sin precio, sin capacidad (no se ve en foto). Recorte transparente como los de 0-E.
+
+### Datos: se separa `presentacion` en campos propios
+`presentacion` hoy mezcla sabor, receta, peso y tamaño. Campos nuevos, **todos opcionales y de texto corto**:
+- `etapa`: Cachorros, Adultos, Senior, Todas las etapas… (chip superior).
+- `sabor`: sabor, receta o variedad ("Pollo", "Carne, arroz y vegetales", "Tomate Floradade").
+- `medida`: peso, tamaño o unidades ("4 kg", "Dos tamaños", "6, 8 y 20 u.").
+- `presentacion` se **conserva** solo para lo que no entra en los otros (texto libre); si un producto tiene `sabor`/`medida`/`etapa`, se quita de `presentacion` lo que ya dicen para no repetir.
+- La migración recorre los 46 productos; no se inventa ningún dato que ya no estuviera escrito.
+
+### Panel Detalle (ficha) y hoja móvil
+1. **Chips superiores** (solo los que existan): especie(s) (`animales`, con sus iconos actuales), categoría (`nombreCorto`) y `etapa`. Sin chips = sin margen fantasma.
+2. **Título** `nombre` + **chip de precio** (`precio` / "Desde" / "Consulta precio") en el mismo bloque.
+3. **Descripción** solo si existe y es distinta del título (comparación sin tildes ni mayúsculas, y que no sea el título contenido literal).
+4. **Ficha técnica**: grilla de atributos (2 columnas, tarjetas pequeñas; 1 columna si solo hay 1) con Marca, Sabor / receta / variedad, Medida / peso y Presentación; solo los que tengan valor. Sin "Para: Perros" (ya va en los chips). La tabla de proteína de la tilapia se conserva.
+5. **Pie con acción configurable**: botón "Consultar disponibilidad" con el nombre del producto en el mensaje. **El WhatsApp del negocio aún no está confirmado** (`negocio.json` → `contacto.whatsapp.valor: null`): mientras sea null, el botón abre `tel:` al primer teléfono con la etiqueta "Llamar y consultar"; cuando se confirme el número, pasa solo a `https://wa.me/<número>?text=<mensaje con el nombre>`. **No se inventa ningún número.** Textos en `textos.json`.
+6. Sin huecos: el panel se acomoda al contenido (nada de alturas fijas ni espacio vacío con pocos datos).
+7. Accesibilidad: el botón ≥ 44 px, nombre accesible con el producto, foco visible, contraste ≥ 4.5:1; sin color como único indicador. Paleta y tokens actuales (`marca-hinojosa`).
+
+### Qué cambia en el plan por esto
+- ✅ Hecho 2026-11-07 (datos): 2 bebederos añadidos (imágenes `/img/productos/comederos/<id>.webp` por el agente de imágenes), 48 productos migrados a `etapa`/`sabor`/`medida`, textos `ficha*` en `textos.json` (`fichaEtapa`, `fichaSabor`, `fichaMedida`, `fichaCta*`). Pendiente: componente y hoja móvil.
+- Sección 5: 48 productos; `productos.json` gana `etapa`, `sabor`, `medida`.
+- Sección 4, vista 2: la ficha se describe como arriba.
+
+---
 
 ## 1. Resumen del negocio (extraído del material recibido)
 
@@ -640,7 +680,7 @@ Mapa a pantalla completa con una tarjeta flotante opaca encima.
 
 > Los precios vienen de los afiches y **pueden estar desactualizados**: se guardan en `src/data/productos.json` y la web muestra "precios referenciales, consulta disponibilidad".
 
-Estado actual: **4 categorías, 46 productos, 14 con precio** (conteo real al 2026-11-07, tras 0-E; los 9 nuevos entran sin precio; antes se decía 37 y 16, pero el JSON tenía 14 con precio). Cada producto lleva `id`, `categoria` (`granja` · `mascotas` · `comederos` · `granos`), `nombre`, `marca`, `presentacion`, `precio`, `precioDesde`, `imagen`, `destacado` y, en los que traen fondo, `conFondo`.
+Estado actual: **4 categorías, 48 productos, 14 con precio** (conteo real al 2026-11-07, tras 0-E y 0-F; los nuevos entran sin precio; antes se decía 37 y 16, pero el JSON tenía 14 con precio). Cada producto lleva `id`, `categoria` (`granja` · `mascotas` · `comederos` · `granos`), `nombre`, `marca`, los opcionales `etapa`, `sabor` y `medida` (0-F), `presentacion` (solo texto libre), `precio`, `precioDesde`, `imagen`, `destacado` y, en los que traen fondo, `conFondo`.
 
 **Campo nuevo (P1):** `animales` — lista de especies a las que sirve cada producto (`perro`, `gato`, `ave`, `cerdo`, `vaca`, `cuy`, `conejo`, `tilapia`), más sinónimos que el buscador normaliza (pollo/gallina → ave, pez → tilapia). Lo rellena `contenido-estrategia` a partir del nombre y la categoría; los casos dudosos se consultan con la dueña.
 

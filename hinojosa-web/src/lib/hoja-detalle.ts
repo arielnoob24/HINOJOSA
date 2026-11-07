@@ -5,13 +5,14 @@
 //   frente del carrusel. En escritorio ese papel lo hace la ficha.
 // - showModal(): fondo inerte y foco atrapado de forma nativa. El foco va al
 //   titulo; `Esc`, "Cerrar" o tocar el telon la cierran y el foco vuelve al
-//   boton. El dialogo lleva data-captura-flechas: el router no cambia de
+//   boton. El contenido es el modelo comun de la ficha (ficha-modelo.ts). El dialogo lleva data-captura-flechas: el router no cambia de
 //   vista con ←/→ mientras esta abierto.
 // - El enlace "¿Donde comprarlo? Visitanos" cierra la hoja sin devolver el
 //   foco (el router lo lleva al titulo de Visitanos).
 // - Entrada 300 ms / salida 200 ms solo con movimiento permitido (CSS del
 //   componente); si no, se abre y se cierra en el acto.
-import { producto, estado, nombreCategoria, IMAGEN_GENERICA, type ProductoDatos } from './catalogo';
+import { producto, estado, configFicha, idTablaProteina, IMAGEN_GENERICA, type ProductoDatos } from './catalogo';
+import { pintarFichaEn } from './ficha-pintar';
 import { movimientoPermitido } from './animacion/movimiento';
 
 const hoja = document.querySelector<HTMLDialogElement>('[data-hoja-detalle]');
@@ -74,19 +75,10 @@ function abrir(id: string, fila: HTMLElement) {
   filaOrigen = fila;
   devolverFoco = true;
   pintarImagen(p);
+  // Mismo modelo y mismo pintado que la ficha de escritorio (0-F)
+  const cfg = configFicha();
+  if (cfg) pintarFichaEn(hoja, p, cfg, idTablaProteina());
   const titulo = campo('[data-hoja-titulo]');
-  if (titulo) titulo.textContent = p.nombre;
-  const descripcion = campo('[data-hoja-descripcion]');
-  if (descripcion) {
-    descripcion.textContent = p.descripcion ?? '';
-    descripcion.hidden = !p.descripcion;
-  }
-  const detalle = campo('[data-hoja-detalle-texto]');
-  if (detalle) detalle.textContent = [p.marca, p.presentacion].filter(Boolean).join(' · ');
-  const cat = campo('[data-hoja-categoria]');
-  if (cat) cat.textContent = nombreCategoria(p.categoria);
-  const precio = campo('[data-hoja-precio]');
-  if (precio) precio.textContent = p.precioTexto;
   if (!hoja.open) hoja.showModal();
   hoja.scrollTop = 0;
   titulo?.focus();

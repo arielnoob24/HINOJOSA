@@ -1,0 +1,377 @@
+---
+// Contenido modular del panel "Detalle" (PLAN.md 0-F). Un solo marcado para
+// la ficha de escritorio (VistaProductos.astro, variante "panel") y la hoja
+// de detalle movil (HojaDetalle.astro, variante "hoja"). Vacio en el HTML:
+// lo rellena src/lib/ficha-pintar.ts con el modelo de src/lib/ficha-modelo.ts
+// (chips, titulo, precio, descripcion, atributos, accion). Cada bloque se
+// oculta si no hay dato: el panel se acomoda al contenido, sin huecos.
+//
+// Ganchos: [data-f-chips] ([data-f-animal=<clave>], [data-f-categoria],
+// [data-f-etapa]), [data-f-titulo], [data-f-precio], [data-f-descripcion],
+// [data-f-atributos] (dl de tarjetas .ficha-attr, data-n = cuantas),
+// [data-f-proteina] (tilapero), [data-f-cta] ([data-f-cta-texto],
+// [data-f-cta-icono=whatsapp|llamar]).
+//
+// Contrastes (sobre crema #F6F1E4 y sobre el peor punto del desvanecido
+// verde, #DBE6BF): titulo bosque 8.69 / 7.50; pastillas de especie bosque
+// sobre blanco 9.80; categoria tinta sobre crema-oscuro 11.27; etapa
+// bosque sobre hoja-claro (#EAF4DC) 8.05; etiquetas tinta 12.67 / 10.94;
+// valores tinta sobre blanco 14.28; descripcion tinta-suave 6.78 / 5.85;
+// precio tinta sobre maiz 7.93; boton tinta sobre maiz 7.93 (hover
+// maiz-oscuro 6.02); foco bosque 8.69. Nada depende solo del color.
+import Icono from './Icono.astro';
+
+interface Props {
+  variante: 'panel' | 'hoja';
+  /** Atributos del titulo (id, tabindex, ganchos propios de cada contenedor) */
+  tituloAttrs?: Record<string, string | number | boolean>;
+  tituloNivel?: 'h2' | 'h3';
+  /** Datos de la tabla de proteina del tilapero */
+  tabla: { tituloCorto: string; unidad: string; etapas: { etapa: string; proteina: number | string }[] };
+  animales: Record<string, string>;
+  iconoAnimal: Record<string, string>;
+}
+const { variante, tituloAttrs = {}, tituloNivel = 'h3', tabla, animales, iconoAnimal } = Astro.props;
+const Titulo = tituloNivel;
+const panel = variante === 'panel';
+// Ganchos heredados del panel (pruebas de vistas-hinojosa): solo en la ficha
+const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
+---
+<div class:list={['ficha-contenido', `ficha-contenido--${variante}`]} data-ficha-cuerpo={panel ? '' : undefined}>
+  <ul class="ficha-chips" data-f-chips hidden>
+    {Object.entries(animales).map(([clave, nombre]) => (
+      <li class="ficha-chip ficha-chip-animal" data-f-animal={clave} hidden>
+        <Icono nombre={iconoAnimal[clave] ?? 'hoja'} class="size-5 shrink-0" />
+        <span>{nombre}</span>
+      </li>
+    ))}
+    <li class="ficha-chip ficha-chip-categoria" data-f-categoria hidden></li>
+    <li class="ficha-chip ficha-chip-etapa" data-f-etapa hidden></li>
+  </ul>
+
+  <div class="ficha-cabeza">
+    <Titulo class="ficha-titulo" data-f-titulo {...heredado('data-ficha-nombre')} {...tituloAttrs}></Titulo>
+    <p class="ficha-precio-fila"><span class="ficha-precio cifra" data-f-precio {...heredado('data-ficha-precio')}></span></p>
+  </div>
+
+  <p class="ficha-desc" data-f-descripcion {...heredado('data-ficha-descripcion')} hidden></p>
+
+  <dl class="ficha-atributos" data-f-atributos data-n="0" hidden></dl>
+
+  {/* Solo el tilapero: proteina por etapa en 6 pastillas */}
+  <div class="ficha-proteina" data-f-proteina {...heredado('data-ficha-tabla')} hidden>
+    <p id={`${variante}-proteina-titulo`} class="ficha-etiqueta">{tabla.tituloCorto}</p>
+    <ul class="ficha-etapas" aria-labelledby={`${variante}-proteina-titulo`}>
+      {tabla.etapas.map((e) => (
+        <li>
+          <span>{e.etapa}</span>{' '}<span class="ficha-cifra cifra">{`${e.proteina} ${tabla.unidad}`}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <a class="ficha-cta" href="#productos" data-f-cta hidden>
+    <span class="ficha-cta-icono" data-f-cta-icono="whatsapp" hidden><Icono nombre="whatsapp" class="size-5" /></span>
+    <span class="ficha-cta-icono" data-f-cta-icono="llamar" hidden><Icono nombre="telefono" class="size-5" /></span>
+    <span data-f-cta-texto></span>
+  </a>
+</div>
+
+<style>
+  .ficha-contenido {
+    --f-hueco: var(--ficha-hueco, 0.625rem);
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    gap: var(--f-hueco);
+    /* Los bloques no se encogen para caber: lo que no cabe se ve y se ajusta */
+  }
+  .ficha-contenido > * {
+    flex-shrink: 0;
+  }
+  [hidden] {
+    display: none !important;
+  }
+
+  /* ---------- Chips superiores ---------- */
+  .ficha-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  .ficha-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: var(--radius-chip);
+    padding: 0.125rem 0.75rem;
+    font-size: var(--text-chico);
+    font-weight: 800;
+    line-height: 1.35;
+  }
+  .ficha-chip-animal {
+    border: 1px solid rgb(123 191 58 / 0.55);
+    background: var(--color-blanco);
+    padding-left: 0.5rem;
+    color: var(--color-bosque);
+  }
+  .ficha-chip-animal :global(svg) {
+    color: var(--color-bosque);
+  }
+  .ficha-chip-categoria {
+    border: 1px solid transparent;
+    background: var(--color-crema-oscuro);
+    color: var(--color-tinta);
+  }
+  .ficha-chip-etapa {
+    border: 1px solid var(--color-bosque);
+    background: var(--color-hoja-claro);
+    color: var(--color-bosque);
+  }
+
+  /* ---------- Titulo + precio ---------- */
+  .ficha-cabeza {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--f-hueco) * 0.6);
+  }
+  .ficha-titulo {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    font-family: var(--font-sans);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--color-bosque);
+    text-wrap: balance;
+  }
+  .ficha-titulo:focus {
+    outline: none;
+  }
+  .ficha-titulo:focus-visible {
+    outline: none;
+    text-decoration: underline;
+    text-decoration-color: var(--color-bosque);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.18em;
+  }
+  .ficha-precio-fila {
+    line-height: 1;
+  }
+  .ficha-precio {
+    display: inline-block;
+    border-radius: var(--radius-chip);
+    background: var(--color-maiz);
+    padding: 0.1875rem 1rem;
+    font-weight: 800;
+    line-height: 1.35;
+    color: var(--color-tinta);
+    white-space: nowrap;
+    box-shadow: 0 4px 12px -6px rgb(217 158 15 / 0.7);
+  }
+
+  /* ---------- Descripcion ---------- */
+  .ficha-desc {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    max-width: 34rem;
+    line-height: 1.35;
+    color: var(--color-tinta-suave);
+    text-wrap: pretty;
+  }
+
+  /* ---------- Ficha tecnica: grilla de tarjetas pequenas ---------- */
+  .ficha-atributos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: calc(var(--f-hueco) * 0.6) 0.5rem;
+  }
+  .ficha-atributos[data-n='1'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ficha-atributos :global(.ficha-attr) {
+    min-width: 0;
+    border: 1px solid var(--color-crema-oscuro);
+    border-radius: 0.75rem;
+    background: rgb(255 255 255 / 0.85);
+    padding: 0.3125rem 0.625rem 0.375rem;
+  }
+  .ficha-atributos :global(dt),
+  .ficha-etiqueta {
+    margin-bottom: 0.0625rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-tinta);
+  }
+  .ficha-atributos :global(dd) {
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-tinta);
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------- Tilapero: proteina por etapa ---------- */
+  .ficha-etapas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.375rem;
+  }
+  .ficha-etapas li {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 0.625rem;
+    background: var(--color-crema-oscuro);
+    padding: 0.0625rem 0.25rem;
+    font-size: var(--text-chico);
+    line-height: 1.15;
+    color: var(--color-tinta);
+    text-align: center;
+  }
+  .ficha-etapas li > span:first-child {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ficha-cifra {
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  /* ---------- Accion al pie ---------- */
+  .ficha-cta {
+    display: inline-flex;
+    width: 100%;
+    min-height: var(--spacing-objetivo);
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: auto; /* abajo del panel, sin importar cuanto contenido haya */
+    border-radius: var(--radius-boton);
+    background: var(--color-maiz);
+    padding: 0.5rem 1.125rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--color-tinta);
+    text-align: center;
+    box-shadow: var(--shadow-boton-oro);
+  }
+  .ficha-cta :global(svg) {
+    flex: none;
+  }
+  .ficha-cta:hover {
+    background: var(--color-maiz-oscuro);
+  }
+  .ficha-cta:active {
+    transform: scale(0.97);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not([data-movimiento='pausado'])) .ficha-cta {
+      transition:
+        background-color var(--duracion-hover) ease,
+        transform var(--duracion-presion) ease-out;
+    }
+  }
+  @media (forced-colors: active) {
+    .ficha-cta {
+      border: 2px solid ButtonText;
+    }
+  }
+
+  /* ---------- Variante panel (>= 48rem): letra y huecos con el alto ---------- */
+  .ficha-contenido--panel .ficha-titulo {
+    font-size: clamp(1.375rem, min(2.45vw, 4.6dvh), 2.625rem);
+  }
+  .ficha-contenido--panel .ficha-precio {
+    font-size: clamp(1rem, min(1.4vw, 2.6dvh), 1.375rem);
+  }
+  .ficha-contenido--panel .ficha-desc {
+    font-size: clamp(0.875rem, 2.2dvh, 1.0625rem);
+  }
+  .ficha-contenido--panel .ficha-atributos :global(dd) {
+    font-size: clamp(0.9375rem, 2.4dvh, 1.0625rem);
+  }
+  .ficha-contenido--panel .ficha-cta {
+    font-size: clamp(0.9375rem, 2.4dvh, 1.0625rem);
+  }
+  /* Pantallas bajas (1366x650): todo algo mas compacto para no scrollear */
+  @media (max-height: 47.5rem) {
+    .ficha-contenido--panel .ficha-titulo {
+      font-size: clamp(1.375rem, min(2.45vw, 3.7dvh), 2.625rem);
+    }
+    .ficha-contenido--panel .ficha-chip {
+      padding-block: 0;
+    }
+    .ficha-contenido--panel .ficha-atributos :global(.ficha-attr) {
+      padding: 0.1875rem 0.5rem 0.25rem;
+    }
+    .ficha-contenido--panel .ficha-atributos :global(dd) {
+      font-size: 0.875rem;
+      line-height: 1.2;
+    }
+    .ficha-contenido--panel .ficha-atributos :global(dt) {
+      margin-bottom: 0;
+      font-size: 0.6875rem;
+    }
+    .ficha-contenido--panel .ficha-etapas li {
+      padding-block: 0.0625rem;
+    }
+  }
+  /* Tarjeta ancha (>= 24rem, p. ej. 1366 px): cada etapa en una sola linea */
+  @container tarjeta (min-width: 24rem) {
+    .ficha-etapas {
+      grid-template-columns: repeat(3, auto);
+    }
+    .ficha-etapas li {
+      flex-direction: row;
+      justify-content: center;
+      gap: 0.3em;
+      padding-block: 0.1875rem;
+      white-space: nowrap;
+    }
+  }
+  /* Tarjeta estrecha (~270 px a 1024 de ancho): una columna de atributos */
+  @container tarjeta (max-width: 22rem) {
+    .ficha-etapas li {
+      font-size: 0.8125rem;
+    }
+    .ficha-desc {
+      -webkit-line-clamp: 4;
+      line-clamp: 4;
+      font-size: 0.9375rem;
+    }
+  }
+
+  /* ---------- Variante hoja (movil) ---------- */
+  .ficha-contenido--hoja {
+    --f-hueco: 0.5rem;
+    min-height: 0;
+  }
+  .ficha-contenido--hoja .ficha-titulo {
+    font-size: clamp(1.375rem, 6vw, 1.75rem);
+    line-height: 1.12;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    display: block;
+  }
+  .ficha-contenido--hoja .ficha-desc {
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    display: block;
+    line-height: 1.4;
+  }
+  .ficha-contenido--hoja .ficha-cta {
+    margin-top: 0.25rem;
+  }
+</style>
