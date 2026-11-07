@@ -269,8 +269,19 @@ const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
   .ficha-cta :global(svg) {
     flex: none;
   }
-  .ficha-cta:hover {
+  /* Mismo efecto que "Ver productos" de Inicio: maiz -> maiz-oscuro, sube
+     2 px y proyecta sombra (raton y foco de teclado) */
+  .ficha-cta:focus-visible {
     background: var(--color-maiz-oscuro);
+    translate: 0 -2px;
+    box-shadow: 0 10px 22px -8px rgb(217 158 15 / 0.75);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .ficha-cta:hover {
+      background: var(--color-maiz-oscuro);
+      translate: 0 -2px;
+      box-shadow: 0 10px 22px -8px rgb(217 158 15 / 0.75);
+    }
   }
   .ficha-cta:active {
     transform: scale(0.97);
@@ -279,6 +290,8 @@ const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
     :global(html:not([data-movimiento='pausado'])) .ficha-cta {
       transition:
         background-color var(--duracion-hover) ease,
+        translate var(--duracion-hover) var(--ease-vista),
+        box-shadow var(--duracion-hover) ease,
         transform var(--duracion-presion) ease-out;
     }
   }

@@ -192,7 +192,7 @@ const trebol =
           <dt>{t.etiquetaReferencias}</dt>
           <dd>
             {referencias ? (
-              <ul class="vis-referencias">{referencias.map((r) => <li><Icono nombre="pin" class="size-4 shrink-0" /><span>{r}</span></li>)}</ul>
+              <ul class="vis-referencias">{referencias.map((r) => <li>{r}</li>)}</ul>
             ) : (
               <span class="vis-pendiente" data-dato-pendiente>{pendiente}</span>
             )}
@@ -432,6 +432,17 @@ const trebol =
   .vis-datos dt {
     text-align: left;
   }
+  .vis-dato-direccion dd {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.375rem;
+  }
+  .vis-dato-icono {
+    display: inline-flex;
+    flex: 0 0 auto;
+    margin-top: 0.1875rem;
+    color: var(--color-maiz);
+  }
   .vis-horas {
     display: grid;
     gap: 0.125rem;
@@ -448,15 +459,6 @@ const trebol =
     color: var(--color-blanco);
     font-variant-numeric: tabular-nums;
   }
-  .vis-referencias li {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.375rem;
-  }
-  .vis-referencias :global(svg) {
-    margin-top: 0.25rem;
-    color: var(--color-maiz);
-  }
   .vis-acciones {
     display: grid;
     gap: 0.625rem;
@@ -472,8 +474,28 @@ const trebol =
     background: var(--color-cta-fondo);
     color: var(--color-cta-texto);
   }
-  .vis-acciones :global(.vis-accion-principal:hover) {
-    background: var(--color-cta-hover);
+  /* Mismo efecto que "Ver productos" de Inicio: maiz -> maiz-oscuro, sube
+     2 px y proyecta sombra (raton y foco de teclado) */
+  .vis-acciones :global(.vis-accion-principal:focus-visible) {
+    background: var(--color-maiz-oscuro);
+    translate: 0 -2px;
+    box-shadow: 0 10px 22px -8px rgb(217 158 15 / 0.75);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .vis-acciones :global(.vis-accion-principal:hover) {
+      background: var(--color-maiz-oscuro);
+      translate: 0 -2px;
+      box-shadow: 0 10px 22px -8px rgb(217 158 15 / 0.75);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not([data-movimiento='pausado'])) .vis-acciones :global(.vis-accion-principal) {
+      transition:
+        background-color var(--duracion-hover) ease,
+        translate var(--duracion-hover) var(--ease-vista),
+        box-shadow var(--duracion-hover) ease,
+        transform var(--duracion-presion) ease-out;
+    }
   }
   .vis-correo {
     display: inline-flex;
@@ -530,7 +552,6 @@ const trebol =
 
   /* Piezas solo de movil (bloque 28d): fuera de < 48rem no se pintan */
   .vis-pin-esquina,
-  .vis-dato-icono,
   .vis-dato-junto {
     display: none;
   }
