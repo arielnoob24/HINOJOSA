@@ -58,7 +58,7 @@ export const TEXTOS_FICHA_POR_DEFECTO: FichaConfig['textos'] = {
   marca: 'Marca',
   sabor: 'Sabor / receta',
   medida: 'Medida',
-  presentacion: 'Presentación',
+  presentacion: 'Detalle',
   etapa: 'Etapa',
   ctaConsulta: 'Consultar disponibilidad',
   ctaLlamar: 'Llamar y consultar',
