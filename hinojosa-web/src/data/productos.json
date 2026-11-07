@@ -10,19 +10,6 @@
   ],
   "productos": [
     {
-      "id": "procan-prueba",
-      "categoria": "mascotas",
-      "animales": ["perro"],
-      "nombre": "Procan prueba",
-      "descripcion": "prueba 1 subir producto",
-      "marca": "procan",
-      "presentacion": null,
-      "precio": 15,
-      "precioDesde": false,
-      "imagen": "/img/productos/mascotas/procan-prueba.webp",
-      "destacado": false
-    },
-    {
       "id": "camperito-pollos",
       "categoria": "granja",
       "animales": ["ave"],
