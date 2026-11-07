@@ -48,6 +48,7 @@ const whatsapp = enlaceWhatsapp();
 const telefonos = telefonosConfirmados();
 const correo = datoConfirmado('correo');
 const facebook = datoConfirmado('facebook');
+const tiktok = datoConfirmado('tiktok');
 
 // Canales en el orden de la tarjeta. Los confirmados son enlaces reales;
 // los pendientes solo aportan su icono (en gris) a la linea agrupada.
@@ -68,8 +69,9 @@ const canales = [
         extra: i === 0 ? 'vis-accion-telefono vis-accion-principal' : 'vis-accion-telefono',
       }))
     : [{ href: null, texto: t.ctaLlamar, nombre: t.nombreAccesibleLlamar, icono: 'telefono', variante: 'invertido' as const, ancho: false, pestana: false }]),
-  { href: enlaceCorreo(), texto: correo ?? t.ctaCorreo, nombre: t.nombreAccesibleCorreo.replace('{correo}', correo ?? ''), icono: 'correo', variante: 'enlace' as const, ancho: true, pestana: false },
-  { href: facebook, texto: t.ctaFacebook, nombre: t.nombreAccesibleFacebook, icono: 'facebook', variante: 'enlace' as const, ancho: true, pestana: true },
+  { href: enlaceCorreo(), texto: correo ?? t.ctaCorreo, nombre: t.nombreAccesibleCorreo.replace('{correo}', correo ?? ''), icono: 'correo', variante: 'enlace' as const, ancho: true, pestana: false, extra: 'vis-accion-correo' },
+  { href: facebook, texto: t.ctaFacebook, nombre: t.nombreAccesibleFacebook, icono: 'facebook', variante: 'enlace' as const, ancho: true, pestana: true, extra: 'vis-accion-red' },
+  { href: tiktok, texto: t.ctaTiktok, nombre: t.nombreAccesibleTiktok, icono: 'tiktok', variante: 'enlace' as const, ancho: true, pestana: true, extra: 'vis-accion-red' },
 ];
 const confirmados = canales.filter((c) => c.href);
 const pendientes = canales.filter((c) => !c.href);
@@ -182,7 +184,7 @@ const trebol =
         )}
         <div class:list={[juntarPendientes && 'vis-dato-separado']}>
           <dt>{t.etiquetaHorario}</dt>
-          <dd>{horario?.texto ?? <span class="vis-pendiente" data-dato-pendiente>{pendiente}</span>}</dd>
+          <dd>{horario?.texto ? horario.texto.split(' · ').map((seg, i) => (<>{i > 0 && <span class="vis-sep" aria-hidden="true"> · </span>}<span class="vis-tramo">{seg}</span></>)) : <span class="vis-pendiente" data-dato-pendiente>{pendiente}</span>}</dd>
         </div>
         <div class:list={[juntarPendientes && 'vis-dato-separado']}>
           <dt>{t.etiquetaReferencias}</dt>
@@ -412,6 +414,10 @@ const trebol =
   .vis-pendiente {
     color: var(--color-crema);
   }
+  /* Un tramo del horario no se parte por la mitad: el salto cae entre tramos */
+  .vis-tramo {
+    white-space: nowrap;
+  }
   .vis-referencias {
     list-style: disc;
     padding-left: 1.25rem;
@@ -554,6 +560,13 @@ const trebol =
     .vis-dato-junto dd {
       font-size: var(--text-chico);
     }
+    /* Horario confirmado: un tramo por linea, sin el separador */
+    .vis-tramo {
+      display: block;
+    }
+    .vis-sep {
+      display: none;
+    }
     .vis-acciones {
       display: flex;
       flex-wrap: wrap;
@@ -571,6 +584,10 @@ const trebol =
       flex: 1 1 9.5rem;
       gap: 0.375rem;
       padding-inline: 0.5rem;
+    }
+    /* Facebook y TikTok lado a lado (se apilan si no caben) */
+    .vis-acciones :global(.vis-accion-red) {
+      flex: 1 1 7rem;
     }
     .vis-acciones :global(.vis-accion-principal) {
       border-color: var(--color-cta-fondo);
@@ -689,6 +706,10 @@ const trebol =
     }
     .vis-acciones :global(.vis-accion-ancha) {
       grid-column: auto;
+    }
+    /* Con Facebook y TikTok: el correo a todo el ancho y las redes en pareja */
+    .vis-acciones :global(.vis-accion-correo) {
+      grid-column: 1 / -1;
     }
     .vis-acciones :global(.contacto) {
       min-height: 2.75rem;

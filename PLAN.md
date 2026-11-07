@@ -271,6 +271,16 @@ Presupuesto: sin pérdida de rendimiento (blur solo en inactivos, sin filtros en
 
 ---
 
+## 0-H. Datos reales de Visítanos y redes (2026-11-07)
+
+Datos dados por el usuario (Google Maps y el propio negocio); mandan sobre los pendientes de `negocio.json`.
+
+- **Horario confirmado** (sáb 7:00–17:00; dom 8:00–18:00; lun–vie 7:00–19:00). Zona horaria `America/Guayaquil` (país Ecuador ya confirmado). Se activa "Abierto ahora / Cerrado".
+- **Referencias:** "Cerca del comercial Tía del Tena".
+- **Redes:** Facebook `https://www.facebook.com/share/1CEHgCbBef/` y TikTok `https://www.tiktok.com/@comercial.hinojosa` (sin parámetros de rastreo). **No tiene más redes.** TikTok es canal nuevo en Visítanos (icono, textos, `sameAs` del JSON-LD).
+- **Pro-Can cachorros y adultos / NutraPro cachorro y adulto:** siguen sin foto; no se reutiliza la de otro producto (la del Pro-Can específico engañaría). Pendiente de foto del cliente.
+- **Semillas:** se proponen por separado (una ficha por tipo de semilla, con su foto de sobre). Pendiente: lista de tipos que vende el negocio y foto de cada sobre; no se inventan variedades.
+
 ## 1. Resumen del negocio (extraído del material recibido)
 
 | Dato | Valor |

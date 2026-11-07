@@ -84,9 +84,9 @@
       "nota": "Teléfonos celulares de Ecuador (09…), dados el 2026-10-16."
     },
     "referenciasLlegar": {
-      "valor": null,
-      "confirmado": false,
-      "nota": "Lista de frases cortas en lenguaje natural, p. ej. [\"Frente a …\", \"A dos cuadras de …\"]. Solo con datos de la dueña."
+      "valor": ["Cerca del comercial Tía del Tena"],
+      "confirmado": true,
+      "nota": "Confirmada por el usuario el 2026-11-07. Lista de frases cortas en lenguaje natural."
     },
     "telefonos": {
       "valor": ["099 708 5015", "098 928 1882"],
@@ -104,21 +104,32 @@
       "nota": "Número en formato internacional sin '+' ni espacios, para armar el enlace https://wa.me/<numero>."
     },
     "horario": {
-      "valor": null,
-      "confirmado": false,
-      "formato": "Arreglo de tramos para calcular 'Abierto ahora / Cerrado': [{ \"dias\": [1,2,3,4,5,6], \"abre\": \"08:00\", \"cierra\": \"19:00\" }] (1 = lunes … 7 = domingo). Los valores del ejemplo NO son el horario real.",
-      "texto": null
+      "valor": [
+        { "dias": [1, 2, 3, 4, 5], "abre": "07:00", "cierra": "19:00" },
+        { "dias": [6], "abre": "07:00", "cierra": "17:00" },
+        { "dias": [7], "abre": "08:00", "cierra": "18:00" }
+      ],
+      "confirmado": true,
+      "formato": "Arreglo de tramos para calcular 'Abierto ahora / Cerrado': dias 1 = lunes ... 7 = domingo; horas en 24 h.",
+      "texto": "Lun–Vie 7:00–19:00 · Sáb 7:00–17:00 · Dom 8:00–18:00",
+      "nota": "Confirmado por el usuario el 2026-11-07 (Google Maps y el negocio). El texto se separa en líneas por ' · '."
     },
     "zonaHoraria": {
-      "valor": null,
-      "confirmado": false,
-      "nota": "Necesaria para el estado abierto/cerrado. Depende de confirmar país y ciudad."
+      "valor": "America/Guayaquil",
+      "confirmado": true,
+      "nota": "Ecuador continental (país confirmado). Confirmada el 2026-11-07."
     },
     "facebook": {
-      "valor": null,
+      "valor": "https://www.facebook.com/share/1CEHgCbBef/",
       "usuario": "@Comercial Hinojosa",
-      "confirmado": false,
-      "nota": "El usuario dio el nombre de la página (2026-10-16), no su enlace. Falta la URL (https://www.facebook.com/…) para publicar el botón."
+      "confirmado": true,
+      "nota": "Enlace dado por el usuario el 2026-11-07."
+    },
+    "tiktok": {
+      "valor": "https://www.tiktok.com/@comercial.hinojosa",
+      "usuario": "@comercial.hinojosa",
+      "confirmado": true,
+      "nota": "Enlace dado por el usuario el 2026-11-07, sin parámetros de rastreo. No hay más redes."
     },
     "googleMaps": {
       "valor": null,
@@ -132,10 +143,7 @@
   },
   "pendientes": [
     "Ciudad",
-    "Referencias para llegar (\"frente a…\", \"a dos cuadras de…\")",
     "WhatsApp (cuál de los dos teléfonos, si alguno, lo tiene)",
-    "Horario de atención (días y horas)",
-    "Enlace (URL) de la página de Facebook \"@Comercial Hinojosa\"",
     "Enlace de Google Maps y coordenadas para el mapa"
   ]
 }

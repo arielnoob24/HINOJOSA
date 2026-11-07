@@ -156,7 +156,7 @@ function catalogoSchema(site: URL | undefined): Record<string, unknown> {
 export function datosEstructurados(site: URL | undefined): Record<string, unknown> {
   const telefonos = telefonosConfirmados();
   const correo = datoConfirmado('correo');
-  const facebook = datoConfirmado('facebook');
+  const redes = [datoConfirmado('facebook'), datoConfirmado('tiktok')].filter((x): x is string => !!x);
   const mapa = datoConfirmado('googleMaps');
   const direccion = direccionSchema();
   const horario = horarioSchema();
@@ -194,7 +194,7 @@ export function datosEstructurados(site: URL | undefined): Record<string, unknow
       : {}),
     ...(correo ? { email: correo } : {}),
     ...(horario ? { openingHoursSpecification: horario } : {}),
-    ...(facebook ? { sameAs: [facebook] } : {}),
+    ...(redes.length ? { sameAs: redes } : {}),
     hasOfferCatalog: catalogoSchema(site),
   };
 

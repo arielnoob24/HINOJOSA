@@ -55,7 +55,7 @@ Por archivo: WebP 800 de 30 a 124 KB (media ≈ 72 KB), AVIF ≈ 40 % menos, min
 
 Fondos de origen:
 - `granja/melaza`: venía con fondo gris de estudio. **Recortado** (modelo de fondo cuadrático + relleno desde los bordes); la sombra de contacto se conserva como sombra negra semitransparente.
-- `granja/sal-en-grano` (foto con fondo texturizado) y `granos/diferentes-tipos-de-semillas` (los bordes blancos de los sobres se confunden con el fondo): **se publican con su fondo**, rectangulares.
+- `granja/sal-en-grano` (foto con fondo texturizado) y `granos/diferentes-tipos-de-semillas` (retirada el 2026-11-07, ver abajo): **se publican con su fondo**, rectangulares.
 - `comederos/bebedero` (2026-10-14): el original traía un **damero "transparente" pintado** y no se podía recortar. Se usa `bebedero_quitado_disque.jpg` (fondo quitado en Paint por el usuario, guardado en JPG sobre blanco puro), que `nuevos_req.py` recorta con `quitar_fondo_blanco` (tabla `REEMPLAZOS`). Ya se publica **transparente**, sin `conFondo`.
 
 ### Tarjeta genérica de costal y trébol (SVG, `scripts-activos/marca_svg.py`, 2026-10-14)
@@ -267,3 +267,8 @@ Las imágenes del catálogo y los demás videos deben cargarse con `loading="laz
 - **Lottie**: ni `lottie-web` ni `@lottiefiles/dotlottie-web` están instaladas.
 - **Derechos**: el arte de Canela y varios afiches parecen generados con IA. Hay que confirmar con la dueña los derechos de uso antes de publicar. También hay marcas de terceros en los afiches de productos y los precios impresos pueden estar desactualizados.
 - **Videos**: mantienen el mismo contenido y orden de afiches que los originales. Solo cambian el fondo (crema `#F6F1E4` o verde `#1B4D2B` en lugar del margen desenfocado gris), la resolución y el empalme del bucle. En `hero` y `canela` la insignia de Canela aparece recortada sobre verde de marca, y en `canela` el "pulgar arriba" es la versión circular nueva.
+
+
+## Semillas por tipo (2026-11-07)
+`semillas-hortalizas` (foto de grupo `diferentes-tipos-de-semillas`, retirada de `public/`; el original se conserva y `nuevos_req.py` lo ignora con `IGNORAR`) pasa a 8 productos de `granos`, uno por sobre (marca "Agrícola Santo Domingo"). Originales en `Nuevos Req/tarjeta/semillas/` (sin tocar); copias con nombre limpio en `Nuevos Req/CatalogoF/Granos y Semillas/semilla <x>.jpg`. Se recortan con `quitar_fondo_blanco(umbral 6, d_solido 24)` (tabla `SOBRE_BLANCO` en el script); regenerar: `python scripts-activos/nuevos_req.py producto semilla`.
+Slugs: `semilla-melon` (Melón Cantaloupe), `semilla-cebollin` (el sobre dice CEBOLLIN), `semilla-perejil`, `semilla-cebolla-colorada`, `semilla-pepino` (Cucumber), `semilla-pimiento` (Yolo Wonder), `semilla-tomate` (Floradade), `semilla-sandia` (Jubilee). Cada uno: `.avif/.webp`, `-400`, `-thumb`, `-thumb-80` en `public/img/productos/granos/`; 8 juegos = 1,3 MB en disco (por producto: ~40 KB AVIF y ~65 KB WebP a 800 px; ~15 KB AVIF a 400; thumb 6-8 KB; thumb-80 2-3 KB).

@@ -65,8 +65,15 @@ ERRATAS = {"balaceado": "balanceado"}
 CON_FONDO = {
     "melaza.jpg": (18, 40),                     # fondo gris liso de estudio: se recorta
     # sal en grano.jpg (fondo texturizado) se sustituyo el 2026-10-17 por un PNG recortado
-    "diferentes tipos de semillas.jpg": None,   # bordes blancos de los sobres se confunden con el fondo
 }
+
+# Fotos de estudio sobre blanco puro (sobres de semillas): se recortan con
+# `quitar_fondo_blanco` (los bordes blancos del sobre no se confunden: el fondo es 255).
+SOBRE_BLANCO = {f"semilla {n}.jpg" for n in
+                ("melon", "cebollin", "perejil", "cebolla colorada", "pepino", "pimiento", "tomate", "sandia")}
+
+# Originales que ya no generan producto (se conservan en Nuevos Req).
+IGNORAR = {"diferentes tipos de semillas.jpg"}
 
 # Originales que se sustituyen por una version corregida que dejo el usuario en la
 # misma carpeta (se publica con el slug del original y la version corregida no
@@ -170,12 +177,14 @@ def maestros(tmp: Path) -> tuple[list[dict], list[str]]:
         for f in sorted((CATALOGO / carpeta).iterdir()):
             if f.suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp"}:
                 continue
-            if f.name in REEMPLAZOS.values():
+            if f.name in REEMPLAZOS.values() or f.name in IGNORAR:
                 continue
             s = slug(f.name)
             im = Image.open(f)
             if f.name in REEMPLAZOS:
                 im = quitar_fondo_blanco(np.asarray(Image.open(f.with_name(REEMPLAZOS[f.name])).convert("RGB")))
+            elif f.name in SOBRE_BLANCO:
+                im = quitar_fondo_blanco(np.asarray(im.convert("RGB")), 6, 24)
             elif f.name in CON_FONDO:
                 params = CON_FONDO[f.name]
                 if params:
