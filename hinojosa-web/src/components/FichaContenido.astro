@@ -3,7 +3,7 @@
 // la ficha de escritorio (VistaProductos.astro, variante "panel") y la hoja
 // de detalle movil (HojaDetalle.astro, variante "hoja"). Vacio en el HTML:
 // lo rellena src/lib/ficha-pintar.ts con el modelo de src/lib/ficha-modelo.ts
-// (chips, titulo, precio, descripcion, atributos, accion). Cada bloque se
+// (metadato, titulo, precio, descripcion, atributos, accion). Cada bloque se
 // oculta si no hay dato: el panel se acomoda al contenido, sin huecos.
 //
 // Ganchos: [data-f-chips] ([data-f-animal=<clave>], [data-f-categoria],
@@ -17,7 +17,7 @@
 // sobre blanco 9.80; categoria tinta sobre crema-oscuro 11.27; etapa
 // bosque sobre hoja-claro (#EAF4DC) 8.05; etiquetas tinta 12.67 / 10.94;
 // valores tinta sobre blanco 14.28; descripcion tinta-suave 6.78 / 5.85;
-// precio tinta sobre maiz 7.93; boton tinta sobre maiz 7.93 (hover
+// precio tinta sobre crema 12.67; boton tinta sobre maiz 7.93 (hover
 // maiz-oscuro 6.02); foco bosque 8.69. Nada depende solo del color.
 import Icono from './Icono.astro';
 
@@ -40,10 +40,7 @@ const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
 <div class:list={['ficha-contenido', `ficha-contenido--${variante}`]} data-ficha-cuerpo={panel ? '' : undefined}>
   <ul class="ficha-chips" data-f-chips hidden>
     {Object.entries(animales).map(([clave, nombre]) => (
-      <li class="ficha-chip ficha-chip-animal" data-f-animal={clave} hidden>
-        <Icono nombre={iconoAnimal[clave] ?? 'hoja'} class="size-5 shrink-0" />
-        <span>{nombre}</span>
-      </li>
+      <li class="ficha-chip ficha-chip-animal" data-f-animal={clave} hidden>{nombre}</li>
     ))}
     <li class="ficha-chip ficha-chip-categoria" data-f-categoria hidden></li>
     <li class="ficha-chip ficha-chip-etapa" data-f-etapa hidden></li>
@@ -93,40 +90,24 @@ const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
     display: none !important;
   }
 
-  /* ---------- Chips superiores ---------- */
+  /* ---------- Metadato superior: una linea plana tipo breadcrumb ---------- */
   .ficha-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.375rem;
+    column-gap: 0.4rem;
+    font-size: var(--text-chico);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0.06em;
+    /* tierra apagada: se distingue del bosque del titulo (5.7 crema / 4.9 en el peor punto del degradado) */
+    color: #6b5d3a;
   }
   .ficha-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    border-radius: var(--radius-chip);
-    padding: 0.125rem 0.75rem;
-    font-size: var(--text-chico);
-    font-weight: 800;
-    line-height: 1.35;
+    display: inline;
   }
-  .ficha-chip-animal {
-    border: 1px solid rgb(123 191 58 / 0.55);
-    background: var(--color-blanco);
-    padding-left: 0.5rem;
-    color: var(--color-bosque);
-  }
-  .ficha-chip-animal :global(svg) {
-    color: var(--color-bosque);
-  }
-  .ficha-chip-categoria {
-    border: 1px solid transparent;
-    background: var(--color-crema-oscuro);
-    color: var(--color-tinta);
-  }
-  .ficha-chip-etapa {
-    border: 1px solid var(--color-bosque);
-    background: var(--color-hoja-claro);
-    color: var(--color-bosque);
+  .ficha-chip:not([hidden]) ~ .ficha-chip:not([hidden])::before {
+    content: '•' / '';
+    margin-right: 0.4rem;
   }
 
   /* ---------- Titulo + precio ---------- */
@@ -163,14 +144,23 @@ const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
   }
   .ficha-precio {
     display: inline-block;
-    border-radius: var(--radius-chip);
-    background: var(--color-maiz);
-    padding: 0.1875rem 1rem;
     font-weight: 800;
-    line-height: 1.35;
+    line-height: 1.2;
     color: var(--color-tinta);
     white-space: nowrap;
-    box-shadow: 0 4px 12px -6px rgb(217 158 15 / 0.7);
+  }
+  .ficha-precio :global(.ficha-precio-desde) {
+    margin-right: 0.15em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-tinta-suave);
+  }
+  .ficha-precio :global(.ficha-precio-monto) {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
   }
 
   /* ---------- Descripcion ---------- */
@@ -181,41 +171,50 @@ const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
     -webkit-line-clamp: 3;
     line-clamp: 3;
     max-width: 34rem;
-    line-height: 1.35;
+    font-size: 0.8125rem;
+    line-height: 1.5;
     color: var(--color-tinta-suave);
     text-wrap: pretty;
   }
 
   /* ---------- Ficha tecnica: grilla de tarjetas pequenas ---------- */
+  /* Una sola tarjeta con filas etiqueta (izq.) | valor (der.), separadas por
+     una linea sutil. Sirve igual con 1, 2 o 3 atributos: sin columnas ni huecos. */
   .ficha-atributos {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: calc(var(--f-hueco) * 0.6) 0.5rem;
-  }
-  .ficha-atributos[data-n='1'] {
-    grid-template-columns: minmax(0, 1fr);
+    border: 1px solid var(--color-crema-oscuro);
+    border-radius: 1rem;
+    background: rgb(255 255 255 / 0.9);
+    padding: 0.25rem 0.875rem;
   }
   .ficha-atributos :global(.ficha-attr) {
-    min-width: 0;
-    border: 1px solid var(--color-crema-oscuro);
-    border-radius: 0.75rem;
-    background: rgb(255 255 255 / 0.85);
-    padding: 0.3125rem 0.625rem 0.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-block: 0.5rem;
+  }
+  .ficha-atributos :global(.ficha-attr + .ficha-attr) {
+    border-top: 1px solid var(--color-crema-oscuro);
   }
   .ficha-atributos :global(dt),
   .ficha-etiqueta {
-    margin-bottom: 0.0625rem;
-    font-size: 0.75rem;
-    font-weight: 800;
+    flex: none;
+    font-size: 0.6875rem;
+    font-weight: 700;
     line-height: 1.2;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-tinta);
+    color: var(--color-tinta-suave);
+  }
+  .ficha-etiqueta {
+    margin-bottom: 0.0625rem;
   }
   .ficha-atributos :global(dd) {
-    font-weight: 700;
+    max-width: 65%;
+    font-weight: 600;
     line-height: 1.25;
     color: var(--color-tinta);
+    text-align: right;
     overflow-wrap: anywhere;
   }
 
@@ -297,10 +296,10 @@ const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
     font-size: clamp(1rem, min(1.4vw, 2.6dvh), 1.375rem);
   }
   .ficha-contenido--panel .ficha-desc {
-    font-size: clamp(0.875rem, 2.2dvh, 1.0625rem);
+    font-size: 0.8125rem;
   }
   .ficha-contenido--panel .ficha-atributos :global(dd) {
-    font-size: clamp(0.9375rem, 2.4dvh, 1.0625rem);
+    font-size: 0.875rem;
   }
   .ficha-contenido--panel .ficha-cta {
     font-size: clamp(0.9375rem, 2.4dvh, 1.0625rem);
@@ -310,19 +309,12 @@ const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
     .ficha-contenido--panel .ficha-titulo {
       font-size: clamp(1.375rem, min(2.45vw, 3.7dvh), 2.625rem);
     }
-    .ficha-contenido--panel .ficha-chip {
-      padding-block: 0;
-    }
-    .ficha-contenido--panel .ficha-atributos :global(.ficha-attr) {
-      padding: 0.1875rem 0.5rem 0.25rem;
+    .ficha-atributos :global(.ficha-attr) {
+      padding-block: 0.375rem;
     }
     .ficha-contenido--panel .ficha-atributos :global(dd) {
       font-size: 0.875rem;
       line-height: 1.2;
-    }
-    .ficha-contenido--panel .ficha-atributos :global(dt) {
-      margin-bottom: 0;
-      font-size: 0.6875rem;
     }
     .ficha-contenido--panel .ficha-etapas li {
       padding-block: 0.0625rem;
@@ -349,7 +341,7 @@ const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
     .ficha-desc {
       -webkit-line-clamp: 4;
       line-clamp: 4;
-      font-size: 0.9375rem;
+      font-size: 0.8125rem;
     }
   }
 

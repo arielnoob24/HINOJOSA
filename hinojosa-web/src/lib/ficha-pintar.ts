@@ -29,7 +29,21 @@ export function pintarModelo(raiz: HTMLElement, m: FichaModelo, p: FichaProducto
   const titulo = q(raiz, '[data-f-titulo]');
   if (titulo) titulo.textContent = m.titulo;
   const precio = q(raiz, '[data-f-precio]');
-  if (precio) precio.textContent = m.precio;
+  if (precio) {
+    // "Desde $4,50": prefijo pequeno y regular, monto en negrita
+    const mm = /^(\S+)\s+(\$.+)$/.exec(m.precio);
+    if (mm && /^desde$/i.test(mm[1])) {
+      const pre = document.createElement('span');
+      pre.className = 'ficha-precio-desde';
+      pre.textContent = mm[1];
+      const monto = document.createElement('span');
+      monto.className = 'ficha-precio-monto';
+      monto.textContent = mm[2];
+      precio.replaceChildren(pre, ' ', monto);
+    } else {
+      precio.textContent = m.precio;
+    }
+  }
 
   // ---- Descripcion
   const desc = q(raiz, '[data-f-descripcion]');
@@ -41,8 +55,11 @@ export function pintarModelo(raiz: HTMLElement, m: FichaModelo, p: FichaProducto
   // ---- Atributos (grilla de tarjetas)
   const lista = q(raiz, '[data-f-atributos]');
   if (lista) {
+    // Lista de filas etiqueta | valor: Marca y Medida primero, luego el resto
+    const peso = (c: string) => (c === 'marca' ? 0 : c === 'medida' ? 1 : 2);
+    const ordenados = [...m.atributos].sort((x, y) => peso(x.clave) - peso(y.clave));
     lista.replaceChildren(
-      ...m.atributos.map((a) => {
+      ...ordenados.map((a) => {
         const fila = document.createElement('div');
         fila.className = 'ficha-attr';
         fila.dataset.fAtributo = a.clave;
