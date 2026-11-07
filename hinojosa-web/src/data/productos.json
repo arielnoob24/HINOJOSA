@@ -277,17 +277,31 @@
       "destacado": false
     },
     {
-      "id": "procan-rejos-colageno",
+      "id": "procan-palitos",
       "categoria": "mascotas",
       "animales": ["perro"],
-      "nombre": "Pro-Can palitos y rejos",
+      "nombre": "Pro-Can palitos",
       "descripcion": "Premio con colágeno para que tu perro mastique y se entretenga.",
       "marca": "Pro-Can",
-      "medida": "Palitos de 6 u.; rejos de 8 u. y de 20 u.",
+      "medida": "6 unidades de 12,7 cm",
       "presentacion": null,
       "precio": null,
       "precioDesde": false,
-      "imagen": "/img/productos/mascotas/procan.webp",
+      "imagen": "/img/productos/mascotas/procan-palitos.webp",
+      "destacado": false
+    },
+    {
+      "id": "procan-rejos",
+      "categoria": "mascotas",
+      "animales": ["perro"],
+      "nombre": "Pro-Can rejos",
+      "descripcion": "Rejos de colágeno para que tu perro mastique y cuide sus dientes.",
+      "marca": "Pro-Can",
+      "medida": "8 u. y 20 u. (pack grande)",
+      "presentacion": null,
+      "precio": null,
+      "precioDesde": false,
+      "imagen": "/img/productos/mascotas/procan-rejos.webp",
       "destacado": false
     },
     {
