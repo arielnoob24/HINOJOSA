@@ -32,7 +32,6 @@ import {
   horarioConfirmado,
   coordenadasConfirmadas,
   enlaceWhatsapp,
-  telefonosConfirmados,
   enlaceCorreo,
 } from '../../lib/negocio';
 
@@ -45,7 +44,6 @@ const horario = horarioConfirmado();
 const coords = coordenadasConfirmadas();
 const maps = datoConfirmado('googleMaps');
 const whatsapp = enlaceWhatsapp();
-const telefonos = telefonosConfirmados();
 const correo = datoConfirmado('correo');
 const facebook = datoConfirmado('facebook');
 const tiktok = datoConfirmado('tiktok');
@@ -54,28 +52,12 @@ const tiktok = datoConfirmado('tiktok');
 // los pendientes solo aportan su icono (en gris) a la linea agrupada.
 const canales = [
   { href: maps, texto: t.ctaMaps, nombre: t.nombreAccesibleMaps, icono: 'mapa', variante: 'cta' as const, ancho: true, pestana: true },
-  { href: whatsapp, texto: t.ctaWhatsapp, nombre: t.nombreAccesibleWhatsapp, icono: 'whatsapp', variante: 'invertido' as const, ancho: false, pestana: true },
-  // Un boton por telefono, con el numero a la vista (2026-10-16: dos)
-  ...(telefonos.length
-    ? telefonos.map((tel, i) => ({
-        href: tel.href,
-        texto: tel.texto,
-        nombre: t.nombreAccesibleLlamar.replace('{numero}', tel.texto),
-        icono: 'telefono',
-        variante: 'invertido' as const,
-        ancho: true, // el numero entero en una linea
-        pestana: false,
-        // Bloque 28d (solo movil): telefonos lado a lado, el primero en oro
-        extra: i === 0 ? 'vis-accion-telefono vis-accion-principal' : 'vis-accion-telefono',
-      }))
-    : [{ href: null, texto: t.ctaLlamar, nombre: t.nombreAccesibleLlamar, icono: 'telefono', variante: 'invertido' as const, ancho: false, pestana: false }]),
+  { href: whatsapp, texto: t.ctaWhatsapp, nombre: t.nombreAccesibleWhatsapp, icono: 'whatsapp', variante: 'invertido' as const, ancho: true, pestana: true, extra: 'vis-accion-principal' },
   { href: enlaceCorreo(), texto: correo ?? t.ctaCorreo, nombre: t.nombreAccesibleCorreo.replace('{correo}', correo ?? ''), icono: 'correo', variante: 'enlace' as const, ancho: true, pestana: false, extra: 'vis-accion-correo' },
   { href: facebook, texto: t.ctaFacebook, nombre: t.nombreAccesibleFacebook, icono: 'facebook', variante: 'enlace' as const, ancho: true, pestana: true, extra: 'vis-accion-red' },
   { href: tiktok, texto: t.ctaTiktok, nombre: t.nombreAccesibleTiktok, icono: 'tiktok', variante: 'enlace' as const, ancho: true, pestana: true, extra: 'vis-accion-red' },
 ];
 const confirmados = canales.filter((c) => c.href);
-const pendientes = canales.filter((c) => !c.href);
-const textoPendientes = confirmados.length ? t.contactoPendienteParcial : t.contactoPendiente;
 const anio = new Date().getFullYear();
 // Bloque 28d (solo movil): mientras falten horario y referencias, una sola
 // linea "Horario y referencias: muy pronto"; si llega uno, vuelven sus filas.
@@ -212,14 +194,6 @@ const trebol =
             />
           ))}
         </div>
-      )}
-      {pendientes.length > 0 && (
-        <p class="vis-contacto-pendiente" data-contacto-pendiente>
-          <span class="vis-contacto-iconos" aria-hidden="true">
-            {pendientes.map((c) => <Icono nombre={c.icono} class="size-5" />)}
-          </span>
-          <span>{textoPendientes}</span>
-        </p>
       )}
     </article>
   </div>
@@ -456,6 +430,11 @@ const trebol =
     border-top: 0;
     padding-top: 0;
     margin-top: 0.75rem;
+  }
+  .vis-acciones :global(.vis-accion-principal) {
+    border-color: var(--color-cta-fondo);
+    background: var(--color-cta-fondo);
+    color: var(--color-cta-texto);
   }
   .vis-pie {
     --color-foco: var(--color-foco-oscuro);

@@ -99,9 +99,9 @@
       "nota": "Confirmado por el usuario el 2026-10-16."
     },
     "whatsapp": {
-      "valor": null,
-      "confirmado": false,
-      "nota": "Número en formato internacional sin '+' ni espacios, para armar el enlace https://wa.me/<numero>."
+      "valor": "593997085015",
+      "confirmado": true,
+      "nota": "Primer teléfono del negocio (099 708 5015), asumido con WhatsApp por el usuario el 2026-11-07. Número en formato internacional sin '+' ni espacios, para armar el enlace https://wa.me/<numero>."
     },
     "horario": {
       "valor": [
