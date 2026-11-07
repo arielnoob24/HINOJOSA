@@ -1,3 +1,8 @@
+.env
+.dev.vars
+
+# Worker del panel (wrangler): cache con datos de la cuenta de Cloudflare
+.wrangler/
 
 # Python
 __pycache__/

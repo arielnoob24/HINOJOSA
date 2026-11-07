@@ -1,0 +1,317 @@
+/* Panel de administracion (bloque 29c). Solo colores de la paleta; los
+   contrastes salen de tokens.css (tinta sobre crema 12.67, blanco sobre
+   bosque 9.80, tinta sobre maiz 7.93, canela-oscuro sobre crema 5.22). */
+.adm {
+  --adm-borde: var(--color-tinta-suave);
+  width: min(56rem, 100vw);
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  background: var(--color-crema);
+  color: var(--color-tinta);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.45;
+  overflow: hidden;
+}
+.adm[open] {
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 48rem) {
+  .adm {
+    height: min(52rem, 94dvh);
+    margin: auto;
+    border-radius: 1rem;
+    box-shadow: 0 24px 60px -12px rgb(16 48 27 / 0.55);
+  }
+}
+.adm::backdrop {
+  background: rgb(16 48 27 / 0.65);
+}
+.adm *,
+.adm *::before,
+.adm *::after {
+  box-sizing: border-box;
+}
+.adm :focus-visible {
+  outline: 3px solid var(--color-bosque);
+  outline-offset: 2px;
+}
+.adm-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-bosque);
+  color: var(--color-crema);
+}
+.adm-cabecera :focus-visible {
+  outline-color: var(--color-crema);
+}
+/* El h2 hereda color de bosque del CSS global del sitio: sobre la cabecera
+   verde habia que forzar crema (9.0 sobre bosque). */
+.adm .adm-titulo {
+  margin: 0;
+  color: var(--color-crema);
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: normal;
+}
+.adm-titulo:focus {
+  outline: none;
+}
+.adm-cuerpo {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1rem;
+}
+.adm-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  background: var(--color-crema-oscuro);
+  border-top: 2px solid var(--color-tinta-suave);
+}
+.adm-pie-texto {
+  flex: 1 1 12rem;
+  margin: 0;
+  font-weight: 700;
+}
+.adm-pie-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Botones y campos: objetivos de 44 px y 16 px para que iOS no haga zoom */
+.adm button,
+.adm input,
+.adm select,
+.adm textarea {
+  font: inherit;
+  color: inherit;
+}
+.adm-boton {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.1rem;
+  border: 2px solid var(--color-bosque);
+  border-radius: 0.75rem;
+  background: var(--color-blanco);
+  color: var(--color-bosque);
+  font-weight: 800;
+  cursor: pointer;
+}
+.adm-boton:hover:not(:disabled) {
+  background: var(--color-hoja-claro);
+}
+.adm-boton-primario {
+  background: var(--color-bosque);
+  color: var(--color-blanco);
+}
+.adm-boton-primario:hover:not(:disabled) {
+  background: var(--color-boton-hover);
+}
+.adm-boton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.adm-cerrar {
+  border-color: var(--color-crema);
+  background: transparent;
+  color: var(--color-crema);
+}
+.adm-cerrar:hover:not(:disabled) {
+  background: rgb(246 241 228 / 0.15);
+}
+.adm-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 700;
+}
+.adm-campo > span small {
+  font-weight: 400;
+  color: var(--color-tinta-suave);
+}
+.adm-campo input[type='text'],
+.adm-campo input[type='password'],
+.adm-campo input[type='search'],
+.adm-campo input[inputmode],
+.adm-campo select,
+.adm-campo textarea {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--adm-borde);
+  border-radius: 0.6rem;
+  background: var(--color-blanco);
+  font-size: 1rem;
+  font-weight: 400;
+}
+.adm-campo textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+.adm-marca {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.adm-marca input {
+  width: 1.4rem;
+  height: 1.4rem;
+  accent-color: var(--color-bosque);
+  flex: none;
+}
+
+/* Avisos: nada de rojo (no esta en la paleta); borde y rotulo en canela oscuro */
+.adm-aviso {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--color-canela-oscuro);
+  border-radius: 0.75rem;
+  background: var(--color-blanco);
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+.adm-aviso strong {
+  color: var(--color-canela-oscuro);
+}
+.adm-aviso ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+  font-weight: 400;
+}
+.adm-ok {
+  border-color: var(--color-bosque);
+}
+.adm-ok strong {
+  color: var(--color-bosque);
+}
+
+/* Entrada */
+.adm-entrada {
+  display: grid;
+  gap: 1rem;
+  max-width: 24rem;
+  margin: 1.5rem auto;
+}
+.adm-entrada p {
+  margin: 0;
+}
+
+/* Barra de herramientas y lista */
+.adm-herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+.adm-herramientas .adm-campo {
+  flex: 1 1 14rem;
+}
+.adm-lista {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.adm-fila {
+  border: 2px solid var(--color-filete-canela);
+  border-radius: 0.9rem;
+  background: var(--color-blanco);
+}
+.adm-fila[data-cambiado] {
+  border-color: var(--color-bosque);
+  background: var(--color-hoja-claro);
+}
+.adm-fila[data-nuevo] {
+  border-style: dashed;
+}
+.adm-fila-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.75rem;
+}
+.adm-fila-nombre {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+.adm-fila-nombre strong {
+  display: block;
+  font-size: 1.05rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.adm-fila-cat {
+  color: var(--color-tinta-suave);
+  font-size: 0.9rem;
+}
+.adm-insignia {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: var(--color-maiz);
+  color: var(--color-tinta);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.adm-precio {
+  flex: 0 0 9rem;
+}
+.adm-fila-mas {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0 0.75rem 0.75rem;
+  border-top: 1px solid var(--color-filete-canela);
+  padding-top: 0.75rem;
+}
+@media (min-width: 40rem) {
+  .adm-fila-mas {
+    grid-template-columns: 1fr 1fr;
+  }
+  .adm-ancho {
+    grid-column: 1 / -1;
+  }
+}
+.adm-grupo {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.adm-grupo legend {
+  padding: 0;
+  font-weight: 700;
+}
+.adm-grupo-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.25rem;
+}
+.adm-contador {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--color-tinta-suave);
+}
+.adm-vacio {
+  padding: 1.5rem 0;
+  text-align: center;
+  font-weight: 700;
+}

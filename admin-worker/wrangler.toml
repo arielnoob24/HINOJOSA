@@ -1,0 +1,19 @@
+# Worker del panel de administracion.
+# Las variables de TEXTO van aqui (no son secretas). Los SECRETOS (GITHUB_TOKEN y
+# ADMIN_PASSWORD) viven solo en Cloudflare (Settings -> Variables and Secrets) y
+# `wrangler deploy` no los toca.
+name = "hinojosa"
+main = "src/index.js"
+compatibility_date = "2026-11-07"
+workers_dev = true
+preview_urls = false
+
+[vars]
+GITHUB_REPO = "arielnoob24/HINOJOSA"
+GITHUB_BRANCH = "main"
+# Uno o varios origenes separados por coma, sin barra final. Para probar el panel en
+# local se añade temporalmente ",http://localhost:4321".
+ALLOWED_ORIGIN = "https://arielnoob24.github.io"
+
+[observability]
+enabled = true

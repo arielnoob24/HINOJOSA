@@ -168,6 +168,43 @@ Pedido del usuario el 2026-10-17 tras jalar `main` a la rama **`Ariel`**. **Mand
 
 ---
 
+## 0-E. Panel oculto de administración (2026-11-06) — bloque 29
+
+**Pedido:** que la dueña (persona no técnica) pueda editar **precio, descripción y demás campos de la tarjeta de producto, y añadir o quitar productos**, sin tocar código, en un sitio estático.
+
+### Decisiones
+| Tema | Decisión |
+|---|---|
+| **Acceso** | **4 clics seguidos (en menos de 2 s) en el logo** abren el panel; pide una contraseña. Es solo una puerta oculta: **la seguridad real está en el servidor** (una contraseña dentro del JS se puede leer en DevTools) |
+| **Dónde se guardan los cambios** | En **`productos.json` del repositorio**: un **Cloudflare Worker** (`admin-worker/`, plan gratuito) comprueba la contraseña **en el servidor** y hace el commit con un token de GitHub que vive como **secreto del Worker** (nunca llega al navegador). El push a `main` dispara el workflow de Pages: el cambio se ve **en ~1 minuto**, para todos. El sitio sigue siendo 100 % estático |
+| **Qué se edita** | Los 37 productos: nombre, descripción (≤ 110), marca, presentación, precio (o vacío), «desde», animales, categoría, destacado. **Añadir** (sin foto: costal genérico) y **quitar** (máx. 10 por vez). **Fuera de alcance:** subir fotos (pasan por `scripts-activos/nuevos_req.py`), categorías, textos de las vistas |
+| **Validación** | `admin-worker/src/validar.js`, en el servidor (manda) y reutilizable en el panel. Whitelist de campos, tipos, longitudes, ids únicos, sin `<`/`>`, rutas de imagen bajo `/img/productos/`. Pruebas: `node admin-worker/prueba-validar.mjs` |
+| **Concurrencia** | El panel envía el `sha` que leyó; si el archivo cambió, el Worker responde 409 y la dueña recarga. Gana quien guarda primero |
+| **Peso** | El panel se carga con `import()` **solo tras los 4 clics**: 0 bytes extra y el LCP no cambia para el resto de visitantes |
+| **Hosting** | El Worker es independiente de Pages: si luego se migra a Netlify solo cambia `ALLOWED_ORIGIN` (y `site`/`base` del sitio) |
+
+### Configuración (hecha 2026-11-06)
+Worker `hinojosa` en `https://hinojosa.mjkpqnx.workers.dev`. Secretos: `GITHUB_TOKEN` (fine-grained, solo `Contents: Read and write` sobre `arielnoob24/HINOJOSA`, **caduca**: anotar la fecha) y `ADMIN_PASSWORD`. Texto, en `admin-worker/wrangler.toml` (`[vars]`): `GITHUB_REPO`, `GITHUB_BRANCH` (`main`), `ALLOWED_ORIGIN` (varios separados por coma; añadir `http://localhost:4321` solo para probar en local). Se despliega con `npx wrangler deploy` desde `admin-worker/`; **`--keep-vars` no conservó las variables creadas en el panel** (2026-11-07), por eso van en el archivo. Desplegado el 2026-11-07 (versión `2fd98a94`).
+
+### Bloques
+| Bloque | Qué | Estado |
+|---|---|---|
+| **29a** | Worker: `GET/PUT /productos`, CORS, contraseña en servidor con freno de intentos, commit a GitHub | **desplegado y leyendo** (2026-11-07: 401 sin contraseña, 37 productos con ella) |
+| **29b** | Validación y pruebas (`admin-worker/src/validar.js`, 15 pruebas). El panel solo hace avisos amables; manda el servidor | hecho |
+| **29c** | Panel: `src/lib/admin/{disparador,panel}.ts` + `panel.css`. 4 clics en `.barra-logo` o `[data-logo-inicio]` en < 2,5 s; el panel (16 KB) se descarga solo entonces. Contraseña en memoria; lista con buscador, precio en la fila y «Editar más» (nombre, descripción con contador, marca, presentación, categoría, «desde», destacado, animales); «Guardar y publicar» con aviso de ~1 min; aviso al cerrar con cambios; `<dialog>` con `data-captura-flechas` | hecho, **sin commitear ni publicar** |
+| **29d** | Añadir (id desde el nombre, sin imagen) y quitar (confirmación dentro del panel) productos | hecho |
+| **29e** | QA: prueba con el Worker simulado (33 comprobaciones, Playwright, `scratchpad/prueba_panel.py`): gesto, guardado, nuevo, quitar, cierre con cambios, foco, axe 0 en escritorio y móvil. **Falta:** prueba con el Worker real desde el sitio publicado (el Worker solo acepta el origen de Pages: `ALLOWED_ORIGIN`) con un cambio de precio y su reversión; Lighthouse | pendiente |
+
+**Hallazgo en la prueba:** al guardar, el panel reordenaba `animales` (`['cuy','conejo']` → `['conejo','cuy']`) en 4 productos sin tocarlos; corregido (conserva el orden original y añade los nuevos al final).
+
+### Riesgos (nuevos)
+- **22:** el token de GitHub caduca y el panel deja de guardar → calendario de renovación.
+- **23:** la contraseña se pierde o se filtra → se cambia en Cloudflare sin tocar código; mínimo 12 caracteres.
+- **24:** el freno de intentos del Worker es por instancia (mejor esfuerzo); la defensa de fondo es la contraseña larga.
+- **25:** un guardado por error publica de inmediato → el historial de Git permite revertir el commit `Panel: …`.
+
+---
+
 ## 1. Resumen del negocio (extraído del material recibido)
 
 | Dato | Valor |
