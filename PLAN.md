@@ -168,6 +168,53 @@ Pedido del usuario el 2026-10-17 tras jalar `main` a la rama **`Ariel`**. **Mand
 
 ---
 
+## 0-E. Ampliación del catálogo con las fotos de `hinojsa/` (2026-11-07)
+
+Origen: auditoría `AUDITORIA-FOTOS-CATALOGO.md` (55 fotos de WhatsApp del 2026-10-26 contra `productos.json`). Se trabaja en la rama **`auditoria-catalogo`** (creada desde `Ariel`); **no se toca `main`, no se despliega** y no se sube nada sin pedirlo. Esto es **solo datos e imágenes**: no cambia CSS, JS ni componentes.
+
+**Regla de precios:** el punto "confirmar con el cliente" **queda pendiente**. Los productos nuevos entran con `precio: null` y `precioDesde: false` (como `cani-premium`); no se inventa ningún precio ni peso que la foto no muestre con claridad. El "628 g" del hueso Pro-can **no se usa**.
+
+**Numeración de fotos:** `#N` = posición N (desde 1) de `sorted(glob('hinojsa/*.jpeg'))`.
+
+### Productos nuevos (9)
+
+| id | Nombre | Cat. | Animal | Foto (recorte) |
+|---|---|---|---|---|
+| `buen-can-cachorros` | Buen Can cachorros | mascotas | perro | #19, bolsa azul de la izquierda |
+| `cani-cachorros` | Cani Premium cachorros razas pequeñas | mascotas | perro | #22, bolsa roja de la izquierda |
+| `canimentos-razas-pequenas` | Canimentos adultos razas pequeñas | mascotas | perro | #22, bolsa beige de la derecha |
+| `canimentos-medianas-grandes` | Canimentos adultos y cachorros razas medianas y grandes | mascotas | perro | #23 (las dos bolsas) |
+| `procan-cachorros-medianas-grandes` | Pro-Can cachorros razas medianas y grandes | mascotas | perro | #12, bolsa azul/roja de la izquierda |
+| `procan-adultos-razas-pequenas` | Pro-Can adultos razas pequeñas | mascotas | perro | #10, bolsa de la derecha (adultos) |
+| `procan-minihuesos-colageno` | Pro-Can minihuesos con colágeno | mascotas | perro | #2 |
+| `procan-huesos-colageno` | Pro-Can huesos con colágeno | mascotas | perro | #3 |
+| `comedero-tolva-amarillo` | Comedero tolva para aves, amarillo | comederos | ave | #47 |
+
+### Productos existentes que se amplían (campo `presentacion`, sin duplicar)
+- `procan-adultos`: recetas Pollo y Carne, arroz y vegetales; 4 kg (#8, #9, #11, #12).
+- `procan-rejos-colageno`: palitos 6 u., rejos 8 u. y rejos 20 u. (#1, #4, #7).
+- `mascan-hueso-masticable` y `mascan-huesos-prensados`: sabores pollo, ahumado y carne (#49, #51, #55); los **tres** sabores deben quedar visibles en el texto.
+- `procat-arena` (aroma lavanda, 4 kg, con pala gratis; #26, #29), `nutrapro-arena` (4 kg; #28, #33), `freemiau-arena` (aroma lavanda; #24, #25).
+- `comedero-perro-gato` y `comedero-doble-dispensador`: colores y plato doble (#42, #43, #48, #50).
+- `comedero-plastico-aves`, `bebedero-aves`, `comedero-galvanizado`: dos tamaños (#5, #6, #30, #32, #34, #36, #45).
+- **No se inventan marcas:** los comederos y bebederos siguen con `marca: null` porque las fotos no muestran marca. Las semillas ya coinciden con el catálogo.
+
+### Imágenes
+- Las mejores fotos son las de **fondo blanco o render**: #8, #10, #12, #16, #17, #19, #22, #23, #28, #29, #53. Se descartan duplicados y afiches de marketing salvo que sean la única foto del producto (#2, #3, #47).
+- Se usan los derivados web habituales con `scripts-activos/nuevos_req.py` (`.webp`/`.avif`, 800 px, `-400`, `-thumb`, `-thumb-80`). Productos hoy **sin imagen** que ya tienen foto buena: `cani-premium` (#21) y `procat-arena` (#29).
+- Los originales útiles se **copian** a `Nuevos Req/CatalogoF/<categoría>/` con nombre descriptivo (nunca se escribe en la carpeta `hinojsa/`, que queda **fuera de git**: se agrega a `.gitignore`).
+
+### Dudas que siguen abiertas (para el cliente, no se resuelven aquí)
+Precios y stock de lo nuevo; peso real del hueso Pro-can; modelo del bebedero #13, tolva #31, plato doble #50 y peso de Canimentos (#27); receta de cada bolsa Pro-can adultos (#10, #11).
+
+### Qué cambia en el plan por esto
+- Sección 5: pasa de 37 a 46 productos y se añade la línea Canimentos. ✅ Hecho 2026-11-07 (datos): 9 productos nuevos, `presentacion` ampliada en los existentes de la lista, imagen asignada a `cani-premium` y `procat-arena` (rutas `/img/productos/<cat>/<id>.webp`; las genera el agente de imágenes). Pendiente de código: comentarios en `VistaProductos.astro` (líneas ~406 y ~1117) mencionan "37 productos"; el layout debe verificarse con 46 a 1440×900 y 1366×650.
+- **No cambia:** escritorio, móvil, router, movimiento, componentes.
+
+---
+
+**Tope de 12 del carrusel quitado (2026-11-07):** Mascotas pasó a 24 productos (22 con foto) y el anillo solo mostraba 12 (rótulo "1 de 12 con foto"; los productos fuera del anillo no movían el carrusel). Se quitó el tope en `VistaProductos.astro` (rejilla) y `catalogo.ts` (`arrancar`); el anillo lleva todos los productos con foto y el radio ya crecía con N. En `carrusel.ts` `render()` las tarjetas a más de 6 pasos del frente se ocultan (`visibility`) para no cargar el compositor con 22; con N ≤ 12 no cambia nada (Granja, Comederos y Granos idénticos a 1440×900 y 1366×650, 0 píxeles de diferencia).
+
 ## 1. Resumen del negocio (extraído del material recibido)
 
 | Dato | Valor |
@@ -593,7 +640,7 @@ Mapa a pantalla completa con una tarjeta flotante opaca encima.
 
 > Los precios vienen de los afiches y **pueden estar desactualizados**: se guardan en `src/data/productos.json` y la web muestra "precios referenciales, consulta disponibilidad".
 
-Estado actual: **4 categorías, 37 productos, 16 con precio.** Cada producto lleva `id`, `categoria` (`granja` · `mascotas` · `comederos` · `granos`), `nombre`, `marca`, `presentacion`, `precio`, `precioDesde`, `imagen`, `destacado` y, en los que traen fondo, `conFondo`.
+Estado actual: **4 categorías, 46 productos, 14 con precio** (conteo real al 2026-11-07, tras 0-E; los 9 nuevos entran sin precio; antes se decía 37 y 16, pero el JSON tenía 14 con precio). Cada producto lleva `id`, `categoria` (`granja` · `mascotas` · `comederos` · `granos`), `nombre`, `marca`, `presentacion`, `precio`, `precioDesde`, `imagen`, `destacado` y, en los que traen fondo, `conFondo`.
 
 **Campo nuevo (P1):** `animales` — lista de especies a las que sirve cada producto (`perro`, `gato`, `ave`, `cerdo`, `vaca`, `cuy`, `conejo`, `tilapia`), más sinónimos que el buscador normaliza (pollo/gallina → ave, pez → tilapia). Lo rellena `contenido-estrategia` a partir del nombre y la categoría; los casos dudosos se consultan con la dueña.
 
@@ -611,6 +658,7 @@ Contenido de referencia de los afiches (agrupado por categoría del cliente):
 ### Alimento Mascotas
 - **Pro-Can** (cachorros, adultos, razas pequeñas, medianas y grandes) — desde $1.00 / $1.40 / $2.25
 - **Buen Can**, **Cani**, **NutraPro** (desde $8.00), **Dog Chow** (desde $2.25)
+- **Canimentos** (adultos razas pequeñas; adultos y cachorros razas medianas y grandes) — sin precio confirmado (0-E)
 - Masticables: Mascan, Pro-Can palitos y rejos, Bio Cani canelones
 - **Pro Cat** — desde $2.50; arenas **Pro-Cat** ($5.50), **NutraPro** ($6.00), **Freemiau** ($7.00)
 

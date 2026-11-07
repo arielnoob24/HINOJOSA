@@ -6,3 +6,6 @@ __pycache__/
 modelos3d/**/*.blend
 modelos3d/**/*.blend1
 modelos3d/**/*.glb
+
+# Fotos crudas de WhatsApp del cliente (solo lectura, no se versionan)
+hinojsa/

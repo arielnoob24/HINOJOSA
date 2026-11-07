@@ -261,7 +261,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
           )}
           {grupos.map((g) => (
             <ul class="prod-rejilla" data-rejilla-categoria={g.id} hidden={g.id !== primera}>
-              {g.productos.filter((p) => p.imagen).slice(0, 12).map((p) => (
+              {g.productos.filter((p) => p.imagen).map((p) => (
                 <li>
                   <button
                     type="button"
@@ -403,7 +403,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       <div class="prod-panel-cuerpo" data-panel-cuerpo>
       <!-- Ficha compacta del producto al frente (>= 48rem, bloque 20). La
            pinta catalogo.ts con cada `hinojosa:producto`. Sin scroll: todo
-           cabe con los 37 productos a 1440x900 y 1366x650. No es una region
+           cabe con cualquier producto del catalogo a 1440x900 y 1366x650. No es una region
            viva (el producto ya se anuncia en [data-carrusel-anuncio]). -->
       <div id="panel-detalle" class="prod-ficha" role="tabpanel" aria-labelledby="tab-detalle" tabindex="0" data-ficha data-solo-js>
         <div class="prod-ficha-cuerpo" data-ficha-cuerpo>
@@ -1114,7 +1114,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
 
   /* ---------- Ficha del producto al frente: tarjeta crema (bloques 23-24) ----------
      Maqueta: Nuevos Req/tarjeta. Anula la ficha bosque del bloque 18. SIN
-     scroll nunca (prueba 23: los 37 productos caben a 1440x900 y
+     scroll nunca (prueba 23: todos los productos caben a 1440x900 y
      1366x650). Contrastes (sobre crema #F6F1E4 y, desde el bloque 23b,
      sobre el peor punto del desvanecido verde de la base, hoja al 22 %
      sobre crema = #DBE6BF): nombre bosque Nunito 800 (8.69 / 7.50),

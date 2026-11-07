@@ -46,8 +46,8 @@
 // RECUENTOS (P4, decidido 2026-10-14): la pestana y la cabecera de grupo
 // cuentan TODOS los productos de la categoria (lo mismo que la lista). El
 // anillo solo tiene los que tienen foto, asi que cuando faltan fotos en la
-// categoria el rotulo lo aclara: "4 de 12 con foto" (Mascotas: 16 en la
-// pestana, 12 en el anillo). Si todos tienen foto: "4 de 9".
+// categoria el rotulo lo aclara: "1 de 22 con foto" (Mascotas: 24 en la
+// pestana, 22 en el anillo; sin tope desde 2026-11-07). Si todos tienen foto: "4 de 9".
 import { alCambiarVista, alEntrarEnVista } from './router';
 import { indexar, prepararConsulta, buscar, type Indexado } from './busqueda';
 import { movimientoPermitido, token } from './animacion/movimiento';
@@ -167,7 +167,7 @@ function textoPosicion(larga: boolean, indice: number, total: number, cat: strin
 /** Atributo `sizes` de las tarjetas del anillo (VistaProductos.astro). */
 export const sizesAnillo = (): string | undefined => datos?.sizesAnillo;
 
-/** Productos del anillo de una categoria (con imagen, tope de 12), en orden. Solo lectura. */
+/** Productos del anillo de una categoria (con imagen, todos), en orden. Solo lectura. */
 export function productosDelAnillo(cat: string): readonly ProductoDatos[] {
   return anillo.get(cat) ?? [];
 }
@@ -732,7 +732,7 @@ function arrancar() {
     totalPorCategoria.set(p.categoria, (totalPorCategoria.get(p.categoria) ?? 0) + 1);
     if (p.imagen) {
       const l = anillo.get(p.categoria) ?? [];
-      if (l.length < 12) l.push(p); // tope duro de 12 en escena
+      l.push(p); // sin tope: el anillo lleva todos los productos con foto (el radio crece con N)
       anillo.set(p.categoria, l);
     }
   }

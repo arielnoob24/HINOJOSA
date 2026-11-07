@@ -16,7 +16,7 @@
 // el teclado y la region aria-live ya los gestiona catalogo.ts; este modulo
 // pinta, gira y decide CUANDO se ve cada cambio (C1-C8, PLAN.md vista 3):
 //   C1 cache de items por categoria (se desmontan, no se destruyen; nunca
-//      mas de 12 en escena), precarga con img.decode() (tope 250 ms desde
+//      todos los productos con foto de la categoria; el radio crece con N), precarga con img.decode() (tope 250 ms desde
 //      el clic) y fundido de 200 ms de cada imagen que llega tarde. NUNCA en
 //      el primer montaje (regla M5, ver carrusel-carga.ts).
 //   C2 rotulo con salida y entrada en el sentido del giro.
@@ -59,6 +59,8 @@ interface Item {
   sombra: HTMLElement;
   img: HTMLImageElement;
   error: boolean;
+  /** Oculta por lejana (render). */
+  oculto?: boolean;
   /** Asigna srcset/src (se difiere en los laterales del primer montaje). */
   cargar: () => void;
 }
@@ -256,6 +258,14 @@ function render() {
     const d = (1 + c) / 2; // 1 al frente, 0 detras
     let t = Math.abs(modulo(k - pos.p, n));
     if (t > n / 2) t = n - t; // distancia al frente en pasos
+    // Anillos grandes (N > 12, Mascotas): las tarjetas a mas de 6 pasos
+    // quedan detras y no se pintan (visibility); con N <= 12 t <= 6, sin cambio.
+    const lejana = t > 6;
+    if (lejana !== it.oculto) {
+      it.oculto = lejana;
+      it.el.style.visibility = lejana ? 'hidden' : '';
+    }
+    if (lejana) continue;
     const rc = realce(t);
     const l = k === llegadaK ? llegada.l : 0;
     const base = rc.opacidad * fase.a;
