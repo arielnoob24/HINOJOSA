@@ -468,7 +468,7 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
                 return (
                   <li
                     data-producto-fila={p.id}
-                    data-busqueda={textoBusqueda([p.nombre, p.marca, p.presentacion, g.nombre], animalesDe(p))}
+                    data-busqueda={textoBusqueda([p.nombre, p.marca, p.etapa, p.presentacion, g.nombre], animalesDe(p))}
                   >
                     <button type="button" class="prod-fila" data-seleccionar-producto={p.id}>
                       <span class:list={['prod-mini', p.imagen && conFondo(p) && 'prod-mini-placa', !p.imagen && 'prod-mini-costal']} aria-hidden="true">
