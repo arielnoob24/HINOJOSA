@@ -386,35 +386,6 @@
       "destacado": false
     },
     {
-      "id": "procan-cachorros-adultos",
-      "categoria": "mascotas",
-      "animales": ["perro"],
-      "nombre": "Pro-Can cachorros y adultos",
-      "descripcion": "Para tu perro en cualquier etapa: hay opción para cachorros y para adultos.",
-      "marca": "Pro-Can",
-      "etapa": "Cachorros y adultos",
-      "presentacion": null,
-      "precio": 2.25,
-      "precioDesde": true,
-      "imagen": null,
-      "destacado": false
-    },
-    {
-      "id": "nutrapro-perros",
-      "categoria": "mascotas",
-      "animales": ["perro"],
-      "nombre": "NutraPro cachorro y adulto",
-      "descripcion": "Comida completa para tu perro en dos tamaños de bolsa.",
-      "marca": "NutraPro",
-      "etapa": "Cachorros y adultos",
-      "medida": "2 kg y 4 kg",
-      "presentacion": null,
-      "precio": 8.0,
-      "precioDesde": true,
-      "imagen": null,
-      "destacado": false
-    },
-    {
       "id": "cani-premium",
       "categoria": "mascotas",
       "animales": ["perro"],
