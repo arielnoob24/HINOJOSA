@@ -190,6 +190,18 @@ const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
     background: rgb(255 255 255 / 0.9);
     padding: 0.875rem;
   }
+  /* Sin atributos: fuera (display:grid anularia el [hidden] del navegador) */
+  .ficha-atributos[hidden] {
+    display: none;
+  }
+  /* Un solo atributo: capsula compacta a la izquierda, al ancho del contenido */
+  .ficha-atributos[data-n='1'] {
+    width: fit-content;
+    max-width: 100%;
+    grid-template-columns: auto;
+    justify-self: start;
+    align-self: flex-start;
+  }
   .ficha-atributos :global(.ficha-attr) {
     display: flex;
     min-width: 0;

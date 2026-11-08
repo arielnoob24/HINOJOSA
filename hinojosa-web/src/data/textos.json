@@ -113,7 +113,7 @@
       "destino": "#visitanos"
     },
     "prefijoDesde": "Desde",
-    "sinPrecio": "Consulta precio",
+    "sinPrecio": "$",
     "tablaTilapia": {
       "titulo": "Proteína por etapa de la tilapia",
       "tituloCorto": "Proteína por etapa",
