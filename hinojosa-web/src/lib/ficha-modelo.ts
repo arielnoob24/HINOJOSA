@@ -56,7 +56,7 @@ export interface FichaConfig {
 
 export const TEXTOS_FICHA_POR_DEFECTO: FichaConfig['textos'] = {
   marca: 'Marca',
-  sabor: 'Sabor / receta',
+  sabor: 'Sabor',
   medida: 'Medida',
   presentacion: 'Detalle',
   etapa: 'Etapa',
@@ -155,6 +155,26 @@ function accionDe(p: FichaProducto, cfg: FichaConfig): FichaAccion | null {
 /** Sabores con comas naturales (sin punto y coma). */
 const sabor = (v: string | null | undefined) => (typeof v === 'string' ? v.replace(/\s*;\s*/g, ', ') : v);
 
+/**
+ * Etiqueta y valor segun el tipo de dato, para que no haya rotulos
+ * incongruentes ("Sabor / receta" en una arena o un comedero).
+ */
+function sabores(valor: string, base: string): { etiqueta: string; valor: string } {
+  const aroma = /^aroma(?:\s+(?:de|a))?\s+/i.exec(valor);
+  if (aroma) {
+    const resto = valor.slice(aroma[0].length);
+    return { etiqueta: 'Aroma', valor: resto.charAt(0).toUpperCase() + resto.slice(1) };
+  }
+  return { etiqueta: base, valor };
+}
+
+function presentaciones(valor: string, base: string): string {
+  if (/^incluye\b|\bregalo\b/i.test(valor)) return 'Incluye';
+  if (/^(razas?|para|ideal)\b/i.test(valor)) return 'Ideal para';
+  if (/^\d+([.,]\d+)?\s*(kg|g|gr|lb|l|lt|ml|unid|u)\b/i.test(valor)) return 'Presentación';
+  return base;
+}
+
 export function modeloFicha(p: FichaProducto, cfg: FichaConfig): FichaModelo {
   const t = { ...TEXTOS_FICHA_POR_DEFECTO, ...cfg.textos };
 
@@ -180,7 +200,9 @@ export function modeloFicha(p: FichaProducto, cfg: FichaConfig): FichaModelo {
     const n = normalizar(valor);
     if (vistos.has(n)) continue; // dos campos con el mismo texto: uno solo
     vistos.add(n);
-    atributos.push({ clave, etiqueta, valor });
+    if (clave === 'sabor') atributos.push({ clave, ...sabores(valor, etiqueta) });
+    else if (clave === 'presentacion') atributos.push({ clave, etiqueta: presentaciones(valor, etiqueta), valor });
+    else atributos.push({ clave, etiqueta, valor });
   }
 
   return {

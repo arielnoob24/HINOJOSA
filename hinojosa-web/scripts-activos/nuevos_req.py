@@ -80,6 +80,12 @@ IGNORAR = {"diferentes tipos de semillas.jpg"}
 # genera un producto propio).
 # bebedero.png traia un damero "falso transparente" pintado; el usuario le quito el
 # fondo en Paint, pero lo guardo en JPG, asi que llega sobre blanco puro.
+# Fotos con dos productos: se parten por la columna mas vacia (alfa) entre ambos.
+# Valor: slugs (izquierda, derecha). El original no genera producto propio.
+DIVIDIR = {
+    "canimentos-medianas-grandes.png": ("canimentos-adultos", "canimentos-cachorros"),
+}
+
 REEMPLAZOS = {
     "bebedero.png": "bebedero_quitado_disque.jpg",
 }
@@ -181,6 +187,20 @@ def maestros(tmp: Path) -> tuple[list[dict], list[str]]:
                 continue
             s = slug(f.name)
             im = Image.open(f)
+            if f.name in DIVIDIR:
+                rgba = im.convert("RGBA")
+                a = np.asarray(rgba.getchannel("A")).sum(axis=0)
+                w = rgba.width
+                corte = int(np.argmin(a[int(w * .4):int(w * .6)])) + int(w * .4)
+                for sub, caja in zip(DIVIDIR[f.name], ((0, corte), (corte, w))):
+                    parte = recortar_contenido(rgba.crop((caja[0], 0, caja[1], rgba.height)))
+                    m = tmp / cat / f"{sub}.png"
+                    m.parent.mkdir(parents=True, exist_ok=True)
+                    parte.save(m, compress_level=1)
+                    dest = PUB / "img" / "productos" / cat
+                    for suf, alto, avif in (("", 800, True), ("-400", 400, True), ("-thumb", 160, False), ("-thumb-80", 80, False)):
+                        trabajos.append({"in": str(m), "out": str(dest / f"{sub}{suf}"), "alto": alto, "avif": avif})
+                continue
             if f.name in REEMPLAZOS:
                 im = quitar_fondo_blanco(np.asarray(Image.open(f.with_name(REEMPLAZOS[f.name])).convert("RGB")))
             elif f.name in SOBRE_BLANCO:

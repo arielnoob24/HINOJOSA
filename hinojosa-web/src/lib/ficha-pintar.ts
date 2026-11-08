@@ -55,7 +55,7 @@ export function pintarModelo(raiz: HTMLElement, m: FichaModelo, p: FichaProducto
   // ---- Atributos (grilla de tarjetas)
   const lista = q(raiz, '[data-f-atributos]');
   if (lista) {
-    // Lista de filas etiqueta | valor: Marca y Medida primero, luego el resto
+    // Rejilla de 2 columnas (etiqueta sobre valor): Marca y Medida primero
     const peso = (c: string) => (c === 'marca' ? 0 : c === 'medida' ? 1 : 2);
     const ordenados = [...m.atributos].sort((x, y) => peso(x.clave) - peso(y.clave));
     lista.replaceChildren(

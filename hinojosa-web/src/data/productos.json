@@ -457,17 +457,31 @@
       "destacado": false
     },
     {
-      "id": "canimentos-medianas-grandes",
+      "id": "canimentos-adultos",
       "categoria": "mascotas",
       "animales": ["perro"],
-      "nombre": "Canimentos medianas y grandes",
-      "descripcion": "Para tu perro de raza mediana o grande, sea cachorro o adulto.",
+      "nombre": "Canimentos adultos medianas y grandes",
+      "descripcion": "Alimento para tu perro adulto de raza mediana o grande.",
       "marca": "Canimentos",
-      "etapa": "Cachorros y adultos",
+      "etapa": "Adultos",
       "presentacion": null,
       "precio": null,
       "precioDesde": false,
-      "imagen": "/img/productos/mascotas/canimentos-medianas-grandes.webp",
+      "imagen": "/img/productos/mascotas/canimentos-adultos.webp",
+      "destacado": false
+    },
+    {
+      "id": "canimentos-cachorros",
+      "categoria": "mascotas",
+      "animales": ["perro"],
+      "nombre": "Canimentos cachorros medianas y grandes",
+      "descripcion": "Alimento para tu cachorro de raza mediana o grande.",
+      "marca": "Canimentos",
+      "etapa": "Cachorros",
+      "presentacion": null,
+      "precio": null,
+      "precioDesde": false,
+      "imagen": "/img/productos/mascotas/canimentos-cachorros.webp",
       "destacado": false
     },
     {

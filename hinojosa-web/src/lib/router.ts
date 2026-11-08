@@ -253,34 +253,6 @@ export function alEntrarEnVista(nombre: Vista, cb: (d: DetalleVista | null) => v
 }
 
 // ---------------------------------------------------------------------
-// Teclado
-// ---------------------------------------------------------------------
-// Excluidos: campos de texto (rompian el buscador), selects, contenido
-// editable, [data-captura-flechas] y zonas que declaren sus teclas:
-//   data-teclas-propias          -> reserva flechas y AvPag/RePag
-//   data-teclas-propias="pagina" -> reserva solo AvPag/RePag (lista con scroll)
-function teclasReservadas(objetivo: EventTarget | null, esPagina: boolean): boolean {
-  const el = objetivo instanceof Element ? objetivo : null;
-  if (!el) return false;
-  // Regla 7 de vistas-hinojosa: campos de texto y [data-captura-flechas]
-  // (carrusel de Productos, mapa) gestionan sus propias flechas.
-  if (el.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [data-captura-flechas]')) return true;
-  const zona = el.closest<HTMLElement>('[data-teclas-propias]');
-  if (!zona) return false;
-  return zona.dataset.teclasPropias === 'pagina' ? esPagina : true;
-}
-
-function alTeclear(ev: KeyboardEvent) {
-  if (ev.defaultPrevented || ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey) return;
-  const avanza = ev.key === 'ArrowRight' || ev.key === 'PageDown';
-  const retrocede = ev.key === 'ArrowLeft' || ev.key === 'PageUp';
-  if (!avanza && !retrocede) return;
-  if (teclasReservadas(ev.target, ev.key === 'PageDown' || ev.key === 'PageUp')) return;
-  ev.preventDefault();
-  irRelativo(avanza ? 1 : -1);
-}
-
-// ---------------------------------------------------------------------
 // Arranque
 // ---------------------------------------------------------------------
 function arrancar() {
@@ -289,7 +261,6 @@ function arrancar() {
   desdeHash(true);
 
   window.addEventListener('hashchange', () => desdeHash());
-  window.addEventListener('keydown', alTeclear);
 
   // Pulsar el enlace de la vista que ya esta activa no cambia el hash:
   // devolver el foco a su titulo para que no parezca que no hizo nada.
