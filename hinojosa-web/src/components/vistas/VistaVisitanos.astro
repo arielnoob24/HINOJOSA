@@ -562,6 +562,8 @@ const trebol =
     justify-content: flex-start;
     gap: 0.75rem;
   }
+  /* Redes: circulos solidos con el color de cada marca, distintos del
+     boton de correo (traslucido). Icono blanco sobre el color de marca. */
   .vis-red {
     display: inline-flex;
     width: 2.75rem;
@@ -570,16 +572,35 @@ const trebol =
     aspect-ratio: 1 / 1;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgb(246 241 228 / 0.28);
+    border: 2px solid rgb(255 255 255 / 0.9);
     border-radius: 50%;
-    background: rgb(246 241 228 / 0.08);
-    color: var(--color-crema);
-    transition: background-color var(--duracion-hover) ease, border-color var(--duracion-hover) ease;
+    color: #fff;
+    box-shadow: 0 6px 14px -6px rgb(0 0 0 / 0.55);
+    transition: transform var(--duracion-hover) ease, box-shadow var(--duracion-hover) ease, filter var(--duracion-hover) ease;
+  }
+  .vis-red[data-contacto='facebook'] {
+    background: #1877f2;
+  }
+  .vis-red[data-contacto='tiktok'] {
+    background: #0b0b0b;
+    box-shadow: 2px 2px 0 #25f4ee, -2px -2px 0 #fe2c55, 0 6px 14px -6px rgb(0 0 0 / 0.55);
   }
   .vis-red:hover,
   .vis-red:focus-visible {
-    background: rgb(246 241 228 / 0.16);
-    border-color: rgb(246 241 228 / 0.5);
+    transform: translateY(-3px) scale(1.06);
+    filter: brightness(1.12);
+  }
+  .vis-red[data-contacto='facebook']:hover {
+    box-shadow: 0 10px 18px -6px rgb(24 119 242 / 0.8);
+  }
+  .vis-red[data-contacto='tiktok']:hover {
+    box-shadow: 3px 3px 0 #25f4ee, -3px -3px 0 #fe2c55, 0 10px 18px -6px rgb(0 0 0 / 0.7);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vis-red:hover,
+    .vis-red:focus-visible {
+      transform: none;
+    }
   }
   .vis-pie {
     --color-foco: var(--color-foco-oscuro);
