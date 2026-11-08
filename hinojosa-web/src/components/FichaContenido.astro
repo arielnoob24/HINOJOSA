@@ -256,7 +256,7 @@ const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: auto; /* abajo del panel, sin importar cuanto contenido haya */
+    margin-top: 0.25rem; /* distancia natural al ultimo dato; la tarjeta se ajusta al contenido */
     border-radius: var(--radius-boton);
     background: var(--color-maiz);
     padding: 0.5rem 1.125rem;
@@ -314,7 +314,9 @@ const heredado = (nombre: string) => (panel ? { [nombre]: '' } : {});
   .ficha-contenido--panel .ficha-atributos :global(dd) {
     font-size: 0.875rem;
   }
+  /* ~24 px entre el ultimo dato y el boton (hueco + margen) */
   .ficha-contenido--panel .ficha-cta {
+    margin-top: max(0px, calc(1.5rem - var(--f-hueco)));
     font-size: clamp(0.9375rem, 2.4dvh, 1.0625rem);
   }
   /* Pantallas bajas (1366x650): todo algo mas compacto para no scrollear */

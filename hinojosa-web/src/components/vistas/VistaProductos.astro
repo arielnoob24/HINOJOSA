@@ -2042,6 +2042,19 @@ const datosJson = JSON.stringify(datos).replace(/</g, '\\u003c');
       container: tarjeta / inline-size;
     }
   }
+  /* Tarjeta compacta (>= 48rem): ancho maximo 380 px y, en Detalle, alto
+     segun el contenido (sin hueco vacio antes del boton). La Lista conserva
+     el alto completo de la columna y su scroll propio. */
+  @media (min-width: 48rem) {
+    :global(html.js) .prod-panel {
+      width: 100%;
+      max-width: 23.75rem;
+      justify-self: start;
+    }
+    :global(html.js) .prod-panel[data-pestana='detalle']:not([data-cruzando]) {
+      align-self: start;
+    }
+  }
   @container tarjeta (max-width: 22rem) {
     .prod-franja {
       flex-wrap: wrap;
