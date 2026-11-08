@@ -33,6 +33,7 @@ import {
   coordenadasConfirmadas,
   enlaceWhatsapp,
   enlaceCorreo,
+  telefonosConfirmados,
 } from '../../lib/negocio';
 
 const t = textos.visitanos;
@@ -47,6 +48,8 @@ const whatsapp = enlaceWhatsapp();
 const correo = datoConfirmado('correo');
 const facebook = datoConfirmado('facebook');
 const tiktok = datoConfirmado('tiktok');
+// Telefonos como texto para copiar (sin enlace tel:, no abre la llamada)
+const telefonos = telefonosConfirmados();
 
 // Canales en el orden de la tarjeta. Los confirmados son enlaces reales;
 // los pendientes solo aportan su icono (en gris) a la linea agrupada.
@@ -190,6 +193,14 @@ const trebol =
             )}
           </dd>
         </div>
+        {telefonos.length > 0 && (
+          <div class="vis-dato-telefono">
+            <dt>{t.etiquetaTelefono}</dt>
+            <dd class="vis-telefonos">
+              {telefonos.map((tel) => <span class="vis-telefono">{tel.texto}</span>)}
+            </dd>
+          </div>
+        )}
       </dl>
 
       {confirmados.length > 0 && (
@@ -466,6 +477,17 @@ const trebol =
     flex: 0 0 auto;
     margin-top: 0.1875rem;
     color: var(--color-maiz);
+  }
+  /* Telefonos: texto plano seleccionable de un toque para copiar */
+  .vis-telefonos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .vis-telefono {
+    -webkit-user-select: all;
+    user-select: all;
   }
   .vis-horas {
     display: grid;
