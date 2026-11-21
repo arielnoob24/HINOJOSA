@@ -6,15 +6,18 @@
 //
 // Animaciones (todas se omiten con prefers-reduced-motion):
 //   - vuelo de entrada: de una vista amplia de Tena hasta la calle (flyTo)
+//   - Canela (sprite de carrera) corre por la Av. del Chofer desde la 15 de
+//     Noviembre hasta el local, dibujando la ruta, y se sienta con un globo
 //   - el pin cae con rebote (global.css, entradas.ts) y emite un pulso
-//   - la etiqueta con nombre y direccion sube al terminar el vuelo
+//   - la etiqueta con nombre y direccion sube cuando Canela llega
 //   - boton "Volver al local": vuelo de regreso tras explorar el mapa
 //
 // Ganchos: [data-mapa] (data-lat, data-lng, data-zoom, data-nombre,
-// data-direccion, data-texto-recentrar, data-texto-terminal),
+// data-direccion, data-texto-recentrar, data-texto-inicio, data-texto-guia),
 // [data-mapa-estado]. El contenedor lleva data-captura-flechas: con el foco
 // en el mapa, las flechas lo desplazan y el router no cambia de vista.
 import { alEntrarEnVista } from './router';
+import { ruta as urlRuta } from './ruta';
 // ?url: Vite emite leaflet.css como archivo aparte (con inlineStylesheets
 // 'always', un import() de CSS se quedaba sin archivo en dist/).
 import urlCssLeaflet from 'leaflet/dist/leaflet.css?url';
@@ -50,8 +53,7 @@ async function cargar() {
     contenedor.append(lienzo);
 
     const reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const zoomFinal = Number(contenedor.dataset.zoom) || 18;
-    const escritorio = () => window.matchMedia('(min-width: 48rem)').matches;
+    const zoomFinal = Number(contenedor.dataset.zoom) || 19;
     const pos: [number, number] = [lat, lng];
 
     const mapa = L.map(lienzo, {
@@ -68,12 +70,10 @@ async function cargar() {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(mapa);
 
-    // Centro del encuadre: en escritorio la tarjeta tapa la mitad izquierda,
-    // asi que el local se coloca a la derecha (el centro se corre a la izquierda).
-    const centroPara = (zoom: number): L.LatLng => {
-      const p = mapa.project(pos, zoom);
-      return mapa.unproject(escritorio() ? p.subtract([200, 0]) : p, zoom);
-    };
+    // Encuadre: el mapa ya es un cuadro propio (la tarjeta no lo tapa), asi
+    // que el local va al centro; se desplaza un poco para dejar sitio a la
+    // etiqueta (izquierda) y a Canela con su globo (arriba a la derecha).
+    const centroPara = (zoom: number): L.LatLng => mapa.unproject(mapa.project(pos, zoom).add([40, -30]), zoom);
     mapa.setView(centroPara(zoomFinal), zoomFinal, { animate: false });
 
     const pin = L.divIcon({
@@ -86,27 +86,91 @@ async function cargar() {
     });
     const marcador = L.marker(pos, { icon: pin, keyboard: false, title: contenedor.dataset.nombre ?? '' }).addTo(mapa);
 
-    // Etiqueta con nombre y direccion: aparece al terminar el vuelo
+    // Etiqueta con nombre y direccion, a la izquierda del pin (Canela se sienta a la derecha)
     const direccion = contenedor.dataset.direccion ?? '';
-    marcador.bindTooltip(
-      `<strong>${escapar(contenedor.dataset.nombre ?? '')}</strong>${direccion ? `<span>${escapar(direccion)}</span>` : ''}`,
-      { permanent: true, direction: 'top', offset: [0, -54], className: 'mapa-etiqueta' },
-    );
+    // Cuadro estrecho (movil): sin etiqueta, la direccion esta en la tarjeta de abajo
+    if (contenedor.clientWidth >= 600) {
+      marcador.bindTooltip(
+        `<strong>${escapar(contenedor.dataset.nombre ?? '')}</strong>${direccion ? `<span>${escapar(direccion)}</span>` : ''}`,
+        { permanent: true, direction: 'left', offset: [-20, -30], className: 'mapa-etiqueta' },
+      );
+    }
     const mostrarEtiqueta = () => marcador.getTooltip()?.getElement()?.classList.add('mapa-etiqueta-visible');
 
-    // Punto de referencia: Terminal Terrestre de Tena (coordenadas de OpenStreetMap)
-    L.marker([-0.99912, -77.81241], {
+    // ---- Ruta y guia: Canela corre desde la Av. 15 de Noviembre hasta el local ----
+    // Puntos medidos sobre el mapa a zoom 19 (~0,3 m/px) respecto al pin.
+    const PX = 2.68e-6; // grados por pixel a zoom 19 en Tena
+    const desde = (dx: number, dy: number): [number, number] => [lat - dy * PX, lng + dx * PX];
+    const recorrido: [number, number][] = [desde(122, -26), desde(80, -20), desde(46, -14)]; // inicio, medio, parada
+    const inicio = recorrido[0];
+    const parada = recorrido[recorrido.length - 1];
+
+    L.marker(inicio, {
       icon: L.divIcon({ className: 'mapa-ref', html: '<span class="mapa-ref-punto"></span>', iconSize: [14, 14], iconAnchor: [7, 7] }),
       keyboard: false,
       interactive: false,
     })
       .addTo(mapa)
-      .bindTooltip(contenedor.dataset.textoTerminal ?? 'Terminal Terrestre', {
+      .bindTooltip(contenedor.dataset.textoInicio ?? 'Av. 15 de Noviembre', {
         permanent: true,
-        direction: 'right',
-        offset: [8, 0],
+        direction: 'bottom',
+        offset: [0, 8],
         className: 'mapa-ref-etiqueta',
       });
+
+    const linea = L.polyline([], {
+      color: '#1b4d2b',
+      weight: 5,
+      opacity: 0.85,
+      dashArray: '1 10',
+      lineCap: 'round',
+      className: 'mapa-ruta',
+    }).addTo(mapa);
+
+    const urlCorre = urlRuta('/img/canela/carrera-izq.webp');
+    const urlSienta = urlRuta('/img/canela/canela-franja.webp');
+    const guia = L.marker(inicio, {
+      icon: L.divIcon({
+        className: 'mapa-canela',
+        html:
+          `<span class="mapa-canela-corre" style="background-image:url(${urlCorre})"></span>` +
+          `<img class="mapa-canela-sienta" src="${urlSienta}" width="60" height="78" alt="" decoding="async" />` +
+          `<span class="mapa-canela-globo">${escapar(contenedor.dataset.textoGuia ?? '¡Por aquí!')}</span>`,
+        iconSize: [97, 80],
+        iconAnchor: [48, 76],
+      }),
+      keyboard: false,
+      interactive: false,
+      zIndexOffset: 500,
+    }).addTo(mapa);
+
+    const llegada = () => {
+      guia.getElement()?.classList.add('mapa-canela-llego');
+      mostrarEtiqueta();
+    };
+    const correr = () => {
+      guia.getElement()?.classList.add('mapa-canela-en-marcha');
+      const duracion = 3400;
+      const t0 = performance.now();
+      const tramos = recorrido.slice(1).map((p, i) => ({ a: recorrido[i], b: p }));
+      const paso = (ahora: number) => {
+        const k = Math.min(1, (ahora - t0) / duracion);
+        const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; // ease-in-out
+        const f = e * tramos.length;
+        const i = Math.min(tramos.length - 1, Math.floor(f));
+        const u = f - i;
+        const { a, b } = tramos[i];
+        const actual: [number, number] = [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+        guia.setLatLng(actual);
+        linea.setLatLngs([...recorrido.slice(0, i + 1), actual]);
+        if (k < 1) requestAnimationFrame(paso);
+        else {
+          guia.getElement()?.classList.remove('mapa-canela-en-marcha');
+          llegada();
+        }
+      };
+      requestAnimationFrame(paso);
+    };
 
     // Boton "Volver al local": vuelo suave de regreso
     const Recentrar = L.Control.extend({
@@ -124,14 +188,16 @@ async function cargar() {
     });
     new Recentrar({ position: 'bottomright' }).addTo(mapa);
 
-    // Entrada: vista amplia de Tena y vuelo hasta la calle
+    // Entrada: vista amplia de Tena, vuelo hasta la calle y Canela guia al local
     if (reducido) {
-      mostrarEtiqueta();
+      guia.setLatLng(parada);
+      linea.setLatLngs(recorrido);
+      llegada();
     } else {
-      const zInicial = 15;
+      const zInicial = 16;
       mapa.setView(centroPara(zInicial), zInicial, { animate: false });
-      setTimeout(mostrarEtiqueta, 450 + 2400 + 100); // fin del vuelo
-      setTimeout(() => mapa.flyTo(centroPara(zoomFinal), zoomFinal, { duration: 2.4, easeLinearity: 0.2 }), 450);
+      setTimeout(() => mapa.flyTo(centroPara(zoomFinal), zoomFinal, { duration: 2.2, easeLinearity: 0.2 }), 450);
+      setTimeout(correr, 450 + 2200 + 250); // al terminar el vuelo
     }
 
     contenedor.setAttribute('data-mapa-listo', '');
