@@ -110,6 +110,9 @@ const trebol =
       data-lat={coords ? String(coords.lat) : ''}
       data-lng={coords ? String(coords.lng) : ''}
       data-nombre={negocio.nombre}
+      data-direccion={direccion ?? ''}
+      data-texto-recentrar={t.mapaRecentrar}
+      data-texto-terminal={t.mapaTerminal}
     >
       {!coords && (
         <svg class="vis-marca-agua" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path fill="currentColor" d={trebol} /></svg>

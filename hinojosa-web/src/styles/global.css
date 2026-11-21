@@ -408,3 +408,136 @@ html[data-router] .vista[data-entrando] [data-entra] {
     transform: none;
   }
 }
+
+/* ---------- Mapa de Visitanos: pulso, etiqueta, referencia y boton ---------- */
+.mapa-pin {
+  overflow: visible;
+}
+.mapa-pin-svg {
+  position: relative;
+  display: block;
+  filter: drop-shadow(0 3px 3px rgb(20 48 29 / 0.3));
+  transition: transform 220ms var(--ease-rebote);
+}
+.mapa-pin:hover .mapa-pin-svg {
+  transform: translateY(-4px) scale(1.06);
+}
+.mapa-pulso {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0 0 -1.375rem -1.375rem;
+  border: 2px solid var(--color-maiz);
+  border-radius: 50%;
+  background: rgb(242 184 35 / 0.28);
+  opacity: 0;
+  pointer-events: none;
+}
+.leaflet-tooltip.mapa-etiqueta {
+  display: grid;
+  gap: 0.125rem;
+  border: 0;
+  border-radius: var(--radius-tarjeta);
+  background: var(--color-bosque);
+  padding: 0.5rem 0.75rem;
+  font-family: inherit;
+  font-size: var(--text-chico);
+  line-height: 1.25;
+  color: var(--color-blanco);
+  text-align: center;
+  width: max-content;
+  max-width: 15rem;
+  white-space: normal;
+  box-shadow: var(--shadow-flotante);
+  opacity: 0;
+  pointer-events: none;
+}
+.leaflet-tooltip-top.mapa-etiqueta::before {
+  border-top-color: var(--color-bosque);
+}
+.mapa-etiqueta strong {
+  color: var(--color-maiz);
+  font-weight: 800;
+}
+.leaflet-tooltip.mapa-etiqueta.mapa-etiqueta-visible {
+  opacity: 1;
+  animation: mapa-etiqueta-sube 420ms var(--ease-rebote) both;
+}
+.mapa-ref-punto {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 3px solid var(--color-blanco);
+  border-radius: 50%;
+  background: var(--color-bosque);
+  box-shadow: 0 1px 4px rgb(20 48 29 / 0.4);
+}
+.leaflet-tooltip.mapa-ref-etiqueta {
+  border: 0;
+  background: rgb(255 255 255 / 0.92);
+  padding: 0.125rem 0.5rem;
+  font-family: inherit;
+  font-size: var(--text-chico);
+  font-weight: 700;
+  color: var(--color-bosque);
+  box-shadow: none;
+}
+.leaflet-tooltip-right.mapa-ref-etiqueta::before {
+  display: none;
+}
+.mapa-recentrar {
+  margin: 0 0.75rem 1.75rem 0;
+  min-height: 2.75rem;
+  cursor: pointer;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: var(--color-bosque);
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-size: var(--text-chico);
+  font-weight: 800;
+  color: var(--color-blanco);
+  box-shadow: var(--shadow-flotante);
+  transition: background-color 160ms, transform 160ms var(--ease-rebote);
+}
+.mapa-recentrar:hover {
+  background: var(--color-bosque-noche);
+  transform: translateY(-2px);
+}
+.mapa-recentrar:focus-visible {
+  outline: 3px solid var(--color-maiz);
+  outline-offset: 2px;
+}
+@keyframes mapa-etiqueta-sube {
+  /* translate y scale sueltos: Leaflet coloca la etiqueta con transform */
+  from {
+    opacity: 0;
+    translate: 0 8px;
+    scale: 0.92;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+@keyframes mapa-pulso {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-mapa-listo] .mapa-pulso {
+    animation: mapa-pulso 2.4s ease-out 1.2s infinite;
+  }
+  [data-mapa-listo] .mapa-pulso-2 {
+    animation-delay: 2.4s;
+  }
+}

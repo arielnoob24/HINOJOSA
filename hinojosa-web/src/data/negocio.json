@@ -75,8 +75,9 @@
       "nota": "Confirmada por el usuario el 2026-10-16 (en los afiches aparecía \"Lerson\")."
     },
     "ciudad": {
-      "valor": null,
-      "confirmado": false
+      "valor": "Tena",
+      "confirmado": true,
+      "nota": "Dada por el usuario el 2026-11-21 (Tena, Napo, Ecuador), con la captura del mapa en Nuevos Req/mapa."
     },
     "pais": {
       "valor": "Ecuador",
@@ -121,21 +122,22 @@
       "nota": "El usuario dio el nombre de la página (2026-10-16), no su enlace. Falta la URL (https://www.facebook.com/…) para publicar el botón."
     },
     "googleMaps": {
-      "valor": null,
-      "confirmado": false
+      "valor": "https://www.google.com/maps/search/?api=1&query=-0.99975,-77.81223",
+      "confirmado": true,
+      "nota": "Enlace construido con las coordenadas de abajo (2026-11-21)."
     },
     "coordenadas": {
-      "lat": null,
-      "lng": null,
-      "confirmado": false
+      "lat": -0.99975,
+      "lng": -77.81223,
+      "confirmado": true,
+      "nota": "2026-11-21: tomadas de la captura del usuario (Nuevos Req/mapa): pin rojo sobre Av. del Chofer, ~55 m al oeste de la Av. 15 de Noviembre, junto a la calle Rubén Lerzon. Aproximadas (±15 m); afinar con el punto exacto de Google Maps si la dueña lo da."
     }
   },
   "pendientes": [
-    "Ciudad",
     "Referencias para llegar (\"frente a…\", \"a dos cuadras de…\")",
     "WhatsApp (cuál de los dos teléfonos, si alguno, lo tiene)",
     "Horario de atención (días y horas)",
     "Enlace (URL) de la página de Facebook \"@Comercial Hinojosa\"",
-    "Enlace de Google Maps y coordenadas para el mapa"
+    "Punto exacto de Google Maps (las coordenadas actuales son aproximadas)"
   ]
 }
