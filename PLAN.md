@@ -1,6 +1,6 @@
 # Plan del proyecto: Sitio web de Comercial Hinojosa
 
-> Página publicitaria estática **manejada por vistas** (4 pantallas sin scroll de página desde 2026-10-16), con carrusel 3D de productos, imágenes animadas y video. **Rama de trabajo: `HinoV2`** (igual a `main`; `Ariel` ya se fusionó y no se usa). Rediseño vigente: sección 0-C; en móvil manda además la sección 0-D; **el panel oculto de administración de productos está en la sección 0-E (bloque 29)**. **Publicada desde el 2026-10-17 en https://arielnoob24.github.io/HINOJOSA/** (cada push a `main` publica; `main` también recibe commits `Panel: …` del Worker: traer `origin/main` antes de empujar). Estado vivo: `hinojosa-web/docs/handoff.md`.
+> Página publicitaria estática **manejada por vistas** (4 pantallas sin scroll de página desde 2026-10-16), con carrusel 3D de productos, imágenes animadas y video. **Rama de trabajo: `HinoV2`** (igual a `main`; `Ariel` ya se fusionó y no se usa). Rediseño vigente: sección 0-C; en móvil manda además la sección 0-D; **el panel oculto de administración de productos está en la sección 0-E (bloque 29)**; **el mapa de Visítanos con Canela guía es el bloque 30 (2026-11-21, sección 0-F)**. **Publicada desde el 2026-10-17 en https://arielnoob24.github.io/HINOJOSA/** (cada push a `main` publica; `main` también recibe commits `Panel: …` del Worker: traer `origin/main` antes de empujar). Estado vivo: `hinojosa-web/docs/handoff.md`.
 > Negocio: **Comercial Hinojosa** · Lema: **"Nutrición que da vida"** · Giro: venta de balanceados, alimentos y productos para animales.
 
 **Orden de precedencia:** sección 0-B (decisiones de la auditoría, 2026-10-13) → sección 0 (activos del cliente, 2026-10-12) → resto del plan. Detalle de cada hallazgo en [`auditoria.md`](auditoria.md); los códigos (I1, N1, P1, C1…) remiten a ese archivo.
@@ -214,6 +214,21 @@ Worker `hinojosa` en `https://hinojosa.mjkpqnx.workers.dev`. Secretos: `GITHUB_T
 - **23:** la contraseña se pierde o se filtra → se cambia en Cloudflare sin tocar código; mínimo 12 caracteres.
 - **24:** el freno de intentos del Worker es por instancia (mejor esfuerzo); la defensa de fondo es la contraseña larga.
 - **25:** un guardado por error publica de inmediato → el historial de Git permite revertir el commit `Panel: …`.
+
+---
+
+## 0-F. Mapa de Visítanos con Canela guía (2026-11-21) — bloque 30
+
+**Hecho y publicado** (`4a6888a`, `7603ca5`, `58bb112`; detalle técnico y verificación en `hinojosa-web/docs/handoff.md`, «Novedades del 2026-11-21»).
+
+| Pieza | Decisión |
+|---|---|
+| Ubicación | Tena (Napo, Ecuador), Av. del Chofer, ~55 m al oeste de la Av. 15 de Noviembre (junto a Rubén Lerzon). Coordenadas **-0.99975, -77.81223**, **aproximadas** (de la captura del usuario en `Nuevos Req/mapa/`); falta el punto exacto de Google Maps |
+| Forma | Mapa **en cuadro** (marco crema, esquinas redondeadas) junto a la tarjeta en escritorio y encima en móvil; ya no es un fondo a sangre. Zoom 19 |
+| Movimiento | Vuelo de entrada de Tena a la calle → **Canela saluda** («¡Hola! Estamos en la Av. 15 de Noviembre, en el TIA») → **corre** por la Av. del Chofer dibujando la ruta → **avisa al llegar** («¡Llegamos! Te esperamos»). Pin con pulso, etiqueta del local, botón «Volver al local». Globos breves que se retiran solos; sin movimiento con `prefers-reduced-motion` |
+| Contacto | Se quita el botón «Cómo llegar» de la tarjeta de Visítanos (redundante). El de **Inicio** (ancla a `#visitanos`) se mantiene. `googleMaps` sigue en los datos para el JSON-LD |
+
+Pendiente: punto exacto y ortografía de la calle (Larson/Lerzon), Lighthouse, axe, lector de pantalla y prueba en móvil real.
 
 ---
 
@@ -623,7 +638,7 @@ Mapa a pantalla completa con una tarjeta flotante opaca encima.
 └──────────────────────────────────────────────────────────┘
 ```
 
-- **Mapa** (Leaflet + OpenStreetMap), carga diferida al entrar en la vista, solo con coordenadas confirmadas.
+- **Mapa** (Leaflet + OpenStreetMap), carga diferida al entrar en la vista, solo con coordenadas confirmadas. **Activo desde 2026-11-21 (bloque 30, sección 0-F)**: en cuadro, zoom 19, con Canela como guía.
 - **Tarjeta flotante opaca:** nombre, dirección, ciudad, estado "Abierto ahora / Cerrado" (con palabra, no solo color), horario, **"Referencias"** para llegar (V4: el CTA se llama "Cómo llegar" y el dato "Referencias") y botones **Cómo llegar · WhatsApp · Llamar**, correo y Facebook.
 - **"Referencias" (qué va ahí):** indicaciones para llegar con puntos conocidos de la zona, en lenguaje de calle, como se da una dirección en Ecuador: 1–3 frases cortas, p. ej. "Frente a la gasolinera …", "A dos cuadras del mercado …", "Junto a la escuela …". Las da la dueña; no se inventan. En `negocio.json` van en `contacto.referenciasLlegar.valor` como lista de frases.
 - **Publicado desde 2026-10-16:** dirección "Av. del Chofer y Rubén Larson", **un botón "Llamar" por teléfono** (099 708 5015 y 098 928 1882, cada uno a lo ancho, `tel:+593…`) y el **correo** (`mailto:`). Siguen en la línea agrupada de pendientes: Cómo llegar (Maps), WhatsApp y Facebook (falta su enlace).
@@ -828,7 +843,7 @@ En `.claude/skills/` del proyecto:
 
 | Fase | Trabajo | Estado |
 |---|---|---|
-| 0. Datos | ✅ 2026-10-16: dirección, 2 teléfonos, correo, nombre de Facebook. ⏳ Faltan: ciudad, WhatsApp, horario, enlace de Facebook, coordenadas/Maps, referencias, precios, historia; logo vectorial y fotos | ⏳ Parcial |
+| 0. Datos | ✅ 2026-10-16: dirección, 2 teléfonos, correo, nombre de Facebook. ✅ 2026-11-21: ciudad (Tena) y coordenadas/Maps (aproximadas). ⏳ Faltan: WhatsApp, horario, enlace de Facebook, punto exacto de Maps, referencias, precios, historia; logo vectorial y fotos | ⏳ Parcial |
 | 1. Diseño | Guía de estilo con contrastes, retícula de las 5 vistas, storyboards | ✅ |
 | 2. Base | Astro, router con foco e `inert`, 5 vistas, catálogo desde JSON | ✅ |
 | 3. Activos | Derivados de `Nuevos Req/` | ✅ (faltan los de la sección 7) |
@@ -876,7 +891,7 @@ En `.claude/skills/` del proyecto:
 
 ## 12. Riesgos y decisiones abiertas
 
-1. **Datos faltantes:** ya hay dirección, teléfonos y correo (2026-10-16). Faltan ciudad, WhatsApp, horario, enlace de Facebook, coordenadas e historia. El usuario decidió publicar igualmente el 2026-10-17: los datos que faltan salen como "Muy pronto publicaremos este dato".
+1. **Datos faltantes:** ya hay dirección, teléfonos y correo (2026-10-16). Faltan WhatsApp, horario, enlace de Facebook, referencias e historia (ciudad y coordenadas llegaron el 2026-11-21; las coordenadas son aproximadas). El usuario decidió publicar igualmente el 2026-10-17: los datos que faltan salen como "Muy pronto publicaremos este dato".
 2. **Navegación solo por barra:** decidido no añadir rueda ni deslizamiento. Riesgo: usuarios que intenten bajar con la rueda. Vigilar en las pruebas con usuarios; si aparece el problema, reconsiderar los enlaces "Siguiente →".
 3. **LCP de Inicio con la vitrina:** si los costales superan al logo en área, cambia el LCP. Límite de 24dvh o inyección tras `load`.
 4. **Clips de Canela generados con IA:** riesgo de que la gorra, el collar o la cara cambien durante el giro, o de que Canela avance por el cuadro. Se generan varias variantes y se revisa con la lista de `flow/PROMPTS.md`. Si el giro no sale bien, alternativa: frenar → sprite del ciclo espejado con un fundido muy corto. Peso de los sprites: si superan 450 kB, se reduce la altura o los cuadros por segundo (12 fps es suficiente).
@@ -903,7 +918,7 @@ En `.claude/skills/` del proyecto:
 ## 13. Checklist
 
 - [x] Dirección, teléfonos y correo (2026-10-16)
-- [ ] Confirmar el resto de datos del negocio (sección 1): ciudad, WhatsApp, horario, enlace de Facebook, coordenadas, referencias, una línea de historia
+- [ ] Confirmar el resto de datos del negocio (sección 1): WhatsApp, horario, enlace de Facebook, punto exacto de Google Maps, referencias, una línea de historia
 - [ ] Obtener logo en vectorial
 - [ ] Fotos del local, la fachada y (opcional) el equipo
 - [ ] Aprobar los textos del sistema de títulos (sección 3) y las 3 razones de Nosotros (en propuesta)

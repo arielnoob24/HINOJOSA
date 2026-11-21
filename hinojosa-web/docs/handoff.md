@@ -1,8 +1,53 @@
 # Handoff: sitio web de Comercial Hinojosa
 
-Última actualización: **2026-11-07, tras publicar el bloque 29 (panel oculto de administración) y el bloque 28 (móvil)**. Rama de trabajo: **`HinoV2`** (igual a `main`); sitio publicado en https://arielnoob24.github.io/HINOJOSA/. **Lee solo "Estado actual (2026-11-07)"** y, debajo, "Estado del 2026-10-17" (base del rediseño 0-C, sigue vigente salvo lo que diga la sección nueva). Lo que hay bajo "Historial" es el registro de sesiones anteriores y no rige.
+Última actualización: **2026-11-21, tras publicar el bloque 30 (mapa de Visítanos con Canela guía)**; antes, 2026-11-07: bloque 29 (panel oculto) y bloque 28 (móvil). Rama de trabajo: **`HinoV2`** (igual a `main`); sitio publicado en https://arielnoob24.github.io/HINOJOSA/. **Lee primero "Novedades del 2026-11-21 (bloque 30)"** y después "Estado actual (2026-11-07)" y, debajo, "Estado del 2026-10-17" (base del rediseño 0-C, sigue vigente salvo lo que diga la sección nueva). Lo que hay bajo "Historial" es el registro de sesiones anteriores y no rige.
 
-## Estado actual (2026-11-07, publicado) — lo único que rige
+## Novedades del 2026-11-21 (bloque 30: mapa de Visítanos) — publicado
+
+**Rige junto con la sección «Estado actual (2026-11-07)» de abajo; si chocan, manda esta.**
+
+### En una línea
+Visítanos tiene ya un **mapa interactivo y animado** en un cuadro, con la ubicación del local en **Tena (Napo, Ecuador), Av. del Chofer, ~55 m al oeste de la Av. 15 de Noviembre**, y **Canela guía** al cliente desde la 15 de Noviembre hasta el local. Se quitó el botón «Cómo llegar» de la tarjeta (era redundante con el mapa).
+
+### Commits y publicación
+| Commit | Qué | Despliegue |
+|---|---|---|
+| `4a6888a` | Mapa activado: coordenadas, ciudad, enlace de Google Maps; vuelo de entrada, pin con pulso, etiqueta, botón «Volver al local» | verde (run `44920685348`) |
+| `7603ca5` | Mapa en cuadro, zoom 19, Canela corre por la calle dibujando la ruta | verde (run `44921287740`) |
+| `58bb112` | Canela saluda antes de correr y avisa al llegar (globos breves); se quita el botón «Cómo llegar» | falló 3 veces en el paso final (`No artifacts named "github-pages"`, desfase de GitHub: el artefacto sí se subía); **a la 4.ª repetición del mismo run (`44922041956`) quedó verde**. Si vuelve a pasar: `gh run rerun <id>` tras unos minutos |
+
+`main` = `HinoV2` = `origin/HinoV2` (último commit de código `58bb112`). `main` tenía además `801ac5c` («Panel: quita procan-prueba») y `91680c6` («Panel: edita afrecho-de-trigo»), traídos antes de empezar.
+
+### Datos nuevos en `negocio.json` (2026-11-21)
+- `ciudad`: **Tena** (confirmada por el usuario).
+- `coordenadas`: **-0.99975, -77.81223**, `confirmado: true`. **Son aproximadas (±15 m)**: salen de la captura del usuario (`Nuevos Req/mapa/photo_4902229569935445315_y.jpg`: pin rojo en la Av. del Chofer, junto a Rubén Lerzon). Si la dueña da el punto exacto de Google Maps, cambiar `lat`/`lng`; el recorrido de Canela y el enlace se miden respecto a esas coordenadas.
+- `googleMaps`: `https://www.google.com/maps/search/?api=1&query=-0.99975,-77.81223`. **Ya no hay botón** en Visítanos, pero `src/lib/seo.ts` lo sigue usando (JSON-LD), así que se queda.
+- `pendientes` actualizado: se quitaron «Ciudad» y «coordenadas»; queda «punto exacto de Google Maps».
+- La dirección confirmada dice «Av. del Chofer y Rubén **Larson**»; el mapa de la captura dice «Rubén **Lerzon**». No se cambió (pendiente de aclarar con la dueña).
+
+### Cómo está hecho
+- **`src/lib/mapa.ts`** (Leaflet + OpenStreetMap, carga diferida al entrar en `#visitanos`, solo con coordenadas): zoom 19 (máximo de los teselas); encuadre desplazado para dejar sitio al globo; pin con 2 anillos de pulso; etiqueta con nombre y dirección a la izquierda del pin (solo si el cuadro mide ≥ 600 px; en móvil se omite porque la dirección ya está en la tarjeta); botón «Volver al local» (`flyTo`).
+- **Secuencia de entrada** (sin `prefers-reduced-motion`): `flyTo` desde zoom 16 a 19 (2,2 s) → **Canela sentada en la 15 de Noviembre dice «¡Hola! Estamos en la Av. 15 de Noviembre, en el TIA»** (2,8 s) → **corre** (sprite `/img/canela/carrera-izq.webp`, 7 cuadros de 388×320; 3,4 s con ease-in-out) por una ruta punteada que se dibuja → se sienta junto al pin (`canela-franja.webp`) y dice **«¡Llegamos! Te esperamos»** (4,2 s) y aparece la etiqueta del local. Los globos se retiran solos, son `aria-hidden` y no capturan el puntero. Con reducir movimiento: Canela ya sentada junto al local, ruta completa y solo el mensaje de llegada.
+- **Ruta de Canela:** puntos fijos en píxeles respecto al pin a zoom 19 (`desde(dx, dy)` en `mapa.ts`, `PX = 2.68e-6` grados/px en Tena). Si se cambian las coordenadas del local, la ruta se mueve con ellas.
+- **Textos** en `textos.json` → `visitanos`: `mapaRecentrar`, `mapaInicioRuta` («Av. 15 de Noviembre»), `mapaGuiaSaludo`, `mapaGuiaLlegada`; `VistaVisitanos.astro` los pasa por `data-texto-*`. `ctaMaps` y `nombreAccesibleMaps` quedaron sin uso.
+- **CSS:** al final de `src/styles/global.css` (pulso, etiqueta, botón, Canela y globos; las animaciones usan `translate`/`scale` sueltos porque Leaflet posiciona con `transform`) y en `VistaVisitanos.astro` (clase `.vis-escena-cuadro`, solo con coordenadas: rejilla tarjeta | mapa en escritorio; cuadro de 16,5 rem arriba en móvil, marco crema, esquinas redondeadas). Sin coordenadas, el diseño anterior (huellas + «Muy pronto, el mapa») sigue intacto.
+- La caída del pin con rebote ya existía (`global.css`, `entradas.ts`).
+
+### Verificado y por verificar
+- Verificado en local (Playwright, 1366×768 y 390×780): sin errores de consola, globos y ruta bien colocados, `build` limpio; en producción: HTML con las coordenadas y el texto «Llegamos».
+- **No se ha hecho:** Lighthouse ni axe tras el bloque 30, prueba con lector de pantalla del mapa, prueba en un móvil real (el sprite de Canela y el `flyTo` pesan algo en gamas bajas), ni medir cuánto suma Leaflet en `#visitanos` (carga diferida, no debería afectar al LCP de Inicio).
+- **Aprendizaje de herramientas:** en este equipo los bloques `python - <<'EOF'` largos con comillas fallan en el shell de Claude Code; escribir el script en un archivo y ejecutarlo.
+
+### Próximas tareas (actualizadas)
+1. **Confirmar el punto exacto del local** con la dueña (Google Maps) y la ortografía de la calle (Larson/Lerzon).
+2. Cierre de QA del bloque 30 (Lighthouse, axe, lector de pantalla, móvil real) y del 29e (ver abajo).
+3. Datos que siguen pendientes: WhatsApp, horario, enlace de Facebook, referencias para llegar, historia.
+4. **`procan-prueba` ya se quitó** (`801ac5c`); sigue sin confirmar qué precios de prueba son reales (`camperito-pollos`, `semillas-hortalizas`). `afrecho-de-trigo` fue editado por la dueña (`91680c6`).
+5. Las demás tareas de «Estado actual (2026-11-07)» siguen abiertas.
+
+---
+
+## Estado actual (2026-11-07, publicado) — base vigente salvo lo que diga la sección de arriba
 
 ### En una línea
 El sitio está publicado con el rediseño 0-C (bloques 21–27), el **bloque 28 solo móvil** (hamburguesa, encabezado, fichas, Visítanos compacto; fusionado por el PR #2) y el **bloque 29: un panel oculto de administración** con el que la dueña edita precios, descripciones y demás campos de la tarjeta, agrega o quita productos y sube fotos, sin tocar código y sin servidor propio. Faltan los datos de la dueña, el cierre de QA y la guía de estilo al día.
