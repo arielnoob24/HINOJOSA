@@ -43,7 +43,6 @@ const ciudad = datoConfirmado('ciudad');
 const referencias = referenciasConfirmadas();
 const horario = horarioConfirmado();
 const coords = coordenadasConfirmadas();
-const maps = datoConfirmado('googleMaps');
 const whatsapp = enlaceWhatsapp();
 const telefonos = telefonosConfirmados();
 const correo = datoConfirmado('correo');
@@ -52,7 +51,6 @@ const facebook = datoConfirmado('facebook');
 // Canales en el orden de la tarjeta. Los confirmados son enlaces reales;
 // los pendientes solo aportan su icono (en gris) a la linea agrupada.
 const canales = [
-  { href: maps, texto: t.ctaMaps, nombre: t.nombreAccesibleMaps, icono: 'mapa', variante: 'cta' as const, ancho: true, pestana: true },
   { href: whatsapp, texto: t.ctaWhatsapp, nombre: t.nombreAccesibleWhatsapp, icono: 'whatsapp', variante: 'invertido' as const, ancho: false, pestana: true },
   // Un boton por telefono, con el numero a la vista (2026-10-16: dos)
   ...(telefonos.length
@@ -113,7 +111,8 @@ const trebol =
       data-direccion={direccion ?? ''}
       data-texto-recentrar={t.mapaRecentrar}
       data-texto-inicio={t.mapaInicioRuta}
-      data-texto-guia={t.mapaCanelaGuia}
+      data-texto-saludo={t.mapaGuiaSaludo}
+      data-texto-llegada={t.mapaGuiaLlegada}
     >
       {!coords && (
         <svg class="vis-marca-agua" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path fill="currentColor" d={trebol} /></svg>
@@ -674,7 +673,7 @@ const trebol =
   }
   @media (max-width: 47.999rem) {
     .vis-escena-cuadro .vis-mapa {
-      height: 15rem;
+      height: 16.5rem;
     }
   }
   @media (min-width: 48rem) {

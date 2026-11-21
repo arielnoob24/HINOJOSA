@@ -13,7 +13,7 @@
 //   - boton "Volver al local": vuelo de regreso tras explorar el mapa
 //
 // Ganchos: [data-mapa] (data-lat, data-lng, data-zoom, data-nombre,
-// data-direccion, data-texto-recentrar, data-texto-inicio, data-texto-guia),
+// data-direccion, data-texto-recentrar, data-texto-inicio, data-texto-saludo, data-texto-llegada),
 // [data-mapa-estado]. El contenedor lleva data-captura-flechas: con el foco
 // en el mapa, las flechas lo desplazan y el router no cambia de vista.
 import { alEntrarEnVista } from './router';
@@ -73,7 +73,7 @@ async function cargar() {
     // Encuadre: el mapa ya es un cuadro propio (la tarjeta no lo tapa), asi
     // que el local va al centro; se desplaza un poco para dejar sitio a la
     // etiqueta (izquierda) y a Canela con su globo (arriba a la derecha).
-    const centroPara = (zoom: number): L.LatLng => mapa.unproject(mapa.project(pos, zoom).add([40, -30]), zoom);
+    const centroPara = (zoom: number): L.LatLng => mapa.unproject(mapa.project(pos, zoom).add([40, contenedor.clientWidth < 600 ? -55 : -30]), zoom);
     mapa.setView(centroPara(zoomFinal), zoomFinal, { animate: false });
 
     const pin = L.divIcon({
@@ -135,7 +135,7 @@ async function cargar() {
         html:
           `<span class="mapa-canela-corre" style="background-image:url(${urlCorre})"></span>` +
           `<img class="mapa-canela-sienta" src="${urlSienta}" width="60" height="78" alt="" decoding="async" />` +
-          `<span class="mapa-canela-globo">${escapar(contenedor.dataset.textoGuia ?? '¡Por aquí!')}</span>`,
+          '<span class="mapa-canela-globo" aria-hidden="true"></span>',
         iconSize: [97, 80],
         iconAnchor: [48, 76],
       }),
@@ -144,12 +144,30 @@ async function cargar() {
       zIndexOffset: 500,
     }).addTo(mapa);
 
+    // Globo de Canela: breve y que se retira solo (no estorba el mapa)
+    let temporizador = 0;
+    const decir = (texto: string, ms: number) => {
+      const globo = guia.getElement()?.querySelector<HTMLElement>('.mapa-canela-globo');
+      if (!globo) return;
+      globo.textContent = texto;
+      globo.classList.add('mapa-canela-globo-visible');
+      clearTimeout(temporizador);
+      temporizador = window.setTimeout(() => globo.classList.remove('mapa-canela-globo-visible'), ms);
+    };
+    const el = () => guia.getElement();
+    const textoSaludo = contenedor.dataset.textoSaludo ?? '';
+    const textoLlegada = contenedor.dataset.textoLlegada ?? '';
+    if (contenedor.clientWidth < 600) el()?.classList.add('mapa-canela-estrecho');
+
     const llegada = () => {
-      guia.getElement()?.classList.add('mapa-canela-llego');
+      el()?.classList.remove('mapa-canela-en-marcha');
+      el()?.classList.add('mapa-canela-sentada');
       mostrarEtiqueta();
+      decir(textoLlegada, 4200);
     };
     const correr = () => {
-      guia.getElement()?.classList.add('mapa-canela-en-marcha');
+      el()?.classList.remove('mapa-canela-sentada');
+      el()?.classList.add('mapa-canela-en-marcha');
       const duracion = 3400;
       const t0 = performance.now();
       const tramos = recorrido.slice(1).map((p, i) => ({ a: recorrido[i], b: p }));
@@ -164,10 +182,7 @@ async function cargar() {
         guia.setLatLng(actual);
         linea.setLatLngs([...recorrido.slice(0, i + 1), actual]);
         if (k < 1) requestAnimationFrame(paso);
-        else {
-          guia.getElement()?.classList.remove('mapa-canela-en-marcha');
-          llegada();
-        }
+        else llegada();
       };
       requestAnimationFrame(paso);
     };
@@ -197,7 +212,14 @@ async function cargar() {
       const zInicial = 16;
       mapa.setView(centroPara(zInicial), zInicial, { animate: false });
       setTimeout(() => mapa.flyTo(centroPara(zoomFinal), zoomFinal, { duration: 2.2, easeLinearity: 0.2 }), 450);
-      setTimeout(correr, 450 + 2200 + 250); // al terminar el vuelo
+      // Al terminar el vuelo Canela saluda (sentada, en la 15 de Noviembre) y despues corre
+      const tSaludo = 450 + 2200 + 200;
+      const msSaludo = 2800;
+      setTimeout(() => {
+        el()?.classList.add('mapa-canela-sentada');
+        decir(textoSaludo, msSaludo);
+      }, tSaludo);
+      setTimeout(correr, tSaludo + msSaludo + 300);
     }
 
     contenedor.setAttribute('data-mapa-listo', '');
